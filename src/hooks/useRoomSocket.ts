@@ -48,9 +48,14 @@ export function useRoomSocket({
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const [isHost, setIsHost] = useState(false);
+  const [hostOnline, setHostOnline] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
   // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+
+  // Store callbacks in refs so the WebSocket onmessage always has fresh references
+  const cbRef = useRef({ onPlaybackPlay, onPlaybackPause, onPlaybackSeek, onPlaybackSync });
+  cbRef.current = { onPlaybackPlay, onPlaybackPause, onPlaybackSeek, onPlaybackSync };
 
   useEffect(() => {
     if (!roomCode) return;
@@ -81,16 +86,16 @@ export function useRoomSocket({
       } catch {
         return;
       }
-      console.log("WS msg:", msg.type); // debug
+      console.log("WS msg:", msg.type);
 
       switch (msg.type) {
         case "room:joined":
           setIsHost(msg.isHost);
+          setHostOnline(msg.hostOnline ?? true);
           setMembers(msg.members ?? []);
-          if (!msg.isHost && msg.playback?.videoId) {
-            wsRef.current?.send(
-              JSON.stringify({ type: "playback:sync_request" }),
-            );
+          // If there's active playback, sync immediately using the data from the join message
+          if (msg.playback?.videoId) {
+            cbRef.current.onPlaybackSync?.(msg.playback);
           }
           break;
         case "room:member_joined":
@@ -101,16 +106,16 @@ export function useRoomSocket({
           setMessages((prev) => [...prev.slice(-199), msg.message]);
           break;
         case "playback:play":
-          onPlaybackPlay?.(msg);
+          cbRef.current.onPlaybackPlay?.(msg);
           break;
         case "playback:pause":
-          onPlaybackPause?.(msg.currentTime);
+          cbRef.current.onPlaybackPause?.(msg.currentTime);
           break;
         case "playback:seek":
-          onPlaybackSeek?.(msg.currentTime);
+          cbRef.current.onPlaybackSeek?.(msg.currentTime);
           break;
         case "playback:sync":
-          onPlaybackSync?.(msg);
+          cbRef.current.onPlaybackSync?.(msg);
           break;
       }
     };
@@ -151,6 +156,7 @@ export function useRoomSocket({
   return {
     connected,
     isHost,
+    hostOnline,
     members,
     messages,
     sendChat,
