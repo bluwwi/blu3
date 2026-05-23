@@ -27,6 +27,7 @@ export function RoomPanel({
     onPlaybackPlay,
     onPlaybackPause,
     onPlaybackSeek,
+    onPlaybackSync: onPlaybackPlay,
   });
 
   useEffect(() => {

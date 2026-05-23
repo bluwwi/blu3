@@ -17,6 +17,14 @@ export interface Track {
   image: string;
 }
 
+export interface RecentTrack {
+  videoId: string;
+  trackName: string;
+  artistName: string;
+  image: string;
+  playedAt: number;
+}
+
 export interface PlayerStateData {
   trackId: string | null;
   playing: boolean;

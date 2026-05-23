@@ -1,8 +1,9 @@
 "use client";
 
-import { Track } from "@/utils/types";
+import { RecentTrack, Track } from "@/utils/types";
 import { SearchInput } from "./SearchInput";
 import { TrackList } from "./TrackList";
+import { useState } from "react";
 
 interface Props {
   searchQuery: string;
@@ -45,6 +46,8 @@ export function SearchTab({
   onBlur,
   onKeyDown,
 }: Props) {
+
+  const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
   return (
     <div>
       <SearchInput
