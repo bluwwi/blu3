@@ -162,11 +162,10 @@ export default function Player() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${
-                  activeTab === tab
+                className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${activeTab === tab
                     ? "bg-white text-black shadow"
                     : "text-zinc-500 hover:text-zinc-300"
-                }`}
+                  }`}
               >
                 {tab === "search" ? "⌕ Search" : "⊕ URL"}
               </button>
@@ -174,33 +173,7 @@ export default function Player() {
           </div>
 
           {activeTab === "search" ? (
-            <SearchTab
-              searchQuery={searchState.searchQuery}
-              suggestions={suggestState.suggestions}
-              showSuggestions={suggestState.showSuggestions}
-              results={searchState.results}
-              isSearching={searchState.isSearching}
-              searchError={searchState.searchError}
-              activeTrackId={playerState.nowPlaying?.id ?? null}
-              loadingTrackId={playerState.loadingId}
-              isPlaying={playerState.playerState === "playing"}
-              onSearchInput={searchState.onSearchInput}
-              onSearch={searchState.doSearch}
-              onSuggestionSelect={(s) => {
-                searchState.setSearchQuery(s);
-                searchState.doSearch(s);
-                suggestState.hideSuggestions();
-              }}
-              onTrackSelect={playerState.playTrack}
-              onFocus={() =>
-                suggestState.suggestions.length > 0 &&
-                suggestState.setShowSuggestions(true)
-              }
-              onBlur={() =>
-                setTimeout(() => suggestState.hideSuggestions(), 200)
-              }
-              onKeyDown={handleSearchKeyDown}
-            />
+            <></>
           ) : (
             <UrlTab
               onPlay={playerState.playTrack}

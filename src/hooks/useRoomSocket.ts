@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { RecentTrack } from "@/utils/types";
 
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
@@ -51,6 +52,7 @@ export function useRoomSocket({
   const [members, setMembers] = useState<Member[]>([]);
   // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
 
   const onPlaybackPlayRef = useRef(onPlaybackPlay);
   const onPlaybackPauseRef = useRef(onPlaybackPause);
@@ -99,6 +101,7 @@ export function useRoomSocket({
         case "room:joined":
           setIsHost(msg.isHost);
           setMembers(msg.members ?? []);
+          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (!msg.isHost && msg.playback?.videoId) {
             wsRef.current?.send(
               JSON.stringify({ type: "playback:sync_request" }),
@@ -113,6 +116,7 @@ export function useRoomSocket({
           setMessages((prev) => [...prev.slice(-199), msg.message]);
           break;
         case "playback:play":
+          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           onPlaybackPlayRef.current?.(msg);
           break;
         case "playback:pause":
@@ -122,6 +126,7 @@ export function useRoomSocket({
           onPlaybackSeekRef.current?.(msg.currentTime);
           break;
         case "playback:sync":
+          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           onPlaybackSyncRef.current?.(msg);
           break;
       }
@@ -165,6 +170,7 @@ export function useRoomSocket({
     isHost,
     members,
     messages,
+    recentTracks,
     sendChat,
     sendPlay,
     sendPause,

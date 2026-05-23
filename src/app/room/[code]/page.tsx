@@ -44,6 +44,7 @@ export default function RoomPage() {
     connected,
     members,
     messages,
+    recentTracks,
     sendChat,
     sendPlay,
     sendPause,
@@ -309,6 +310,7 @@ export default function RoomPage() {
                 </div>
               ) : null}
               <SearchTab
+                recentTracks={recentTracks}
                 searchQuery={searchState.searchQuery}
                 suggestions={suggestState.suggestions}
                 showSuggestions={suggestState.showSuggestions}
