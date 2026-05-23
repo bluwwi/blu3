@@ -163,8 +163,8 @@ export default function Player() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${activeTab === tab
-                    ? "bg-white text-black shadow"
-                    : "text-zinc-500 hover:text-zinc-300"
+                  ? "bg-white text-black shadow"
+                  : "text-zinc-500 hover:text-zinc-300"
                   }`}
               >
                 {tab === "search" ? "⌕ Search" : "⊕ URL"}

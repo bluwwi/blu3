@@ -165,6 +165,10 @@ export function useRoomSocket({
     wsRef.current?.send(JSON.stringify({ type: "playback:seek", currentTime }));
   }, []);
 
+  const requestSync = useCallback(() => {
+    wsRef.current?.send(JSON.stringify({ type: "playback:sync_request" }));
+  }, []);
+
   return {
     connected,
     isHost,
@@ -175,5 +179,6 @@ export function useRoomSocket({
     sendPlay,
     sendPause,
     sendSeek,
+    requestSync,
   };
 }

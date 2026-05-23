@@ -49,6 +49,7 @@ export default function RoomPage() {
     sendPlay,
     sendPause,
     sendSeek,
+    requestSync,
   } = useRoomSocket({
     roomCode: joined ? code : null,
     onPlaybackPlay: (state) => {
@@ -165,6 +166,19 @@ export default function RoomPage() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Re-sync playback when tab becomes visible again to fix background throttling drift
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && joined) {
+        requestSync();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [joined, requestSync]);
 
   // Host: sync playback to room when track changes
   useEffect(() => {

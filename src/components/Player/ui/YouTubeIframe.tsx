@@ -5,10 +5,13 @@ export function YouTubeIframe() {
     <div
       style={{
         position: "fixed",
-        top: -9999,
-        left: -9999,
-        width: 1,
-        height: 1,
+        top: 0,
+        left: 0,
+        width: "200px",
+        height: "200px",
+        opacity: 0.001,
+        zIndex: -9999,
+        pointerEvents: "none",
       }}
       aria-hidden="true"
     >
