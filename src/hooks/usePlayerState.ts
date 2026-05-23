@@ -13,7 +13,7 @@ interface UsePlayerStateReturn {
   activeVideoId: string | null;
   loadingId: string | null;
   error: string;
-  playTrack: (track: Track) => void;
+  playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
   handleVolume: (val: number) => void;
   toggleMute: () => void;
@@ -21,6 +21,8 @@ interface UsePlayerStateReturn {
   setLoadingId: (id: string | null) => void;
   setNowPlaying: (track: Track | null) => void;
   setPlayerState: (state: PlayerStateType) => void;
+  play: () => void;
+  pause: () => void;
 }
 
 export function usePlayerState(): UsePlayerStateReturn {
@@ -83,7 +85,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   );
 
   const playTrack = useCallback(
-    (track: Track) => {
+    (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
       setLoadingId(track.id);
       setPlayerState("loading");
@@ -96,11 +98,26 @@ export function usePlayerState(): UsePlayerStateReturn {
         return;
       }
 
-      initPlayer(track.videoId);
+      initPlayer(track.videoId, (player) => {
+        if (startTime) {
+          player.seekTo(startTime, true);
+        }
+        if (!shouldPlay) {
+          player.pauseVideo();
+        }
+      });
       setLoadingId(null);
     },
     [initPlayer],
   );
+
+  const play = useCallback(() => {
+    playerRef.current?.playVideo();
+  }, []);
+
+  const pause = useCallback(() => {
+    playerRef.current?.pauseVideo();
+  }, []);
 
   const togglePlayPause = useCallback(() => {
     const player = playerRef.current;
@@ -160,5 +177,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     setLoadingId,
     setNowPlaying,
     setPlayerState,
+    play,
+    pause,
   };
 }

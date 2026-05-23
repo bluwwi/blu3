@@ -35,19 +35,31 @@ export function useProgressTracking(
     }
   }, []);
 
+  const seekTo = useCallback(
+    (time: number) => {
+      const player = playerRef.current;
+      if (!player) return;
+      player.seekTo(time, true);
+      setCurrentTime(time);
+      const tot = player.getDuration?.() ?? 0;
+      if (tot > 0) {
+        setProgress((time / tot) * 100);
+      }
+    },
+    [playerRef],
+  );
+
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const player = playerRef.current;
       if (!player || !duration) return;
 
       const rect = e.currentTarget.getBoundingClientRect();
-      const seekTo = ((e.clientX - rect.left) / rect.width) * duration;
+      const seekToTime = ((e.clientX - rect.left) / rect.width) * duration;
 
-      player.seekTo(seekTo, true);
-      setCurrentTime(seekTo);
-      setProgress((seekTo / duration) * 100);
+      seekTo(seekToTime);
     },
-    [playerRef, duration],
+    [duration, seekTo],
   );
 
   // Auto start/stop tracking based on player state
@@ -72,5 +84,6 @@ export function useProgressTracking(
     startTracking,
     stopTracking,
     handleSeek,
+    seekTo,
   };
 }

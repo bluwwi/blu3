@@ -21,7 +21,7 @@ interface Props {
   onSearchInput: (val: string) => void;
   onSearch: (q: string) => void;
   onSuggestionSelect: (s: string) => void;
-  onTrackSelect: (track: Track) => void;
+  onTrackSelect?: (track: Track) => void;
   onFocus: () => void;
   onBlur: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;

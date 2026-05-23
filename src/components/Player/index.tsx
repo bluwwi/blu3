@@ -228,7 +228,7 @@ export default function Player() {
               }
             }}
             onPlaybackPause={(t) => playerState.pause?.()}
-            onPlaybackSeek={(t) => progressState.handleSeek(t)}
+            onPlaybackSeek={(t) => progressState.seekTo(t)}
           />
         </div>
       </div>

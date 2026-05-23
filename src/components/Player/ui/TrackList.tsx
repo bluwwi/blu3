@@ -8,7 +8,7 @@ interface Props {
   activeTrackId: string | null;
   loadingTrackId: string | null;
   isPlaying: boolean;
-  onTrackSelect: (track: Track) => void;
+  onTrackSelect?: (track: Track) => void;
   isSearching: boolean;
   searchQuery: string;
   searchError: string;
@@ -86,7 +86,7 @@ export function TrackList({
           isActive={activeTrackId === track.id}
           isLoading={loadingTrackId === track.id}
           isPlaying={isPlaying}
-          onClick={() => onTrackSelect(track)}
+          onClick={onTrackSelect ? () => onTrackSelect(track) : undefined}
         />
       ))}
     </div>

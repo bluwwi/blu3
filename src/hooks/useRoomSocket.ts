@@ -90,7 +90,11 @@ export function useRoomSocket({
             setIsHost(msg.isHost);
             setMembers(msg.members ?? []);
             if (!msg.isHost && msg.playback?.videoId) {
-              ws.send(JSON.stringify({ type: "playback:sync_request" }));
+              setTimeout(() => {
+                wsRef.current?.send(
+                  JSON.stringify({ type: "playback:sync_request" }),
+                );
+              }, 500);
             }
             break;
           case "room:member_joined":

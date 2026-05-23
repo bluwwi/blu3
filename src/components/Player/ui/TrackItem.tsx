@@ -8,7 +8,7 @@ interface Props {
   isActive: boolean;
   isLoading: boolean;
   isPlaying: boolean;
-  onClick: () => void;
+  onClick?: () => void;
   index: number;
 }
 
@@ -23,12 +23,14 @@ export function TrackItem({
   return (
     <button
       onClick={onClick}
-      disabled={isLoading}
+      disabled={isLoading || !onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group border ${
         isActive
           ? "bg-green-500/10 border-green-500/20"
-          : "border-transparent hover:bg-zinc-900 hover:border-zinc-800"
-      }`}
+          : onClick
+            ? "border-transparent hover:bg-zinc-900 hover:border-zinc-800"
+            : "border-transparent"
+      } ${!onClick ? "cursor-default" : ""}`}
       style={{ animationDelay: `${index * 25}ms` }}
     >
       {/* Album Art + Overlay */}
@@ -50,7 +52,9 @@ export function TrackItem({
           className={`absolute inset-0 rounded-lg flex items-center justify-center transition-opacity ${
             isLoading || (isActive && isPlaying)
               ? "bg-black/60 opacity-100"
-              : "bg-black/50 opacity-0 group-hover:opacity-100"
+              : onClick
+                ? "bg-black/50 opacity-0 group-hover:opacity-100"
+                : "opacity-0"
           }`}
         >
           {isLoading ? (
@@ -68,9 +72,9 @@ export function TrackItem({
                 />
               ))}
             </div>
-          ) : (
+          ) : onClick ? (
             <span className="text-white text-sm">▶</span>
-          )}
+          ) : null}
         </div>
       </div>
 

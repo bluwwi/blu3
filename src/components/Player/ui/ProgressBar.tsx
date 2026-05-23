@@ -6,7 +6,7 @@ interface Props {
   progress: number;
   currentTime: number;
   duration: number;
-  onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
   className?: string;
 }
 
@@ -25,7 +25,7 @@ export function ProgressBar({
         {fmtSec(currentTime)}
       </span>
       <div
-        className="flex-1 h-1 bg-zinc-800 rounded-full cursor-pointer group"
+        className={`flex-1 h-1 bg-zinc-800 rounded-full ${onSeek ? "cursor-pointer group" : "cursor-default"}`}
         onClick={onSeek}
         role="slider"
         aria-valuenow={Math.round(progress)}

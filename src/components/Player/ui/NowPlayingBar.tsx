@@ -17,7 +17,7 @@ interface Props {
   onPlayPause: () => void;
   onMute: () => void;
   onVolume: (val: number) => void;
-  onSeek: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
 }
 
 export function NowPlayingBar({
