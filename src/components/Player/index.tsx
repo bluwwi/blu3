@@ -13,6 +13,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { extractVideoId } from "@/utils/videoId";
 import { Track } from "@/utils/types";
+import { RoomPanel } from "@/hooks/RoomPanel";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -207,6 +208,28 @@ export default function Player() {
               error={playerState.error || null}
             />
           )}
+        </div>
+
+        <div className="mt-6">
+          <RoomPanel
+            onPlaybackPlay={(state) => {
+              // state has videoId, trackName etc — load it into player
+              if (state.videoId) {
+                playerState.playTrack({
+                  id: `room-${state.videoId}`,
+                  videoId: state.videoId,
+                  name: state.trackName,
+                  duration_ms: 0,
+                  explicit: false,
+                  artists: [{ name: state.artistName }],
+                  album: { name: "" },
+                  image: state.image,
+                });
+              }
+            }}
+            onPlaybackPause={(t) => playerState.pause?.()}
+            onPlaybackSeek={(t) => progressState.handleSeek(t)}
+          />
         </div>
       </div>
     </>
