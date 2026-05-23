@@ -39,10 +39,11 @@ export default function RoomPage() {
   const prevPlayerStateRef = useRef<string>("idle");
 
   const isHost = room?.hostId === user?.sub;
+  const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
+  const canControlPlayback = isHost || !isHostPresent;
 
   const {
     connected,
-    hostOnline,
     members,
     messages,
     sendChat,
@@ -52,47 +53,50 @@ export default function RoomPage() {
   } = useRoomSocket({
     roomCode: joined ? code : null,
     onPlaybackPlay: (state) => {
-      if (!state.videoId) return;
-
-      let actualCurrentTime = state.currentTime ?? 0;
-      if (state.updatedAt) {
-        const elapsed = (Date.now() - state.updatedAt) / 1000;
-        if (elapsed > 0 && elapsed < 3600) {
-          actualCurrentTime += elapsed;
+      if (isHost) return; // host controls their own player
+      if (state.videoId) {
+        let actualCurrentTime = state.currentTime ?? 0;
+        if (state.updatedAt) {
+          const elapsed = (Date.now() - state.updatedAt) / 1000;
+          if (elapsed > 0 && elapsed < 3600) {
+            actualCurrentTime += elapsed;
+          }
         }
-      }
 
-      if (playerState.nowPlaying?.videoId === state.videoId) {
-        playerState.play?.();
-        progressState.seekTo(actualCurrentTime);
-      } else {
-        playerState.playTrack(
-          {
-            id: `room-${state.videoId}`,
-            videoId: state.videoId,
-            name: state.trackName,
-            duration_ms: 0,
-            explicit: false,
-            artists: [{ name: state.artistName }],
-            album: { name: "" },
-            image: state.image,
-          },
-          actualCurrentTime,
-          true
-        );
+        if (playerState.nowPlaying?.videoId === state.videoId) {
+          playerState.play?.();
+          progressState.seekTo(actualCurrentTime);
+        } else {
+          playerState.playTrack(
+            {
+              id: `room-${state.videoId}`,
+              videoId: state.videoId,
+              name: state.trackName,
+              duration_ms: 0,
+              explicit: false,
+              artists: [{ name: state.artistName }],
+              album: { name: "" },
+              image: state.image,
+            },
+            actualCurrentTime,
+            true
+          );
+        }
       }
     },
     onPlaybackPause: (t) => {
-      playerState.pause?.();
-      if (typeof t === "number") {
-        progressState.seekTo(t);
+      if (!isHost) {
+        playerState.pause?.();
+        if (typeof t === "number") {
+          progressState.seekTo(t);
+        }
       }
     },
     onPlaybackSeek: (t) => {
-      progressState.seekTo(t);
+      if (!isHost) progressState.seekTo(t);
     },
     onPlaybackSync: (state) => {
-      if (!state.videoId) return;
+      if (isHost || !state.videoId) return;
 
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.isPlaying && state.updatedAt) {
@@ -127,9 +131,6 @@ export default function RoomPage() {
       }
     },
   });
-
-  // canControl: host always, or anyone when host is offline
-  const canControl = isHost || !hostOnline;
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isHost || !progressState.duration) return;
