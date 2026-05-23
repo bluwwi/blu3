@@ -40,13 +40,22 @@ export function usePlayerState(): UsePlayerStateReturn {
     (videoId: string, onReady?: (player: YT.Player) => void) => {
       if (!window.YT?.Player) return;
 
-      // Destroy existing player
       if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
+        try {
+          playerRef.current.loadVideoById({
+            videoId,
+            startSeconds: 0,
+          });
+          onReady?.(playerRef.current);
+          return;
+        } catch (err) {
+          console.warn("Failed to reuse existing player, recreating:", err);
+          try {
+            playerRef.current.destroy();
+          } catch {}
+          playerRef.current = null;
+        }
       }
-
-      setActiveVideoId(videoId);
 
       playerRef.current = new window.YT.Player("yt-player", {
         videoId,
@@ -98,6 +107,26 @@ export function usePlayerState(): UsePlayerStateReturn {
         setError("No video ID.");
         setLoadingId(null);
         return;
+      }
+
+      if (playerRef.current && typeof playerRef.current.loadVideoById === "function") {
+        try {
+          playerRef.current.loadVideoById({
+            videoId: track.videoId,
+            startSeconds: startTime || 0,
+          });
+          if (!shouldPlay) {
+            playerRef.current.pauseVideo();
+          }
+          setLoadingId(null);
+          return;
+        } catch (e) {
+          console.warn("Failed to reuse player, recreating:", e);
+          try {
+            playerRef.current.destroy();
+          } catch {}
+          playerRef.current = null;
+        }
       }
 
       initPlayer(track.videoId, (player) => {

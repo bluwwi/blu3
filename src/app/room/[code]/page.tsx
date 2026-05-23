@@ -68,7 +68,7 @@ export default function RoomPage() {
           }
         }
 
-        if (playerState.activeVideoId === state.videoId) {
+        if (playerState.nowPlaying?.videoId === state.videoId) {
           playerState.play?.();
           progressState.seekTo(actualCurrentTime);
           // Safety fallback seek/play for loading/buffering asynchronously
@@ -116,7 +116,7 @@ export default function RoomPage() {
         }
       }
 
-      if (playerState.activeVideoId === state.videoId) {
+      if (playerState.nowPlaying?.videoId === state.videoId) {
         if (state.isPlaying) {
           playerState.play?.();
         } else {
