@@ -20,7 +20,7 @@ function CallbackHandler() {
     }
 
     // ← delay redirect so localStorage write completes first
-    setTimeout(() => router.replace("/"), 100);
+    setTimeout(() => router.replace("/browse"), 100);
   }, [params, router]);
 
   return (

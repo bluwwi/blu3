@@ -39,8 +39,6 @@ export default function RoomPage() {
   const prevPlayerStateRef = useRef<string>("idle");
 
   const isHost = room?.hostId === user?.sub;
-  const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
-  const canControlPlayback = isHost || !isHostPresent;
 
   const {
     connected,
@@ -53,7 +51,7 @@ export default function RoomPage() {
   } = useRoomSocket({
     roomCode: joined ? code : null,
     onPlaybackPlay: (state) => {
-      if (isHost) return; // host controls their own player
+      if (canControlPlayback) return; // host/controller controls their own player
       if (state.videoId) {
         let actualCurrentTime = state.currentTime ?? 0;
         if (state.updatedAt) {
@@ -85,7 +83,7 @@ export default function RoomPage() {
       }
     },
     onPlaybackPause: (t) => {
-      if (!isHost) {
+      if (!canControlPlayback) {
         playerState.pause?.();
         if (typeof t === "number") {
           progressState.seekTo(t);
@@ -93,10 +91,10 @@ export default function RoomPage() {
       }
     },
     onPlaybackSeek: (t) => {
-      if (!isHost) progressState.seekTo(t);
+      if (!canControlPlayback) progressState.seekTo(t);
     },
     onPlaybackSync: (state) => {
-      if (isHost || !state.videoId) return;
+      if (canControlPlayback || !state.videoId) return;
 
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.isPlaying && state.updatedAt) {
@@ -132,8 +130,11 @@ export default function RoomPage() {
     },
   });
 
+  const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
+  const canControlPlayback = isHost || !isHostPresent;
+
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!isHost || !progressState.duration) return;
+    if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const seekToTime = ((e.clientX - rect.left) / rect.width) * progressState.duration;
     progressState.seekTo(seekToTime);
@@ -166,7 +167,7 @@ export default function RoomPage() {
 
   // Host: sync playback to room when track changes
   useEffect(() => {
-    if (!isHost || !joined) return;
+    if (!canControlPlayback || !joined) return;
     const v = playerState.nowPlaying;
     if (!v?.videoId) return;
     sendPlay({
@@ -180,7 +181,7 @@ export default function RoomPage() {
 
   // Host: sync pause & resume
   useEffect(() => {
-    if (!isHost || !joined) return;
+    if (!canControlPlayback || !joined) return;
 
     const prev = prevPlayerStateRef.current;
     prevPlayerStateRef.current = playerState.playerState;
@@ -248,7 +249,7 @@ export default function RoomPage() {
             onPlayPause={playerState.togglePlayPause}
             onMute={playerState.toggleMute}
             onVolume={playerState.handleVolume}
-            onSeek={isHost ? handleSeekAction : undefined}
+            onSeek={canControlPlayback ? handleSeekAction : undefined}
           />
         )}
 
@@ -296,11 +297,17 @@ export default function RoomPage() {
 
             {/* Search — everyone can search, only host controls playback */}
             <div className="flex-1 overflow-y-auto px-6 py-4 max-w-2xl w-full mx-auto">
-              {!isHost && (
-                <div className="mb-4 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-500 tracking-wide">
-                  🎵 synced to host — music plays automatically
+              {!canControlPlayback ? (
+                <div className="mb-4 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-500 tracking-wide flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span>🎵 synced to host — music plays automatically</span>
                 </div>
-              )}
+              ) : !isHost ? (
+                <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400 tracking-wide flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce" />
+                  <span>⚡ Collaborative Mode: Room admin is away. You can play, pause and control the music!</span>
+                </div>
+              ) : null}
               <SearchTab
                 searchQuery={searchState.searchQuery}
                 suggestions={suggestState.suggestions}
@@ -318,7 +325,7 @@ export default function RoomPage() {
                   searchState.doSearch(s);
                   suggestState.hideSuggestions();
                 }}
-                onTrackSelect={isHost ? playerState.playTrack : undefined}
+                onTrackSelect={canControlPlayback ? playerState.playTrack : undefined}
                 onFocus={() =>
                   suggestState.suggestions.length > 0 &&
                   suggestState.setShowSuggestions(true)
