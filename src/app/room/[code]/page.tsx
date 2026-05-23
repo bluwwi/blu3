@@ -156,12 +156,22 @@ export default function RoomPage() {
   // Controller: Automatically play next song in queue when current song ends
   useEffect(() => {
     if (!canControlPlayback || !joined || playerState.playerState !== "ended") return;
+    const activeTrack = playerState.nowPlaying;
+    if (!activeTrack) return;
+
     if (queue && queue.length > 0) {
-      const nextTrack = queue[0];
-      playerState.playTrack(nextTrack);
-      removeFromQueue(nextTrack.id);
+      // If the finished track is at index 0 of the queue
+      if (queue[0].videoId === activeTrack.videoId || queue[0].id === activeTrack.id) {
+        if (queue.length > 1) {
+          const nextTrack = queue[1];
+          playerState.playTrack(nextTrack);
+          removeFromQueue(queue[0].id);
+        } else {
+          removeFromQueue(queue[0].id);
+        }
+      }
     }
-  }, [playerState.playerState, queue, canControlPlayback, joined]);
+  }, [playerState.playerState, queue, canControlPlayback, joined, playerState.nowPlaying]);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
