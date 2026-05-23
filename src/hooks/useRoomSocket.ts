@@ -57,71 +57,65 @@ export function useRoomSocket({
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
 
-    // Small delay to ensure room is created in DB before WS connects
-    const connectTimer = setTimeout(() => {
-      const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${roomCode}`;
-      console.log("Connecting WS:", wsUrl);
+    const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${roomCode}`;
+    console.log("Connecting WS:", wsUrl);
 
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-      ws.onopen = () => {
-        console.log("WS connected");
-        setConnected(true);
-      };
-      ws.onclose = (e) => {
-        console.log("WS closed:", e.code, e.reason);
-        setConnected(false);
-      };
-      ws.onerror = (e) => {
-        console.error("WS error:", e);
-      };
-      ws.onmessage = (event) => {
-        let msg: any;
-        try {
-          msg = JSON.parse(event.data);
-        } catch {
-          return;
-        }
-        console.log("WS msg:", msg.type); // debug
+    ws.onopen = () => {
+      console.log("WS connected");
+      setConnected(true);
+    };
+    ws.onclose = (e) => {
+      console.log("WS closed:", e.code, e.reason);
+      setConnected(false);
+    };
+    ws.onerror = (e) => {
+      console.error("WS error:", e);
+    };
+    ws.onmessage = (event) => {
+      let msg: any;
+      try {
+        msg = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      console.log("WS msg:", msg.type); // debug
 
-        switch (msg.type) {
-          case "room:joined":
-            setIsHost(msg.isHost);
-            setMembers(msg.members ?? []);
-            if (!msg.isHost && msg.playback?.videoId) {
-              setTimeout(() => {
-                wsRef.current?.send(
-                  JSON.stringify({ type: "playback:sync_request" }),
-                );
-              }, 500);
-            }
-            break;
-          case "room:member_joined":
-          case "room:member_left":
-            setMembers(msg.members ?? []);
-            break;
-          case "chat:message":
-            setMessages((prev) => [...prev.slice(-199), msg.message]);
-            break;
-          case "playback:play":
-            onPlaybackPlay?.(msg);
-            break;
-          case "playback:pause":
-            onPlaybackPause?.(msg.currentTime);
-            break;
-          case "playback:seek":
-            onPlaybackSeek?.(msg.currentTime);
-            break;
-          case "playback:sync":
-            onPlaybackSync?.(msg);
-            break;
-        }
-      };
-    }, 300); // ← wait 300ms after room code is set
+      switch (msg.type) {
+        case "room:joined":
+          setIsHost(msg.isHost);
+          setMembers(msg.members ?? []);
+          if (!msg.isHost && msg.playback?.videoId) {
+            wsRef.current?.send(
+              JSON.stringify({ type: "playback:sync_request" }),
+            );
+          }
+          break;
+        case "room:member_joined":
+        case "room:member_left":
+          setMembers(msg.members ?? []);
+          break;
+        case "chat:message":
+          setMessages((prev) => [...prev.slice(-199), msg.message]);
+          break;
+        case "playback:play":
+          onPlaybackPlay?.(msg);
+          break;
+        case "playback:pause":
+          onPlaybackPause?.(msg.currentTime);
+          break;
+        case "playback:seek":
+          onPlaybackSeek?.(msg.currentTime);
+          break;
+        case "playback:sync":
+          onPlaybackSync?.(msg);
+          break;
+      }
+    };
 
     return () => {
-      clearTimeout(connectTimer);
       wsRef.current?.close();
     };
   }, [roomCode]);

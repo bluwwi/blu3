@@ -36,6 +36,7 @@ export default function RoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const prevPlayerStateRef = useRef<string>("idle");
 
   const isHost = room?.hostId === user?.sub;
 
@@ -175,19 +176,27 @@ export default function RoomPage() {
     });
   }, [playerState.nowPlaying?.videoId]);
 
-  // Host: sync pause
+  // Host: sync pause & resume
   useEffect(() => {
     if (!isHost || !joined) return;
-    if (playerState.playerState === "paused")
+
+    const prev = prevPlayerStateRef.current;
+    prevPlayerStateRef.current = playerState.playerState;
+
+    if (playerState.playerState === "paused") {
       sendPause(progressState.currentTime);
+    }
     if (playerState.playerState === "playing" && playerState.nowPlaying) {
-      sendPlay({
-        videoId: playerState.nowPlaying.videoId!,
-        trackName: playerState.nowPlaying.name,
-        artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
-        image: playerState.nowPlaying.image ?? "",
-        currentTime: progressState.currentTime,
-      });
+      // Only sync play if we are resuming from a paused state
+      if (prev === "paused") {
+        sendPlay({
+          videoId: playerState.nowPlaying.videoId!,
+          trackName: playerState.nowPlaying.name,
+          artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
+          image: playerState.nowPlaying.image ?? "",
+          currentTime: progressState.currentTime,
+        });
+      }
     }
   }, [playerState.playerState]);
 
