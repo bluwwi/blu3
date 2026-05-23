@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
@@ -47,6 +47,7 @@ export default function RoomPage() {
     messages,
     recentTracks,
     queue,
+    setQueue,
     sendChat,
     sendPlay,
     sendPause,
@@ -67,7 +68,7 @@ export default function RoomPage() {
           }
         }
 
-        if (playerState.nowPlaying?.videoId === state.videoId) {
+        if (playerState.activeVideoId === state.videoId) {
           playerState.play?.();
           progressState.seekTo(actualCurrentTime);
           // Safety fallback seek/play for loading/buffering asynchronously
@@ -115,7 +116,7 @@ export default function RoomPage() {
         }
       }
 
-      if (playerState.nowPlaying?.videoId === state.videoId) {
+      if (playerState.activeVideoId === state.videoId) {
         if (state.isPlaying) {
           playerState.play?.();
         } else {
@@ -172,6 +173,80 @@ export default function RoomPage() {
       }
     }
   }, [playerState.playerState, queue, canControlPlayback, joined, playerState.nowPlaying]);
+
+  // Optimistic 0ms local queue/playback synchronization for host
+  const handleAdminPlayTrack = useCallback((track: Track) => {
+    if (!canControlPlayback) return;
+    
+    // Add to the top of the queue locally immediately for 0ms visual difference
+    setQueue((prev) => {
+      const filtered = prev.filter((t) => t.id !== track.id && t.videoId !== track.videoId);
+      return [track, ...filtered];
+    });
+
+    playerState.playTrack(track);
+  }, [canControlPlayback, playerState.playTrack, setQueue]);
+
+  // Web Audio Context keeper to prevent browser tab throttling/suspension in background
+  const audioContextRef = useRef<AudioContext | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const startSilentAudio = () => {
+      if (audioContextRef.current) return;
+      
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      try {
+        const ctx = new AudioContextClass();
+        audioContextRef.current = ctx;
+
+        // Generate dynamic extremely low noise (effectively silent to humans)
+        // to bypass the browser's silence detector
+        const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const channelData = buffer.getChannelData(0);
+        for (let i = 0; i < channelData.length; i++) {
+          channelData[i] = (Math.random() - 0.5) * 0.00001;
+        }
+
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.loop = true;
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.value = 0.0001; // completely inaudible
+
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        
+        source.start(0);
+
+        if (ctx.state === "suspended") {
+          ctx.resume();
+        }
+
+        console.log("Background silent loop active to maintain tab visibility priority.");
+      } catch (err) {
+        console.error("Failed to start background tab keeper:", err);
+      }
+    };
+
+    const events = ["click", "keydown", "touchstart", "mousedown"];
+    events.forEach((evt) => {
+      window.addEventListener(evt, startSilentAudio, { once: true });
+    });
+
+    return () => {
+      events.forEach((evt) => {
+        window.removeEventListener(evt, startSilentAudio);
+      });
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
@@ -412,7 +487,7 @@ export default function RoomPage() {
                       searchState.doSearch(s);
                       suggestState.hideSuggestions();
                     }}
-                    onTrackSelect={canControlPlayback ? playerState.playTrack : undefined}
+                    onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
                     onAddToQueue={addToQueue}
                     onFocus={() =>
                       suggestState.suggestions.length > 0 &&
@@ -478,7 +553,7 @@ export default function RoomPage() {
                             {canControlPlayback && (
                               <button
                                 onClick={() => {
-                                  playerState.playTrack(track);
+                                  handleAdminPlayTrack(track);
                                   removeFromQueue(track.id);
                                 }}
                                 className="opacity-0 group-hover:opacity-100 text-[10px] text-green-500 hover:text-green-400 border border-green-950/40 hover:border-green-900 bg-green-500/5 px-2.5 py-1 rounded-lg transition-all tracking-wider uppercase font-bold"

@@ -46,6 +46,8 @@ export function usePlayerState(): UsePlayerStateReturn {
         playerRef.current = null;
       }
 
+      setActiveVideoId(videoId);
+
       playerRef.current = new window.YT.Player("yt-player", {
         videoId,
         playerVars: CONFIG.YT_PLAYER_PARAMS,

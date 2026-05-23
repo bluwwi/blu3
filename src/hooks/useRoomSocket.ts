@@ -191,6 +191,7 @@ export function useRoomSocket({
     messages,
     recentTracks,
     queue,
+    setQueue,
     sendChat,
     sendPlay,
     sendPause,
