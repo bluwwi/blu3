@@ -38,6 +38,7 @@ export default function RoomPage() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const prevPlayerStateRef = useRef<string>("idle");
 
+  const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
   const isHost = room?.hostId === user?.sub;
 
   const {
@@ -45,11 +46,14 @@ export default function RoomPage() {
     members,
     messages,
     recentTracks,
+    queue,
     sendChat,
     sendPlay,
     sendPause,
     sendSeek,
     requestSync,
+    addToQueue,
+    removeFromQueue,
   } = useRoomSocket({
     roomCode: joined ? code : null,
     onPlaybackPlay: (state) => {
@@ -66,6 +70,11 @@ export default function RoomPage() {
         if (playerState.nowPlaying?.videoId === state.videoId) {
           playerState.play?.();
           progressState.seekTo(actualCurrentTime);
+          // Safety fallback seek/play for loading/buffering asynchronously
+          setTimeout(() => {
+            playerState.play?.();
+            progressState.seekTo(actualCurrentTime);
+          }, 150);
         } else {
           playerState.playTrack(
             {
@@ -113,6 +122,15 @@ export default function RoomPage() {
           playerState.pause?.();
         }
         progressState.seekTo(actualCurrentTime);
+        // Safety fallback seek/play for loading/buffering asynchronously
+        setTimeout(() => {
+          if (state.isPlaying) {
+            playerState.play?.();
+          } else {
+            playerState.pause?.();
+          }
+          progressState.seekTo(actualCurrentTime);
+        }, 150);
       } else {
         playerState.playTrack(
           {
@@ -134,6 +152,16 @@ export default function RoomPage() {
 
   const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
   const canControlPlayback = isHost || !isHostPresent;
+
+  // Controller: Automatically play next song in queue when current song ends
+  useEffect(() => {
+    if (!canControlPlayback || !joined || playerState.playerState !== "ended") return;
+    if (queue && queue.length > 0) {
+      const nextTrack = queue[0];
+      playerState.playTrack(nextTrack);
+      removeFromQueue(nextTrack.id);
+    }
+  }, [playerState.playerState, queue, canControlPlayback, joined]);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
@@ -180,11 +208,14 @@ export default function RoomPage() {
     };
   }, [joined, requestSync]);
 
+  const isPausedRef = useRef(false);
+
   // Host: sync playback to room when track changes
   useEffect(() => {
     if (!canControlPlayback || !joined) return;
     const v = playerState.nowPlaying;
     if (!v?.videoId) return;
+    isPausedRef.current = false;
     sendPlay({
       videoId: v.videoId,
       trackName: v.name,
@@ -198,15 +229,14 @@ export default function RoomPage() {
   useEffect(() => {
     if (!canControlPlayback || !joined) return;
 
-    const prev = prevPlayerStateRef.current;
-    prevPlayerStateRef.current = playerState.playerState;
-
     if (playerState.playerState === "paused") {
+      isPausedRef.current = true;
       sendPause(progressState.currentTime);
     }
     if (playerState.playerState === "playing" && playerState.nowPlaying) {
       // Only sync play if we are resuming from a paused state
-      if (prev === "paused") {
+      if (isPausedRef.current) {
+        isPausedRef.current = false;
         sendPlay({
           videoId: playerState.nowPlaying.videoId!,
           trackName: playerState.nowPlaying.name,
@@ -216,7 +246,7 @@ export default function RoomPage() {
         });
       }
     }
-  }, [playerState.playerState]);
+  }, [playerState.playerState, playerState.nowPlaying?.videoId]);
 
   const handleLeave = () => {
     leaveRoom();
@@ -310,53 +340,156 @@ export default function RoomPage() {
               </div>
             </div>
 
-            {/* Search — everyone can search, only host controls playback */}
+            {/* Tab Switcher Header */}
+            <div className="flex border-b border-zinc-900/60 bg-zinc-950/20 px-6 py-3 gap-6 flex-shrink-0">
+              <button
+                onClick={() => setLeftTab("search")}
+                className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative ${
+                  leftTab === "search" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                ⌕ Search & Discover
+                {leftTab === "search" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500 rounded-full" />
+                )}
+              </button>
+              <button
+                onClick={() => setLeftTab("queue")}
+                className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative flex items-center gap-1.5 ${
+                  leftTab === "queue" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                }`}
+              >
+                ⊞ Room Queue
+                <span className="bg-zinc-900 text-[10px] px-1.5 py-0.5 rounded-full text-zinc-400 font-mono">
+                  {queue.length}
+                </span>
+                {leftTab === "queue" && (
+                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500 rounded-full" />
+                )}
+              </button>
+            </div>
+
+            {/* Content pane */}
             <div className="flex-1 overflow-y-auto px-6 py-4 max-w-2xl w-full mx-auto">
-              {!canControlPlayback ? (
-                <div className="mb-4 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-xs text-zinc-500 tracking-wide flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                  <span>🎵 synced to host — music plays automatically</span>
+              {leftTab === "search" && (
+                <>
+                  {!canControlPlayback ? (
+                    <div className="mb-4 px-3 py-2 bg-zinc-900 border border-zinc-800/80 rounded-lg text-xs text-zinc-500 tracking-wide flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                      <span>🎵 synced to host — music plays automatically</span>
+                    </div>
+                  ) : !isHost ? (
+                    <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400 tracking-wide flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce" />
+                      <span>⚡ Collaborative Mode: Room admin is away. You can play, pause and control the music!</span>
+                    </div>
+                  ) : null}
+                  <SearchTab
+                    recentTracks={recentTracks}
+                    searchQuery={searchState.searchQuery}
+                    suggestions={suggestState.suggestions}
+                    showSuggestions={suggestState.showSuggestions}
+                    results={searchState.results}
+                    isSearching={searchState.isSearching}
+                    searchError={searchState.searchError}
+                    activeTrackId={playerState.nowPlaying?.id ?? null}
+                    loadingTrackId={playerState.loadingId}
+                    isPlaying={playerState.playerState === "playing"}
+                    onSearchInput={searchState.onSearchInput}
+                    onSearch={searchState.doSearch}
+                    onSuggestionSelect={(s) => {
+                      searchState.setSearchQuery(s);
+                      searchState.doSearch(s);
+                      suggestState.hideSuggestions();
+                    }}
+                    onTrackSelect={canControlPlayback ? playerState.playTrack : undefined}
+                    onAddToQueue={addToQueue}
+                    onFocus={() =>
+                      suggestState.suggestions.length > 0 &&
+                      suggestState.setShowSuggestions(true)
+                    }
+                    onBlur={() =>
+                      setTimeout(() => suggestState.hideSuggestions(), 200)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        searchState.doSearch(searchState.searchQuery);
+                        suggestState.hideSuggestions();
+                      }
+                      if (e.key === "Escape") suggestState.hideSuggestions();
+                    }}
+                  />
+                </>
+              )}
+
+              {leftTab === "queue" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
+                    <h3 className="text-xs text-zinc-500 tracking-widest uppercase font-semibold">
+                      Up Next in Room
+                    </h3>
+                  </div>
+
+                  {queue.length === 0 ? (
+                    <div className="text-center py-24 space-y-3">
+                      <span className="text-4xl text-zinc-800 select-none block">⊞</span>
+                      <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
+                        The queue is empty
+                      </p>
+                      <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed">
+                        Search for songs in the "Search & Discover" tab and click the "＋" button to add them!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {queue.map((track, i) => (
+                        <div
+                          key={`${track.id}-${i}`}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-950/40 border border-zinc-900/60 hover:border-zinc-800 transition-all group"
+                        >
+                          <span className="text-zinc-600 text-xs font-mono w-4 text-right">
+                            {i + 1}
+                          </span>
+                          <img
+                            src={track.image}
+                            alt=""
+                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold text-white truncate">
+                              {track.name}
+                            </p>
+                            <p className="text-zinc-500 text-[10px] truncate mt-0.5">
+                              {track.artists?.[0]?.name ?? "Unknown Artist"}
+                            </p>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {canControlPlayback && (
+                              <button
+                                onClick={() => {
+                                  playerState.playTrack(track);
+                                  removeFromQueue(track.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 text-[10px] text-green-500 hover:text-green-400 border border-green-950/40 hover:border-green-900 bg-green-500/5 px-2.5 py-1 rounded-lg transition-all tracking-wider uppercase font-bold"
+                              >
+                                Play Now
+                              </button>
+                            )}
+                            <button
+                              onClick={() => removeFromQueue(track.id)}
+                              className="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors text-xs"
+                              title="Remove from queue"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : !isHost ? (
-                <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400 tracking-wide flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce" />
-                  <span>⚡ Collaborative Mode: Room admin is away. You can play, pause and control the music!</span>
-                </div>
-              ) : null}
-              <SearchTab
-                recentTracks={recentTracks}
-                searchQuery={searchState.searchQuery}
-                suggestions={suggestState.suggestions}
-                showSuggestions={suggestState.showSuggestions}
-                results={searchState.results}
-                isSearching={searchState.isSearching}
-                searchError={searchState.searchError}
-                activeTrackId={playerState.nowPlaying?.id ?? null}
-                loadingTrackId={playerState.loadingId}
-                isPlaying={playerState.playerState === "playing"}
-                onSearchInput={searchState.onSearchInput}
-                onSearch={searchState.doSearch}
-                onSuggestionSelect={(s) => {
-                  searchState.setSearchQuery(s);
-                  searchState.doSearch(s);
-                  suggestState.hideSuggestions();
-                }}
-                onTrackSelect={canControlPlayback ? playerState.playTrack : undefined}
-                onFocus={() =>
-                  suggestState.suggestions.length > 0 &&
-                  suggestState.setShowSuggestions(true)
-                }
-                onBlur={() =>
-                  setTimeout(() => suggestState.hideSuggestions(), 200)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    searchState.doSearch(searchState.searchQuery);
-                    suggestState.hideSuggestions();
-                  }
-                  if (e.key === "Escape") suggestState.hideSuggestions();
-                }}
-              />
+              )}
             </div>
           </div>
 

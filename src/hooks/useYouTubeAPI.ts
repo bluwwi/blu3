@@ -4,8 +4,8 @@ import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
-    YT: typeof YT;
-    onYouTubeIframeAPIReady: () => void;
+    YT: any;
+    onYouTubeIframeAPIReady?: () => void;
   }
 }
 

@@ -9,6 +9,7 @@ interface Props {
   loadingTrackId: string | null;
   isPlaying: boolean;
   onTrackSelect?: (track: Track) => void;
+  onAddToQueue?: (track: Track) => void;
   isSearching: boolean;
   searchQuery: string;
   searchError: string;
@@ -20,6 +21,7 @@ export function TrackList({
   loadingTrackId,
   isPlaying,
   onTrackSelect,
+  onAddToQueue,
   isSearching,
   searchQuery,
   searchError,
@@ -87,6 +89,7 @@ export function TrackList({
           isLoading={loadingTrackId === track.id}
           isPlaying={isPlaying}
           onClick={onTrackSelect ? () => onTrackSelect(track) : undefined}
+          onAddToQueue={onAddToQueue}
         />
       ))}
     </div>

@@ -50,11 +50,11 @@ export function usePlayerState(): UsePlayerStateReturn {
         videoId,
         playerVars: CONFIG.YT_PLAYER_PARAMS,
         events: {
-          onReady: (e) => {
+          onReady: (e: any) => {
             e.target.setVolume(volume);
             onReady?.(e.target);
           },
-          onStateChange: (e) => {
+          onStateChange: (e: any) => {
             const S = window.YT.PlayerState;
             switch (e.data) {
               case S.PLAYING:

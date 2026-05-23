@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { RecentTrack } from "@/utils/types";
+import { RecentTrack, Track } from "@/utils/types";
 
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
@@ -53,6 +53,7 @@ export function useRoomSocket({
   // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
+  const [queue, setQueue] = useState<Track[]>([]);
 
   const onPlaybackPlayRef = useRef(onPlaybackPlay);
   const onPlaybackPauseRef = useRef(onPlaybackPause);
@@ -102,6 +103,7 @@ export function useRoomSocket({
           setIsHost(msg.isHost);
           setMembers(msg.members ?? []);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
+          if (msg.queue) setQueue(msg.queue);
           if (!msg.isHost && msg.playback?.videoId) {
             wsRef.current?.send(
               JSON.stringify({ type: "playback:sync_request" }),
@@ -117,6 +119,7 @@ export function useRoomSocket({
           break;
         case "playback:play":
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
+          if (msg.queue) setQueue(msg.queue);
           onPlaybackPlayRef.current?.(msg);
           break;
         case "playback:pause":
@@ -127,7 +130,11 @@ export function useRoomSocket({
           break;
         case "playback:sync":
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
+          if (msg.queue) setQueue(msg.queue);
           onPlaybackSyncRef.current?.(msg);
+          break;
+        case "room:queue_update":
+          if (msg.queue) setQueue(msg.queue);
           break;
       }
     };
@@ -169,16 +176,27 @@ export function useRoomSocket({
     wsRef.current?.send(JSON.stringify({ type: "playback:sync_request" }));
   }, []);
 
+  const addToQueue = useCallback((track: Track) => {
+    wsRef.current?.send(JSON.stringify({ type: "queue:add", track }));
+  }, []);
+
+  const removeFromQueue = useCallback((trackId: string) => {
+    wsRef.current?.send(JSON.stringify({ type: "queue:remove", trackId }));
+  }, []);
+
   return {
     connected,
     isHost,
     members,
     messages,
     recentTracks,
+    queue,
     sendChat,
     sendPlay,
     sendPause,
     sendSeek,
     requestSync,
+    addToQueue,
+    removeFromQueue,
   };
 }
