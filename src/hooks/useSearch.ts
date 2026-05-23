@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { CONFIG } from "../constants";
+import { useCallback, useRef, useState } from "react";
 import type { Track, SearchResponse } from "../utils/types";
+import { CONFIG } from "@/components/Player/constants";
 
 export function useSearch() {
   const [searchQuery, setSearchQuery] = useState("");
