@@ -261,7 +261,7 @@ export default function RoomPage() {
             duration={progressState.duration}
             volume={playerState.volume}
             isMuted={playerState.isMuted}
-            onPlayPause={playerState.togglePlayPause}
+            onPlayPause={canControlPlayback ? playerState.togglePlayPause : undefined}
             onMute={playerState.toggleMute}
             onVolume={playerState.handleVolume}
             onSeek={canControlPlayback ? handleSeekAction : undefined}

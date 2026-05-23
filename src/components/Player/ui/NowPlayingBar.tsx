@@ -14,7 +14,7 @@ interface Props {
   duration: number;
   volume: number;
   isMuted: boolean;
-  onPlayPause: () => void;
+  onPlayPause?: () => void;
   onMute: () => void;
   onVolume: (val: number) => void;
   onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
