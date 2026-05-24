@@ -14,17 +14,20 @@ import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { NowPlayingBar } from "@/components/Player/ui/NowPlayingBar";
 import { Track } from "@/utils/types";
 import { SearchTab } from "@/components/Player/ui/SearchTab";
+import { CDPlayer } from "@/components/Player/ui/Cdplayer";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
 
-function asTrackFromPlayback(playback: {
-  videoId: string | null;
-  trackName: string;
-  artistName: string;
-  image: string;
-  currentTime?: number;
-} | null): Track | null {
+function asTrackFromPlayback(
+  playback: {
+    videoId: string | null;
+    trackName: string;
+    artistName: string;
+    image: string;
+    currentTime?: number;
+  } | null,
+): Track | null {
   if (!playback?.videoId) return null;
   return {
     id: `room-${playback.videoId}`,
@@ -182,19 +185,21 @@ export default function RoomPage() {
   });
 
   const isHost = room?.hostId === user?.sub || socketIsHost;
-  const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
+  const isHostPresent = room?.hostId
+    ? members.some((m) => m.userId === room.hostId)
+    : false;
   const canControlPlayback = isHost || !isHostPresent;
   const queueAdvanceLockRef = useRef<string | null>(null);
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
-  const footerTrack = playerState.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
+  const footerTrack =
+    playerState.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
   const footerPlayerState =
     playerState.playerState === "idle" && playback?.videoId
       ? playback.isPlaying
         ? "loading"
         : "paused"
       : playerState.playerState;
-
 
   const clearScheduledTimeout = useCallback(
     (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
@@ -256,7 +261,8 @@ export default function RoomPage() {
         image: state.image ?? "",
       };
 
-      const initialLateBySec = Math.max(syncedTime() - state.targetTime, 0) / 1000;
+      const initialLateBySec =
+        Math.max(syncedTime() - state.targetTime, 0) / 1000;
       const initialSeekTo = state.seekTo + initialLateBySec;
 
       if (playerState.nowPlaying?.videoId === state.videoId) {
@@ -295,10 +301,7 @@ export default function RoomPage() {
   );
 
   const scheduleRoomPause = useCallback(
-    (
-      state: { targetTime: number },
-      syncedTime: () => number,
-    ) => {
+    (state: { targetTime: number }, syncedTime: () => number) => {
       clearScheduledTimeout(scheduledPauseTimeoutRef);
       scheduleSyncedAction(
         scheduledPauseTimeoutRef,
@@ -470,7 +473,8 @@ export default function RoomPage() {
   }, [maybeAdvanceQueue, playerState.playerState]);
 
   useEffect(() => {
-    const activeKey = playerState.nowPlaying?.videoId || playerState.nowPlaying?.id || null;
+    const activeKey =
+      playerState.nowPlaying?.videoId || playerState.nowPlaying?.id || null;
     if (!activeKey) {
       queueAdvanceLockRef.current = null;
       return;
@@ -485,7 +489,10 @@ export default function RoomPage() {
       return;
     }
 
-    if (queueAdvanceLockRef.current && queueAdvanceLockRef.current !== activeKey) {
+    if (
+      queueAdvanceLockRef.current &&
+      queueAdvanceLockRef.current !== activeKey
+    ) {
       queueAdvanceLockRef.current = null;
     }
   }, [
@@ -521,9 +528,12 @@ export default function RoomPage() {
     );
     const timeoutId = window.setTimeout(() => {
       const player = playerState.playerRef.current;
-      const currentTime = player?.getCurrentTime?.() ?? progressState.currentTime;
-      const duration = player?.getDuration?.() ?? activeTrack.duration_ms / 1000;
-      const isNearEnd = duration > 0 && currentTime >= Math.max(duration - 2, 0);
+      const currentTime =
+        player?.getCurrentTime?.() ?? progressState.currentTime;
+      const duration =
+        player?.getDuration?.() ?? activeTrack.duration_ms / 1000;
+      const isNearEnd =
+        duration > 0 && currentTime >= Math.max(duration - 2, 0);
 
       if (playerState.playerState === "ended" || isNearEnd) {
         maybeAdvanceQueue();
@@ -543,25 +553,30 @@ export default function RoomPage() {
   ]);
 
   // Optimistic 0ms local queue/playback synchronization for host
-  const handleAdminPlayTrack = useCallback((track: Track) => {
-    if (!canControlPlayback) return;
+  const handleAdminPlayTrack = useCallback(
+    (track: Track) => {
+      if (!canControlPlayback) return;
 
-    // Add to the top of the queue locally immediately for 0ms visual difference
-    setQueue((prev) => {
-      const filtered = prev.filter((t) => t.id !== track.id && t.videoId !== track.videoId);
-      return [track, ...filtered];
-    });
+      // Add to the top of the queue locally immediately for 0ms visual difference
+      setQueue((prev) => {
+        const filtered = prev.filter(
+          (t) => t.id !== track.id && t.videoId !== track.videoId,
+        );
+        return [track, ...filtered];
+      });
 
-    sendPlay({
-      id: track.id,
-      videoId: track.videoId,
-      trackName: track.name,
-      artistName: track.artists?.[0]?.name ?? "",
-      image: track.image ?? "",
-      currentTime: 0,
-      duration_ms: track.duration_ms,
-    });
-  }, [canControlPlayback, sendPlay, setQueue]);
+      sendPlay({
+        id: track.id,
+        videoId: track.videoId,
+        trackName: track.name,
+        artistName: track.artists?.[0]?.name ?? "",
+        image: track.image ?? "",
+        currentTime: 0,
+        duration_ms: track.duration_ms,
+      });
+    },
+    [canControlPlayback, sendPlay, setQueue],
+  );
 
   // Web Audio Context keeper to prevent browser tab throttling/suspension in background
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -571,8 +586,9 @@ export default function RoomPage() {
 
     const startSilentAudio = () => {
       if (audioContextRef.current) return;
-      
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+
+      const AudioContextClass =
+        window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
 
       try {
@@ -596,13 +612,12 @@ export default function RoomPage() {
 
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
-        
+
         source.start(0);
 
         if (ctx.state === "suspended") {
           ctx.resume();
         }
-
       } catch (err) {
         console.error("Failed to start background tab keeper:", err);
       }
@@ -626,7 +641,8 @@ export default function RoomPage() {
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
-    const seekToTime = ((e.clientX - rect.left) / rect.width) * progressState.duration;
+    const seekToTime =
+      ((e.clientX - rect.left) / rect.width) * progressState.duration;
     sendSeek(seekToTime);
   };
 
@@ -720,7 +736,8 @@ export default function RoomPage() {
   }, [canControlPlayback, joined, requestSync]);
 
   useEffect(() => {
-    if (!joined || !canControlPlayback || !playerState.nowPlaying?.videoId) return;
+    if (!joined || !canControlPlayback || !playerState.nowPlaying?.videoId)
+      return;
 
     const playbackState =
       playerState.playerState === "playing"
@@ -734,7 +751,8 @@ export default function RoomPage() {
     if (!playbackState) return;
 
     const liveCurrentTime =
-      playerState.playerRef.current?.getCurrentTime?.() ?? progressState.currentTime;
+      playerState.playerRef.current?.getCurrentTime?.() ??
+      progressState.currentTime;
     sendPlaybackState(playbackState, liveCurrentTime);
   }, [
     canControlPlayback,
@@ -746,13 +764,18 @@ export default function RoomPage() {
   ]);
 
   useEffect(() => {
-    if (!joined || !canControlPlayback || playerState.playerState !== "playing") {
+    if (
+      !joined ||
+      !canControlPlayback ||
+      playerState.playerState !== "playing"
+    ) {
       return;
     }
 
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
-        playerState.playerRef.current?.getCurrentTime?.() ?? progressState.currentTime;
+        playerState.playerRef.current?.getCurrentTime?.() ??
+        progressState.currentTime;
       sendPlaybackState("playing", liveCurrentTime);
     }, 2000);
 
@@ -864,7 +887,9 @@ export default function RoomPage() {
               <button
                 onClick={() => setLeftTab("search")}
                 className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative ${
-                  leftTab === "search" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                  leftTab === "search"
+                    ? "text-white"
+                    : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 ⌕ Search & Discover
@@ -875,7 +900,9 @@ export default function RoomPage() {
               <button
                 onClick={() => setLeftTab("queue")}
                 className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative flex items-center gap-1.5 ${
-                  leftTab === "queue" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                  leftTab === "queue"
+                    ? "text-white"
+                    : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
                 ≡ Queue & History
@@ -890,6 +917,25 @@ export default function RoomPage() {
 
             {/* Content pane */}
             <div className="flex-1 overflow-y-auto px-6 py-4 max-w-2xl w-full mx-auto">
+              <CDPlayer
+                track={footerTrack}
+                playerState={footerPlayerState}
+                progress={progressState.progress}
+                currentTime={progressState.currentTime}
+                duration={progressState.duration}
+                shuffleEnabled={playbackMode.shuffle}
+                repeatMode={playbackMode.repeatMode}
+                onPlayPause={
+                  canControlPlayback ? handlePlayPauseAction : undefined
+                }
+                onToggleShuffle={
+                  canControlPlayback ? handleToggleShuffle : undefined
+                }
+                onCycleRepeat={
+                  canControlPlayback ? handleCycleRepeat : undefined
+                }
+                onSeek={canControlPlayback ? handleSeekAction : undefined}
+              />
               {leftTab === "search" && (
                 <>
                   {!canControlPlayback ? (
@@ -900,7 +946,10 @@ export default function RoomPage() {
                   ) : !isHost ? (
                     <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400 tracking-wide flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce" />
-                      <span>⚡ Collaborative Mode: Room admin is away. You can play, pause and control the music!</span>
+                      <span>
+                        ⚡ Collaborative Mode: Room admin is away. You can play,
+                        pause and control the music!
+                      </span>
                     </div>
                   ) : null}
                   <SearchTab
@@ -920,7 +969,9 @@ export default function RoomPage() {
                       searchState.doSearch(s);
                       suggestState.hideSuggestions();
                     }}
-                    onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
+                    onTrackSelect={
+                      canControlPlayback ? handleAdminPlayTrack : undefined
+                    }
                     onAddToQueue={addToQueue}
                     onFocus={() =>
                       suggestState.suggestions.length > 0 &&
@@ -950,12 +1001,15 @@ export default function RoomPage() {
 
                   {queue.length === 0 ? (
                     <div className="text-center py-12 space-y-3">
-                      <span className="text-4xl text-zinc-800 select-none block">⊞</span>
+                      <span className="text-4xl text-zinc-800 select-none block">
+                        ⊞
+                      </span>
                       <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
                         The queue is empty
                       </p>
                       <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed">
-                        Search for songs in the "Search & Discover" tab and click the "＋" button to add them!
+                        Search for songs in the "Search & Discover" tab and
+                        click the "＋" button to add them!
                       </p>
                     </div>
                   ) : (
@@ -981,7 +1035,7 @@ export default function RoomPage() {
                               {track.artists?.[0]?.name ?? "Unknown Artist"}
                             </p>
                           </div>
-                          
+
                           <div className="flex items-center gap-2">
                             {canControlPlayback && (
                               <button
@@ -1018,7 +1072,9 @@ export default function RoomPage() {
 
                   {recentTracks.length === 0 ? (
                     <div className="text-center py-12 space-y-3">
-                      <span className="text-4xl text-zinc-800 select-none block">🕘</span>
+                      <span className="text-4xl text-zinc-800 select-none block">
+                        🕘
+                      </span>
                       <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
                         No room history yet
                       </p>
@@ -1071,7 +1127,9 @@ export default function RoomPage() {
                             >
                               <p
                                 className={`truncate text-xs font-bold ${
-                                  isTrackActive ? "text-green-400" : "text-white"
+                                  isTrackActive
+                                    ? "text-green-400"
+                                    : "text-white"
                                 }`}
                               >
                                 {track.trackName}
@@ -1083,7 +1141,9 @@ export default function RoomPage() {
                             <div className="flex items-center gap-2">
                               {canControlPlayback && (
                                 <button
-                                  onClick={() => handleAdminPlayTrack(historyTrack)}
+                                  onClick={() =>
+                                    handleAdminPlayTrack(historyTrack)
+                                  }
                                   className="rounded-lg border border-green-950/40 bg-green-500/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-green-500 transition-all hover:border-green-900 hover:text-green-400"
                                 >
                                   Play

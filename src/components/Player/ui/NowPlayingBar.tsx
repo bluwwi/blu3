@@ -45,104 +45,253 @@ export function NowPlayingBar({
   onSeek,
 }: Props) {
   const hasTrack = Boolean(track || activeVideoId);
-  const isLive = ["loading", "playing", "paused", "ended"].includes(playerState);
-  const title = track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
+  const isPlaying = playerState === "playing";
+  const isLoading = playerState === "loading";
+  const title =
+    track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
   const artist = track?.artists.map((a) => a.name).join(", ") ?? "";
-  const album = track?.album?.name;
-  const statusLabel = !hasTrack
-    ? "idle"
-    : isLive
-      ? playerState
-      : "last played";
-  const statusTone =
-    playerState === "playing"
-      ? "bg-green-400"
-      : playerState === "loading"
-        ? "bg-yellow-400"
-        : hasTrack
-          ? "bg-zinc-400"
-          : "bg-zinc-700";
-  const subtitle = hasTrack
-    ? `${statusLabel} · room sync active`
-    : "search a song to start the room";
+  const albumArt = track?.image;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-white/10 bg-[#090909]/95 px-4 py-3 backdrop-blur-xl">
-      <div className="mx-auto max-w-6xl space-y-3">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          {track?.image ? (
-            <img
-              src={track.image}
-              alt=""
-              className="h-14 w-14 flex-shrink-0 rounded-xl object-cover"
-              style={{ boxShadow: "0 4px 20px rgba(29,185,84,0.2)" }}
-            />
-          ) : (
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-zinc-900">
-              <span className="text-lg text-zinc-600">♪</span>
-            </div>
-          )}
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        background: "#0a0a0a",
+        borderTop: "1px solid rgba(255,128,200,0.08)",
+        fontFamily: "'DM Mono', monospace",
+      }}
+    >
+      {/* pink shimmer line when playing */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "1px",
+          background: isPlaying
+            ? "linear-gradient(90deg,transparent,rgba(255,128,200,0.55),transparent)"
+            : "transparent",
+          transition: "background 0.8s ease",
+        }}
+      />
 
-          <div className="min-w-0 flex-1">
-            <p
-              className="truncate text-sm font-bold text-white sm:text-base"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              {title}
-            </p>
-            {artist && (
-              <p className="mt-0.5 truncate text-xs text-zinc-400 sm:text-sm">
-                {artist}
-              </p>
-            )}
-            {album && (
-              <p className="truncate text-[11px] text-zinc-600">{album}</p>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between gap-3 md:justify-end">
-            <PlayerControls
-              playerState={playerState}
-              onTogglePlayPause={onPlayPause}
-              shuffleEnabled={shuffleEnabled}
-              repeatMode={repeatMode}
-              onToggleShuffle={onToggleShuffle}
-              onCycleRepeat={onCycleRepeat}
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "10px 20px 12px",
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+        }}
+      >
+        {/* ── Mini spinning CD ── */}
+        <div
+          style={{
+            position: "relative",
+            width: "44px",
+            height: "44px",
+            flexShrink: 0,
+          }}
+        >
+          {/* glow */}
+          <div
+            style={{
+              position: "absolute",
+              inset: "-8px",
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle,rgba(255,128,200,0.25) 0%,transparent 70%)",
+              opacity: isPlaying ? 1 : 0,
+              transition: "opacity 0.6s ease",
+              pointerEvents: "none",
+            }}
+          />
+          {/* disc */}
+          <div
+            style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              overflow: "hidden",
+              position: "relative",
+              animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
+              flexShrink: 0,
+            }}
+          >
+            {/* conic base */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background:
+                  "conic-gradient(#1a1a1a 0deg,#2a2020 40deg,#3a2a2a 80deg,#1a1a2a 120deg,#2a1a1a 160deg,#1a2a1a 200deg,#2a2a1a 240deg,#1a1a1a 280deg,#2a1a2a 320deg,#1a1a1a 360deg)",
+              }}
             />
-            <VolumeControl
-              volume={volume}
-              isMuted={isMuted}
-              onVolumeChange={onVolume}
-              onToggleMute={onMute}
-              className="hidden md:flex"
+            {/* album art */}
+            {albumArt && (
+              <img
+                src={albumArt}
+                alt=""
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "50%",
+                  opacity: 0.88,
+                }}
+              />
+            )}
+            {/* sheen */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "50%",
+                background:
+                  "conic-gradient(transparent 0deg,rgba(255,255,255,0.07) 45deg,transparent 90deg,rgba(255,255,255,0.04) 135deg,transparent 180deg,rgba(255,255,255,0.06) 225deg,transparent 270deg,rgba(255,255,255,0.03) 315deg,transparent 360deg)",
+                pointerEvents: "none",
+              }}
+            />
+            {/* center hole */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%,-50%)",
+                width: "8px",
+                height: "8px",
+                borderRadius: "50%",
+                background: "#0a0a0a",
+                border: "1px solid rgba(255,255,255,0.1)",
+                zIndex: 2,
+              }}
             />
           </div>
         </div>
 
-        <ProgressBar
-          progress={progress}
-          currentTime={currentTime}
-          duration={duration}
-          onSeek={onSeek}
+        {/* ── Track info ── */}
+        <div style={{ minWidth: 0, flex: "0 0 160px" }}>
+          <p
+            style={{
+              fontSize: "12px",
+              fontWeight: 500,
+              color: "#e0e0e0",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              marginBottom: "2px",
+            }}
+          >
+            {title}
+          </p>
+          {artist && (
+            <p
+              style={{
+                fontSize: "10px",
+                color: "#ff80c8",
+                letterSpacing: "0.1em",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {artist}
+            </p>
+          )}
+        </div>
+
+        {/* ── Center: controls + progress ── */}
+        <div
+          style={{
+            flex: 1,
+            minWidth: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <PlayerControls
+            playerState={playerState}
+            onTogglePlayPause={onPlayPause}
+            shuffleEnabled={shuffleEnabled}
+            repeatMode={repeatMode}
+            onToggleShuffle={onToggleShuffle}
+            onCycleRepeat={onCycleRepeat}
+          />
+          <ProgressBar
+            progress={progress}
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={onSeek}
+          />
+        </div>
+
+        {/* ── Volume ── */}
+        <VolumeControl
+          volume={volume}
+          isMuted={isMuted}
+          onVolumeChange={onVolume}
+          onToggleMute={onMute}
+          className="hidden md:flex"
         />
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <div
-              className={`h-2 w-2 rounded-full ${statusTone} ${
-                playerState === "playing" || playerState === "loading"
-                  ? "animate-pulse"
-                  : ""
-              }`}
-            />
-            <span className="uppercase tracking-[0.2em] text-zinc-500">
-              {subtitle}
-            </span>
-          </div>
-          <span className="text-zinc-600">
-            shuffle {shuffleEnabled ? "on" : "off"} · repeat {repeatMode}
+
+        {/* ── Status dot ── */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: isPlaying
+                ? "#ff80c8"
+                : isLoading
+                  ? "#facc15"
+                  : hasTrack
+                    ? "#444"
+                    : "#2a2a2a",
+              animation:
+                isPlaying || isLoading
+                  ? "statusPulse 1.4s ease-in-out infinite"
+                  : "none",
+            }}
+          />
+          <span
+            style={{
+              fontSize: "9px",
+              color: "#3a3a3a",
+              letterSpacing: "0.15em",
+              textTransform: "uppercase",
+            }}
+          >
+            {isPlaying
+              ? "playing"
+              : isLoading
+                ? "buffering"
+                : hasTrack
+                  ? "paused"
+                  : "idle"}
           </span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes cdSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+      `}</style>
     </div>
   );
 }
