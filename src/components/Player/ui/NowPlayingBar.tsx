@@ -13,8 +13,6 @@ import {
   Repeat,
   Repeat1,
   Shuffle,
-  SkipBack,
-  SkipForward,
   Volume2,
   VolumeX,
 } from "lucide-react";
@@ -89,12 +87,35 @@ export function NowPlayingBar({
 
   return (
     <div className="fixed bottom-3 left-3 right-3 z-50">
-      {/* outer glass pill — same as original */}
-      <div className="mx-auto max-w-4xl  border border-white/20 bg-white/10 px-4 pt-2.5 text-white shadow-2xl backdrop-blur-xl">
-        {/* single row */}
-        <div className="flex items-center gap-3">
-          {/* ── LEFT: skip-back · play/pause · skip-forward ── */}
-          <div className="flex items-center gap-1">
+      <div className="mx-auto max-w-3xl overflow-hidden rounded-[24px] border border-white/20 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
+        {/* main row */}
+        <div className="flex items-center gap-3 px-4 pt-2.5 pb-2.5">
+          {/* ── LEFT: inset pill — art + title/artist + time ── */}
+          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-3 py-1.5 backdrop-blur-sm min-w-0">
+            <img
+              src={albumArt}
+              alt={title}
+              className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-lg"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold leading-tight text-white">
+                {title}
+              </p>
+              {subtitle && (
+                <p className="truncate text-[11px] leading-tight text-white/50 mt-0.5">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+            <span className="shrink-0 text-[12px] tabular-nums text-white/55">
+              {hasTrack
+                ? `${fmtSec(currentTime)} / ${fmtSec(duration)}`
+                : "0:00"}
+            </span>
+          </div>
+
+          {/* ── RIGHT: play/pause + secondary controls ── */}
+          <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
               onClick={onPlayPause}
@@ -110,49 +131,7 @@ export function NowPlayingBar({
                 <Play size={18} className="fill-current translate-x-[1px]" />
               )}
             </button>
-          </div>
 
-          {/* ── CENTRE: darker inset pill with art + title + time + dot + more ── */}
-          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-3 py-1.5 backdrop-blur-sm min-w-0">
-            {/* album art */}
-            <img
-              src={albumArt}
-              alt={title}
-              className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-lg"
-            />
-
-            {/* title + artist */}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold leading-tight text-white">
-                {title}
-              </p>
-              {subtitle && (
-                <p className="truncate text-[11px] leading-tight text-white/50 mt-0.5">
-                  {subtitle}
-                </p>
-              )}
-            </div>
-
-            {/* time */}
-            <span className="shrink-0 text-[12px] tabular-nums text-white/55">
-              {hasTrack ? fmtSec(currentTime) : "0:00"}
-            </span>
-
-            {/* dot indicator */}
-            <div className="h-2 w-2 shrink-0 rounded-full bg-white/30" />
-
-            {/* more */}
-            <button
-              type="button"
-              className="shrink-0 text-white/50 hover:text-white transition-colors"
-              aria-label="More options"
-            >
-              <MoreHorizontal size={15} />
-            </button>
-          </div>
-
-          {/* ── RIGHT: chat · queue · shuffle · repeat · mute · volume ── */}
-          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={onChatClick}
@@ -211,12 +190,12 @@ export function NowPlayingBar({
           </div>
         </div>
 
+        {/* progress bar — flush to bottom, no padding */}
         <ProgressBar
           progress={progress}
           currentTime={currentTime}
           duration={duration}
           onSeek={onSeek}
-          className="mt-2"
         />
       </div>
     </div>

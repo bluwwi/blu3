@@ -238,7 +238,7 @@ export function SearchOverlay({
                     </div>
                   )}
 
-                {results.map((track) => {
+                {results.map((track, index) => {
                   const isActive =
                     activeTrackId === track.id ||
                     activeTrackId === track.videoId;
@@ -253,7 +253,7 @@ export function SearchOverlay({
 
                   return (
                     <div
-                      key={track.id}
+                      key={index}
                       className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
                         isActive ? "bg-white/12" : "hover:bg-white/8"
                       }`}

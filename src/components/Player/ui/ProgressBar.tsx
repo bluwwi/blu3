@@ -28,16 +28,18 @@ export function ProgressBar({
         aria-valuenow={Math.round(safeProgress)}
         aria-valuemin={0}
         aria-valuemax={safeDuration > 0 ? 100 : 0}
-        className={`group relative h-1 w-full rounded-full bg-white/20 transition-colors ${
-          canSeek ? "cursor-pointer" : "cursor-default"
+        className={`group relative h-1 w-full bg-white/15 ${
+          canSeek
+            ? "cursor-pointer hover:h-[5px] transition-all duration-150"
+            : "cursor-default"
         }`}
       >
         <div
-          className="relative h-full rounded-full bg-white transition-[width] duration-200"
+          className="relative h-full bg-white/80 transition-[width] duration-200"
           style={{ width: `${safeProgress}%` }}
         >
           {canSeek && (
-            <div className="absolute right-[-5px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white opacity-100 shadow-[0_0_12px_rgba(255,255,255,0.6)]" />
+            <div className="absolute right-[-5px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 scale-0 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.6)] transition-transform group-hover:scale-100" />
           )}
         </div>
       </div>

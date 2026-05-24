@@ -751,7 +751,7 @@ export default function RoomPage() {
       <YouTubeIframe />
       <div className="h-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
         <div className="h-screen overflow-hidden bg-slate-950/55">
-          <div className="mx-auto flex h-screen max-w-4xl flex-col px-4 pb-28 pt-4 md:px-6 lg:px-8">
+          <div className="mx-auto flex h-screen max-w-3xl flex-col  pb-26 ">
             <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
               <RoomTopBar
                 roomName={room?.name ?? "Room"}
