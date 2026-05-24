@@ -36,14 +36,13 @@ export default function RoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const prevPlayerStateRef = useRef<string>("idle");
 
   const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
-  const isHost = room?.hostId === user?.sub;
-
   const {
     connected,
+    isHost: socketIsHost,
     members,
+    playback,
     messages,
     recentTracks,
     queue,
@@ -151,28 +150,142 @@ export default function RoomPage() {
     },
   });
 
+  const isHost = room?.hostId === user?.sub || socketIsHost;
   const isHostPresent = room?.hostId ? members.some((m) => m.userId === room.hostId) : false;
   const canControlPlayback = isHost || !isHostPresent;
+  const queueAdvanceLockRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!joined || !playback?.videoId || canControlPlayback || playerState.nowPlaying) {
+      return;
+    }
+
+    let actualCurrentTime = playback.currentTime ?? 0;
+    if (playback.isPlaying && playback.updatedAt) {
+      const elapsed = (Date.now() - playback.updatedAt) / 1000;
+      if (elapsed > 0 && elapsed < 3600) {
+        actualCurrentTime += elapsed;
+      }
+    }
+
+    playerState.playTrack(
+      {
+        id: `room-${playback.videoId}`,
+        videoId: playback.videoId,
+        name: playback.trackName,
+        duration_ms: 0,
+        explicit: false,
+        artists: [{ name: playback.artistName }],
+        album: { name: "" },
+        image: playback.image,
+      },
+      actualCurrentTime,
+      playback.isPlaying,
+    );
+  }, [
+    canControlPlayback,
+    joined,
+    playback,
+    playerState.nowPlaying,
+    playerState.playTrack,
+  ]);
+
+  const maybeAdvanceQueue = useCallback(() => {
+    if (!canControlPlayback || !joined) return;
+
+    const activeTrack = playerState.nowPlaying;
+    const currentQueueTrack = queue[0];
+    if (!activeTrack || !currentQueueTrack) return;
+
+    const isCurrentQueueTrack =
+      currentQueueTrack.videoId === activeTrack.videoId ||
+      currentQueueTrack.id === activeTrack.id;
+    if (!isCurrentQueueTrack) return;
+
+    const activeKey = activeTrack.videoId || activeTrack.id;
+    if (!activeKey || queueAdvanceLockRef.current === activeKey) return;
+
+    queueAdvanceLockRef.current = activeKey;
+
+    if (queue.length > 1) {
+      playerState.playTrack(queue[1]);
+    }
+
+    removeFromQueue(currentQueueTrack.id);
+  }, [
+    canControlPlayback,
+    joined,
+    playerState.nowPlaying,
+    playerState.playTrack,
+    queue,
+    removeFromQueue,
+  ]);
 
   // Controller: Automatically play next song in queue when current song ends
   useEffect(() => {
-    if (!canControlPlayback || !joined || playerState.playerState !== "ended") return;
-    const activeTrack = playerState.nowPlaying;
-    if (!activeTrack) return;
-
-    if (queue && queue.length > 0) {
-      // If the finished track is at index 0 of the queue
-      if (queue[0].videoId === activeTrack.videoId || queue[0].id === activeTrack.id) {
-        if (queue.length > 1) {
-          const nextTrack = queue[1];
-          playerState.playTrack(nextTrack);
-          removeFromQueue(queue[0].id);
-        } else {
-          removeFromQueue(queue[0].id);
-        }
-      }
+    if (playerState.playerState === "ended") {
+      maybeAdvanceQueue();
     }
-  }, [playerState.playerState, queue, canControlPlayback, joined, playerState.nowPlaying]);
+  }, [maybeAdvanceQueue, playerState.playerState]);
+
+  useEffect(() => {
+    const activeKey = playerState.nowPlaying?.videoId || playerState.nowPlaying?.id || null;
+    if (!activeKey) {
+      queueAdvanceLockRef.current = null;
+      return;
+    }
+
+    if (queueAdvanceLockRef.current && queueAdvanceLockRef.current !== activeKey) {
+      queueAdvanceLockRef.current = null;
+    }
+  }, [playerState.nowPlaying?.id, playerState.nowPlaying?.videoId]);
+
+  useEffect(() => {
+    if (
+      !canControlPlayback ||
+      !joined ||
+      playerState.playerState !== "playing" ||
+      !playerState.nowPlaying?.duration_ms
+    ) {
+      return;
+    }
+
+    const activeTrack = playerState.nowPlaying;
+    const currentQueueTrack = queue[0];
+    if (
+      !currentQueueTrack ||
+      (currentQueueTrack.videoId !== activeTrack.videoId &&
+        currentQueueTrack.id !== activeTrack.id)
+    ) {
+      return;
+    }
+
+    const remainingMs = Math.max(
+      activeTrack.duration_ms - progressState.currentTime * 1000,
+      0,
+    );
+    const timeoutId = window.setTimeout(() => {
+      const player = playerState.playerRef.current;
+      const currentTime = player?.getCurrentTime?.() ?? progressState.currentTime;
+      const duration = player?.getDuration?.() ?? activeTrack.duration_ms / 1000;
+      const isNearEnd = duration > 0 && currentTime >= Math.max(duration - 2, 0);
+
+      if (playerState.playerState === "ended" || isNearEnd) {
+        maybeAdvanceQueue();
+      }
+    }, remainingMs + 2500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [
+    canControlPlayback,
+    joined,
+    maybeAdvanceQueue,
+    playerState.nowPlaying,
+    playerState.playerRef,
+    playerState.playerState,
+    progressState.currentTime,
+    queue,
+  ]);
 
   // Optimistic 0ms local queue/playback synchronization for host
   const handleAdminPlayTrack = useCallback((track: Track) => {
@@ -302,11 +415,13 @@ export default function RoomPage() {
     if (!v?.videoId) return;
     isPausedRef.current = false;
     sendPlay({
+      id: v.id,
       videoId: v.videoId,
       trackName: v.name,
       artistName: v.artists?.[0]?.name ?? "",
       image: v.image ?? "",
       currentTime: 0,
+      duration_ms: v.duration_ms,
     });
   }, [playerState.nowPlaying?.videoId]);
 
@@ -323,11 +438,13 @@ export default function RoomPage() {
       if (isPausedRef.current) {
         isPausedRef.current = false;
         sendPlay({
+          id: playerState.nowPlaying.id,
           videoId: playerState.nowPlaying.videoId!,
           trackName: playerState.nowPlaying.name,
           artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
           image: playerState.nowPlaying.image ?? "",
           currentTime: progressState.currentTime,
+          duration_ms: playerState.nowPlaying.duration_ms,
         });
       }
     }

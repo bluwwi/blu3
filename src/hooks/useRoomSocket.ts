@@ -50,6 +50,7 @@ export function useRoomSocket({
   const [connected, setConnected] = useState(false);
   const [isHost, setIsHost] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
+  const [playback, setPlayback] = useState<PlaybackState | null>(null);
   // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
@@ -102,12 +103,15 @@ export function useRoomSocket({
         case "room:joined":
           setIsHost(msg.isHost);
           setMembers(msg.members ?? []);
+          setPlayback(msg.playback ?? null);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           if (!msg.isHost && msg.playback?.videoId) {
-            wsRef.current?.send(
-              JSON.stringify({ type: "playback:sync_request" }),
-            );
+            window.setTimeout(() => {
+              wsRef.current?.send(
+                JSON.stringify({ type: "playback:sync_request" }),
+              );
+            }, 0);
           }
           break;
         case "room:member_joined":
@@ -118,17 +122,54 @@ export function useRoomSocket({
           setMessages((prev) => [...prev.slice(-199), msg.message]);
           break;
         case "playback:play":
+          setPlayback({
+            videoId: msg.videoId ?? null,
+            trackName: msg.trackName ?? "",
+            artistName: msg.artistName ?? "",
+            image: msg.image ?? "",
+            isPlaying: true,
+            currentTime: msg.currentTime ?? 0,
+            updatedAt: msg.updatedAt ?? Date.now(),
+          });
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           onPlaybackPlayRef.current?.(msg);
           break;
         case "playback:pause":
+          setPlayback((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  isPlaying: false,
+                  currentTime: msg.currentTime ?? prev.currentTime,
+                  updatedAt: Date.now(),
+                }
+              : prev,
+          );
           onPlaybackPauseRef.current?.(msg.currentTime);
           break;
         case "playback:seek":
+          setPlayback((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  currentTime: msg.currentTime ?? prev.currentTime,
+                  updatedAt: Date.now(),
+                }
+              : prev,
+          );
           onPlaybackSeekRef.current?.(msg.currentTime);
           break;
         case "playback:sync":
+          setPlayback({
+            videoId: msg.videoId ?? null,
+            trackName: msg.trackName ?? "",
+            artistName: msg.artistName ?? "",
+            image: msg.image ?? "",
+            isPlaying: Boolean(msg.isPlaying),
+            currentTime: msg.currentTime ?? 0,
+            updatedAt: msg.updatedAt ?? Date.now(),
+          });
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           onPlaybackSyncRef.current?.(msg);
@@ -151,11 +192,13 @@ export function useRoomSocket({
 
   const sendPlay = useCallback(
     (track: {
+      id?: string;
       videoId: string;
       trackName: string;
       artistName: string;
       image: string;
       currentTime?: number;
+      duration_ms?: number;
     }) => {
       wsRef.current?.send(JSON.stringify({ type: "playback:play", ...track }));
     },
@@ -188,6 +231,7 @@ export function useRoomSocket({
     connected,
     isHost,
     members,
+    playback,
     messages,
     recentTracks,
     queue,

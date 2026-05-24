@@ -101,6 +101,7 @@ export function usePlayerState(): UsePlayerStateReturn {
       setLoadingId(track.id);
       setPlayerState("loading");
       setNowPlaying(track);
+      setActiveVideoId(track.videoId);
 
       if (!track.videoId) {
         setPlayerState("error");
