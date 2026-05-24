@@ -6,6 +6,7 @@
  */
 
 import { Track } from "@/utils/types";
+import { RoomTheme, T } from "@/utils/roomHelpers";
 
 type RepeatMode = "off" | "all" | "one";
 
@@ -15,6 +16,7 @@ interface Props {
   isHost: boolean;
   connected: boolean;
   track: Track | null;
+  roomTheme: RoomTheme;
   activeVideoId: string | null;
   playerState: "idle" | "loading" | "playing" | "paused" | "ended" | "error";
   onCopyInvite: () => void;
@@ -27,6 +29,7 @@ export function RoomTopBar({
   isHost,
   connected,
   track,
+  roomTheme,
   activeVideoId,
   playerState,
   onCopyInvite,
@@ -34,13 +37,16 @@ export function RoomTopBar({
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
+  const themeLabel =
+    roomTheme === "purple"
+      ? "Lilac"
+      : roomTheme === "mono"
+        ? "Mono"
+        : "Gold";
   const title =
     track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing");
   const artist = track?.artists.map((a) => a.name).join(", ") ?? "";
   const albumArt = track?.image;
-
-  const PURPLE = "#6A5ACD";
-  const PURPLE_LIGHT = "#8B7CE8";
 
   return (
     <div
@@ -50,10 +56,10 @@ export function RoomTopBar({
         justifyContent: "space-between",
         padding: "0 24px",
         height: "56px",
-        borderBottom: "1px solid rgba(106,90,205,0.18)",
-        background: "rgba(5,5,8,0.92)",
+        borderBottom: `1px solid ${T.border}`,
+        background: T.bg,
         backdropFilter: "blur(12px)",
-        fontFamily: "'DM Mono', monospace",
+        fontFamily: T.font,
         flexShrink: 0,
         position: "relative",
         zIndex: 10,
@@ -68,7 +74,7 @@ export function RoomTopBar({
           right: 0,
           height: "1px",
           background: isPlaying
-            ? `linear-gradient(90deg,transparent,rgba(106,90,205,0.6),transparent)`
+            ? `linear-gradient(90deg,transparent,${T.purpleLight},transparent)`
             : "transparent",
           transition: "background 0.8s ease",
         }}
@@ -81,7 +87,7 @@ export function RoomTopBar({
             width: "7px",
             height: "7px",
             borderRadius: "50%",
-            background: connected ? "#22c55e" : "#2E2C50",
+            background: connected ? "#22c55e" : T.text3,
             animation: connected ? "pulse 2s ease-in-out infinite" : "none",
             flexShrink: 0,
           }}
@@ -90,7 +96,7 @@ export function RoomTopBar({
           style={{
             fontSize: "14px",
             fontWeight: 500,
-            color: "#F0EFF8",
+            color: T.text,
             letterSpacing: "0.02em",
           }}
         >
@@ -100,8 +106,8 @@ export function RoomTopBar({
           style={{
             fontSize: "10px",
             letterSpacing: "0.2em",
-            color: "#4A4870",
-            border: "1px solid rgba(106,90,205,0.18)",
+            color: T.text3,
+            border: `1px solid ${T.border}`,
             borderRadius: "4px",
             padding: "2px 8px",
           }}
@@ -114,8 +120,8 @@ export function RoomTopBar({
               fontSize: "9px",
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: PURPLE_LIGHT,
-              border: "1px solid rgba(106,90,205,0.4)",
+              color: T.purpleLight,
+              border: `1px solid ${T.border}`,
               borderRadius: "4px",
               padding: "2px 8px",
             }}
@@ -123,6 +129,19 @@ export function RoomTopBar({
             host
           </span>
         )}
+        <span
+          style={{
+            fontSize: "9px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            color: T.text3,
+            border: `1px solid ${T.border}`,
+            borderRadius: "4px",
+            padding: "2px 8px",
+          }}
+        >
+          {themeLabel}
+        </span>
       </div>
 
       {/* Center: mini now-playing */}
@@ -147,7 +166,7 @@ export function RoomTopBar({
               position: "relative",
               flexShrink: 0,
               animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
-              border: "1px solid rgba(106,90,205,0.25)",
+              border: `1px solid ${T.border}`,
             }}
           >
             <div
@@ -155,7 +174,7 @@ export function RoomTopBar({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "conic-gradient(#0e0c18 0deg,#161326 90deg,#0e0c18 180deg,#14112a 270deg,#0e0c18 360deg)",
+                  `conic-gradient(${T.surface} 0deg,${T.surface2} 90deg,${T.surface} 180deg,${T.surface3} 270deg,${T.surface} 360deg)`,
               }}
             />
             {albumArt && (
@@ -181,7 +200,7 @@ export function RoomTopBar({
                 width: "6px",
                 height: "6px",
                 borderRadius: "50%",
-                background: "#050508",
+                background: T.bg,
                 zIndex: 2,
               }}
             />
@@ -191,7 +210,7 @@ export function RoomTopBar({
               style={{
                 fontSize: "12px",
                 fontWeight: 500,
-                color: "#F0EFF8",
+                color: T.text,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -205,7 +224,7 @@ export function RoomTopBar({
               <p
                 style={{
                   fontSize: "10px",
-                  color: PURPLE_LIGHT,
+                  color: T.purpleLight,
                   letterSpacing: "0.08em",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -223,7 +242,7 @@ export function RoomTopBar({
               width: "6px",
               height: "6px",
               borderRadius: "50%",
-              background: isPlaying ? PURPLE : isLoading ? "#facc15" : "#2E2C50",
+              background: isPlaying ? T.purple : isLoading ? "#facc15" : T.text3,
               animation:
                 isPlaying || isLoading
                   ? "pulse 1.4s ease-in-out infinite"
@@ -244,11 +263,11 @@ export function RoomTopBar({
             textTransform: "uppercase",
             padding: "5px 14px",
             borderRadius: "6px",
-            border: "1px solid rgba(106,90,205,0.18)",
-            color: "#9B97B8",
+            border: `1px solid ${T.border}`,
+            color: T.text2,
             background: "transparent",
             cursor: "pointer",
-            fontFamily: "'DM Mono', monospace",
+            fontFamily: T.font,
             transition: "all 0.15s",
           }}
         >
@@ -266,7 +285,7 @@ export function RoomTopBar({
             color: "#f87171",
             background: "transparent",
             cursor: "pointer",
-            fontFamily: "'DM Mono', monospace",
+            fontFamily: T.font,
             transition: "all 0.15s",
           }}
         >

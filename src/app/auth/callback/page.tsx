@@ -25,7 +25,7 @@ function CallbackHandler() {
 
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-      <p className="text-zinc-500 text-sm font-mono tracking-widest animate-pulse">
+      <p className="text-zinc-500 text-sm  tracking-widest animate-pulse">
         signing in...
       </p>
     </div>
@@ -37,7 +37,7 @@ export default function AuthCallback() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-          <p className="text-zinc-500 text-sm font-mono tracking-widest animate-pulse">
+          <p className="text-zinc-500 text-sm tracking-widest animate-pulse">
             loading...
           </p>
         </div>

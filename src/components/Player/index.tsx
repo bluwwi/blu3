@@ -70,10 +70,7 @@ export default function Player() {
   return (
     <>
       <YouTubeIframe />
-      <div
-        className="min-h-screen bg-[#080808] text-white flex flex-col"
-        style={{ fontFamily: "'DM Mono', monospace" }}
-      >
+      <div className="min-h-screen bg-[#080808] text-white flex flex-col">
         <link
           href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap"
           rel="stylesheet"
@@ -151,10 +148,7 @@ export default function Player() {
           {/* ── END AUTH BAR ── */}
 
           <div className="mb-8">
-            <h1
-              className="text-4xl font-extrabold tracking-tight mb-1"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            ></h1>
+            <h1 className="text-4xl font-extrabold tracking-tight mb-1"></h1>
           </div>
 
           <div className="flex gap-1 mb-6 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
@@ -162,10 +156,11 @@ export default function Player() {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${activeTab === tab
-                  ? "bg-white text-black shadow"
-                  : "text-zinc-500 hover:text-zinc-300"
-                  }`}
+                className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${
+                  activeTab === tab
+                    ? "bg-white text-black shadow"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
               >
                 {tab === "search" ? "⌕ Search" : "⊕ URL"}
               </button>

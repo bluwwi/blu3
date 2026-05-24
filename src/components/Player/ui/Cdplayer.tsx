@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/utils/roomHelpers";
 import { Track } from "@/utils/types";
 
 type RepeatMode = "off" | "all" | "one";
@@ -24,9 +25,6 @@ function fmtSec(s: number) {
   const sc = Math.floor(s % 60);
   return `${m}:${sc < 10 ? "0" : ""}${sc}`;
 }
-
-const PURPLE = "#6A5ACD";
-const PURPLE_LIGHT = "#8B7CE8";
 
 export function CDPlayer({
   track,
@@ -63,17 +61,17 @@ export function CDPlayer({
     border: "1px solid rgba(255,255,255,0.07)",
     background: "transparent",
     cursor: "pointer",
-    color: "#4A4870",
+    color: T.text3,
     transition: "all 0.15s",
     padding: 0,
-    fontFamily: "'DM Mono', monospace",
+    fontFamily: T.font,
   };
 
   const iconBtnActive: React.CSSProperties = {
     ...iconBtn,
-    color: PURPLE_LIGHT,
-    borderColor: "rgba(106,90,205,0.4)",
-    background: "rgba(106,90,205,0.12)",
+    color: T.purpleLight,
+    borderColor: T.border,
+    background: T.purpleGhost,
   };
 
   return (
@@ -82,7 +80,6 @@ export function CDPlayer({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        fontFamily: "'DM Mono', monospace",
         padding: "12px 16px 28px",
         width: "100%",
       }}
@@ -93,7 +90,7 @@ export function CDPlayer({
           fontSize: "9px",
           letterSpacing: "0.25em",
           textTransform: "uppercase",
-          color: "#2E2C50",
+          color: T.text3,
           marginBottom: "20px",
         }}
       >
@@ -119,8 +116,7 @@ export function CDPlayer({
             position: "absolute",
             inset: "-20px",
             borderRadius: "16px",
-            background:
-              "radial-gradient(circle,rgba(106,90,205,0.28) 0%,transparent 65%)",
+            background: `radial-gradient(circle,${T.purpleGhost} 0%,transparent 65%)`,
             opacity: isPlaying ? 1 : 0.12,
             transition: "opacity 0.7s ease",
             pointerEvents: "none",
@@ -154,7 +150,7 @@ export function CDPlayer({
               style={{
                 width: "100%",
                 height: "100%",
-                background: "linear-gradient(135deg, #1a1a28, #0d0d14)",
+            background: `linear-gradient(135deg, ${T.surface3}, ${T.surface})`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -186,7 +182,7 @@ export function CDPlayer({
           style={{
             fontSize: "15px",
             fontWeight: 500,
-            color: "#F0EFF8",
+            color: T.text,
             letterSpacing: "0.02em",
             whiteSpace: "nowrap",
             overflow: "hidden",
@@ -200,7 +196,7 @@ export function CDPlayer({
           <p
             style={{
               fontSize: "11px",
-              color: PURPLE_LIGHT,
+              color: T.purpleLight,
               letterSpacing: "0.12em",
               marginBottom: "2px",
             }}
@@ -212,7 +208,7 @@ export function CDPlayer({
           <p
             style={{
               fontSize: "10px",
-              color: "#2E2C50",
+              color: T.text3,
               letterSpacing: "0.08em",
             }}
           >
@@ -228,7 +224,7 @@ export function CDPlayer({
           style={{
             width: "100%",
             height: "3px",
-            background: "#13131E",
+            background: T.surface2,
             borderRadius: "2px",
             cursor: canSeek ? "pointer" : "default",
             position: "relative",
@@ -240,7 +236,7 @@ export function CDPlayer({
             style={{
               height: "100%",
               borderRadius: "2px",
-              background: PURPLE,
+              background: T.purple,
               width: `${safeProgress}%`,
               transition: "width 0.25s linear",
               position: "relative",
@@ -257,10 +253,10 @@ export function CDPlayer({
                   width: "11px",
                   height: "11px",
                   borderRadius: "50%",
-                  background: PURPLE,
+                  background: T.purple,
                   opacity: 0,
                   transition: "opacity 0.15s",
-                  boxShadow: "0 0 8px rgba(106,90,205,0.6)",
+                  boxShadow: `0 0 8px ${T.purpleLight}`,
                 }}
               />
             )}
@@ -271,7 +267,7 @@ export function CDPlayer({
             display: "flex",
             justifyContent: "space-between",
             fontSize: "10px",
-            color: "#4A4870",
+            color: T.text3,
             letterSpacing: "0.08em",
           }}
         >
@@ -299,7 +295,7 @@ export function CDPlayer({
               ? shuffleEnabled
                 ? iconBtnActive
                 : iconBtn
-              : { ...iconBtn, cursor: "not-allowed", color: "#1A1A28" }
+              : { ...iconBtn, cursor: "not-allowed", color: T.surface3 }
           }
           aria-label="Shuffle"
         >
@@ -329,10 +325,14 @@ export function CDPlayer({
           style={{
             width: "52px",
             height: "52px",
-            background: hasControl && !isLoading ? PURPLE : "#13131E",
+            background: hasControl && !isLoading ? T.purple : T.surface2,
             border: "none",
             borderRadius: "50%",
-            cursor: isLoading ? "wait" : !hasControl ? "not-allowed" : "pointer",
+            cursor: isLoading
+              ? "wait"
+              : !hasControl
+                ? "not-allowed"
+                : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -341,7 +341,7 @@ export function CDPlayer({
             flexShrink: 0,
             boxShadow:
               hasControl && !isLoading
-                ? "0 0 20px rgba(106,90,205,0.35)"
+                ? `0 0 20px ${T.purpleGhost}`
                 : "none",
           }}
           aria-label={isPlaying ? "Pause" : "Play"}
@@ -396,7 +396,7 @@ export function CDPlayer({
                     letterSpacing: "0.05em",
                   }
                 : iconBtn
-              : { ...iconBtn, cursor: "not-allowed", color: "#1A1A28" }
+              : { ...iconBtn, cursor: "not-allowed", color: T.surface3 }
           }
           aria-label="Repeat"
         >
@@ -429,7 +429,7 @@ export function CDPlayer({
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: isPlaying ? PURPLE : isLoading ? "#facc15" : "#1A1A28",
+            background: isPlaying ? T.purple : isLoading ? "#facc15" : T.surface3,
             animation:
               isPlaying || isLoading
                 ? "statusPulse 1.4s ease-in-out infinite"
@@ -439,7 +439,7 @@ export function CDPlayer({
         <span
           style={{
             fontSize: "9px",
-            color: "#2E2C50",
+            color: T.text3,
             letterSpacing: "0.18em",
             textTransform: "uppercase",
           }}
@@ -455,7 +455,7 @@ export function CDPlayer({
       <style>{`
         @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
         .cd-prog-bar:hover .cd-prog-thumb { opacity: 1 !important; }
-        .cd-prog-bar:hover { background: #1A1A28 !important; }
+        .cd-prog-bar:hover { background: ${T.surface3} !important; }
       `}</style>
     </div>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { T } from "@/utils/roomHelpers";
+
 interface Props {
   value: string;
   suggestions: string[];
@@ -39,21 +41,44 @@ export function SearchInput({
         onFocus={onFocus}
         onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full bg-zinc-900 border border-zinc-800 focus:border-green-500 text-white text-sm px-4 py-3 pr-10 rounded-xl outline-none transition-colors placeholder:text-zinc-700"
+        style={{
+          width: "100%",
+          background: T.surface2,
+          border: `1px solid ${T.border}`,
+          color: T.text,
+          fontSize: "14px",
+          padding: "12px 40px 12px 16px",
+          borderRadius: "12px",
+          outline: "none",
+          transition: "all 0.15s",
+        }}
         autoFocus
       />
 
       {/* Loading / Clear Button */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2">
         {isSearching ? (
-          <div className="w-4 h-4 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
+          <div
+            style={{
+              width: "16px",
+              height: "16px",
+              border: `2px solid ${T.purple}`,
+              borderTopColor: "transparent",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+            }}
+          />
         ) : value ? (
           <button
             onClick={() => {
               onInput("");
               onSearch("");
             }}
-            className="text-zinc-600 hover:text-white text-xs transition-colors"
+            style={{
+              color: T.text3,
+              fontSize: "12px",
+              transition: "color 0.15s",
+            }}
             aria-label="Clear search"
           >
             ✕
@@ -63,19 +88,51 @@ export function SearchInput({
 
       {/* Autocomplete Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden z-40 shadow-xl max-h-60 overflow-y-auto">
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            marginTop: "4px",
+            background: T.surface,
+            border: `1px solid ${T.border}`,
+            borderRadius: "12px",
+            overflow: "hidden",
+            zIndex: 40,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+            maxHeight: "240px",
+            overflowY: "auto",
+          }}
+          className="room-scroll"
+        >
           {suggestions.map((s, i) => (
             <button
               key={i}
               onClick={() => onSuggestionSelect(s)}
-              className="w-full text-left px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center gap-3"
+              style={{
+                width: "100%",
+                textAlign: "left",
+                padding: "10px 16px",
+                fontSize: "13px",
+                color: T.text2,
+                background: "transparent",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                cursor: "pointer",
+              }}
             >
-              <span className="text-zinc-600 text-xs">⌕</span>
+              <span style={{ color: T.text3, fontSize: "12px" }}>⌕</span>
               {s}
             </button>
           ))}
         </div>
       )}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+      `}</style>
     </div>
   );
 }

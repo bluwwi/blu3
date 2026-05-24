@@ -1,6 +1,7 @@
 "use client";
 
 import { fmt } from "@/utils/formatters";
+import { T } from "@/utils/roomHelpers";
 import { Track } from "@/utils/types";
 
 interface Props {
@@ -12,21 +13,6 @@ interface Props {
   onAddToQueue?: (track: Track) => void;
   index: number;
 }
-
-const T = {
-  surface: "#0D0D14",
-  surface2: "#13131E",
-  surface3: "#1A1A28",
-  border: "rgba(106,90,205,0.18)",
-  border2: "rgba(255,255,255,0.06)",
-  purple: "#6A5ACD",
-  purpleLight: "#8B7CE8",
-  purpleGhost: "rgba(106,90,205,0.12)",
-  text: "#F0EFF8",
-  text2: "#9B97B8",
-  text3: "#4A4870",
-  font: "'DM Mono', monospace",
-};
 
 export function TrackItem({
   track,
@@ -46,7 +32,7 @@ export function TrackItem({
         gap: "10px",
         padding: "8px 10px",
         borderRadius: "10px",
-        border: isActive ? `1px solid rgba(106,90,205,0.3)` : "1px solid transparent",
+        border: isActive ? `1px solid ${T.border}` : "1px solid transparent",
         background: isActive ? T.purpleGhost : "transparent",
         transition: "all 0.15s",
         cursor: onClick ? "pointer" : "default",
@@ -181,7 +167,7 @@ export function TrackItem({
           }}
           title="Add to room queue"
           onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "rgba(106,90,205,0.5)";
+            e.currentTarget.style.borderColor = T.purple;
             e.currentTarget.style.color = T.purpleLight;
             e.currentTarget.style.background = T.purpleGhost;
           }}

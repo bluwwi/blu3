@@ -62,10 +62,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-[#080808] text-white"
-      style={{ fontFamily: "'DM Mono', monospace" }}
-    >
+    <div className="min-h-screen bg-[#080808] text-white">
       <link
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap"
         rel="stylesheet"
@@ -75,12 +72,7 @@ export default function BrowsePage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h1
-              className="text-3xl font-extrabold tracking-tight"
-              style={{ fontFamily: "'Syne', sans-serif" }}
-            >
-              blu3
-            </h1>
+            <h1 className="text-3xl font-extrabold tracking-tight">blu3</h1>
             <p className="text-xs text-zinc-600 tracking-widest mt-1">
               listen together
             </p>

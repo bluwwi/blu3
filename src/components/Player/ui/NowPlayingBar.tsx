@@ -58,7 +58,7 @@ export function NowPlayingBar({
       style={{
         background: "#0a0a0a",
         borderTop: "1px solid rgba(255,128,200,0.08)",
-        fontFamily: "'DM Mono', monospace",
+        fontFamily: "'Marmelat', sans-serif",
       }}
     >
       {/* pink shimmer line when playing */}

@@ -19,7 +19,8 @@ export function ProgressBar({
 }: Props) {
   const safeDuration = Math.max(duration, 0);
   const safeCurrentTime = Math.min(Math.max(currentTime, 0), safeDuration || 0);
-  const safeProgress = safeDuration > 0 ? Math.max(0, Math.min(progress, 100)) : 0;
+  const safeProgress =
+    safeDuration > 0 ? Math.max(0, Math.min(progress, 100)) : 0;
   const canSeek = Boolean(onSeek && safeDuration > 0);
 
   return (
@@ -31,7 +32,6 @@ export function ProgressBar({
         style={{
           fontSize: "10px",
           color: "#4A4870",
-          fontFamily: "'DM Mono', monospace",
           letterSpacing: "0.05em",
           minWidth: "32px",
           textAlign: "right",
@@ -92,7 +92,7 @@ export function ProgressBar({
         style={{
           fontSize: "10px",
           color: "#2E2C50",
-          fontFamily: "'DM Mono', monospace",
+          fontFamily: "'Marmelat', sans-serif",
           letterSpacing: "0.05em",
           minWidth: "32px",
         }}

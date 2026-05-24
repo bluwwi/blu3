@@ -1,5 +1,6 @@
 "use client";
 
+import { T } from "@/utils/roomHelpers";
 import { Track } from "@/utils/types";
 import { TrackItem } from "./TrackItem";
 
@@ -29,20 +30,56 @@ export function TrackList({
   // Loading state
   if (isSearching) {
     return (
-      <div className="space-y-0.5">
+      <div style={{ display: "grid", gap: "2px" }}>
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 px-3 py-2.5 animate-pulse"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              padding: "10px 12px",
+              animation: "pulse 1s ease-in-out infinite",
+            }}
           >
-            <div className="w-12 h-12 rounded-lg bg-zinc-800" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 bg-zinc-800 rounded w-3/4" />
-              <div className="h-2 bg-zinc-800/50 rounded w-1/2" />
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                borderRadius: "10px",
+                background: T.surface3,
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  height: "12px",
+                  width: "75%",
+                  borderRadius: "999px",
+                  background: T.surface3,
+                  marginBottom: "8px",
+                }}
+              />
+              <div
+                style={{
+                  height: "8px",
+                  width: "50%",
+                  borderRadius: "999px",
+                  background: T.surface2,
+                }}
+              />
             </div>
-            <div className="w-8 h-3 bg-zinc-800 rounded" />
+            <div
+              style={{
+                width: "32px",
+                height: "12px",
+                borderRadius: "999px",
+                background: T.surface3,
+              }}
+            />
           </div>
         ))}
+        <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
       </div>
     );
   }
@@ -50,8 +87,15 @@ export function TrackList({
   // Error state
   if (searchError) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
-        <p className="text-red-400 text-xs">{searchError}</p>
+      <div
+        style={{
+          background: "rgba(239,68,68,0.10)",
+          border: "1px solid rgba(239,68,68,0.20)",
+          borderRadius: "10px",
+          padding: "12px 16px",
+        }}
+      >
+        <p style={{ color: "#f87171", fontSize: "12px" }}>{searchError}</p>
       </div>
     );
   }
@@ -59,9 +103,16 @@ export function TrackList({
   // Empty state - no query
   if (!searchQuery && tracks.length === 0) {
     return (
-      <div className="text-center py-16 space-y-2">
-        <p className="text-5xl">♪</p>
-        <p className="text-zinc-700 text-xs tracking-widest uppercase">
+      <div style={{ textAlign: "center", padding: "64px 0" }}>
+        <p style={{ fontSize: "48px", marginBottom: "8px" }}>♪</p>
+        <p
+          style={{
+            color: T.text3,
+            fontSize: "11px",
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+          }}
+        >
           Search via YouTube Music · Play via YouTube
         </p>
       </div>
@@ -71,7 +122,14 @@ export function TrackList({
   // Empty state - no results
   if (tracks.length === 0 && searchQuery) {
     return (
-      <p className="text-zinc-700 text-sm text-center py-12">
+      <p
+        style={{
+          color: T.text3,
+          fontSize: "14px",
+          textAlign: "center",
+          padding: "48px 0",
+        }}
+      >
         No results for "{searchQuery}"
       </p>
     );
@@ -79,7 +137,7 @@ export function TrackList({
 
   // Results list
   return (
-    <div className="space-y-0.5">
+    <div style={{ display: "grid", gap: "2px" }}>
       {tracks.map((track, i) => (
         <TrackItem
           key={track.id}

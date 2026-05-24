@@ -14,7 +14,13 @@ import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { Track } from "@/utils/types";
 import { CDPlayer } from "@/components/Player/ui/Cdplayer";
-import { asTrackFromPlayback, asTrackFromRecent, T } from "@/utils/roomHelpers";
+import {
+  asTrackFromPlayback,
+  asTrackFromRecent,
+  getRoomThemeVars,
+  RoomTheme,
+  T,
+} from "@/utils/roomHelpers";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 
@@ -41,6 +47,7 @@ export default function RoomPage() {
   const [joined, setJoined] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -694,13 +701,10 @@ export default function RoomPage() {
   return (
     <>
       <YouTubeIframe />
-      <link
-        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap"
-        rel="stylesheet"
-      />
 
       <div
         style={{
+          ...getRoomThemeVars(roomTheme),
           minHeight: "100vh",
           background: T.bg,
           color: T.text,
@@ -720,6 +724,7 @@ export default function RoomPage() {
             isHost={isHost}
             connected={connected}
             track={footerTrack}
+            roomTheme={roomTheme}
             activeVideoId={
               playerState.activeVideoId ?? playback?.videoId ?? null
             }
@@ -827,7 +832,9 @@ export default function RoomPage() {
                 onToggleShuffle={
                   canControlPlayback ? handleToggleShuffle : undefined
                 }
-                onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+                onCycleRepeat={
+                  canControlPlayback ? handleCycleRepeat : undefined
+                }
                 onSeek={canControlPlayback ? handleSeekAction : undefined}
               />
             </div>
@@ -838,6 +845,8 @@ export default function RoomPage() {
         <RightSidebar
           members={members}
           messages={messages}
+          roomTheme={roomTheme}
+          onThemeChange={setRoomTheme}
           chatInput={chatInput}
           setChatInput={setChatInput}
           handleSendChat={handleSendChat}
@@ -870,9 +879,7 @@ export default function RoomPage() {
             searchState.doSearch(s);
             suggestState.hideSuggestions();
           }}
-          onTrackSelect={
-            canControlPlayback ? handleAdminPlayTrack : undefined
-          }
+          onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
           onSearchFocus={() =>
             suggestState.suggestions.length > 0 &&
             suggestState.setShowSuggestions(true)

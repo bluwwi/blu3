@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
 import { SearchTab } from "@/components/Player/ui/SearchTab";
-import { T } from "@/utils/roomHelpers";
+import { RoomTheme, T } from "@/utils/roomHelpers";
 import { Track } from "@/utils/types";
 
 interface Member {
@@ -30,6 +30,8 @@ interface RecentTrack {
 interface Props {
   members: Member[];
   messages: Message[];
+  roomTheme: RoomTheme;
+  onThemeChange: (theme: RoomTheme) => void;
   chatInput: string;
   setChatInput: (val: string) => void;
   handleSendChat: () => void;
@@ -68,9 +70,9 @@ const iconButtonStyle: React.CSSProperties = {
   width: "38px",
   height: "38px",
   borderRadius: "10px",
-  border: `1px solid ${T.border}`,
-  background: T.surface3,
-  color: T.text2,
+  border: `1px solid ${T.buttonBorder}`,
+  background: T.buttonBg,
+  color: T.buttonText,
   cursor: "pointer",
   display: "flex",
   alignItems: "center",
@@ -82,6 +84,8 @@ const iconButtonStyle: React.CSSProperties = {
 export function RightSidebar({
   members,
   messages,
+  roomTheme,
+  onThemeChange,
   chatInput,
   setChatInput,
   handleSendChat,
@@ -116,6 +120,11 @@ export function RightSidebar({
   onSearchKeyDown,
 }: Props) {
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const themeOptions: Array<{ id: RoomTheme; label: string }> = [
+    { id: "purple", label: "Lilac" },
+    { id: "mono", label: "Mono" },
+    { id: "yellow", label: "Gold" },
+  ];
 
   useEffect(() => {
     if (chatOpen) {
@@ -156,9 +165,9 @@ export function RightSidebar({
               flex: 1,
               height: "38px",
               borderRadius: "10px",
-              border: `1px solid ${T.border}`,
-              background: T.surface3,
-              color: T.text3,
+              border: `1px solid ${T.buttonBorder}`,
+              background: T.buttonBg,
+              color: T.buttonText,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -169,7 +178,7 @@ export function RightSidebar({
               letterSpacing: "0.08em",
             }}
           >
-            <span style={{ color: T.text2 }}>⌕</span>
+            <span style={{ color: T.buttonText }}>⌕</span>
             <span>Search Songs</span>
           </button>
           <button
@@ -180,6 +189,40 @@ export function RightSidebar({
           >
             💬
           </button>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            marginBottom: "14px",
+          }}
+        >
+          {themeOptions.map((theme) => (
+            <button
+              key={theme.id}
+              type="button"
+              onClick={() => onThemeChange(theme.id)}
+              style={{
+                flex: 1,
+                height: "34px",
+                borderRadius: "10px",
+                border:
+                  roomTheme === theme.id
+                    ? `1px solid ${T.purple}`
+                    : `1px solid ${T.buttonBorder}`,
+                background:
+                  roomTheme === theme.id ? T.purpleGhost : T.buttonBg,
+                color: roomTheme === theme.id ? T.purpleLight : T.buttonText,
+                cursor: "pointer",
+                fontSize: "11px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              {theme.label}
+            </button>
+          ))}
         </div>
 
         <p
@@ -461,7 +504,7 @@ export function RightSidebar({
               placeholder="say something..."
               style={{
                 flex: 1,
-                background: T.surface3,
+                background: T.surface2,
                 border: `1px solid ${T.border}`,
                 color: T.text,
                 fontSize: "11px",
@@ -478,9 +521,9 @@ export function RightSidebar({
                 width: "34px",
                 height: "34px",
                 borderRadius: "8px",
-                border: "none",
-                background: T.surface3,
-                color: T.text2,
+                border: `1px solid ${T.buttonBorder}`,
+                background: T.buttonBg,
+                color: T.buttonText,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
