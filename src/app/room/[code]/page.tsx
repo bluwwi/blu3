@@ -699,18 +699,16 @@ export default function RoomPage() {
     setChatInput("");
   };
 
-  /* ─── Loading ───────────────────────────────────────────────────── */
   if (authLoading || !joined) {
     return <RoomLoading />;
   }
 
-  /* ─── Render ────────────────────────────────────────────────────── */
   return (
-    <>
+    <div>
       <YouTubeIframe />
-      <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
-        <div className="min-h-screen bg-slate-950/55">
-          <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-40 pt-6 md:px-6 lg:px-8">
+      <div className="h-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
+        <div className="h-screen overflow-hidden bg-slate-950/55">
+          <div className="mx-auto flex h-screen max-w-7xl flex-col px-4 pb-28 pt-4 md:px-6 lg:px-8">
             <RoomTopBar
               roomName={room?.name ?? "Room"}
               roomCode={code}
@@ -724,114 +722,82 @@ export default function RoomPage() {
               onLeave={handleLeave}
             />
 
-            <div className="room-scroll flex-1 overflow-y-auto pt-10">
-              <div className="space-y-6 pb-8">
-                <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-[28px] border border-white/20 bg-white/10 px-5 py-4 text-white backdrop-blur-xl">
-                  <Search size={16} className="shrink-0 text-white/70" />
-                  <input
-                    value={searchState.searchQuery}
-                    onChange={(e) => searchState.onSearchInput(e.target.value)}
-                    onFocus={openSearchOverlay}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        searchState.doSearch(searchState.searchQuery);
-                        openSearchOverlay();
-                      }
-                    }}
-                    placeholder="Search by title, artist or album..."
-                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
-                  />
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
-                    {user?.avatar ? (
+            <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
+              <div className="mx-auto flex w-full max-w-4xl items-center gap-3 rounded-[24px] border border-white/20 bg-white/10 px-4 py-3 text-white backdrop-blur-xl">
+                <Search size={16} className="shrink-0 text-white/70" />
+                <input
+                  value={searchState.searchQuery}
+                  onChange={(e) => searchState.onSearchInput(e.target.value)}
+                    onFocus={() =>
+                      suggestState.suggestions.length > 0 &&
+                      suggestState.setShowSuggestions(true)
+                    }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      searchState.doSearch(searchState.searchQuery);
+                    }
+                  }}
+                  placeholder="Search by title, artist or album..."
+                  className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+                />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    (user?.name || user?.email || "U").slice(0, 1).toUpperCase()
+                  )}
+                </div>
+              </div>
+
+              <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+                {(carouselTracks.length > 0
+                  ? carouselTracks
+                  : Array.from({ length: 8 }, (_, index) => index)
+                ).map((item, index) => {
+                  const image =
+                    typeof item === "number"
+                      ? `https://picsum.photos/seed/${index}/144/144`
+                      : item.image ||
+                      `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`;
+                  const key =
+                    typeof item === "number"
+                      ? `placeholder-${item}`
+                      : `${item.id}-${index}`;
+
+                  return (
+                    <div
+                      key={key}
+                      className="h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-white/10"
+                    >
                       <img
-                        src={user.avatar}
-                        alt={user.name}
+                        src={image}
+                        alt=""
                         className="h-full w-full object-cover"
                       />
-                    ) : (
-                      (user?.name || user?.email || "U").slice(0, 1).toUpperCase()
-                    )}
-                  </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {!canControlPlayback ? (
+                <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                  Synced to host
                 </div>
-
-                <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
-                  {(carouselTracks.length > 0
-                    ? carouselTracks
-                    : Array.from({ length: 8 }, (_, index) => index)
-                  ).map((item, index) => {
-                    const image =
-                      typeof item === "number"
-                        ? `https://picsum.photos/seed/${index}/144/144`
-                        : item.image ||
-                          `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`;
-                    const key =
-                      typeof item === "number"
-                        ? `placeholder-${item}`
-                        : `${item.id}-${index}`;
-
-                    return (
-                      <div
-                        key={key}
-                        className="h-36 w-36 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-white/10"
-                      >
-                        <img
-                          src={image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    );
-                  })}
+              ) : !isHost ? (
+                <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
+                  <span className="h-2 w-2 rounded-full bg-sky-300" />
+                  Collaborative control enabled
                 </div>
+              ) : null}
 
-                {!canControlPlayback ? (
-                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
-                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
-                    Synced to host
-                  </div>
-                ) : !isHost ? (
-                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
-                    <span className="h-2 w-2 rounded-full bg-sky-300" />
-                    Collaborative control enabled
-                  </div>
-                ) : null}
-
-                <CDPlayer
-                  track={footerTrack}
-                  playerState={footerPlayerState}
-                  progress={progressState.progress}
-                  currentTime={progressState.currentTime}
-                  duration={progressState.duration}
-                  shuffleEnabled={playbackMode.shuffle}
-                  repeatMode={playbackMode.repeatMode}
-                  onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
-                  onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
-                  onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
-                  onSeek={canControlPlayback ? handleSeekAction : undefined}
-                  roomLabel={room?.name ?? "Blu3"}
-                />
-
-                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
-                  <div className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white backdrop-blur-xl">
-                    <QueueAndHistory
-                      queue={queue}
-                      recentTracks={recentTracks}
-                      canControlPlayback={canControlPlayback}
-                      handleAdminPlayTrack={handleAdminPlayTrack}
-                      removeFromQueue={removeFromQueue}
-                      addToQueue={addToQueue}
-                      activeVideoId={playerState.nowPlaying?.videoId}
-                    />
-                  </div>
-
-                  <RightSidebar
-                    members={members}
-                    messages={messages}
-                    roomTheme={roomTheme}
-                    onThemeChange={setRoomTheme}
-                    chatInput={chatInput}
-                    setChatInput={setChatInput}
-                    handleSendChat={handleSendChat}
+              <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-[320px_minmax(0,1fr)_360px]">
+                <aside className="min-h-0 rounded-[28px] border border-white/20 bg-white/10 p-4 text-white backdrop-blur-xl">
+                  <QueueAndHistory
                     queue={queue}
                     recentTracks={recentTracks}
                     canControlPlayback={canControlPlayback}
@@ -839,53 +805,115 @@ export default function RoomPage() {
                     removeFromQueue={removeFromQueue}
                     addToQueue={addToQueue}
                     activeVideoId={playerState.nowPlaying?.videoId}
-                    searchOpen={searchOpen}
-                    chatOpen={chatOpen}
-                    onOpenSearch={openSearchOverlay}
-                    onCloseSearch={closeSearchOverlay}
-                    onOpenChat={openChatOverlay}
-                    onCloseChat={closeChatOverlay}
-                    searchQuery={searchState.searchQuery}
-                    suggestions={suggestState.suggestions}
-                    showSuggestions={suggestState.showSuggestions}
-                    results={searchState.results}
-                    isSearching={searchState.isSearching}
-                    searchError={searchState.searchError}
-                    activeTrackId={playerState.nowPlaying?.id ?? null}
-                    loadingTrackId={playerState.loadingId}
-                    isPlaying={playerState.playerState === "playing"}
-                    onSearchInput={searchState.onSearchInput}
-                    onSearch={searchState.doSearch}
-                    onSuggestionSelect={(s) => {
-                      searchState.setSearchQuery(s);
-                      searchState.doSearch(s);
-                      suggestState.hideSuggestions();
-                    }}
-                    onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
-                    onSearchFocus={() =>
-                      suggestState.suggestions.length > 0 &&
-                      suggestState.setShowSuggestions(true)
-                    }
-                    onSearchBlur={() =>
-                      setTimeout(() => suggestState.hideSuggestions(), 200)
-                    }
-                    onSearchKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        searchState.doSearch(searchState.searchQuery);
-                        suggestState.hideSuggestions();
-                      }
-                      if (e.key === "Escape") {
-                        suggestState.hideSuggestions();
-                        closeSearchOverlay();
-                      }
-                    }}
-                    userAvatar={user?.avatar}
-                    userLabel={user?.name ?? user?.email ?? "U"}
                   />
-                </div>
+                </aside>
+
+                <div className="grid min-h-0 gap-4 xl:grid-rows-[auto_minmax(0,1fr)]">
+                  <CDPlayer
+                    track={footerTrack}
+                    playerState={footerPlayerState}
+                    progress={progressState.progress}
+                    currentTime={progressState.currentTime}
+                    duration={progressState.duration}
+                    shuffleEnabled={playbackMode.shuffle}
+                    repeatMode={playbackMode.repeatMode}
+                    onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
+                    onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
+                    onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+                    onSeek={canControlPlayback ? handleSeekAction : undefined}
+                    roomLabel={room?.name ?? "Blu3"}
+                  />
+
+                  <div className="rounded-[28px] border border-white/20 bg-white/10 p-4 text-white backdrop-blur-xl">
+                    <div className="grid gap-2 md:grid-cols-4">
+                      {members.slice(0, 4).map((member) => (
+                        <div
+                          key={member.userId}
+                          className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3"
+                        >
+                          {member.avatar ? (
+                            <img
+                              src={member.avatar}
+                              alt={member.name}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-sm text-white/75">
+                              {member.name[0]}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="truncate text-sm text-white">
+                              {member.name}
+                            </p>
+                            <p className="text-xs text-white/55">In room</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
               </div>
+
+                <RightSidebar
+                  members={members}
+                  messages={messages}
+                  roomTheme={roomTheme}
+                  onThemeChange={setRoomTheme}
+                  chatInput={chatInput}
+                  setChatInput={setChatInput}
+                  handleSendChat={handleSendChat}
+                  queue={queue}
+                  recentTracks={recentTracks}
+                  canControlPlayback={canControlPlayback}
+                  handleAdminPlayTrack={handleAdminPlayTrack}
+                  removeFromQueue={removeFromQueue}
+                  addToQueue={addToQueue}
+                  activeVideoId={playerState.nowPlaying?.videoId}
+                  searchOpen={searchOpen}
+                  chatOpen={chatOpen}
+                  onOpenSearch={openSearchOverlay}
+                  onCloseSearch={closeSearchOverlay}
+                  onOpenChat={openChatOverlay}
+                  onCloseChat={closeChatOverlay}
+                  searchQuery={searchState.searchQuery}
+                  suggestions={suggestState.suggestions}
+                  showSuggestions={suggestState.showSuggestions}
+                  results={searchState.results}
+                  isSearching={searchState.isSearching}
+                  searchError={searchState.searchError}
+                  activeTrackId={playerState.nowPlaying?.id ?? null}
+                  loadingTrackId={playerState.loadingId}
+                  isPlaying={playerState.playerState === "playing"}
+                  onSearchInput={searchState.onSearchInput}
+                  onSearch={searchState.doSearch}
+                  onSuggestionSelect={(s) => {
+                    searchState.setSearchQuery(s);
+                    searchState.doSearch(s);
+                    suggestState.hideSuggestions();
+                  }}
+                  onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
+                  onSearchFocus={() =>
+                    suggestState.suggestions.length > 0 &&
+                    suggestState.setShowSuggestions(true)
+                  }
+                  onSearchBlur={() =>
+                    setTimeout(() => suggestState.hideSuggestions(), 200)
+                  }
+                  onSearchKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      searchState.doSearch(searchState.searchQuery);
+                      suggestState.hideSuggestions();
+                    }
+                    if (e.key === "Escape") {
+                      suggestState.hideSuggestions();
+                    }
+                  }}
+                  userAvatar={user?.avatar}
+                  userLabel={user?.name ?? user?.email ?? "U"}
+                />
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -915,6 +943,6 @@ export default function RoomPage() {
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
-    </>
-  );
+    </div>
+  );  
 }

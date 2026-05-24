@@ -1,18 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
 import { SearchTab } from "@/components/Player/ui/SearchTab";
-import { RoomTheme } from "@/utils/roomHelpers";
+import { RoomTheme, T } from "@/utils/roomHelpers";
 import { Track } from "@/utils/types";
-import {
-  MessageSquare,
-  Palette,
-  Search,
-  Send,
-  Star,
-  Users,
-  X,
-} from "lucide-react";
 
 interface Member {
   userId: string;
@@ -72,9 +64,22 @@ interface Props {
   onSearchFocus: () => void;
   onSearchBlur: () => void;
   onSearchKeyDown: (e: React.KeyboardEvent) => void;
-  userAvatar?: string;
-  userLabel?: string;
 }
+
+const iconButtonStyle: React.CSSProperties = {
+  width: "38px",
+  height: "38px",
+  borderRadius: "10px",
+  border: `1px solid ${T.buttonBorder}`,
+  background: T.buttonBg,
+  color: T.buttonText,
+  cursor: "pointer",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontSize: "16px",
+  flexShrink: 0,
+};
 
 export function RightSidebar({
   members,
@@ -113,34 +118,12 @@ export function RightSidebar({
   onSearchFocus,
   onSearchBlur,
   onSearchKeyDown,
-  userAvatar,
-  userLabel = "User",
 }: Props) {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const themeOptions: Array<{ id: RoomTheme; label: string }> = [
     { id: "purple", label: "Lilac" },
     { id: "mono", label: "Mono" },
     { id: "yellow", label: "Gold" },
-  ];
-  const playlistColors = [
-    "bg-green-500",
-    "bg-sky-400",
-    "bg-orange-400",
-    "bg-red-400",
-    "bg-yellow-400",
-    "bg-orange-300",
-    "bg-pink-400",
-    "bg-emerald-400",
-  ];
-  const playlists = [
-    "Day at the Park",
-    "Positivity",
-    "Joy",
-    "Starting Over",
-    "Feeling Happy",
-    "Morning Commute",
-    "Feeling Confident",
-    "Good News!",
   ];
 
   useEffect(() => {
@@ -150,117 +133,222 @@ export function RightSidebar({
   }, [chatOpen, messages]);
 
   return (
-    <div className="relative h-full rounded-[32px] border border-white/20 bg-white/10 p-6 text-white backdrop-blur-xl">
-      <div className="space-y-6">
-        <div className="flex items-center gap-3">
+    <div
+      style={{
+        borderLeft: `1px solid ${T.border}`,
+        display: "flex",
+        flexDirection: "column",
+        background: T.surface,
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      <div
+        style={{
+          padding: "16px",
+          borderBottom: `1px solid ${T.border}`,
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: "10px",
+            alignItems: "center",
+            marginBottom: "14px",
+          }}
+        >
           <button
             type="button"
             onClick={onOpenSearch}
-            className="flex flex-1 items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+            style={{
+              flex: 1,
+              height: "38px",
+              borderRadius: "10px",
+              border: `1px solid ${T.buttonBorder}`,
+              background: T.buttonBg,
+              color: T.buttonText,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "0 12px",
+              fontFamily: T.font,
+              fontSize: "11px",
+              letterSpacing: "0.08em",
+            }}
           >
-            <Search size={16} />
-            <span>Search</span>
+            <span style={{ color: T.buttonText }}>⌕</span>
+            <span>Search Songs</span>
           </button>
           <button
             type="button"
             onClick={onOpenChat}
             aria-label="Open chat"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+            style={iconButtonStyle}
           >
-            <MessageSquare size={16} />
+            💬
           </button>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-white/80">
-            <Palette size={16} />
-            <p className="text-sm font-medium">Room theme</p>
-          </div>
-          <div className="flex gap-2">
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            marginBottom: "14px",
+          }}
+        >
           {themeOptions.map((theme) => (
             <button
               key={theme.id}
               type="button"
               onClick={() => onThemeChange(theme.id)}
-              className={`flex-1 rounded-full border px-3 py-2 text-xs transition-colors ${
-                roomTheme === theme.id
-                  ? "border-white/30 bg-white/20 text-white"
-                  : "border-white/15 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
-              }`}
+              style={{
+                flex: 1,
+                height: "34px",
+                borderRadius: "10px",
+                border:
+                  roomTheme === theme.id
+                    ? `1px solid ${T.purple}`
+                    : `1px solid ${T.buttonBorder}`,
+                background:
+                  roomTheme === theme.id ? T.purpleGhost : T.buttonBg,
+                color: roomTheme === theme.id ? T.purpleLight : T.buttonText,
+                cursor: "pointer",
+                fontSize: "11px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
             >
               {theme.label}
             </button>
           ))}
-          </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 text-white/80">
-            <Users size={16} />
-            <p className="text-sm font-medium">{members.length} listening</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        <p
+          style={{
+            fontSize: "9px",
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+            color: T.text3,
+            marginBottom: "10px",
+          }}
+        >
+          {members.length} listening
+        </p>
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "8px",
+          }}
+        >
           {members.map((member) => (
             <div
               key={member.userId}
-              className="flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-2.5 py-1.5"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "6px 8px",
+                borderRadius: "999px",
+                background: T.surface2,
+                border: `1px solid ${T.border2}`,
+              }}
             >
               {member.avatar ? (
                 <img
                   src={member.avatar}
                   alt=""
-                  className="h-6 w-6 rounded-full object-cover"
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    border: `1px solid ${T.border}`,
+                  }}
                 />
               ) : (
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-[10px] text-white/80">
+                <div
+                  style={{
+                    width: "24px",
+                    height: "24px",
+                    borderRadius: "50%",
+                    background: T.purpleDim,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    color: T.purpleLight,
+                    border: `1px solid rgba(106,90,205,0.3)`,
+                    flexShrink: 0,
+                  }}
+                >
                   {member.name[0]}
                 </div>
               )}
-              <span className="text-xs text-white/80">
+              <span style={{ fontSize: "11px", color: T.text2 }}>
                 {member.name.split(" ")[0]}
               </span>
             </div>
           ))}
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 text-white">
-            <Star size={16} className="text-white/80" />
-            <h2 className="text-base font-medium">Popular playlists</h2>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {playlists.map((playlist, index) => (
-              <div
-                key={playlist}
-                className="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-3 transition-colors hover:bg-white/10"
-              >
-                <div
-                  className={`h-10 w-10 shrink-0 rounded-xl ${playlistColors[index % playlistColors.length]}`}
-                />
-                <span className="text-sm text-white">{playlist}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
+      <div
+        style={{ flex: 1, overflowY: "auto", padding: "0 16px 16px" }}
+        className="room-scroll"
+      >
+        <QueueAndHistory
+          queue={queue}
+          recentTracks={recentTracks}
+          canControlPlayback={canControlPlayback}
+          handleAdminPlayTrack={handleAdminPlayTrack}
+          removeFromQueue={removeFromQueue}
+          addToQueue={addToQueue}
+          activeVideoId={activeVideoId}
+        />
+      </div>
+
       {searchOpen && (
-        <div className="absolute inset-0 z-20 flex flex-col rounded-[32px] border border-white/20 bg-slate-950/70 p-6 backdrop-blur-2xl">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-xs uppercase tracking-[0.28em] text-white/55">
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(5,5,8,0.96)",
+            zIndex: 20,
+            display: "flex",
+            flexDirection: "column",
+            padding: "16px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "14px",
+            }}
+          >
+            <p
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: T.text2,
+              }}
+            >
               Search Songs
             </p>
             <button
               type="button"
               onClick={onCloseSearch}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+              style={iconButtonStyle}
               aria-label="Close search"
             >
-              <X size={16} />
+              ✕
             </button>
           </div>
-          <div className="room-scroll flex-1 overflow-y-auto">
+          <div style={{ flex: 1, overflowY: "auto" }} className="room-scroll">
             <SearchTab
               searchQuery={searchQuery}
               suggestions={suggestions}
@@ -279,56 +367,119 @@ export function RightSidebar({
               onFocus={onSearchFocus}
               onBlur={onSearchBlur}
               onKeyDown={onSearchKeyDown}
-              avatarUrl={userAvatar}
-              avatarLabel={userLabel}
             />
           </div>
         </div>
       )}
 
       {chatOpen && (
-        <div className="absolute inset-0 z-30 flex flex-col rounded-[32px] border border-white/20 bg-slate-950/75 backdrop-blur-2xl">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
-            <p className="text-xs uppercase tracking-[0.28em] text-white/55">
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "rgba(5,5,8,0.96)",
+            zIndex: 30,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "16px",
+              borderBottom: `1px solid ${T.border}`,
+              flexShrink: 0,
+            }}
+          >
+            <p
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+                color: T.text2,
+              }}
+            >
               Room Chat
             </p>
             <button
               type="button"
               onClick={onCloseChat}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+              style={iconButtonStyle}
               aria-label="Close chat"
             >
-              <X size={16} />
+              ✕
             </button>
           </div>
 
-          <div className="room-scroll flex-1 overflow-y-auto px-6 py-4">
+          <div
+            style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}
+            className="room-scroll"
+          >
             {messages.length === 0 && (
-              <p className="mt-8 text-center text-sm text-white/55">
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: T.text3,
+                  textAlign: "center",
+                  marginTop: "30px",
+                }}
+              >
                 no messages yet
               </p>
             )}
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className="mb-3 flex items-start gap-3"
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                  marginBottom: "10px",
+                }}
               >
                 {msg.avatar ? (
                   <img
                     src={msg.avatar}
                     alt=""
-                    className="mt-0.5 h-8 w-8 shrink-0 rounded-full object-cover"
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      marginTop: "1px",
+                      flexShrink: 0,
+                    }}
                   />
                 ) : (
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs text-white/70">
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      background: T.surface3,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "9px",
+                      color: T.text3,
+                      flexShrink: 0,
+                    }}
+                  >
                     {msg.name[0]}
                   </div>
                 )}
-                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <span className="mr-2 text-xs text-white/45">
+                <div>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: T.text3,
+                      marginRight: "6px",
+                    }}
+                  >
                     {msg.name.split(" ")[0]}
                   </span>
-                  <span className="text-sm text-white/80">
+                  <span style={{ fontSize: "11px", color: T.text2 }}>
                     {msg.text}
                   </span>
                 </div>
@@ -337,20 +488,51 @@ export function RightSidebar({
             <div ref={chatEndRef} />
           </div>
 
-          <div className="flex gap-3 border-t border-white/10 px-6 py-4">
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              padding: "10px 12px",
+              borderTop: `1px solid ${T.border}`,
+              flexShrink: 0,
+            }}
+          >
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
               placeholder="say something..."
-              className="flex-1 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
+              style={{
+                flex: 1,
+                background: T.surface2,
+                border: `1px solid ${T.border}`,
+                color: T.text,
+                fontSize: "11px",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                outline: "none",
+                fontFamily: T.font,
+              }}
             />
             <button
               type="button"
               onClick={handleSendChat}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "8px",
+                border: `1px solid ${T.buttonBorder}`,
+                background: T.buttonBg,
+                color: T.buttonText,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                transition: "all 0.15s",
+              }}
             >
-              <Send size={16} />
+              ↑
             </button>
           </div>
         </div>

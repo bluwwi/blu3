@@ -55,14 +55,14 @@ export function NowPlayingBar({
   const albumArt = track?.image || `https://picsum.photos/seed/${activeVideoId || "blu3"}/96/96`;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 z-50">
-      <div className="mx-auto max-w-7xl rounded-[32px] border border-white/20 bg-white/10 px-5 py-4 text-white shadow-2xl backdrop-blur-xl">
-        <div className="mb-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div className="fixed bottom-3 left-4 right-4 z-50">
+      <div className="mx-auto max-w-7xl rounded-[28px] border border-white/20 bg-white/10 px-4 py-3 text-white shadow-2xl backdrop-blur-xl">
+        <div className="mb-2 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <img
               src={albumArt}
               alt={title}
-              className="h-12 w-12 shrink-0 rounded-lg object-cover"
+              className="h-11 w-11 shrink-0 rounded-lg object-cover"
             />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-white">{title}</p>

@@ -37,9 +37,7 @@ export function ProgressBar({
           style={{ width: `${safeProgress}%` }}
         >
           {canSeek && (
-            <div
-              className="absolute right-[-5px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white opacity-100 shadow-[0_0_12px_rgba(255,255,255,0.6)]"
-            />
+            <div className="absolute right-[-5px] top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white opacity-100 shadow-[0_0_12px_rgba(255,255,255,0.6)]" />
           )}
         </div>
       </div>
