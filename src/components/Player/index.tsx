@@ -14,11 +14,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { extractVideoId } from "@/utils/videoId";
 import { Track } from "@/utils/types";
 import { RoomPanel } from "@/hooks/RoomPanel";
+import { LayoutGrid, Music2, Play, Radio, Search } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function Player() {
   const [activeTab, setActiveTab] = useState<"search" | "url">("search");
+  const [activePill, setActivePill] = useState<
+    "listen" | "browse" | "radio" | "playlists"
+  >("listen");
 
   const { apiReady } = useYouTubeAPI();
   const playerState = usePlayerState();
@@ -67,139 +71,223 @@ export default function Player() {
     [searchState, suggestState],
   );
 
+  const carouselTracks = (searchState.results.length > 0
+    ? searchState.results
+    : playerState.nowPlaying
+      ? [playerState.nowPlaying]
+      : []
+  ).slice(0, 8);
+
   return (
     <>
       <YouTubeIframe />
-      <div className="min-h-screen bg-[#080808] text-white flex flex-col">
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap"
-          rel="stylesheet"
-        />
+      <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed text-white">
+        <div className="min-h-screen bg-slate-950/55 px-4 pb-40 pt-6 md:px-6 lg:px-8">
+          <div className="mx-auto max-w-6xl space-y-6">
+            <div className="relative flex items-center justify-between">
+              <div className="hidden rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-white/80 backdrop-blur-xl md:flex">
+                {apiReady ? "YouTube ready" : "Loading player"}
+              </div>
+              <div className="absolute left-1/2 -translate-x-1/2">
+                <div className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 p-1.5 backdrop-blur-xl">
+                  {[
+                    { id: "listen", label: "Listen Now", icon: Play },
+                    { id: "browse", label: "Browse", icon: LayoutGrid },
+                    { id: "radio", label: "Radio", icon: Radio },
+                    { id: "playlists", label: "Playlists", icon: Music2 },
+                  ].map((item) => {
+                    const Icon = item.icon;
+                    const selected = activePill === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setActivePill(item.id as typeof activePill)}
+                        className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm transition-colors ${
+                          selected
+                            ? "bg-white/25 text-white"
+                            : "text-white/70 hover:bg-white/10 hover:text-white"
+                        }`}
+                      >
+                        <Icon size={16} />
+                        <span className="hidden sm:inline">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-        {playerState.playerState !== "idle" && (
-          <NowPlayingBar
-            track={playerState.nowPlaying}
-            activeVideoId={playerState.activeVideoId}
-            playerState={playerState.playerState}
-            progress={progressState.progress}
-            currentTime={progressState.currentTime}
-            duration={progressState.duration}
-            volume={playerState.volume}
-            isMuted={playerState.isMuted}
-            onPlayPause={playerState.togglePlayPause}
-            onMute={playerState.toggleMute}
-            onVolume={playerState.handleVolume}
-            onSeek={progressState.handleSeek}
-          />
-        )}
+              <div className="ml-auto flex items-center gap-3 rounded-full border border-white/20 bg-white/10 px-3 py-2 backdrop-blur-xl">
+                {loading ? (
+                  <div className="h-8 w-24 animate-pulse rounded-full bg-white/10" />
+                ) : user ? (
+                  <>
+                    <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        user.name.slice(0, 1).toUpperCase()
+                      )}
+                    </div>
+                    <span className="hidden max-w-[180px] truncate text-sm text-white/80 md:block">
+                      {user.email}
+                    </span>
+                    <button
+                      onClick={logout}
+                      className="rounded-full px-3 py-2 text-xs text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={login}
+                    className="rounded-full px-4 py-2 text-sm text-white/80 transition-colors hover:bg-white/10 hover:text-white"
+                  >
+                    Sign in
+                  </button>
+                )}
+              </div>
+            </div>
 
-        <div className="flex-1 max-w-2xl mx-auto w-full px-4 pt-10 pb-44">
-          {/* ── AUTH BAR ── */}
-          <div className="flex items-center justify-end mb-6 h-9">
-            {loading ? (
-              <div className="w-20 h-7 bg-zinc-800 rounded-lg animate-pulse" />
-            ) : user ? (
-              <div className="flex items-center gap-3">
-                {user.avatar && (
-                  <img
-                    src={user.avatar}
-                    alt={user.name}
-                    className="w-7 h-7 rounded-full border border-zinc-700 object-cover"
+            <div className="flex items-center gap-3 rounded-[28px] border border-white/20 bg-white/10 px-5 py-4 backdrop-blur-xl">
+              <Search size={16} className="text-white/70" />
+              <input
+                value={searchState.searchQuery}
+                onChange={(e) => searchState.onSearchInput(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
+                onFocus={() =>
+                  suggestState.suggestions.length > 0 &&
+                  suggestState.setShowSuggestions(true)
+                }
+                onBlur={() => setTimeout(() => suggestState.hideSuggestions(), 200)}
+                placeholder="Search by title, artist or album..."
+                className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
+              />
+            </div>
+
+            <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
+              {(carouselTracks.length > 0
+                ? carouselTracks
+                : Array.from({ length: 8 }, (_, index) => index)
+              ).map((item, index) => {
+                const image =
+                  typeof item === "number"
+                    ? `https://picsum.photos/seed/${index}/144/144`
+                    : item.image || `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`;
+                const key =
+                  typeof item === "number" ? `placeholder-${item}` : `${item.id}-${index}`;
+
+                return (
+                  <div
+                    key={key}
+                    className="h-36 w-36 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-white/10"
+                  >
+                    <img src={image} alt="" className="h-full w-full object-cover" />
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+              <div className="rounded-[32px] border border-white/20 bg-white/10 p-6 backdrop-blur-xl">
+                <div className="mb-5 flex gap-1 rounded-full border border-white/10 bg-white/5 p-1">
+                  {(["search", "url"] as const).map((tab) => (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setActiveTab(tab)}
+                      className={`flex-1 rounded-full px-4 py-2 text-sm transition-colors ${
+                        activeTab === tab
+                          ? "bg-white/20 text-white"
+                          : "text-white/60 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      {tab === "search" ? "Search" : "YouTube URL"}
+                    </button>
+                  ))}
+                </div>
+
+                {activeTab === "search" ? (
+                  <SearchTab
+                    searchQuery={searchState.searchQuery}
+                    suggestions={suggestState.suggestions}
+                    showSuggestions={suggestState.showSuggestions}
+                    results={searchState.results}
+                    isSearching={searchState.isSearching}
+                    searchError={searchState.searchError}
+                    activeTrackId={playerState.nowPlaying?.id ?? null}
+                    loadingTrackId={playerState.loadingId}
+                    isPlaying={playerState.playerState === "playing"}
+                    onSearchInput={searchState.onSearchInput}
+                    onSearch={searchState.doSearch}
+                    onSuggestionSelect={(s) => {
+                      searchState.setSearchQuery(s);
+                      searchState.doSearch(s);
+                      suggestState.hideSuggestions();
+                    }}
+                    onTrackSelect={playerState.playTrack}
+                    onFocus={() =>
+                      suggestState.suggestions.length > 0 &&
+                      suggestState.setShowSuggestions(true)
+                    }
+                    onBlur={() => setTimeout(() => suggestState.hideSuggestions(), 200)}
+                    onKeyDown={handleSearchKeyDown}
+                    avatarUrl={user?.avatar}
+                    avatarLabel={user?.name ?? user?.email ?? "U"}
+                  />
+                ) : (
+                  <UrlTab
+                    onPlay={playerState.playTrack}
+                    isLoading={playerState.playerState === "loading"}
+                    error={playerState.error || null}
                   />
                 )}
-                <span className="text-xl text-white tracking-wide truncate max-w-[120px]">
-                  {user.email}
-                </span>
-                <button
-                  onClick={logout}
-                  className="text-xs text-zinc-600 hover:text-zinc-300 transition-colors tracking-widest uppercase px-2 py-1 rounded border border-zinc-800 hover:border-zinc-600"
-                >
-                  out
-                </button>
               </div>
-            ) : (
-              <button
-                onClick={login}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-zinc-700 hover:border-zinc-400 bg-zinc-900 hover:bg-zinc-800 transition-all text-xs tracking-widest uppercase text-zinc-300"
-              >
-                {/* Google G icon */}
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                </svg>
-                sign in
-              </button>
-            )}
+
+              <div className="rounded-[32px] border border-white/20 bg-white/10 p-6 backdrop-blur-xl">
+                <RoomPanel
+                  onPlaybackPlay={(state) => {
+                    if (state.videoId) {
+                      playerState.playTrack({
+                        id: `room-${state.videoId}`,
+                        videoId: state.videoId,
+                        name: state.trackName,
+                        duration_ms: 0,
+                        explicit: false,
+                        artists: [{ name: state.artistName }],
+                        album: { name: "" },
+                        image: state.image,
+                      });
+                    }
+                  }}
+                  onPlaybackPause={() => playerState.pause?.()}
+                  onPlaybackSeek={(t) => progressState.seekTo(t)}
+                />
+              </div>
+            </div>
           </div>
-          {/* ── END AUTH BAR ── */}
-
-          <div className="mb-8">
-            <h1 className="text-4xl font-extrabold tracking-tight mb-1"></h1>
-          </div>
-
-          <div className="flex gap-1 mb-6 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800">
-            {(["search", "url"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all tracking-widest uppercase ${
-                  activeTab === tab
-                    ? "bg-white text-black shadow"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                {tab === "search" ? "⌕ Search" : "⊕ URL"}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === "search" ? (
-            <></>
-          ) : (
-            <UrlTab
-              onPlay={playerState.playTrack}
-              isLoading={playerState.playerState === "loading"}
-              error={playerState.error || null}
-            />
-          )}
-        </div>
-
-        <div className="mt-6">
-          <RoomPanel
-            onPlaybackPlay={(state) => {
-              // state has videoId, trackName etc — load it into player
-              if (state.videoId) {
-                playerState.playTrack({
-                  id: `room-${state.videoId}`,
-                  videoId: state.videoId,
-                  name: state.trackName,
-                  duration_ms: 0,
-                  explicit: false,
-                  artists: [{ name: state.artistName }],
-                  album: { name: "" },
-                  image: state.image,
-                });
-              }
-            }}
-            onPlaybackPause={(t) => playerState.pause?.()}
-            onPlaybackSeek={(t) => progressState.seekTo(t)}
-          />
         </div>
       </div>
+
+      <NowPlayingBar
+        track={playerState.nowPlaying}
+        activeVideoId={playerState.activeVideoId}
+        playerState={playerState.playerState}
+        progress={progressState.progress}
+        currentTime={progressState.currentTime}
+        duration={progressState.duration}
+        volume={playerState.volume}
+        isMuted={playerState.isMuted}
+        onPlayPause={playerState.togglePlayPause}
+        onMute={playerState.toggleMute}
+        onVolume={playerState.handleVolume}
+        onSeek={progressState.handleSeek}
+      />
     </>
   );
 }

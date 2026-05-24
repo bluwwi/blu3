@@ -26,6 +26,8 @@ interface Props {
   onFocus: () => void;
   onBlur: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
+  avatarUrl?: string;
+  avatarLabel?: string;
 }
 
 export function SearchTab({
@@ -46,9 +48,11 @@ export function SearchTab({
   onFocus,
   onBlur,
   onKeyDown,
+  avatarUrl,
+  avatarLabel,
 }: Props) {
   return (
-    <div>
+    <div className="space-y-5">
       <SearchInput
         value={searchQuery}
         suggestions={suggestions}
@@ -60,6 +64,8 @@ export function SearchTab({
         onFocus={onFocus}
         onBlur={onBlur}
         onKeyDown={onKeyDown}
+        avatarUrl={avatarUrl}
+        avatarLabel={avatarLabel}
       />
 
       {(searchQuery || results.length > 0) && (

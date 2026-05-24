@@ -1,6 +1,6 @@
 "use client";
 
-import { T } from "@/utils/roomHelpers";
+import { Disc3, SearchX } from "lucide-react";
 import { Track } from "@/utils/types";
 import { TrackItem } from "./TrackItem";
 
@@ -30,114 +30,54 @@ export function TrackList({
   // Loading state
   if (isSearching) {
     return (
-      <div style={{ display: "grid", gap: "2px" }}>
+      <div className="grid gap-2">
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              padding: "10px 12px",
-              animation: "pulse 1s ease-in-out infinite",
-            }}
+            className="flex animate-pulse items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3"
           >
-            <div
-              style={{
-                width: "48px",
-                height: "48px",
-                borderRadius: "10px",
-                background: T.surface3,
-              }}
-            />
+            <div className="h-12 w-12 rounded-xl bg-white/10" />
             <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  height: "12px",
-                  width: "75%",
-                  borderRadius: "999px",
-                  background: T.surface3,
-                  marginBottom: "8px",
-                }}
-              />
-              <div
-                style={{
-                  height: "8px",
-                  width: "50%",
-                  borderRadius: "999px",
-                  background: T.surface2,
-                }}
-              />
+              <div className="mb-2 h-3 w-3/4 rounded-full bg-white/10" />
+              <div className="h-2 w-1/2 rounded-full bg-white/5" />
             </div>
-            <div
-              style={{
-                width: "32px",
-                height: "12px",
-                borderRadius: "999px",
-                background: T.surface3,
-              }}
-            />
+            <div className="h-3 w-8 rounded-full bg-white/10" />
           </div>
         ))}
-        <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
       </div>
     );
   }
 
-  // Error state
   if (searchError) {
     return (
-      <div
-        style={{
-          background: "rgba(239,68,68,0.10)",
-          border: "1px solid rgba(239,68,68,0.20)",
-          borderRadius: "10px",
-          padding: "12px 16px",
-        }}
-      >
-        <p style={{ color: "#f87171", fontSize: "12px" }}>{searchError}</p>
+      <div className="rounded-2xl border border-rose-400/25 bg-rose-500/10 px-4 py-3">
+        <p className="text-sm text-rose-200">{searchError}</p>
       </div>
     );
   }
 
-  // Empty state - no query
   if (!searchQuery && tracks.length === 0) {
     return (
-      <div style={{ textAlign: "center", padding: "64px 0" }}>
-        <p style={{ fontSize: "48px", marginBottom: "8px" }}>♪</p>
-        <p
-          style={{
-            color: T.text3,
-            fontSize: "11px",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-          }}
-        >
+      <div className="flex flex-col items-center justify-center rounded-[28px] border border-white/10 bg-white/5 px-6 py-14 text-center">
+        <Disc3 size={34} className="mb-4 text-white/45" />
+        <p className="text-xs uppercase tracking-[0.28em] text-white/55">
           Search via YouTube Music · Play via YouTube
         </p>
       </div>
     );
   }
 
-  // Empty state - no results
   if (tracks.length === 0 && searchQuery) {
     return (
-      <p
-        style={{
-          color: T.text3,
-          fontSize: "14px",
-          textAlign: "center",
-          padding: "48px 0",
-        }}
-      >
-        No results for "{searchQuery}"
-      </p>
+      <div className="flex flex-col items-center justify-center rounded-[28px] border border-white/10 bg-white/5 px-6 py-14 text-center">
+        <SearchX size={34} className="mb-4 text-white/45" />
+        <p className="text-sm text-white/65">No results for "{searchQuery}"</p>
+      </div>
     );
   }
 
-  // Results list
   return (
-    <div style={{ display: "grid", gap: "2px" }}>
+    <div className="grid gap-1.5">
       {tracks.map((track, i) => (
         <TrackItem
           key={track.id}

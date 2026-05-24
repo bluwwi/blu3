@@ -3,7 +3,8 @@
 import { Track } from "@/utils/types";
 import { PlayerControls } from "./PlayerControls";
 import { ProgressBar } from "./ProgressBar";
-import { VolumeControl } from "./VolumeControl";
+import { fmtSec } from "@/utils/formatters";
+import { List, MessageSquare, Music2, Volume2 } from "lucide-react";
 
 type RepeatMode = "off" | "all" | "one";
 
@@ -50,248 +51,84 @@ export function NowPlayingBar({
   const title =
     track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
   const artist = track?.artists.map((a) => a.name).join(", ") ?? "";
-  const albumArt = track?.image;
+  const album = track?.album?.name ?? "";
+  const albumArt = track?.image || `https://picsum.photos/seed/${activeVideoId || "blu3"}/96/96`;
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-50"
-      style={{
-        background: "#0a0a0a",
-        borderTop: "1px solid rgba(255,128,200,0.08)",
-        fontFamily: "'Marmelat', sans-serif",
-      }}
-    >
-      {/* pink shimmer line when playing */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "1px",
-          background: isPlaying
-            ? "linear-gradient(90deg,transparent,rgba(255,128,200,0.55),transparent)"
-            : "transparent",
-          transition: "background 0.8s ease",
-        }}
-      />
+    <div className="fixed bottom-4 left-4 right-4 z-50">
+      <div className="mx-auto max-w-7xl rounded-[32px] border border-white/20 bg-white/10 px-5 py-4 text-white shadow-2xl backdrop-blur-xl">
+        <div className="mb-3 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={albumArt}
+              alt={title}
+              className="h-12 w-12 shrink-0 rounded-lg object-cover"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-white">{title}</p>
+              <p className="truncate text-xs text-white/60">
+                {[artist, album].filter(Boolean).join(" · ") || "Ready to listen"}
+              </p>
+            </div>
+          </div>
 
-      <div
-        style={{
-          maxWidth: "1100px",
-          margin: "0 auto",
-          padding: "10px 20px 12px",
-          display: "flex",
-          alignItems: "center",
-          gap: "14px",
-        }}
-      >
-        {/* ── Mini spinning CD ── */}
-        <div
-          style={{
-            position: "relative",
-            width: "44px",
-            height: "44px",
-            flexShrink: 0,
-          }}
-        >
-          {/* glow */}
-          <div
-            style={{
-              position: "absolute",
-              inset: "-8px",
-              borderRadius: "50%",
-              background:
-                "radial-gradient(circle,rgba(255,128,200,0.25) 0%,transparent 70%)",
-              opacity: isPlaying ? 1 : 0,
-              transition: "opacity 0.6s ease",
-              pointerEvents: "none",
-            }}
-          />
-          {/* disc */}
-          <div
-            style={{
-              width: "44px",
-              height: "44px",
-              borderRadius: "50%",
-              overflow: "hidden",
-              position: "relative",
-              animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
-              flexShrink: 0,
-            }}
-          >
-            {/* conic base */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                background:
-                  "conic-gradient(#1a1a1a 0deg,#2a2020 40deg,#3a2a2a 80deg,#1a1a2a 120deg,#2a1a1a 160deg,#1a2a1a 200deg,#2a2a1a 240deg,#1a1a1a 280deg,#2a1a2a 320deg,#1a1a1a 360deg)",
-              }}
+          <div className="flex flex-1 items-center justify-center gap-4">
+            <PlayerControls
+              playerState={playerState}
+              onTogglePlayPause={onPlayPause}
             />
-            {/* album art */}
-            {albumArt && (
-              <img
-                src={albumArt}
-                alt=""
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                  opacity: 0.88,
-                }}
-              />
-            )}
-            {/* sheen */}
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                background:
-                  "conic-gradient(transparent 0deg,rgba(255,255,255,0.07) 45deg,transparent 90deg,rgba(255,255,255,0.04) 135deg,transparent 180deg,rgba(255,255,255,0.06) 225deg,transparent 270deg,rgba(255,255,255,0.03) 315deg,transparent 360deg)",
-                pointerEvents: "none",
-              }}
-            />
-            {/* center hole */}
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-                width: "8px",
-                height: "8px",
-                borderRadius: "50%",
-                background: "#0a0a0a",
-                border: "1px solid rgba(255,255,255,0.1)",
-                zIndex: 2,
-              }}
+            <span className="text-xs text-white/50">
+              {hasTrack ? fmtSec(currentTime) : "0:00"}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 text-white/70">
+            <button
+              type="button"
+              className="rounded-full p-2 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Open lyrics"
+            >
+              <MessageSquare size={16} />
+            </button>
+            <button
+              type="button"
+              className="rounded-full p-2 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Open queue"
+            >
+              <List size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={onMute}
+              className="rounded-full p-2 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label={isMuted ? "Unmute" : "Mute"}
+            >
+              <Volume2 size={16} />
+            </button>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={isMuted ? 0 : volume}
+              onChange={(e) => onVolume(Number(e.target.value))}
+              className="hidden w-20 accent-white md:block"
+              aria-label="Volume"
             />
           </div>
         </div>
 
-        {/* ── Track info ── */}
-        <div style={{ minWidth: 0, flex: "0 0 160px" }}>
-          <p
-            style={{
-              fontSize: "12px",
-              fontWeight: 500,
-              color: "#e0e0e0",
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              marginBottom: "2px",
-            }}
-          >
-            {title}
-          </p>
-          {artist && (
-            <p
-              style={{
-                fontSize: "10px",
-                color: "#ff80c8",
-                letterSpacing: "0.1em",
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {artist}
-            </p>
-          )}
-        </div>
-
-        {/* ── Center: controls + progress ── */}
-        <div
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <PlayerControls
-            playerState={playerState}
-            onTogglePlayPause={onPlayPause}
-            shuffleEnabled={shuffleEnabled}
-            repeatMode={repeatMode}
-            onToggleShuffle={onToggleShuffle}
-            onCycleRepeat={onCycleRepeat}
-          />
-          <ProgressBar
-            progress={progress}
-            currentTime={currentTime}
-            duration={duration}
-            onSeek={onSeek}
-          />
-        </div>
-
-        {/* ── Volume ── */}
-        <VolumeControl
-          volume={volume}
-          isMuted={isMuted}
-          onVolumeChange={onVolume}
-          onToggleMute={onMute}
-          className="hidden md:flex"
+        <ProgressBar
+          progress={progress}
+          currentTime={currentTime}
+          duration={duration}
+          onSeek={onSeek}
         />
-
-        {/* ── Status dot ── */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: isPlaying
-                ? "#ff80c8"
-                : isLoading
-                  ? "#facc15"
-                  : hasTrack
-                    ? "#444"
-                    : "#2a2a2a",
-              animation:
-                isPlaying || isLoading
-                  ? "statusPulse 1.4s ease-in-out infinite"
-                  : "none",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "9px",
-              color: "#3a3a3a",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-            }}
-          >
-            {isPlaying
-              ? "playing"
-              : isLoading
-                ? "buffering"
-                : hasTrack
-                  ? "paused"
-                  : "idle"}
-          </span>
-        </div>
       </div>
-
-      <style>{`
-        @keyframes cdSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-      `}</style>
+      {!hasTrack && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center pt-5 text-white/30">
+          <Music2 size={14} />
+        </div>
+      )}
     </div>
   );
 }

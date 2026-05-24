@@ -1,5 +1,37 @@
 @import "tailwindcss";
 
+@font-face {
+    font-family: "Marmelat";
+    src: url("/fonts/Marmelat Book.otf") format("opentype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Marmelat";
+    src: url("/fonts/Marmelat-Medium.otf") format("opentype");
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Marmelat";
+    src: url("/fonts/Marmelat Bold.otf") format("opentype");
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: "Marmelat";
+    src: url("/fonts/Marmelat Black.otf") format("opentype");
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+}
+
 :root {
     --background: #ffffff;
     --foreground: #171717;
@@ -25,12 +57,6 @@ body {
     font-family: "Marmelat", sans-serif;
 }
 
-@font-face {
-    font-family: "Marmelat";
-    src: url("/fonts/Marmelat-Medium.otf") format("opentype");
-    font-style: normal;
-}
-
 .marmelat {
     font-family: "Marmelat", sans-serif;
 }
@@ -42,4 +68,19 @@ input,
 textarea,
 select {
     font-family: "Marmelat", sans-serif;
+}
+
+* {
+    font-family: "Marmelat", sans-serif;
+}
+
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    background:
+        linear-gradient(180deg, rgba(10, 14, 29, 0.2), rgba(7, 10, 18, 0.85)),
+        var(--background);
 }

@@ -17,12 +17,13 @@ import { CDPlayer } from "@/components/Player/ui/Cdplayer";
 import {
   asTrackFromPlayback,
   asTrackFromRecent,
-  getRoomThemeVars,
   RoomTheme,
-  T,
 } from "@/utils/roomHelpers";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
+import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
+import { NowPlayingBar } from "@/components/Player/ui/NowPlayingBar";
+import { Search } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -154,6 +155,12 @@ export default function RoomPage() {
         ? "loading"
         : "paused"
       : playerState.playerState;
+  const carouselTracks = (queue.length > 0
+    ? queue
+    : footerTrack
+      ? [footerTrack]
+      : []
+  ).slice(0, 8);
 
   /* ─── Scheduling helpers ─────────────────────── */
   const clearScheduledTimeout = useCallback(
@@ -701,211 +708,212 @@ export default function RoomPage() {
   return (
     <>
       <YouTubeIframe />
+      <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
+        <div className="min-h-screen bg-slate-950/55">
+          <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 pb-40 pt-6 md:px-6 lg:px-8">
+            <RoomTopBar
+              roomName={room?.name ?? "Room"}
+              roomCode={code}
+              isHost={isHost}
+              connected={connected}
+              track={footerTrack}
+              roomTheme={roomTheme}
+              activeVideoId={playerState.activeVideoId ?? playback?.videoId ?? null}
+              playerState={footerPlayerState}
+              onCopyInvite={() => navigator.clipboard.writeText(window.location.href)}
+              onLeave={handleLeave}
+            />
 
-      <div
-        style={{
-          ...getRoomThemeVars(roomTheme),
-          minHeight: "100vh",
-          background: T.bg,
-          color: T.text,
-          display: "grid",
-          gridTemplateColumns: "1fr 360px",
-          gridTemplateRows: "56px 1fr",
-          fontFamily: T.font,
-          overflow: "hidden",
-          height: "100vh",
-        }}
-      >
-        {/* Top bar */}
-        <div style={{ gridColumn: "1 / -1" }}>
-          <RoomTopBar
-            roomName={room?.name ?? "Room"}
-            roomCode={code}
-            isHost={isHost}
-            connected={connected}
-            track={footerTrack}
-            roomTheme={roomTheme}
-            activeVideoId={
-              playerState.activeVideoId ?? playback?.videoId ?? null
-            }
-            playerState={footerPlayerState}
-            onCopyInvite={() =>
-              navigator.clipboard.writeText(window.location.href)
-            }
-            onLeave={handleLeave}
-          />
-        </div>
-
-        {/* Main content */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-            background: T.bg,
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            className="room-scroll"
-          >
-            <div style={{ width: "100%", maxWidth: "520px" }}>
-              {!canControlPlayback ? (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "8px 12px",
-                    background: T.surface2,
-                    border: `1px solid ${T.border}`,
-                    borderRadius: "8px",
-                    fontSize: "10px",
-                    color: T.text3,
-                    marginBottom: "14px",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      background: "#22c55e",
-                      animation: "pulse 1.5s ease-in-out infinite",
-                      flexShrink: 0,
-                      display: "inline-block",
+            <div className="room-scroll flex-1 overflow-y-auto pt-10">
+              <div className="space-y-6 pb-8">
+                <div className="mx-auto flex w-full max-w-5xl items-center gap-3 rounded-[28px] border border-white/20 bg-white/10 px-5 py-4 text-white backdrop-blur-xl">
+                  <Search size={16} className="shrink-0 text-white/70" />
+                  <input
+                    value={searchState.searchQuery}
+                    onChange={(e) => searchState.onSearchInput(e.target.value)}
+                    onFocus={openSearchOverlay}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        searchState.doSearch(searchState.searchQuery);
+                        openSearchOverlay();
+                      }
                     }}
+                    placeholder="Search by title, artist or album..."
+                    className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/45"
                   />
-                  synced to host - music plays automatically
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
+                    {user?.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      (user?.name || user?.email || "U").slice(0, 1).toUpperCase()
+                    )}
+                  </div>
                 </div>
-              ) : !isHost ? (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    padding: "8px 12px",
-                    background: T.purpleGhost,
-                    border: `1px solid rgba(106,90,205,0.25)`,
-                    borderRadius: "8px",
-                    fontSize: "10px",
-                    color: T.purpleLight,
-                    marginBottom: "14px",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: "6px",
-                      height: "6px",
-                      borderRadius: "50%",
-                      background: T.purple,
-                      animation: "pulse 1.5s ease-in-out infinite",
-                      flexShrink: 0,
-                      display: "inline-block",
-                    }}
-                  />
-                  Collaborative mode: host is away - you can control playback.
-                </div>
-              ) : null}
 
-              <CDPlayer
-                track={footerTrack}
-                playerState={footerPlayerState}
-                progress={progressState.progress}
-                currentTime={progressState.currentTime}
-                duration={progressState.duration}
-                shuffleEnabled={playbackMode.shuffle}
-                repeatMode={playbackMode.repeatMode}
-                onPlayPause={
-                  canControlPlayback ? handlePlayPauseAction : undefined
-                }
-                onToggleShuffle={
-                  canControlPlayback ? handleToggleShuffle : undefined
-                }
-                onCycleRepeat={
-                  canControlPlayback ? handleCycleRepeat : undefined
-                }
-                onSeek={canControlPlayback ? handleSeekAction : undefined}
-              />
+                <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-2">
+                  {(carouselTracks.length > 0
+                    ? carouselTracks
+                    : Array.from({ length: 8 }, (_, index) => index)
+                  ).map((item, index) => {
+                    const image =
+                      typeof item === "number"
+                        ? `https://picsum.photos/seed/${index}/144/144`
+                        : item.image ||
+                          `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`;
+                    const key =
+                      typeof item === "number"
+                        ? `placeholder-${item}`
+                        : `${item.id}-${index}`;
+
+                    return (
+                      <div
+                        key={key}
+                        className="h-36 w-36 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-white/10"
+                      >
+                        <img
+                          src={image}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {!canControlPlayback ? (
+                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
+                    <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                    Synced to host
+                  </div>
+                ) : !isHost ? (
+                  <div className="inline-flex items-center gap-2 self-start rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs uppercase tracking-[0.22em] text-white/70 backdrop-blur-xl">
+                    <span className="h-2 w-2 rounded-full bg-sky-300" />
+                    Collaborative control enabled
+                  </div>
+                ) : null}
+
+                <CDPlayer
+                  track={footerTrack}
+                  playerState={footerPlayerState}
+                  progress={progressState.progress}
+                  currentTime={progressState.currentTime}
+                  duration={progressState.duration}
+                  shuffleEnabled={playbackMode.shuffle}
+                  repeatMode={playbackMode.repeatMode}
+                  onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
+                  onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
+                  onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+                  onSeek={canControlPlayback ? handleSeekAction : undefined}
+                  roomLabel={room?.name ?? "Blu3"}
+                />
+
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+                  <div className="rounded-[32px] border border-white/20 bg-white/10 p-6 text-white backdrop-blur-xl">
+                    <QueueAndHistory
+                      queue={queue}
+                      recentTracks={recentTracks}
+                      canControlPlayback={canControlPlayback}
+                      handleAdminPlayTrack={handleAdminPlayTrack}
+                      removeFromQueue={removeFromQueue}
+                      addToQueue={addToQueue}
+                      activeVideoId={playerState.nowPlaying?.videoId}
+                    />
+                  </div>
+
+                  <RightSidebar
+                    members={members}
+                    messages={messages}
+                    roomTheme={roomTheme}
+                    onThemeChange={setRoomTheme}
+                    chatInput={chatInput}
+                    setChatInput={setChatInput}
+                    handleSendChat={handleSendChat}
+                    queue={queue}
+                    recentTracks={recentTracks}
+                    canControlPlayback={canControlPlayback}
+                    handleAdminPlayTrack={handleAdminPlayTrack}
+                    removeFromQueue={removeFromQueue}
+                    addToQueue={addToQueue}
+                    activeVideoId={playerState.nowPlaying?.videoId}
+                    searchOpen={searchOpen}
+                    chatOpen={chatOpen}
+                    onOpenSearch={openSearchOverlay}
+                    onCloseSearch={closeSearchOverlay}
+                    onOpenChat={openChatOverlay}
+                    onCloseChat={closeChatOverlay}
+                    searchQuery={searchState.searchQuery}
+                    suggestions={suggestState.suggestions}
+                    showSuggestions={suggestState.showSuggestions}
+                    results={searchState.results}
+                    isSearching={searchState.isSearching}
+                    searchError={searchState.searchError}
+                    activeTrackId={playerState.nowPlaying?.id ?? null}
+                    loadingTrackId={playerState.loadingId}
+                    isPlaying={playerState.playerState === "playing"}
+                    onSearchInput={searchState.onSearchInput}
+                    onSearch={searchState.doSearch}
+                    onSuggestionSelect={(s) => {
+                      searchState.setSearchQuery(s);
+                      searchState.doSearch(s);
+                      suggestState.hideSuggestions();
+                    }}
+                    onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
+                    onSearchFocus={() =>
+                      suggestState.suggestions.length > 0 &&
+                      suggestState.setShowSuggestions(true)
+                    }
+                    onSearchBlur={() =>
+                      setTimeout(() => suggestState.hideSuggestions(), 200)
+                    }
+                    onSearchKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        searchState.doSearch(searchState.searchQuery);
+                        suggestState.hideSuggestions();
+                      }
+                      if (e.key === "Escape") {
+                        suggestState.hideSuggestions();
+                        closeSearchOverlay();
+                      }
+                    }}
+                    userAvatar={user?.avatar}
+                    userLabel={user?.name ?? user?.email ?? "U"}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Sidebar */}
-        <RightSidebar
-          members={members}
-          messages={messages}
-          roomTheme={roomTheme}
-          onThemeChange={setRoomTheme}
-          chatInput={chatInput}
-          setChatInput={setChatInput}
-          handleSendChat={handleSendChat}
-          queue={queue}
-          recentTracks={recentTracks}
-          canControlPlayback={canControlPlayback}
-          handleAdminPlayTrack={handleAdminPlayTrack}
-          removeFromQueue={removeFromQueue}
-          addToQueue={addToQueue}
-          activeVideoId={playerState.nowPlaying?.videoId}
-          searchOpen={searchOpen}
-          chatOpen={chatOpen}
-          onOpenSearch={openSearchOverlay}
-          onCloseSearch={closeSearchOverlay}
-          onOpenChat={openChatOverlay}
-          onCloseChat={closeChatOverlay}
-          searchQuery={searchState.searchQuery}
-          suggestions={suggestState.suggestions}
-          showSuggestions={suggestState.showSuggestions}
-          results={searchState.results}
-          isSearching={searchState.isSearching}
-          searchError={searchState.searchError}
-          activeTrackId={playerState.nowPlaying?.id ?? null}
-          loadingTrackId={playerState.loadingId}
-          isPlaying={playerState.playerState === "playing"}
-          onSearchInput={searchState.onSearchInput}
-          onSearch={searchState.doSearch}
-          onSuggestionSelect={(s) => {
-            searchState.setSearchQuery(s);
-            searchState.doSearch(s);
-            suggestState.hideSuggestions();
-          }}
-          onTrackSelect={canControlPlayback ? handleAdminPlayTrack : undefined}
-          onSearchFocus={() =>
-            suggestState.suggestions.length > 0 &&
-            suggestState.setShowSuggestions(true)
-          }
-          onSearchBlur={() =>
-            setTimeout(() => suggestState.hideSuggestions(), 200)
-          }
-          onSearchKeyDown={(e) => {
-            if (e.key === "Enter") {
-              searchState.doSearch(searchState.searchQuery);
-              suggestState.hideSuggestions();
-            }
-            if (e.key === "Escape") {
-              suggestState.hideSuggestions();
-              closeSearchOverlay();
-            }
-          }}
-        />
       </div>
 
+      <NowPlayingBar
+        track={footerTrack}
+        activeVideoId={playerState.activeVideoId ?? playback?.videoId ?? null}
+        playerState={footerPlayerState}
+        progress={progressState.progress}
+        currentTime={progressState.currentTime}
+        duration={progressState.duration}
+        volume={playerState.volume}
+        isMuted={playerState.isMuted}
+        shuffleEnabled={playbackMode.shuffle}
+        repeatMode={playbackMode.repeatMode}
+        onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
+        onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
+        onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+        onMute={playerState.toggleMute}
+        onVolume={playerState.handleVolume}
+        onSeek={canControlPlayback ? handleSeekAction : undefined}
+      />
+
       <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        .room-scroll::-webkit-scrollbar { width: 4px }
-        .room-scroll::-webkit-scrollbar-track { background: transparent }
-        .room-scroll::-webkit-scrollbar-thumb { background: ${T.surface3}; border-radius: 2px }
-        input::placeholder { color: ${T.text3} !important }
+        .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .room-scroll::-webkit-scrollbar-track { background: transparent; }
+        .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </>
   );

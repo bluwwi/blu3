@@ -1,7 +1,13 @@
 "use client";
 
 import { Track } from "@/utils/types";
-import { asTrackFromRecent, T } from "@/utils/roomHelpers";
+import {
+  Clock3,
+  ListMusic,
+  Play,
+  Plus,
+  Trash2,
+} from "lucide-react";
 
 interface Props {
   queue: Track[];
@@ -29,198 +35,83 @@ export function QueueAndHistory({
   activeVideoId,
 }: Props) {
   return (
-    <div style={{ paddingTop: "8px" }}>
-      {/* Queue */}
-      <p
-        style={{
-          fontSize: "9px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: T.text3,
-          paddingBottom: "8px",
-          borderBottom: `1px solid ${T.border}`,
-          marginBottom: "10px",
-        }}
-      >
-        Room Queue
-      </p>
+    <div className="flex h-full flex-col gap-6">
+      <div className="flex items-center gap-2 text-white">
+        <ListMusic size={16} className="text-white/80" />
+        <h2 className="text-base font-medium">Next up</h2>
+      </div>
+
       {queue.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "32px 20px",
-            color: T.text3,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "28px",
-              marginBottom: "10px",
-              opacity: 0.4,
-            }}
-          >
-            ⊞
-          </div>
-          <p
-            style={{
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-            }}
-          >
-            Queue is empty
-          </p>
+        <div className="rounded-[28px] border border-white/10 bg-white/5 px-6 py-10 text-center text-white/55">
+          <ListMusic size={28} className="mx-auto mb-3" />
+          <p className="text-sm">Queue is empty</p>
         </div>
       ) : (
-        <div>
+        <div className="room-scroll max-h-[420px] space-y-1.5 overflow-y-auto pr-1">
           {queue.map((track, i) => (
             <div
               key={`${track.id}-${i}`}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "8px 10px",
-                borderRadius: "10px",
-                border: `1px solid ${T.border2}`,
-                background: T.surface,
-                marginBottom: "6px",
-              }}
+              className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
+                i === 0 ? "bg-white/12" : "hover:bg-white/10"
+              }`}
             >
-              <span
-                style={{
-                  fontSize: "10px",
-                  color: T.text3,
-                  width: "14px",
-                  textAlign: "right",
-                  flexShrink: 0,
-                }}
-              >
+              <span className="w-4 shrink-0 text-right text-xs text-white/40">
                 {i + 1}
               </span>
               <img
                 src={track.image}
                 alt=""
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "8px",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                  background: T.surface3,
-                }}
+                className="h-10 w-10 shrink-0 rounded-lg bg-white/10 object-cover"
               />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    color: T.text,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-white">
                   {track.name}
                 </p>
-                <p
-                  style={{
-                    fontSize: "10px",
-                    color: T.text2,
-                    marginTop: "2px",
-                  }}
-                >
-                  {track.artists?.[0]?.name}
+                <p className="truncate text-xs text-white/60">
+                  {[track.artists?.[0]?.name, track.album?.name]
+                    .filter(Boolean)
+                    .join(" · ") || "Unknown artist"}
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => removeFromQueue(track.id)}
+                className="rounded-full p-1.5 text-white/45 opacity-0 transition-all hover:bg-white/10 hover:text-white group-hover:opacity-100"
+                aria-label="Remove from queue"
+              >
+                <Trash2 size={14} />
+              </button>
               {canControlPlayback && (
                 <button
+                  type="button"
                   onClick={() => {
                     handleAdminPlayTrack(track);
                     removeFromQueue(track.id);
                   }}
-                  style={{
-                    fontSize: "9px",
-                    color: T.purpleLight,
-                    border: `1px solid rgba(106,90,205,0.3)`,
-                    background: T.purpleGhost,
-                    padding: "4px 10px",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontFamily: T.font,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+                  aria-label="Play queued track"
                 >
-                  Play
+                  <Play size={14} className="fill-current" />
                 </button>
               )}
-              <button
-                onClick={() => removeFromQueue(track.id)}
-                style={{
-                  color: T.text3,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  padding: "4px",
-                  borderRadius: "6px",
-                }}
-              >
-                ✕
-              </button>
             </div>
           ))}
         </div>
       )}
 
-      {/* History */}
-      <p
-        style={{
-          fontSize: "9px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: T.text3,
-          paddingBottom: "8px",
-          borderBottom: `1px solid ${T.border}`,
-          marginBottom: "10px",
-          marginTop: "24px",
-        }}
-      >
-        Room History{" "}
-        <span style={{ marginLeft: "8px", opacity: 0.5 }}>
-          {recentTracks.length} played
-        </span>
-      </p>
+      <div className="flex items-center gap-2 text-white">
+        <Clock3 size={16} className="text-white/70" />
+        <h3 className="text-sm font-medium">History</h3>
+        <span className="text-xs text-white/45">{recentTracks.length} played</span>
+      </div>
+
       {recentTracks.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "32px 20px",
-            color: T.text3,
-          }}
-        >
-          <div
-            style={{
-              fontSize: "28px",
-              marginBottom: "10px",
-              opacity: 0.4,
-            }}
-          >
-            🕘
-          </div>
-          <p
-            style={{
-              fontSize: "10px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-            }}
-          >
-            No history yet
-          </p>
+        <div className="rounded-[28px] border border-white/10 bg-white/5 px-6 py-10 text-center text-white/55">
+          <Clock3 size={28} className="mx-auto mb-3" />
+          <p className="text-sm">No history yet</p>
         </div>
       ) : (
-        <div>
+        <div className="space-y-1.5">
           {recentTracks.map((track, i) => {
             const historyTrack: Track = {
               id: track.videoId,
@@ -236,102 +127,43 @@ export function QueueAndHistory({
             return (
               <div
                 key={`${track.videoId}-${i}`}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  padding: "8px 10px",
-                  borderRadius: "10px",
-                  border: isActive
-                    ? `1px solid rgba(106,90,205,0.3)`
-                    : `1px solid ${T.border2}`,
-                  background: isActive ? T.purpleGhost : T.surface,
-                  marginBottom: "6px",
-                }}
+                className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
+                  isActive ? "bg-white/15" : "hover:bg-white/10"
+                }`}
               >
-                <span
-                  style={{
-                    fontSize: "10px",
-                    color: T.text3,
-                    width: "14px",
-                    textAlign: "right",
-                    flexShrink: 0,
-                  }}
-                >
+                <span className="w-4 shrink-0 text-right text-xs text-white/40">
                   {i + 1}
                 </span>
                 <img
                   src={track.image}
                   alt=""
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "8px",
-                    objectFit: "cover",
-                    flexShrink: 0,
-                    background: T.surface3,
-                  }}
+                  className="h-10 w-10 shrink-0 rounded-lg bg-white/10 object-cover"
                 />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      fontWeight: 500,
-                      color: isActive ? T.purpleLight : T.text,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}
-                  >
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-white">
                     {track.trackName}
                   </p>
-                  <p
-                    style={{
-                      fontSize: "10px",
-                      color: T.text2,
-                      marginTop: "2px",
-                    }}
-                  >
+                  <p className="truncate text-xs text-white/60">
                     {track.artistName}
                   </p>
                 </div>
                 {canControlPlayback && (
                   <button
+                    type="button"
                     onClick={() => handleAdminPlayTrack(historyTrack)}
-                    style={{
-                      fontSize: "9px",
-                      color: T.purpleLight,
-                      border: `1px solid rgba(106,90,205,0.3)`,
-                      background: T.purpleGhost,
-                      padding: "4px 10px",
-                      borderRadius: "6px",
-                      cursor: "pointer",
-                      fontFamily: T.font,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+                    aria-label="Play from history"
                   >
-                    Play
+                    <Play size={14} className="fill-current" />
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={() => addToQueue(historyTrack)}
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    borderRadius: "7px",
-                    border: `1px solid ${T.border}`,
-                    background: T.surface3,
-                    color: T.text2,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "16px",
-                    flexShrink: 0,
-                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white/75 transition-colors hover:bg-white/15 hover:text-white"
+                  aria-label="Add track to queue"
                 >
-                  ＋
+                  <Plus size={14} />
                 </button>
               </div>
             );

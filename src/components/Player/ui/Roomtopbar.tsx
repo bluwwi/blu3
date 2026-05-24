@@ -1,14 +1,9 @@
 "use client";
 
-/**
- * RoomTopBar — replaces NowPlayingBar.
- * Sits at the very top. No fixed bottom bar at all.
- */
-
+import { useMemo, useState } from "react";
 import { Track } from "@/utils/types";
-import { RoomTheme, T } from "@/utils/roomHelpers";
-
-type RepeatMode = "off" | "all" | "one";
+import { LayoutGrid, LogOut, Music, Play, Radio, Share2 } from "lucide-react";
+import { RoomTheme } from "@/utils/roomHelpers";
 
 interface Props {
   roomName: string;
@@ -35,268 +30,99 @@ export function RoomTopBar({
   onCopyInvite,
   onLeave,
 }: Props) {
-  const isPlaying = playerState === "playing";
-  const isLoading = playerState === "loading";
+  const tabs = useMemo(
+    () => [
+      { id: "listen", label: "Listen Now", icon: Play },
+      { id: "browse", label: "Browse", icon: LayoutGrid },
+      { id: "radio", label: "Radio", icon: Radio },
+      { id: "playlists", label: "Playlists", icon: Music },
+    ],
+    [],
+  );
+  const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>(
+    "listen",
+  );
   const themeLabel =
-    roomTheme === "purple"
-      ? "Lilac"
-      : roomTheme === "mono"
-        ? "Mono"
-        : "Gold";
-  const title =
-    track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing");
-  const artist = track?.artists.map((a) => a.name).join(", ") ?? "";
-  const albumArt = track?.image;
+    roomTheme === "purple" ? "Lilac" : roomTheme === "mono" ? "Mono" : "Gold";
+  const statusLabel =
+    playerState === "playing"
+      ? "Playing"
+      : playerState === "loading"
+        ? "Buffering"
+        : activeVideoId || track
+          ? "Paused"
+          : "Idle";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "0 24px",
-        height: "56px",
-        borderBottom: `1px solid ${T.border}`,
-        background: T.bg,
-        backdropFilter: "blur(12px)",
-        fontFamily: T.font,
-        flexShrink: 0,
-        position: "relative",
-        zIndex: 10,
-      }}
-    >
-      {/* Purple shimmer line when playing */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: -1,
-          left: 0,
-          right: 0,
-          height: "1px",
-          background: isPlaying
-            ? `linear-gradient(90deg,transparent,${T.purpleLight},transparent)`
-            : "transparent",
-          transition: "background 0.8s ease",
-        }}
-      />
-
-      {/* Left: room info */}
-      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+    <div className="relative flex items-center justify-between gap-4">
+      <div className="hidden items-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-white backdrop-blur-xl md:flex">
         <div
-          style={{
-            width: "7px",
-            height: "7px",
-            borderRadius: "50%",
-            background: connected ? "#22c55e" : T.text3,
-            animation: connected ? "pulse 2s ease-in-out infinite" : "none",
-            flexShrink: 0,
-          }}
+          className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "bg-white/35"}`}
         />
-        <span
-          style={{
-            fontSize: "14px",
-            fontWeight: 500,
-            color: T.text,
-            letterSpacing: "0.02em",
-          }}
-        >
-          {roomName}
-        </span>
-        <span
-          style={{
-            fontSize: "10px",
-            letterSpacing: "0.2em",
-            color: T.text3,
-            border: `1px solid ${T.border}`,
-            borderRadius: "4px",
-            padding: "2px 8px",
-          }}
-        >
+        <span className="text-sm font-medium text-white">{roomName}</span>
+        <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/65">
           {roomCode}
         </span>
-        {isHost && (
-          <span
-            style={{
-              fontSize: "9px",
-              letterSpacing: "0.15em",
-              textTransform: "uppercase",
-              color: T.purpleLight,
-              border: `1px solid ${T.border}`,
-              borderRadius: "4px",
-              padding: "2px 8px",
-            }}
-          >
-            host
-          </span>
-        )}
-        <span
-          style={{
-            fontSize: "9px",
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            color: T.text3,
-            border: `1px solid ${T.border}`,
-            borderRadius: "4px",
-            padding: "2px 8px",
-          }}
-        >
+        <span className="rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/65">
           {themeLabel}
         </span>
+        {isHost && (
+          <span className="rounded-full bg-white/15 px-2.5 py-1 text-[11px] text-white">
+            Host
+          </span>
+        )}
       </div>
 
-      {/* Center: mini now-playing */}
-      {(track || activeVideoId) && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-            position: "absolute",
-            left: "50%",
-            transform: "translateX(-50%)",
-          }}
-        >
-          {/* Tiny disc */}
-          <div
-            style={{
-              width: "30px",
-              height: "30px",
-              borderRadius: "50%",
-              overflow: "hidden",
-              position: "relative",
-              flexShrink: 0,
-              animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
-              border: `1px solid ${T.border}`,
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  `conic-gradient(${T.surface} 0deg,${T.surface2} 90deg,${T.surface} 180deg,${T.surface3} 270deg,${T.surface} 360deg)`,
-              }}
-            />
-            {albumArt && (
-              <img
-                src={albumArt}
-                alt=""
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  opacity: 0.85,
-                }}
-              />
-            )}
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%,-50%)",
-                width: "6px",
-                height: "6px",
-                borderRadius: "50%",
-                background: T.bg,
-                zIndex: 2,
-              }}
-            />
-          </div>
-          <div style={{ minWidth: 0 }}>
-            <p
-              style={{
-                fontSize: "12px",
-                fontWeight: 500,
-                color: T.text,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                maxWidth: "180px",
-                lineHeight: 1.2,
-              }}
-            >
-              {title}
-            </p>
-            {artist && (
-              <p
-                style={{
-                  fontSize: "10px",
-                  color: T.purpleLight,
-                  letterSpacing: "0.08em",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  maxWidth: "180px",
-                }}
+      <div className="absolute left-1/2 -translate-x-1/2">
+        <div className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 p-1.5 text-white shadow-2xl backdrop-blur-xl">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "bg-white/25 text-white"
+                    : "text-white/70 hover:bg-white/10 hover:text-white"
+                }`}
               >
-                {artist}
-              </p>
-            )}
-          </div>
-          {/* Status dot */}
-          <div
-            style={{
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: isPlaying ? T.purple : isLoading ? "#facc15" : T.text3,
-              animation:
-                isPlaying || isLoading
-                  ? "pulse 1.4s ease-in-out infinite"
-                  : "none",
-              flexShrink: 0,
-            }}
-          />
+                <Icon size={16} />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
-      )}
-
-      {/* Right: actions */}
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <button
-          onClick={onCopyInvite}
-          style={{
-            fontSize: "10px",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            padding: "5px 14px",
-            borderRadius: "6px",
-            border: `1px solid ${T.border}`,
-            color: T.text2,
-            background: "transparent",
-            cursor: "pointer",
-            fontFamily: T.font,
-            transition: "all 0.15s",
-          }}
-        >
-          copy invite
-        </button>
-        <button
-          onClick={onLeave}
-          style={{
-            fontSize: "10px",
-            letterSpacing: "0.15em",
-            textTransform: "uppercase",
-            padding: "5px 14px",
-            borderRadius: "6px",
-            border: "1px solid rgba(239,68,68,0.25)",
-            color: "#f87171",
-            background: "transparent",
-            cursor: "pointer",
-            fontFamily: T.font,
-            transition: "all 0.15s",
-          }}
-        >
-          leave
-        </button>
       </div>
 
-      <style>{`
-        @keyframes cdSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-      `}</style>
+      <div className="ml-auto flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-white backdrop-blur-xl">
+        <div className="hidden text-right md:block">
+          <p className="max-w-[180px] truncate text-sm font-medium text-white">
+            {track?.name ?? (activeVideoId ? "Playing from URL" : roomName)}
+          </p>
+          <p className="text-[11px] text-white/55">
+            {statusLabel}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onCopyInvite}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          aria-label="Copy invite"
+        >
+          <Share2 size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={onLeave}
+          className="flex h-9 w-9 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+          aria-label="Leave room"
+        >
+          <LogOut size={16} />
+        </button>
+      </div>
     </div>
   );
 }
