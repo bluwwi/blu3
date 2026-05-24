@@ -11,7 +11,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
-import { NowPlayingBar } from "@/components/Player/ui/NowPlayingBar";
+import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { Track } from "@/utils/types";
 import { SearchTab } from "@/components/Player/ui/SearchTab";
 import { CDPlayer } from "@/components/Player/ui/Cdplayer";
@@ -19,6 +19,7 @@ import { CDPlayer } from "@/components/Player/ui/Cdplayer";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
 
+/* ─── helpers (unchanged) ─────────────────────────────────────────── */
 function asTrackFromPlayback(
   playback: {
     videoId: string | null;
@@ -60,6 +61,25 @@ function asTrackFromRecent(recentTrack?: {
   };
 }
 
+/* ─── Design tokens ───────────────────────────────────────────────── */
+const T = {
+  bg: "#050508",
+  surface: "#0D0D14",
+  surface2: "#13131E",
+  surface3: "#1A1A28",
+  border: "rgba(106,90,205,0.18)",
+  border2: "rgba(255,255,255,0.06)",
+  purple: "#6A5ACD",
+  purpleLight: "#8B7CE8",
+  purpleDim: "#3D3280",
+  purpleGhost: "rgba(106,90,205,0.12)",
+  text: "#F0EFF8",
+  text2: "#9B97B8",
+  text3: "#4A4870",
+  font: "'DM Mono', monospace",
+};
+
+/* ─── Page ────────────────────────────────────────────────────────── */
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
@@ -78,7 +98,9 @@ export default function RoomPage() {
 
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
+  const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
   const chatEndRef = useRef<HTMLDivElement>(null);
+
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -89,7 +111,6 @@ export default function RoomPage() {
     null,
   );
 
-  const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
   const {
     connected,
     isHost: socketIsHost,
@@ -113,18 +134,12 @@ export default function RoomPage() {
     cycleQueueCurrent,
   } = useRoomSocket({
     roomCode: joined ? code : null,
-    onSchedulePlay: (state, syncedTime) => {
-      scheduleRoomPlay(state, syncedTime);
-    },
-    onSchedulePause: (state, syncedTime) => {
-      scheduleRoomPause(state, syncedTime);
-    },
-    onScheduleSeek: (state, syncedTime) => {
-      scheduleRoomSeek(state, syncedTime);
-    },
+    onSchedulePlay: (state, syncedTime) => scheduleRoomPlay(state, syncedTime),
+    onSchedulePause: (state, syncedTime) =>
+      scheduleRoomPause(state, syncedTime),
+    onScheduleSeek: (state, syncedTime) => scheduleRoomSeek(state, syncedTime),
     onPlaybackSync: (state, syncedTime) => {
       if (!state.videoId) return;
-
       if (state.isPlaying && state.updatedAt > syncedTime() + 150) {
         scheduleRoomPlay(
           {
@@ -141,28 +156,18 @@ export default function RoomPage() {
         );
         return;
       }
-
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.isPlaying && state.updatedAt) {
         const elapsed = (syncedTime() - state.updatedAt) / 1000;
-        if (elapsed > 0 && elapsed < 3600) {
-          actualCurrentTime += elapsed;
-        }
+        if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
       }
-
       if (playerState.nowPlaying?.videoId === state.videoId) {
-        if (state.isPlaying) {
-          playerState.play?.();
-        } else {
-          playerState.pause?.();
-        }
+        if (state.isPlaying) playerState.play?.();
+        else playerState.pause?.();
         progressState.seekTo(actualCurrentTime);
         setTimeout(() => {
-          if (state.isPlaying) {
-            playerState.play?.();
-          } else {
-            playerState.pause?.();
-          }
+          if (state.isPlaying) playerState.play?.();
+          else playerState.pause?.();
           progressState.seekTo(actualCurrentTime);
         }, 150);
       } else {
@@ -190,6 +195,7 @@ export default function RoomPage() {
     : false;
   const canControlPlayback = isHost || !isHostPresent;
   const queueAdvanceLockRef = useRef<string | null>(null);
+
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
   const footerTrack =
@@ -201,6 +207,7 @@ export default function RoomPage() {
         : "paused"
       : playerState.playerState;
 
+  /* ─── Scheduling helpers (unchanged logic) ─────────────────────── */
   const clearScheduledTimeout = useCallback(
     (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
       if (ref.current) {
@@ -210,13 +217,11 @@ export default function RoomPage() {
     },
     [],
   );
-
   const clearScheduledPlaybackActions = useCallback(() => {
     clearScheduledTimeout(scheduledPlayTimeoutRef);
     clearScheduledTimeout(scheduledPauseTimeoutRef);
     clearScheduledTimeout(scheduledSeekTimeoutRef);
   }, [clearScheduledTimeout]);
-
   const scheduleSyncedAction = useCallback(
     (
       ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
@@ -249,7 +254,6 @@ export default function RoomPage() {
       syncedTime: () => number,
     ) => {
       clearScheduledPlaybackActions();
-
       const track: Track = {
         id: state.id ?? `room-${state.videoId}`,
         videoId: state.videoId,
@@ -260,18 +264,15 @@ export default function RoomPage() {
         album: { name: "" },
         image: state.image ?? "",
       };
-
       const initialLateBySec =
         Math.max(syncedTime() - state.targetTime, 0) / 1000;
       const initialSeekTo = state.seekTo + initialLateBySec;
-
       if (playerState.nowPlaying?.videoId === state.videoId) {
         playerState.pause?.();
         progressState.seekTo(initialSeekTo);
       } else {
         playerState.playTrack(track, initialSeekTo, false);
       }
-
       scheduleSyncedAction(
         scheduledPlayTimeoutRef,
         state.targetTime,
@@ -299,7 +300,6 @@ export default function RoomPage() {
       scheduleSyncedAction,
     ],
   );
-
   const scheduleRoomPause = useCallback(
     (state: { targetTime: number }, syncedTime: () => number) => {
       clearScheduledTimeout(scheduledPauseTimeoutRef);
@@ -314,7 +314,6 @@ export default function RoomPage() {
     },
     [clearScheduledTimeout, playerState.pause, scheduleSyncedAction],
   );
-
   const scheduleRoomSeek = useCallback(
     (
       state: { seekTo: number; targetTime: number },
@@ -333,15 +332,14 @@ export default function RoomPage() {
     [clearScheduledTimeout, progressState, scheduleSyncedAction],
   );
 
+  /* ─── Playback sync on join (unchanged) ────────────────────────── */
   useEffect(() => {
     if (
       !joined ||
       !playback?.videoId ||
       playerState.nowPlaying?.videoId === playback.videoId
-    ) {
+    )
       return;
-    }
-
     if (playback.isPlaying && playback.updatedAt > getSyncedTime() + 150) {
       scheduleRoomPlay(
         {
@@ -358,15 +356,11 @@ export default function RoomPage() {
       );
       return;
     }
-
     let actualCurrentTime = playback.currentTime ?? 0;
     if (playback.isPlaying && playback.updatedAt) {
       const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
-      if (elapsed > 0 && elapsed < 3600) {
-        actualCurrentTime += elapsed;
-      }
+      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
     }
-
     playerState.playTrack(
       {
         id: `room-${playback.videoId}`,
@@ -390,23 +384,19 @@ export default function RoomPage() {
     scheduleRoomPlay,
   ]);
 
+  /* ─── Queue advance (unchanged) ────────────────────────────────── */
   const maybeAdvanceQueue = useCallback(() => {
     if (!canControlPlayback || !joined) return;
-
     const activeTrack = playerState.nowPlaying;
     const currentQueueTrack = queue[0];
     if (!activeTrack || !currentQueueTrack) return;
-
     const isCurrentQueueTrack =
       currentQueueTrack.videoId === activeTrack.videoId ||
       currentQueueTrack.id === activeTrack.id;
     if (!isCurrentQueueTrack) return;
-
     const activeKey = activeTrack.videoId || activeTrack.id;
     if (!activeKey || queueAdvanceLockRef.current === activeKey) return;
-
     queueAdvanceLockRef.current = activeKey;
-
     if (playbackMode.repeatMode === "one") {
       sendPlay({
         id: activeTrack.id,
@@ -419,7 +409,6 @@ export default function RoomPage() {
       });
       return;
     }
-
     const upcomingTracks = queue.slice(1);
     const nextTrack =
       upcomingTracks.length > 0
@@ -429,16 +418,13 @@ export default function RoomPage() {
         : playbackMode.repeatMode === "all"
           ? currentQueueTrack
           : null;
-
     if (
       playbackMode.repeatMode === "all" &&
       nextTrack &&
       nextTrack.id !== currentQueueTrack.id
-    ) {
+    )
       cycleQueueCurrent(currentQueueTrack.id);
-    }
-
-    if (nextTrack) {
+    if (nextTrack)
       sendPlay({
         id: nextTrack.id,
         videoId: nextTrack.videoId,
@@ -448,11 +434,8 @@ export default function RoomPage() {
         currentTime: 0,
         duration_ms: nextTrack.duration_ms,
       });
-    }
-
-    if (playbackMode.repeatMode !== "all") {
+    if (playbackMode.repeatMode !== "all")
       removeFromQueue(currentQueueTrack.id);
-    }
   }, [
     cycleQueueCurrent,
     canControlPlayback,
@@ -465,13 +448,9 @@ export default function RoomPage() {
     removeFromQueue,
   ]);
 
-  // Controller: Automatically play next song in queue when current song ends
   useEffect(() => {
-    if (playerState.playerState === "ended") {
-      maybeAdvanceQueue();
-    }
+    if (playerState.playerState === "ended") maybeAdvanceQueue();
   }, [maybeAdvanceQueue, playerState.playerState]);
-
   useEffect(() => {
     const activeKey =
       playerState.nowPlaying?.videoId || playerState.nowPlaying?.id || null;
@@ -479,7 +458,6 @@ export default function RoomPage() {
       queueAdvanceLockRef.current = null;
       return;
     }
-
     if (
       queueAdvanceLockRef.current === activeKey &&
       ["loading", "playing"].includes(playerState.playerState) &&
@@ -488,13 +466,11 @@ export default function RoomPage() {
       queueAdvanceLockRef.current = null;
       return;
     }
-
     if (
       queueAdvanceLockRef.current &&
       queueAdvanceLockRef.current !== activeKey
-    ) {
+    )
       queueAdvanceLockRef.current = null;
-    }
   }, [
     playerState.nowPlaying?.id,
     playerState.nowPlaying?.videoId,
@@ -508,20 +484,16 @@ export default function RoomPage() {
       !joined ||
       playerState.playerState !== "playing" ||
       !playerState.nowPlaying?.duration_ms
-    ) {
+    )
       return;
-    }
-
     const activeTrack = playerState.nowPlaying;
     const currentQueueTrack = queue[0];
     if (
       !currentQueueTrack ||
       (currentQueueTrack.videoId !== activeTrack.videoId &&
         currentQueueTrack.id !== activeTrack.id)
-    ) {
+    )
       return;
-    }
-
     const remainingMs = Math.max(
       activeTrack.duration_ms - progressState.currentTime * 1000,
       0,
@@ -534,12 +506,8 @@ export default function RoomPage() {
         player?.getDuration?.() ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
         duration > 0 && currentTime >= Math.max(duration - 2, 0);
-
-      if (playerState.playerState === "ended" || isNearEnd) {
-        maybeAdvanceQueue();
-      }
+      if (playerState.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
     }, remainingMs + 2500);
-
     return () => window.clearTimeout(timeoutId);
   }, [
     canControlPlayback,
@@ -552,19 +520,16 @@ export default function RoomPage() {
     queue,
   ]);
 
-  // Optimistic 0ms local queue/playback synchronization for host
+  /* ─── Admin play (unchanged) ────────────────────────────────────── */
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback) return;
-
-      // Add to the top of the queue locally immediately for 0ms visual difference
       setQueue((prev) => {
         const filtered = prev.filter(
           (t) => t.id !== track.id && t.videoId !== track.videoId,
         );
         return [track, ...filtered];
       });
-
       sendPlay({
         id: track.id,
         videoId: track.videoId,
@@ -578,66 +543,48 @@ export default function RoomPage() {
     [canControlPlayback, sendPlay, setQueue],
   );
 
-  // Web Audio Context keeper to prevent browser tab throttling/suspension in background
+  /* ─── Silent audio context (unchanged) ─────────────────────────── */
   const audioContextRef = useRef<AudioContext | null>(null);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const startSilentAudio = () => {
       if (audioContextRef.current) return;
-
       const AudioContextClass =
         window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContextClass) return;
-
       try {
         const ctx = new AudioContextClass();
         audioContextRef.current = ctx;
-
-        // Generate dynamic extremely low noise (effectively silent to humans)
-        // to bypass the browser's silence detector
         const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
         const channelData = buffer.getChannelData(0);
-        for (let i = 0; i < channelData.length; i++) {
+        for (let i = 0; i < channelData.length; i++)
           channelData[i] = (Math.random() - 0.5) * 0.00001;
-        }
-
         const source = ctx.createBufferSource();
         source.buffer = buffer;
         source.loop = true;
-
         const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.0001; // completely inaudible
-
+        gainNode.gain.value = 0.0001;
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
-
         source.start(0);
-
-        if (ctx.state === "suspended") {
-          ctx.resume();
-        }
+        if (ctx.state === "suspended") ctx.resume();
       } catch (err) {
         console.error("Failed to start background tab keeper:", err);
       }
     };
-
     const events = ["click", "keydown", "touchstart", "mousedown"];
-    events.forEach((evt) => {
-      window.addEventListener(evt, startSilentAudio, { once: true });
-    });
-
+    events.forEach((evt) =>
+      window.addEventListener(evt, startSilentAudio, { once: true }),
+    );
     return () => {
-      events.forEach((evt) => {
-        window.removeEventListener(evt, startSilentAudio);
-      });
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
+      events.forEach((evt) =>
+        window.removeEventListener(evt, startSilentAudio),
+      );
+      if (audioContextRef.current) audioContextRef.current.close();
     };
   }, []);
 
+  /* ─── Seek / play-pause / shuffle / repeat ──────────────────────── */
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -645,21 +592,12 @@ export default function RoomPage() {
       ((e.clientX - rect.left) / rect.width) * progressState.duration;
     sendSeek(seekToTime);
   };
-
-  useEffect(() => {
-    return () => {
-      clearScheduledPlaybackActions();
-    };
-  }, [clearScheduledPlaybackActions]);
-
   const handlePlayPauseAction = useCallback(() => {
     if (!canControlPlayback || !playerState.nowPlaying?.videoId) return;
-
     if (playerState.playerState === "playing") {
       sendPause(progressState.currentTime);
       return;
     }
-
     sendPlay({
       id: playerState.nowPlaying.id,
       videoId: playerState.nowPlaying.videoId,
@@ -677,12 +615,10 @@ export default function RoomPage() {
     sendPause,
     sendPlay,
   ]);
-
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     sendPlaybackMode({ shuffle: !playbackMode.shuffle });
   }, [canControlPlayback, playbackMode.shuffle, sendPlaybackMode]);
-
   const handleCycleRepeat = useCallback(() => {
     if (!canControlPlayback) return;
     const nextRepeatMode: RepeatMode =
@@ -694,10 +630,14 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
-  // Auto join room on page load
+  /* ─── Lifecycle effects (unchanged) ────────────────────────────── */
+  useEffect(() => {
+    return () => {
+      clearScheduledPlaybackActions();
+    };
+  }, [clearScheduledPlaybackActions]);
   useEffect(() => {
     if (authLoading || !user || !code) return;
-    // If we already have this room in state, skip REST call
     if (room?.code === code) {
       setJoined(true);
       return;
@@ -707,38 +647,28 @@ export default function RoomPage() {
       else router.replace("/browse");
     });
   }, [authLoading, user, code]);
-
-  // Redirect to login if not authed
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
-
-  // Scroll chat to bottom
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // Re-sync playback when tab becomes visible again to fix background throttling drift
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (
         document.visibilityState === "visible" &&
         joined &&
         !canControlPlayback
-      ) {
+      )
         requestSync();
-      }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
+    return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
   }, [canControlPlayback, joined, requestSync]);
-
   useEffect(() => {
     if (!joined || !canControlPlayback || !playerState.nowPlaying?.videoId)
       return;
-
     const playbackState =
       playerState.playerState === "playing"
         ? "playing"
@@ -747,9 +677,7 @@ export default function RoomPage() {
           : playerState.playerState === "loading"
             ? "buffering"
             : null;
-
     if (!playbackState) return;
-
     const liveCurrentTime =
       playerState.playerRef.current?.getCurrentTime?.() ??
       progressState.currentTime;
@@ -762,23 +690,15 @@ export default function RoomPage() {
     playerState.playerState,
     sendPlaybackState,
   ]);
-
   useEffect(() => {
-    if (
-      !joined ||
-      !canControlPlayback ||
-      playerState.playerState !== "playing"
-    ) {
+    if (!joined || !canControlPlayback || playerState.playerState !== "playing")
       return;
-    }
-
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
         playerState.playerRef.current?.getCurrentTime?.() ??
         progressState.currentTime;
       sendPlaybackState("playing", liveCurrentTime);
     }, 2000);
-
     return () => window.clearInterval(heartbeatId);
   }, [
     canControlPlayback,
@@ -792,166 +712,240 @@ export default function RoomPage() {
     leaveRoom();
     router.replace("/browse");
   };
-
   const handleSendChat = () => {
     if (!chatInput.trim()) return;
     sendChat(chatInput.trim());
     setChatInput("");
   };
 
+  /* ─── Loading ───────────────────────────────────────────────────── */
   if (authLoading || !joined) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-        <p className="text-zinc-500 text-sm font-mono tracking-widest animate-pulse">
+      <div
+        style={{
+          minHeight: "100vh",
+          background: T.bg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <p
+          style={{
+            color: T.text3,
+            fontSize: "12px",
+            fontFamily: T.font,
+            letterSpacing: "0.2em",
+            animation: "pulse 1.4s ease-in-out infinite",
+          }}
+        >
           joining room...
         </p>
+        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}`}</style>
       </div>
     );
   }
 
+  /* ─── Render ────────────────────────────────────────────────────── */
   return (
     <>
       <YouTubeIframe />
+      <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap"
+        rel="stylesheet"
+      />
+
       <div
-        className="min-h-screen bg-[#080808] text-white flex flex-col"
-        style={{ fontFamily: "'DM Mono', monospace" }}
+        style={{
+          minHeight: "100vh",
+          background: T.bg,
+          color: T.text,
+          display: "grid",
+          gridTemplateColumns: "1fr 300px",
+          gridTemplateRows: "56px 1fr",
+          fontFamily: T.font,
+          overflow: "hidden",
+          height: "100vh",
+        }}
       >
-        <link
-          href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap"
-          rel="stylesheet"
-        />
+        {/* Top bar */}
+        <div style={{ gridColumn: "1 / -1" }}>
+          <RoomTopBar
+            roomName={room?.name ?? "Room"}
+            roomCode={code}
+            isHost={isHost}
+            connected={connected}
+            track={footerTrack}
+            activeVideoId={
+              playerState.activeVideoId ?? playback?.videoId ?? null
+            }
+            playerState={footerPlayerState}
+            onCopyInvite={() =>
+              navigator.clipboard.writeText(window.location.href)
+            }
+            onLeave={handleLeave}
+          />
+        </div>
 
-        <NowPlayingBar
-          track={footerTrack}
-          activeVideoId={playerState.activeVideoId ?? playback?.videoId ?? null}
-          playerState={footerPlayerState}
-          progress={progressState.progress}
-          currentTime={progressState.currentTime}
-          duration={progressState.duration}
-          volume={playerState.volume}
-          isMuted={playerState.isMuted}
-          shuffleEnabled={playbackMode.shuffle}
-          repeatMode={playbackMode.repeatMode}
-          onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
-          onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
-          onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
-          onMute={playerState.toggleMute}
-          onVolume={playerState.handleVolume}
-          onSeek={canControlPlayback ? handleSeekAction : undefined}
-        />
-
-        <div className="flex h-[calc(100vh-8.5rem)] min-h-[32rem] overflow-hidden pt-0">
-          {/* Left — Search (host only) or Now Playing (guest) */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Room header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/60">
-              <div className="flex items-center gap-3">
-                <span
-                  className={`w-2 h-2 rounded-full ${connected ? "bg-green-400" : "bg-zinc-600"}`}
-                />
-                <span
-                  className="font-bold text-lg tracking-tight"
-                  style={{ fontFamily: "'Syne', sans-serif" }}
-                >
-                  {room?.name}
-                </span>
-                <span className="text-xs text-zinc-600 tracking-widest border border-zinc-800 rounded px-2 py-0.5">
-                  {code}
-                </span>
-                {isHost && (
-                  <span className="text-[10px] text-zinc-400 border border-zinc-700 rounded px-1.5 py-0.5 tracking-widest uppercase">
-                    host
+        {/* Main content */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+            background: T.bg,
+          }}
+        >
+          {/* Tab bar */}
+          <div
+            style={{
+              display: "flex",
+              padding: "0 24px",
+              borderBottom: `1px solid ${T.border}`,
+              background: "rgba(13,13,20,0.6)",
+              flexShrink: 0,
+            }}
+          >
+            {(["search", "queue"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setLeftTab(tab)}
+                style={{
+                  fontSize: "10px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  padding: "14px 0",
+                  marginRight: "24px",
+                  border: "none",
+                  background: "none",
+                  color: leftTab === tab ? T.text : T.text3,
+                  cursor: "pointer",
+                  position: "relative",
+                  fontFamily: T.font,
+                  transition: "color 0.15s",
+                }}
+              >
+                {tab === "search" ? "⌕ Search & Discover" : `≡ Queue & History`}
+                {tab === "queue" && (
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      background: T.surface3,
+                      color: T.text3,
+                      padding: "1px 6px",
+                      borderRadius: "20px",
+                      marginLeft: "6px",
+                    }}
+                  >
+                    {queue.length + recentTracks.length}
                   </span>
                 )}
-              </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() =>
-                    navigator.clipboard.writeText(window.location.href)
-                  }
-                  className="text-xs text-zinc-500 hover:text-zinc-300 border border-zinc-800 hover:border-zinc-600 rounded px-3 py-1.5 transition-colors tracking-widest uppercase"
-                >
-                  copy invite
-                </button>
-                <button
-                  onClick={handleLeave}
-                  className="text-xs text-red-500 hover:text-red-400 border border-red-900/40 hover:border-red-700 rounded px-3 py-1.5 transition-colors tracking-widest uppercase"
-                >
-                  leave
-                </button>
-              </div>
-            </div>
-
-            {/* Tab Switcher Header */}
-            <div className="flex border-b border-zinc-900/60 bg-zinc-950/20 px-6 py-3 gap-6 flex-shrink-0">
-              <button
-                onClick={() => setLeftTab("search")}
-                className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative ${
-                  leftTab === "search"
-                    ? "text-white"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                ⌕ Search & Discover
-                {leftTab === "search" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500 rounded-full" />
+                {leftTab === tab && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: -1,
+                      left: 0,
+                      right: 0,
+                      height: "2px",
+                      background: T.purple,
+                      borderRadius: "2px 2px 0 0",
+                    }}
+                  />
                 )}
               </button>
-              <button
-                onClick={() => setLeftTab("queue")}
-                className={`pb-1.5 text-xs tracking-widest uppercase font-bold transition-all relative flex items-center gap-1.5 ${
-                  leftTab === "queue"
-                    ? "text-white"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                ≡ Queue & History
-                <span className="bg-zinc-900 text-[10px] px-1.5 py-0.5 rounded-full text-zinc-400 font-mono">
-                  {queue.length + recentTracks.length}
-                </span>
-                {leftTab === "queue" && (
-                  <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500 rounded-full" />
-                )}
-              </button>
-            </div>
+            ))}
+          </div>
 
-            {/* Content pane */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 max-w-2xl w-full mx-auto">
-              <CDPlayer
-                track={footerTrack}
-                playerState={footerPlayerState}
-                progress={progressState.progress}
-                currentTime={progressState.currentTime}
-                duration={progressState.duration}
-                shuffleEnabled={playbackMode.shuffle}
-                repeatMode={playbackMode.repeatMode}
-                onPlayPause={
-                  canControlPlayback ? handlePlayPauseAction : undefined
-                }
-                onToggleShuffle={
-                  canControlPlayback ? handleToggleShuffle : undefined
-                }
-                onCycleRepeat={
-                  canControlPlayback ? handleCycleRepeat : undefined
-                }
-                onSeek={canControlPlayback ? handleSeekAction : undefined}
-              />
+          {/* Scrollable content */}
+          <div
+            style={{ flex: 1, overflowY: "auto", padding: "0 24px 24px" }}
+            className="room-scroll"
+          >
+            {/* CD Player — always visible */}
+            <CDPlayer
+              track={footerTrack}
+              playerState={footerPlayerState}
+              progress={progressState.progress}
+              currentTime={progressState.currentTime}
+              duration={progressState.duration}
+              shuffleEnabled={playbackMode.shuffle}
+              repeatMode={playbackMode.repeatMode}
+              onPlayPause={
+                canControlPlayback ? handlePlayPauseAction : undefined
+              }
+              onToggleShuffle={
+                canControlPlayback ? handleToggleShuffle : undefined
+              }
+              onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+              onSeek={canControlPlayback ? handleSeekAction : undefined}
+            />
+
+            {/* Tab content */}
+            <div style={{ maxWidth: "560px", margin: "0 auto" }}>
               {leftTab === "search" && (
                 <>
                   {!canControlPlayback ? (
-                    <div className="mb-4 px-3 py-2 bg-zinc-900 border border-zinc-800/80 rounded-lg text-xs text-zinc-500 tracking-wide flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-                      <span>🎵 synced to host — music plays automatically</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 12px",
+                        background: T.surface2,
+                        border: `1px solid ${T.border}`,
+                        borderRadius: "8px",
+                        fontSize: "10px",
+                        color: T.text3,
+                        marginBottom: "14px",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          borderRadius: "50%",
+                          background: "#22c55e",
+                          animation: "pulse 1.5s ease-in-out infinite",
+                          flexShrink: 0,
+                          display: "inline-block",
+                        }}
+                      />
+                      synced to host — music plays automatically
                     </div>
                   ) : !isHost ? (
-                    <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-xs text-green-400 tracking-wide flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-bounce" />
-                      <span>
-                        ⚡ Collaborative Mode: Room admin is away. You can play,
-                        pause and control the music!
-                      </span>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        padding: "8px 12px",
+                        background: T.purpleGhost,
+                        border: `1px solid rgba(106,90,205,0.25)`,
+                        borderRadius: "8px",
+                        fontSize: "10px",
+                        color: T.purpleLight,
+                        marginBottom: "14px",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: "6px",
+                          height: "6px",
+                          borderRadius: "50%",
+                          background: T.purple,
+                          animation: "pulse 1.5s ease-in-out infinite",
+                          flexShrink: 0,
+                          display: "inline-block",
+                        }}
+                      />
+                      ⚡ Collaborative mode: host is away — you can control
+                      playback!
                     </div>
                   ) : null}
+
                   <SearchTab
                     searchQuery={searchState.searchQuery}
                     suggestions={suggestState.suggestions}
@@ -992,98 +986,198 @@ export default function RoomPage() {
               )}
 
               {leftTab === "queue" && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
-                    <h3 className="text-xs text-zinc-500 tracking-widest uppercase font-semibold">
-                      Room Queue
-                    </h3>
-                  </div>
-
+                <div style={{ paddingTop: "8px" }}>
+                  {/* Queue */}
+                  <p
+                    style={{
+                      fontSize: "9px",
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                      color: T.text3,
+                      paddingBottom: "8px",
+                      borderBottom: `1px solid ${T.border}`,
+                      marginBottom: "10px",
+                    }}
+                  >
+                    Room Queue
+                  </p>
                   {queue.length === 0 ? (
-                    <div className="text-center py-12 space-y-3">
-                      <span className="text-4xl text-zinc-800 select-none block">
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "32px 20px",
+                        color: T.text3,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "28px",
+                          marginBottom: "10px",
+                          opacity: 0.4,
+                        }}
+                      >
                         ⊞
-                      </span>
-                      <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
-                        The queue is empty
-                      </p>
-                      <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed">
-                        Search for songs in the "Search & Discover" tab and
-                        click the "＋" button to add them!
+                      </div>
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          letterSpacing: "0.15em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Queue is empty
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-1.5">
+                    <div>
                       {queue.map((track, i) => (
                         <div
                           key={`${track.id}-${i}`}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-950/40 border border-zinc-900/60 hover:border-zinc-800 transition-all group"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            padding: "8px 10px",
+                            borderRadius: "10px",
+                            border: `1px solid ${T.border2}`,
+                            background: T.surface,
+                            marginBottom: "6px",
+                          }}
                         >
-                          <span className="text-zinc-600 text-xs font-mono w-4 text-right">
+                          <span
+                            style={{
+                              fontSize: "10px",
+                              color: T.text3,
+                              width: "14px",
+                              textAlign: "right",
+                              flexShrink: 0,
+                            }}
+                          >
                             {i + 1}
                           </span>
                           <img
                             src={track.image}
                             alt=""
-                            className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "8px",
+                              objectFit: "cover",
+                              flexShrink: 0,
+                              background: T.surface3,
+                            }}
                           />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-white truncate">
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <p
+                              style={{
+                                fontSize: "12px",
+                                fontWeight: 500,
+                                color: T.text,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                            >
                               {track.name}
                             </p>
-                            <p className="text-zinc-500 text-[10px] truncate mt-0.5">
-                              {track.artists?.[0]?.name ?? "Unknown Artist"}
+                            <p
+                              style={{
+                                fontSize: "10px",
+                                color: T.text2,
+                                marginTop: "2px",
+                              }}
+                            >
+                              {track.artists?.[0]?.name}
                             </p>
                           </div>
-
-                          <div className="flex items-center gap-2">
-                            {canControlPlayback && (
-                              <button
-                                onClick={() => {
-                                  handleAdminPlayTrack(track);
-                                  removeFromQueue(track.id);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 text-[10px] text-green-500 hover:text-green-400 border border-green-950/40 hover:border-green-900 bg-green-500/5 px-2.5 py-1 rounded-lg transition-all tracking-wider uppercase font-bold"
-                              >
-                                Play Now
-                              </button>
-                            )}
+                          {canControlPlayback && (
                             <button
-                              onClick={() => removeFromQueue(track.id)}
-                              className="text-zinc-500 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-500/5 transition-colors text-xs"
-                              title="Remove from queue"
+                              onClick={() => {
+                                handleAdminPlayTrack(track);
+                                removeFromQueue(track.id);
+                              }}
+                              style={{
+                                fontSize: "9px",
+                                color: T.purpleLight,
+                                border: `1px solid rgba(106,90,205,0.3)`,
+                                background: T.purpleGhost,
+                                padding: "4px 10px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontFamily: T.font,
+                                letterSpacing: "0.1em",
+                                textTransform: "uppercase",
+                              }}
                             >
-                              ✕
+                              Play
                             </button>
-                          </div>
+                          )}
+                          <button
+                            onClick={() => removeFromQueue(track.id)}
+                            style={{
+                              color: T.text3,
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                              padding: "4px",
+                              borderRadius: "6px",
+                            }}
+                          >
+                            ✕
+                          </button>
                         </div>
                       ))}
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between border-b border-zinc-900 pb-2 pt-4">
-                    <h3 className="text-xs text-zinc-500 tracking-widest uppercase font-semibold">
-                      Room History
-                    </h3>
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-700">
+                  {/* History */}
+                  <p
+                    style={{
+                      fontSize: "9px",
+                      letterSpacing: "0.2em",
+                      textTransform: "uppercase",
+                      color: T.text3,
+                      paddingBottom: "8px",
+                      borderBottom: `1px solid ${T.border}`,
+                      marginBottom: "10px",
+                      marginTop: "24px",
+                    }}
+                  >
+                    Room History{" "}
+                    <span style={{ marginLeft: "8px", opacity: 0.5 }}>
                       {recentTracks.length} played
                     </span>
-                  </div>
-
+                  </p>
                   {recentTracks.length === 0 ? (
-                    <div className="text-center py-12 space-y-3">
-                      <span className="text-4xl text-zinc-800 select-none block">
+                    <div
+                      style={{
+                        textAlign: "center",
+                        padding: "32px 20px",
+                        color: T.text3,
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontSize: "28px",
+                          marginBottom: "10px",
+                          opacity: 0.4,
+                        }}
+                      >
                         🕘
-                      </span>
-                      <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
-                        No room history yet
-                      </p>
-                      <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed">
-                        Played tracks will appear here for everyone in the room.
+                      </div>
+                      <p
+                        style={{
+                          fontSize: "10px",
+                          letterSpacing: "0.15em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        No history yet
                       </p>
                     </div>
                   ) : (
-                    <div className="space-y-1.5">
+                    <div>
                       {recentTracks.map((track, i) => {
                         const historyTrack: Track = {
                           id: track.videoId,
@@ -1095,68 +1189,110 @@ export default function RoomPage() {
                           duration_ms: 0,
                           explicit: false,
                         };
-                        const isTrackActive =
+                        const isActive =
                           playerState.nowPlaying?.videoId === track.videoId;
-
                         return (
                           <div
-                            key={`${track.videoId}-${track.playedAt}-${i}`}
-                            className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all ${
-                              isTrackActive
-                                ? "border-green-500/20 bg-green-500/10"
-                                : "border-zinc-900/60 bg-zinc-950/30 hover:border-zinc-800"
-                            }`}
+                            key={`${track.videoId}-${i}`}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "10px",
+                              padding: "8px 10px",
+                              borderRadius: "10px",
+                              border: isActive
+                                ? `1px solid rgba(106,90,205,0.3)`
+                                : `1px solid ${T.border2}`,
+                              background: isActive ? T.purpleGhost : T.surface,
+                              marginBottom: "6px",
+                            }}
                           >
-                            <span className="w-4 text-right font-mono text-xs text-zinc-600">
+                            <span
+                              style={{
+                                fontSize: "10px",
+                                color: T.text3,
+                                width: "14px",
+                                textAlign: "right",
+                                flexShrink: 0,
+                              }}
+                            >
                               {i + 1}
                             </span>
                             <img
                               src={track.image}
                               alt=""
-                              className="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
+                              style={{
+                                width: "40px",
+                                height: "40px",
+                                borderRadius: "8px",
+                                objectFit: "cover",
+                                flexShrink: 0,
+                                background: T.surface3,
+                              }}
                             />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                canControlPlayback
-                                  ? handleAdminPlayTrack(historyTrack)
-                                  : undefined
-                              }
-                              disabled={!canControlPlayback}
-                              className="min-w-0 flex-1 text-left"
-                            >
+                            <div style={{ flex: 1, minWidth: 0 }}>
                               <p
-                                className={`truncate text-xs font-bold ${
-                                  isTrackActive
-                                    ? "text-green-400"
-                                    : "text-white"
-                                }`}
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: 500,
+                                  color: isActive ? T.purpleLight : T.text,
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
                               >
                                 {track.trackName}
                               </p>
-                              <p className="mt-0.5 truncate text-[10px] text-zinc-500">
+                              <p
+                                style={{
+                                  fontSize: "10px",
+                                  color: T.text2,
+                                  marginTop: "2px",
+                                }}
+                              >
                                 {track.artistName}
                               </p>
-                            </button>
-                            <div className="flex items-center gap-2">
-                              {canControlPlayback && (
-                                <button
-                                  onClick={() =>
-                                    handleAdminPlayTrack(historyTrack)
-                                  }
-                                  className="rounded-lg border border-green-950/40 bg-green-500/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-green-500 transition-all hover:border-green-900 hover:text-green-400"
-                                >
-                                  Play
-                                </button>
-                              )}
-                              <button
-                                onClick={() => addToQueue(historyTrack)}
-                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-sm font-bold text-zinc-400 shadow-sm transition-all hover:border-zinc-700 hover:bg-zinc-800 hover:text-white active:scale-95"
-                                title="Add to room queue"
-                              >
-                                ＋
-                              </button>
                             </div>
+                            {canControlPlayback && (
+                              <button
+                                onClick={() =>
+                                  handleAdminPlayTrack(historyTrack)
+                                }
+                                style={{
+                                  fontSize: "9px",
+                                  color: T.purpleLight,
+                                  border: `1px solid rgba(106,90,205,0.3)`,
+                                  background: T.purpleGhost,
+                                  padding: "4px 10px",
+                                  borderRadius: "6px",
+                                  cursor: "pointer",
+                                  fontFamily: T.font,
+                                  letterSpacing: "0.1em",
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                Play
+                              </button>
+                            )}
+                            <button
+                              onClick={() => addToQueue(historyTrack)}
+                              style={{
+                                width: "30px",
+                                height: "30px",
+                                borderRadius: "7px",
+                                border: `1px solid ${T.border}`,
+                                background: T.surface3,
+                                color: T.text2,
+                                cursor: "pointer",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontSize: "16px",
+                                flexShrink: 0,
+                              }}
+                            >
+                              ＋
+                            </button>
                           </div>
                         );
                       })}
@@ -1166,84 +1302,216 @@ export default function RoomPage() {
               )}
             </div>
           </div>
+        </div>
 
-          {/* Right — Members + Chat */}
-          <div className="w-80 border-l border-zinc-800/60 flex flex-col">
-            {/* Members */}
-            <div className="px-4 py-3 border-b border-zinc-800/40">
-              <p className="text-[10px] text-zinc-600 tracking-widest uppercase mb-2">
-                {members.length} listening
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {members.map((m) => (
-                  <div key={m.userId} className="flex items-center gap-1.5">
-                    {m.avatar ? (
-                      <img
-                        src={m.avatar}
-                        className="w-6 h-6 rounded-full border border-zinc-700"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-zinc-700 flex items-center justify-center text-[10px]">
-                        {m.name[0]}
-                      </div>
-                    )}
-                    <span className="text-xs text-zinc-400">
-                      {m.name.split(" ")[0]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Chat messages */}
-            <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 scrollbar-none">
-              {messages.length === 0 && (
-                <p className="text-xs text-zinc-700 text-center mt-8 tracking-wide">
-                  no messages yet
-                </p>
-              )}
-              {messages.map((msg) => (
-                <div key={msg.id} className="flex items-start gap-2">
-                  {msg.avatar ? (
-                    <img
-                      src={msg.avatar}
-                      className="w-5 h-5 rounded-full mt-0.5 flex-shrink-0"
-                    />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full bg-zinc-700 flex items-center justify-center text-[9px] flex-shrink-0">
-                      {msg.name[0]}
-                    </div>
-                  )}
-                  <div>
-                    <span className="text-[10px] text-zinc-500 mr-1.5">
-                      {msg.name.split(" ")[0]}
-                    </span>
-                    <span className="text-xs text-zinc-300">{msg.text}</span>
-                  </div>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Chat input */}
-            <div className="flex gap-2 px-3 py-3 border-t border-zinc-800">
-              <input
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-                placeholder="say something..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-600"
-              />
-              <button
-                onClick={handleSendChat}
-                className="px-3 py-2 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xs text-zinc-300 transition-colors"
+        {/* Sidebar: members + chat */}
+        <div
+          style={{
+            borderLeft: `1px solid ${T.border}`,
+            display: "flex",
+            flexDirection: "column",
+            background: T.surface,
+            overflow: "hidden",
+          }}
+        >
+          {/* Members */}
+          <div
+            style={{
+              padding: "14px 16px",
+              borderBottom: `1px solid ${T.border}`,
+              flexShrink: 0,
+            }}
+          >
+            <p
+              style={{
+                fontSize: "9px",
+                letterSpacing: "0.2em",
+                textTransform: "uppercase",
+                color: T.text3,
+                marginBottom: "10px",
+              }}
+            >
+              {members.length} listening
+            </p>
+            {members.map((m) => (
+              <div
+                key={m.userId}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "8px",
+                }}
               >
-                ↑
-              </button>
-            </div>
+                {m.avatar ? (
+                  <img
+                    src={m.avatar}
+                    style={{
+                      width: "26px",
+                      height: "26px",
+                      borderRadius: "50%",
+                      border: `1px solid ${T.border}`,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "26px",
+                      height: "26px",
+                      borderRadius: "50%",
+                      background: T.purpleDim,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "10px",
+                      color: T.purpleLight,
+                      fontWeight: 500,
+                      border: `1px solid rgba(106,90,205,0.3)`,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {m.name[0]}
+                  </div>
+                )}
+                <span style={{ fontSize: "11px", color: T.text2 }}>
+                  {m.name.split(" ")[0]}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Messages */}
+          <div
+            style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}
+            className="room-scroll"
+          >
+            {messages.length === 0 && (
+              <p
+                style={{
+                  fontSize: "11px",
+                  color: T.text3,
+                  textAlign: "center",
+                  marginTop: "30px",
+                }}
+              >
+                no messages yet
+              </p>
+            )}
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "8px",
+                  marginBottom: "10px",
+                }}
+              >
+                {msg.avatar ? (
+                  <img
+                    src={msg.avatar}
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      marginTop: "1px",
+                      flexShrink: 0,
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "20px",
+                      height: "20px",
+                      borderRadius: "50%",
+                      background: T.surface3,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "9px",
+                      color: T.text3,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {msg.name[0]}
+                  </div>
+                )}
+                <div>
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      color: T.text3,
+                      marginRight: "6px",
+                    }}
+                  >
+                    {msg.name.split(" ")[0]}
+                  </span>
+                  <span style={{ fontSize: "11px", color: T.text2 }}>
+                    {msg.text}
+                  </span>
+                </div>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Chat input */}
+          <div
+            style={{
+              display: "flex",
+              gap: "8px",
+              padding: "10px 12px",
+              borderTop: `1px solid ${T.border}`,
+              flexShrink: 0,
+            }}
+          >
+            <input
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+              placeholder="say something…"
+              style={{
+                flex: 1,
+                background: T.surface3,
+                border: `1px solid ${T.border}`,
+                color: T.text,
+                fontSize: "11px",
+                padding: "8px 12px",
+                borderRadius: "8px",
+                outline: "none",
+                fontFamily: T.font,
+              }}
+            />
+            <button
+              onClick={handleSendChat}
+              style={{
+                width: "34px",
+                height: "34px",
+                borderRadius: "8px",
+                border: "none",
+                background: T.surface3,
+                color: T.text2,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "14px",
+                transition: "all 0.15s",
+              }}
+            >
+              ↑
+            </button>
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+        .room-scroll::-webkit-scrollbar { width: 4px }
+        .room-scroll::-webkit-scrollbar-track { background: transparent }
+        .room-scroll::-webkit-scrollbar-thumb { background: ${T.surface3}; border-radius: 2px }
+        input::placeholder { color: ${T.text3} !important }
+      `}</style>
     </>
   );
 }

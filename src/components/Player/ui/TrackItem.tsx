@@ -13,6 +13,21 @@ interface Props {
   index: number;
 }
 
+const T = {
+  surface: "#0D0D14",
+  surface2: "#13131E",
+  surface3: "#1A1A28",
+  border: "rgba(106,90,205,0.18)",
+  border2: "rgba(255,255,255,0.06)",
+  purple: "#6A5ACD",
+  purpleLight: "#8B7CE8",
+  purpleGhost: "rgba(106,90,205,0.12)",
+  text: "#F0EFF8",
+  text2: "#9B97B8",
+  text3: "#4A4870",
+  font: "'DM Mono', monospace",
+};
+
 export function TrackItem({
   track,
   isActive,
@@ -24,111 +39,167 @@ export function TrackItem({
 }: Props) {
   return (
     <div
-      className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl transition-all group border ${
-        isActive
-          ? "bg-green-500/10 border-green-500/20"
-          : onClick
-            ? "border-transparent hover:bg-zinc-900/60 hover:border-zinc-800/60"
-            : "border-transparent"
-      }`}
-      style={{ animationDelay: `${index * 25}ms` }}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "10px",
+        padding: "8px 10px",
+        borderRadius: "10px",
+        border: isActive ? `1px solid rgba(106,90,205,0.3)` : "1px solid transparent",
+        background: isActive ? T.purpleGhost : "transparent",
+        transition: "all 0.15s",
+        cursor: onClick ? "pointer" : "default",
+        animationDelay: `${index * 25}ms`,
+        fontFamily: T.font,
+      }}
+      onMouseEnter={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.background = T.surface2;
+          e.currentTarget.style.borderColor = T.border2;
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!isActive) {
+          e.currentTarget.style.background = "transparent";
+          e.currentTarget.style.borderColor = "transparent";
+        }
+      }}
     >
-      {/* Clickable Info Area */}
+      {/* Clickable area */}
       <div
         onClick={onClick}
-        className={`flex-1 flex items-center gap-3 min-w-0 ${
-          onClick && !isLoading ? "cursor-pointer" : "cursor-default"
-        }`}
+        style={{ flex: 1, display: "flex", alignItems: "center", gap: "10px", minWidth: 0, cursor: onClick && !isLoading ? "pointer" : "default" }}
       >
-        {/* Album Art + Overlay */}
-        <div className="relative flex-shrink-0 w-12 h-12">
+        {/* Album art */}
+        <div style={{ position: "relative", flexShrink: 0, width: "44px", height: "44px" }}>
           {track.image ? (
             <img
               src={track.image}
               alt=""
-              className="w-12 h-12 rounded-lg object-cover"
+              style={{ width: "44px", height: "44px", borderRadius: "8px", objectFit: "cover" }}
             />
           ) : (
-            <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center">
-              <span className="text-zinc-600">♪</span>
+            <div
+              style={{ width: "44px", height: "44px", borderRadius: "8px", background: T.surface3, display: "flex", alignItems: "center", justifyContent: "center", color: T.text3 }}
+            >
+              ♪
             </div>
           )}
-
-          {/* Play Overlay */}
+          {/* Overlay */}
           <div
-            className={`absolute inset-0 rounded-lg flex items-center justify-center transition-opacity ${
-              isLoading || (isActive && isPlaying)
-                ? "bg-black/60 opacity-100"
-                : onClick
-                  ? "bg-black/50 opacity-0 group-hover:opacity-100"
-                  : "opacity-0"
-            }`}
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: isLoading || (isActive && isPlaying) ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0)",
+              opacity: isLoading || (isActive && isPlaying) ? 1 : 0,
+              transition: "all 0.15s",
+            }}
+            className="track-overlay"
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <div style={{ width: "14px", height: "14px", border: `2px solid ${T.purpleLight}`, borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
             ) : isActive && isPlaying ? (
-              <div className="flex gap-[2px] items-end h-4">
+              <div style={{ display: "flex", gap: "2px", alignItems: "flex-end", height: "14px" }}>
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-[3px] bg-green-400 rounded-full animate-bounce"
                     style={{
+                      width: "3px",
+                      background: T.purpleLight,
+                      borderRadius: "2px",
                       height: `${6 + i * 2}px`,
+                      animation: "bounce 0.8s ease-in-out infinite",
                       animationDelay: `${i * 100}ms`,
                     }}
                   />
                 ))}
               </div>
-            ) : onClick ? (
-              <span className="text-white text-sm">▶</span>
             ) : null}
           </div>
         </div>
 
-        {/* Track Info */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+        {/* Track info */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             <p
-              className={`text-sm font-bold truncate ${isActive ? "text-green-500" : "text-white"}`}
-              style={{ fontFamily: "'Syne', sans-serif", fontSize: "0.82rem" }}
+              style={{
+                fontSize: "12px",
+                fontWeight: 500,
+                color: isActive ? T.purpleLight : T.text,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
             >
               {track.name}
             </p>
             {track.explicit && (
-              <span className="text-[9px] font-bold bg-white/10 text-zinc-500 px-1 rounded flex-shrink-0">
+              <span style={{ fontSize: "9px", fontWeight: 500, background: "rgba(255,255,255,0.08)", color: T.text3, padding: "1px 4px", borderRadius: "3px", flexShrink: 0 }}>
                 E
               </span>
             )}
           </div>
-          <p className="text-zinc-500 text-xs truncate mt-0.5">
+          <p style={{ fontSize: "10px", color: T.text2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "2px" }}>
             {track.artists.map((a) => a.name).join(", ")}
           </p>
-          <p className="text-zinc-750 text-[10px] truncate mt-0.5">{track.album.name}</p>
+          <p style={{ fontSize: "10px", color: T.text3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
+            {track.album.name}
+          </p>
         </div>
 
         {/* Duration */}
-        <div className="flex-shrink-0 text-right pr-2">
-          <p className="text-zinc-650 text-xs font-mono tabular-nums">
+        <div style={{ flexShrink: 0, paddingRight: "6px" }}>
+          <p style={{ fontSize: "10px", color: T.text3, fontFamily: T.font }}>
             {fmt(track.duration_ms)}
           </p>
         </div>
       </div>
 
-      {/* Action Buttons (Queue) */}
-      <div className="flex items-center flex-shrink-0">
-        {onAddToQueue && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onAddToQueue(track);
-            }}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 hover:border-zinc-700 active:scale-95 transition-all text-sm font-bold shadow-sm"
-            title="Add to room queue"
-          >
-            ＋
-          </button>
-        )}
-      </div>
+      {/* Add to queue */}
+      {onAddToQueue && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onAddToQueue(track); }}
+          style={{
+            width: "30px",
+            height: "30px",
+            borderRadius: "7px",
+            border: `1px solid ${T.border}`,
+            background: T.surface3,
+            color: T.text2,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "16px",
+            flexShrink: 0,
+            transition: "all 0.15s",
+          }}
+          title="Add to room queue"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "rgba(106,90,205,0.5)";
+            e.currentTarget.style.color = T.purpleLight;
+            e.currentTarget.style.background = T.purpleGhost;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = T.border;
+            e.currentTarget.style.color = T.text2;
+            e.currentTarget.style.background = T.surface3;
+          }}
+        >
+          ＋
+        </button>
+      )}
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes bounce { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.6)} }
+        .track-row:hover .track-overlay { opacity: 1 !important; background: rgba(0,0,0,0.5) !important; }
+      `}</style>
     </div>
   );
 }

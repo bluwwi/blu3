@@ -1,12 +1,5 @@
 "use client";
 
-/**
- * CDPlayer — the large centered CD disc that sits in the main content area.
- * Drop this into RoomPage where you want the visual player to live.
- *
- * Props mirror NowPlayingBar so you can share the same values.
- */
-
 import { Track } from "@/utils/types";
 
 type RepeatMode = "off" | "all" | "one";
@@ -31,6 +24,9 @@ function fmtSec(s: number) {
   const sc = Math.floor(s % 60);
   return `${m}:${sc < 10 ? "0" : ""}${sc}`;
 }
+
+const PURPLE = "#6A5ACD";
+const PURPLE_LIGHT = "#8B7CE8";
 
 export function CDPlayer({
   track,
@@ -57,17 +53,27 @@ export function CDPlayer({
   const album = track?.album?.name ?? "";
   const albumArt = track?.image;
 
-  const pink = "#ff80c8";
   const iconBtn: React.CSSProperties = {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    width: "34px",
+    height: "34px",
     borderRadius: "50%",
+    border: "1px solid rgba(255,255,255,0.07)",
+    background: "transparent",
+    cursor: "pointer",
+    color: "#4A4870",
     transition: "all 0.15s",
     padding: 0,
+    fontFamily: "'DM Mono', monospace",
+  };
+
+  const iconBtnActive: React.CSSProperties = {
+    ...iconBtn,
+    color: PURPLE_LIGHT,
+    borderColor: "rgba(106,90,205,0.4)",
+    background: "rgba(106,90,205,0.12)",
   };
 
   return (
@@ -77,33 +83,33 @@ export function CDPlayer({
         flexDirection: "column",
         alignItems: "center",
         fontFamily: "'DM Mono', monospace",
-        padding: "32px 16px 24px",
+        padding: "12px 16px 28px",
         width: "100%",
       }}
     >
       {/* Room label */}
       <p
         style={{
-          fontSize: "10px",
-          letterSpacing: "0.22em",
+          fontSize: "9px",
+          letterSpacing: "0.25em",
           textTransform: "uppercase",
-          color: "#444",
-          marginBottom: "18px",
+          color: "#2E2C50",
+          marginBottom: "20px",
         }}
       >
         {roomLabel}
       </p>
 
-      {/* ── CD Stage ── */}
+      {/* CD Stage */}
       <div
         style={{
           position: "relative",
-          width: "240px",
-          height: "240px",
+          width: "220px",
+          height: "220px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          marginBottom: "26px",
+          marginBottom: "24px",
           flexShrink: 0,
         }}
       >
@@ -111,11 +117,11 @@ export function CDPlayer({
         <div
           style={{
             position: "absolute",
-            inset: "-16px",
+            inset: "-20px",
             borderRadius: "50%",
             background:
-              "radial-gradient(circle,rgba(255,100,200,0.22) 0%,transparent 68%)",
-            opacity: isPlaying ? 1 : 0,
+              "radial-gradient(circle,rgba(106,90,205,0.28) 0%,transparent 65%)",
+            opacity: isPlaying ? 1 : 0.12,
             transition: "opacity 0.7s ease",
             pointerEvents: "none",
           }}
@@ -124,36 +130,34 @@ export function CDPlayer({
         {/* Disc */}
         <div
           style={{
-            width: "220px",
-            height: "220px",
+            width: "204px",
+            height: "204px",
             borderRadius: "50%",
             position: "relative",
             flexShrink: 0,
             animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
           }}
         >
-          {/* Conic base + rainbow tint */}
+          {/* Conic base */}
           <div
             style={{
               position: "absolute",
               inset: 0,
               borderRadius: "50%",
               background:
-                "conic-gradient(#1a1a1a 0deg,#2a2020 40deg,#3a2a2a 80deg,#1a1a2a 120deg,#2a1a1a 160deg,#1a2a1a 200deg,#2a2a1a 240deg,#1a1a1a 280deg,#2a1a2a 320deg,#1a1a1a 360deg)",
-              overflow: "hidden",
+                "conic-gradient(#0e0c18 0deg,#161326 40deg,#1c1630 80deg,#100e1c 120deg,#181530 160deg,#0c0b18 200deg,#1a1724 240deg,#0e0c18 280deg,#14112a 320deg,#0e0c18 360deg)",
             }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "50%",
-                background:
-                  "conic-gradient(rgba(255,160,200,0.07) 0deg,transparent 30deg,rgba(160,200,255,0.07) 60deg,transparent 90deg,rgba(200,255,160,0.07) 120deg,transparent 150deg,rgba(255,200,160,0.07) 180deg,transparent 210deg,rgba(160,160,255,0.07) 240deg,transparent 270deg,rgba(255,160,160,0.07) 300deg,transparent 330deg)",
-              }}
-            />
-          </div>
-
+          />
+          {/* Rainbow tint */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              borderRadius: "50%",
+              background:
+                "conic-gradient(rgba(106,90,205,0.09) 0deg,transparent 30deg,rgba(139,124,232,0.07) 60deg,transparent 90deg,rgba(106,90,205,0.06) 120deg,transparent 150deg,rgba(160,148,240,0.08) 180deg,transparent 210deg,rgba(106,90,205,0.06) 240deg,transparent 270deg,rgba(139,124,232,0.07) 300deg,transparent 330deg)",
+            }}
+          />
           {/* Album art */}
           {albumArt && (
             <img
@@ -166,11 +170,10 @@ export function CDPlayer({
                 height: "100%",
                 objectFit: "cover",
                 borderRadius: "50%",
-                opacity: 0.88,
+                opacity: 0.85,
               }}
             />
           )}
-
           {/* Sheen */}
           <div
             style={{
@@ -178,23 +181,21 @@ export function CDPlayer({
               inset: 0,
               borderRadius: "50%",
               background:
-                "conic-gradient(transparent 0deg,rgba(255,255,255,0.08) 45deg,transparent 90deg,rgba(255,255,255,0.04) 135deg,transparent 180deg,rgba(255,255,255,0.06) 225deg,transparent 270deg,rgba(255,255,255,0.03) 315deg,transparent 360deg)",
+                "conic-gradient(transparent 0deg,rgba(255,255,255,0.06) 45deg,transparent 90deg,rgba(255,255,255,0.03) 135deg,transparent 180deg,rgba(255,255,255,0.05) 225deg,transparent 270deg,rgba(255,255,255,0.02) 315deg,transparent 360deg)",
               pointerEvents: "none",
             }}
           />
-
           {/* Inner ring */}
           <div
             style={{
               position: "absolute",
-              inset: "48px",
+              inset: "44px",
               borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,0.06)",
-              boxShadow: "inset 0 0 10px rgba(0,0,0,0.7)",
+              border: "1px solid rgba(255,255,255,0.05)",
+              boxShadow: "inset 0 0 12px rgba(0,0,0,0.8)",
               pointerEvents: "none",
             }}
           />
-
           {/* Center hole */}
           <div
             style={{
@@ -202,11 +203,11 @@ export function CDPlayer({
               top: "50%",
               left: "50%",
               transform: "translate(-50%,-50%)",
-              width: "28px",
-              height: "28px",
+              width: "26px",
+              height: "26px",
               borderRadius: "50%",
-              background: "#080808",
-              border: "1.5px solid rgba(255,255,255,0.1)",
+              background: "#050508",
+              border: "1.5px solid rgba(255,255,255,0.08)",
               zIndex: 2,
             }}
           />
@@ -217,21 +218,21 @@ export function CDPlayer({
       <div
         style={{
           textAlign: "center",
-          marginBottom: "18px",
+          marginBottom: "16px",
           width: "100%",
-          maxWidth: "340px",
+          maxWidth: "300px",
         }}
       >
         <p
           style={{
-            fontSize: "16px",
+            fontSize: "15px",
             fontWeight: 500,
-            color: "#f0f0f0",
+            color: "#F0EFF8",
             letterSpacing: "0.02em",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            marginBottom: "3px",
+            marginBottom: "4px",
           }}
         >
           {title}
@@ -240,7 +241,7 @@ export function CDPlayer({
           <p
             style={{
               fontSize: "11px",
-              color: pink,
+              color: PURPLE_LIGHT,
               letterSpacing: "0.12em",
               marginBottom: "2px",
             }}
@@ -252,7 +253,7 @@ export function CDPlayer({
           <p
             style={{
               fontSize: "10px",
-              color: "#383838",
+              color: "#2E2C50",
               letterSpacing: "0.08em",
             }}
           >
@@ -262,25 +263,25 @@ export function CDPlayer({
       </div>
 
       {/* Progress bar */}
-      <div style={{ width: "100%", maxWidth: "340px", marginBottom: "18px" }}>
+      <div style={{ width: "100%", maxWidth: "300px", marginBottom: "18px" }}>
         <div
           onClick={canSeek ? onSeek : undefined}
           style={{
             width: "100%",
             height: "3px",
-            background: "#1e1e1e",
+            background: "#13131E",
             borderRadius: "2px",
             cursor: canSeek ? "pointer" : "default",
             position: "relative",
             margin: "5px 0",
           }}
-          className="cd-progress-bar"
+          className="cd-prog-bar"
         >
           <div
             style={{
               height: "100%",
               borderRadius: "2px",
-              background: pink,
+              background: PURPLE,
               width: `${safeProgress}%`,
               transition: "width 0.25s linear",
               position: "relative",
@@ -288,17 +289,19 @@ export function CDPlayer({
           >
             {canSeek && (
               <div
-                className="cd-progress-thumb"
+                className="cd-prog-thumb"
                 style={{
                   position: "absolute",
                   right: "-5px",
-                  top: "-4px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
                   width: "11px",
                   height: "11px",
                   borderRadius: "50%",
-                  background: pink,
+                  background: PURPLE,
                   opacity: 0,
                   transition: "opacity 0.15s",
+                  boxShadow: "0 0 8px rgba(106,90,205,0.6)",
                 }}
               />
             )}
@@ -309,7 +312,7 @@ export function CDPlayer({
             display: "flex",
             justifyContent: "space-between",
             fontSize: "10px",
-            color: "#444",
+            color: "#4A4870",
             letterSpacing: "0.08em",
           }}
         >
@@ -332,16 +335,18 @@ export function CDPlayer({
           type="button"
           onClick={onToggleShuffle}
           disabled={!hasModeControl}
-          style={{
-            ...iconBtn,
-            color: shuffleEnabled ? pink : "#666",
-            cursor: hasModeControl ? "pointer" : "not-allowed",
-          }}
+          style={
+            hasModeControl
+              ? shuffleEnabled
+                ? iconBtnActive
+                : iconBtn
+              : { ...iconBtn, cursor: "not-allowed", color: "#1A1A28" }
+          }
           aria-label="Shuffle"
         >
           <svg
-            width="20"
-            height="20"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -363,29 +368,29 @@ export function CDPlayer({
           onClick={onPlayPause}
           disabled={isLoading || !hasControl}
           style={{
-            width: "50px",
-            height: "50px",
-            background: hasControl && !isLoading ? pink : "#222",
+            width: "52px",
+            height: "52px",
+            background: hasControl && !isLoading ? PURPLE : "#13131E",
             border: "none",
             borderRadius: "50%",
-            cursor: isLoading
-              ? "wait"
-              : !hasControl
-                ? "not-allowed"
-                : "pointer",
+            cursor: isLoading ? "wait" : !hasControl ? "not-allowed" : "pointer",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: hasControl && !isLoading ? "#1a0010" : "#555",
+            color: hasControl && !isLoading ? "#fff" : "#3D3280",
             transition: "all 0.15s",
             flexShrink: 0,
+            boxShadow:
+              hasControl && !isLoading
+                ? "0 0 20px rgba(106,90,205,0.35)"
+                : "none",
           }}
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
             <svg
-              width="18"
-              height="18"
+              width="20"
+              height="20"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -404,12 +409,12 @@ export function CDPlayer({
               </path>
             </svg>
           ) : isPlaying ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <rect x="6" y="4" width="4" height="16" rx="1" />
               <rect x="14" y="4" width="4" height="16" rx="1" />
             </svg>
           ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5,3 19,12 5,21" />
             </svg>
           )}
@@ -420,24 +425,28 @@ export function CDPlayer({
           type="button"
           onClick={onCycleRepeat}
           disabled={!hasModeControl}
-          style={{
-            ...iconBtn,
-            color: repeatMode !== "off" ? pink : "#666",
-            fontSize: "11px",
-            fontWeight: 500,
-            letterSpacing: "0.05em",
-            fontFamily: "'DM Mono', monospace",
-            cursor: hasModeControl ? "pointer" : "not-allowed",
-            minWidth: "20px",
-          }}
+          style={
+            hasModeControl
+              ? repeatMode !== "off"
+                ? {
+                    ...iconBtnActive,
+                    width: repeatMode === "one" ? "40px" : "34px",
+                    borderRadius: repeatMode === "one" ? "8px" : "50%",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    letterSpacing: "0.05em",
+                  }
+                : iconBtn
+              : { ...iconBtn, cursor: "not-allowed", color: "#1A1A28" }
+          }
           aria-label="Repeat"
         >
           {repeatMode === "one" ? (
             "1↻"
           ) : (
             <svg
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -461,7 +470,7 @@ export function CDPlayer({
             width: "6px",
             height: "6px",
             borderRadius: "50%",
-            background: isPlaying ? pink : isLoading ? "#facc15" : "#333",
+            background: isPlaying ? PURPLE : isLoading ? "#facc15" : "#1A1A28",
             animation:
               isPlaying || isLoading
                 ? "statusPulse 1.4s ease-in-out infinite"
@@ -470,9 +479,9 @@ export function CDPlayer({
         />
         <span
           style={{
-            fontSize: "10px",
-            color: "#3a3a3a",
-            letterSpacing: "0.15em",
+            fontSize: "9px",
+            color: "#2E2C50",
+            letterSpacing: "0.18em",
             textTransform: "uppercase",
           }}
         >
@@ -487,7 +496,8 @@ export function CDPlayer({
       <style>{`
         @keyframes cdSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-        .cd-progress-bar:hover .cd-progress-thumb { opacity: 1 !important; }
+        .cd-prog-bar:hover .cd-prog-thumb { opacity: 1 !important; }
+        .cd-prog-bar:hover { background: #1A1A28 !important; }
       `}</style>
     </div>
   );

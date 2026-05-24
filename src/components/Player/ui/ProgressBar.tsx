@@ -19,8 +19,7 @@ export function ProgressBar({
 }: Props) {
   const safeDuration = Math.max(duration, 0);
   const safeCurrentTime = Math.min(Math.max(currentTime, 0), safeDuration || 0);
-  const safeProgress =
-    safeDuration > 0 ? Math.max(0, Math.min(progress, 100)) : 0;
+  const safeProgress = safeDuration > 0 ? Math.max(0, Math.min(progress, 100)) : 0;
   const canSeek = Boolean(onSeek && safeDuration > 0);
 
   return (
@@ -31,7 +30,7 @@ export function ProgressBar({
       <span
         style={{
           fontSize: "10px",
-          color: "#555",
+          color: "#4A4870",
           fontFamily: "'DM Mono', monospace",
           letterSpacing: "0.05em",
           minWidth: "32px",
@@ -51,17 +50,18 @@ export function ProgressBar({
           flex: 1,
           height: "3px",
           borderRadius: "2px",
-          background: "#222",
+          background: "#1A1A28",
           cursor: canSeek ? "pointer" : "default",
           position: "relative",
+          transition: "background 0.15s",
         }}
-        className="group"
+        className="prog-group"
       >
         <div
           style={{
             height: "100%",
             borderRadius: "2px",
-            background: "linear-gradient(90deg, #cc60a0, #ff80c8)",
+            background: "#6A5ACD",
             width: `${safeProgress}%`,
             transition: "width 0.25s linear",
             position: "relative",
@@ -77,8 +77,8 @@ export function ProgressBar({
                 width: "11px",
                 height: "11px",
                 borderRadius: "50%",
-                background: "#ff80c8",
-                boxShadow: "0 0 6px rgba(255,128,200,0.5)",
+                background: "#6A5ACD",
+                boxShadow: "0 0 8px rgba(106,90,205,0.6)",
                 opacity: 0,
                 transition: "opacity 0.15s",
               }}
@@ -91,7 +91,7 @@ export function ProgressBar({
       <span
         style={{
           fontSize: "10px",
-          color: "#444",
+          color: "#2E2C50",
           fontFamily: "'DM Mono', monospace",
           letterSpacing: "0.05em",
           minWidth: "32px",
@@ -101,8 +101,8 @@ export function ProgressBar({
       </span>
 
       <style>{`
-        .group:hover .progress-thumb { opacity: 1 !important; }
-        .group:hover { background: #2a2a2a !important; }
+        .prog-group:hover .progress-thumb { opacity: 1 !important; }
+        .prog-group:hover { background: #13131E !important; }
       `}</style>
     </div>
   );
