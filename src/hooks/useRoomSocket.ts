@@ -59,9 +59,11 @@ type ScheduledPlayMessage = Extract<WSMessage, { type: "schedule_play" }> & {
 
 type ScheduledPauseMessage = Extract<WSMessage, { type: "schedule_pause" }>;
 type ScheduledSeekMessage = Extract<WSMessage, { type: "schedule_seek" }>;
+type BaseWSMessage = Exclude<WSMessage, Extract<WSMessage, { type: "schedule_play" }>>;
 
 type RoomSocketMessage =
-  | WSMessage
+  | BaseWSMessage
+  | ScheduledPlayMessage
   | {
       type: "room:joined";
       isHost: boolean;

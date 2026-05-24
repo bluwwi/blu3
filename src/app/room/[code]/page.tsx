@@ -36,6 +36,15 @@ export default function RoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const scheduledPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const scheduledSeekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
   const {
@@ -52,64 +61,44 @@ export default function RoomPage() {
     sendPause,
     sendSeek,
     requestSync,
+    sendPlaybackState,
+    getSyncedTime,
     addToQueue,
     removeFromQueue,
   } = useRoomSocket({
     roomCode: joined ? code : null,
-    onPlaybackPlay: (state) => {
-      if (canControlPlayback) return; // host/controller controls their own player
-      if (state.videoId) {
-        let actualCurrentTime = state.currentTime ?? 0;
-        if (state.updatedAt) {
-          const elapsed = (Date.now() - state.updatedAt) / 1000;
-          if (elapsed > 0 && elapsed < 3600) {
-            actualCurrentTime += elapsed;
-          }
-        }
-
-        if (playerState.nowPlaying?.videoId === state.videoId) {
-          playerState.play?.();
-          progressState.seekTo(actualCurrentTime);
-          // Safety fallback seek/play for loading/buffering asynchronously
-          setTimeout(() => {
-            playerState.play?.();
-            progressState.seekTo(actualCurrentTime);
-          }, 150);
-        } else {
-          playerState.playTrack(
-            {
-              id: `room-${state.videoId}`,
-              videoId: state.videoId,
-              name: state.trackName,
-              duration_ms: 0,
-              explicit: false,
-              artists: [{ name: state.artistName }],
-              album: { name: "" },
-              image: state.image,
-            },
-            actualCurrentTime,
-            true
-          );
-        }
-      }
+    onSchedulePlay: (state, syncedTime) => {
+      scheduleRoomPlay(state, syncedTime);
     },
-    onPlaybackPause: (t) => {
-      if (!canControlPlayback) {
-        playerState.pause?.();
-        if (typeof t === "number") {
-          progressState.seekTo(t);
-        }
-      }
+    onSchedulePause: (state, syncedTime) => {
+      scheduleRoomPause(state, syncedTime);
     },
-    onPlaybackSeek: (t) => {
-      if (!canControlPlayback) progressState.seekTo(t);
+    onScheduleSeek: (state, syncedTime) => {
+      scheduleRoomSeek(state, syncedTime);
     },
-    onPlaybackSync: (state) => {
+    onPlaybackSync: (state, syncedTime) => {
       if (canControlPlayback || !state.videoId) return;
+
+      if (state.isPlaying && state.updatedAt > syncedTime() + 150) {
+        scheduleRoomPlay(
+          {
+            videoId: state.videoId,
+            seekTo: state.currentTime ?? 0,
+            targetTime: state.updatedAt,
+            id: `room-${state.videoId}`,
+            trackName: state.trackName,
+            artistName: state.artistName,
+            image: state.image,
+            duration_ms: 0,
+          },
+          syncedTime,
+        );
+        return;
+      }
 
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.isPlaying && state.updatedAt) {
-        const elapsed = (Date.now() - state.updatedAt) / 1000;
+        const elapsed = (syncedTime() - state.updatedAt) / 1000;
         if (elapsed > 0 && elapsed < 3600) {
           actualCurrentTime += elapsed;
         }
@@ -122,7 +111,6 @@ export default function RoomPage() {
           playerState.pause?.();
         }
         progressState.seekTo(actualCurrentTime);
-        // Safety fallback seek/play for loading/buffering asynchronously
         setTimeout(() => {
           if (state.isPlaying) {
             playerState.play?.();
@@ -144,7 +132,7 @@ export default function RoomPage() {
             image: state.image,
           },
           actualCurrentTime,
-          state.isPlaying
+          state.isPlaying,
         );
       }
     },
@@ -155,14 +143,166 @@ export default function RoomPage() {
   const canControlPlayback = isHost || !isHostPresent;
   const queueAdvanceLockRef = useRef<string | null>(null);
 
+
+  const clearScheduledTimeout = useCallback(
+    (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
+      if (ref.current) {
+        clearTimeout(ref.current);
+        ref.current = null;
+      }
+    },
+    [],
+  );
+
+  const clearScheduledPlaybackActions = useCallback(() => {
+    clearScheduledTimeout(scheduledPlayTimeoutRef);
+    clearScheduledTimeout(scheduledPauseTimeoutRef);
+    clearScheduledTimeout(scheduledSeekTimeoutRef);
+  }, [clearScheduledTimeout]);
+
+  const scheduleSyncedAction = useCallback(
+    (
+      ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
+      targetTime: number,
+      syncedTime: () => number,
+      action: () => void,
+    ) => {
+      clearScheduledTimeout(ref);
+      const delay = Math.max(targetTime - syncedTime(), 0);
+      ref.current = setTimeout(() => {
+        ref.current = null;
+        action();
+      }, delay);
+    },
+    [clearScheduledTimeout],
+  );
+
+  const scheduleRoomPlay = useCallback(
+    (
+      state: {
+        videoId: string;
+        seekTo: number;
+        targetTime: number;
+        id?: string;
+        trackName?: string;
+        artistName?: string;
+        image?: string;
+        duration_ms?: number;
+      },
+      syncedTime: () => number,
+    ) => {
+      clearScheduledPlaybackActions();
+
+      const track: Track = {
+        id: state.id ?? `room-${state.videoId}`,
+        videoId: state.videoId,
+        name: state.trackName ?? "Playing from room",
+        duration_ms: state.duration_ms ?? 0,
+        explicit: false,
+        artists: [{ name: state.artistName ?? "" }],
+        album: { name: "" },
+        image: state.image ?? "",
+      };
+
+      const initialLateBySec = Math.max(syncedTime() - state.targetTime, 0) / 1000;
+      const initialSeekTo = state.seekTo + initialLateBySec;
+
+      if (playerState.nowPlaying?.videoId === state.videoId) {
+        playerState.pause?.();
+        progressState.seekTo(initialSeekTo);
+      } else {
+        playerState.playTrack(track, initialSeekTo, false);
+      }
+
+      scheduleSyncedAction(
+        scheduledPlayTimeoutRef,
+        state.targetTime,
+        syncedTime,
+        () => {
+          const liveLateBySec =
+            Math.max(syncedTime() - state.targetTime, 0) / 1000;
+          const liveSeekTo = state.seekTo + liveLateBySec;
+          progressState.seekTo(liveSeekTo);
+          playerState.play?.();
+          setTimeout(() => {
+            progressState.seekTo(liveSeekTo);
+            playerState.play?.();
+          }, 150);
+        },
+      );
+    },
+    [
+      clearScheduledPlaybackActions,
+      playerState.nowPlaying?.videoId,
+      playerState.pause,
+      playerState.play,
+      playerState.playTrack,
+      progressState,
+      scheduleSyncedAction,
+    ],
+  );
+
+  const scheduleRoomPause = useCallback(
+    (
+      state: { targetTime: number },
+      syncedTime: () => number,
+    ) => {
+      clearScheduledTimeout(scheduledPauseTimeoutRef);
+      scheduleSyncedAction(
+        scheduledPauseTimeoutRef,
+        state.targetTime,
+        syncedTime,
+        () => {
+          playerState.pause?.();
+        },
+      );
+    },
+    [clearScheduledTimeout, playerState.pause, scheduleSyncedAction],
+  );
+
+  const scheduleRoomSeek = useCallback(
+    (
+      state: { seekTo: number; targetTime: number },
+      syncedTime: () => number,
+    ) => {
+      clearScheduledTimeout(scheduledSeekTimeoutRef);
+      scheduleSyncedAction(
+        scheduledSeekTimeoutRef,
+        state.targetTime,
+        syncedTime,
+        () => {
+          progressState.seekTo(state.seekTo);
+        },
+      );
+    },
+    [clearScheduledTimeout, progressState, scheduleSyncedAction],
+  );
+
   useEffect(() => {
     if (!joined || !playback?.videoId || canControlPlayback || playerState.nowPlaying) {
       return;
     }
 
+    if (playback.isPlaying && playback.updatedAt > getSyncedTime() + 150) {
+      scheduleRoomPlay(
+        {
+          videoId: playback.videoId,
+          seekTo: playback.currentTime ?? 0,
+          targetTime: playback.updatedAt,
+          id: `room-${playback.videoId}`,
+          trackName: playback.trackName,
+          artistName: playback.artistName,
+          image: playback.image,
+          duration_ms: 0,
+        },
+        getSyncedTime,
+      );
+      return;
+    }
+
     let actualCurrentTime = playback.currentTime ?? 0;
     if (playback.isPlaying && playback.updatedAt) {
-      const elapsed = (Date.now() - playback.updatedAt) / 1000;
+      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
       if (elapsed > 0 && elapsed < 3600) {
         actualCurrentTime += elapsed;
       }
@@ -184,10 +324,12 @@ export default function RoomPage() {
     );
   }, [
     canControlPlayback,
+    getSyncedTime,
     joined,
     playback,
     playerState.nowPlaying,
     playerState.playTrack,
+    scheduleRoomPlay,
   ]);
 
   const maybeAdvanceQueue = useCallback(() => {
@@ -208,7 +350,16 @@ export default function RoomPage() {
     queueAdvanceLockRef.current = activeKey;
 
     if (queue.length > 1) {
-      playerState.playTrack(queue[1]);
+      const nextTrack = queue[1];
+      sendPlay({
+        id: nextTrack.id,
+        videoId: nextTrack.videoId,
+        trackName: nextTrack.name,
+        artistName: nextTrack.artists?.[0]?.name ?? "",
+        image: nextTrack.image ?? "",
+        currentTime: 0,
+        duration_ms: nextTrack.duration_ms,
+      });
     }
 
     removeFromQueue(currentQueueTrack.id);
@@ -216,8 +367,8 @@ export default function RoomPage() {
     canControlPlayback,
     joined,
     playerState.nowPlaying,
-    playerState.playTrack,
     queue,
+    sendPlay,
     removeFromQueue,
   ]);
 
@@ -290,15 +441,23 @@ export default function RoomPage() {
   // Optimistic 0ms local queue/playback synchronization for host
   const handleAdminPlayTrack = useCallback((track: Track) => {
     if (!canControlPlayback) return;
-    
+
     // Add to the top of the queue locally immediately for 0ms visual difference
     setQueue((prev) => {
       const filtered = prev.filter((t) => t.id !== track.id && t.videoId !== track.videoId);
       return [track, ...filtered];
     });
 
-    playerState.playTrack(track);
-  }, [canControlPlayback, playerState.playTrack, setQueue]);
+    sendPlay({
+      id: track.id,
+      videoId: track.videoId,
+      trackName: track.name,
+      artistName: track.artists?.[0]?.name ?? "",
+      image: track.image ?? "",
+      currentTime: 0,
+      duration_ms: track.duration_ms,
+    });
+  }, [canControlPlayback, sendPlay, setQueue]);
 
   // Web Audio Context keeper to prevent browser tab throttling/suspension in background
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -365,9 +524,40 @@ export default function RoomPage() {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const seekToTime = ((e.clientX - rect.left) / rect.width) * progressState.duration;
-    progressState.seekTo(seekToTime);
     sendSeek(seekToTime);
   };
+
+  useEffect(() => {
+    return () => {
+      clearScheduledPlaybackActions();
+    };
+  }, [clearScheduledPlaybackActions]);
+
+  const handlePlayPauseAction = useCallback(() => {
+    if (!canControlPlayback || !playerState.nowPlaying?.videoId) return;
+
+    if (playerState.playerState === "playing") {
+      sendPause(progressState.currentTime);
+      return;
+    }
+
+    sendPlay({
+      id: playerState.nowPlaying.id,
+      videoId: playerState.nowPlaying.videoId,
+      trackName: playerState.nowPlaying.name,
+      artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
+      image: playerState.nowPlaying.image ?? "",
+      currentTime: progressState.currentTime,
+      duration_ms: playerState.nowPlaying.duration_ms,
+    });
+  }, [
+    canControlPlayback,
+    playerState.nowPlaying,
+    playerState.playerState,
+    progressState.currentTime,
+    sendPause,
+    sendPlay,
+  ]);
 
   // Auto join room on page load
   useEffect(() => {
@@ -406,49 +596,51 @@ export default function RoomPage() {
     };
   }, [joined, requestSync]);
 
-  const isPausedRef = useRef(false);
-
-  // Host: sync playback to room when track changes
   useEffect(() => {
-    if (!canControlPlayback || !joined) return;
-    const v = playerState.nowPlaying;
-    if (!v?.videoId) return;
-    isPausedRef.current = false;
-    sendPlay({
-      id: v.id,
-      videoId: v.videoId,
-      trackName: v.name,
-      artistName: v.artists?.[0]?.name ?? "",
-      image: v.image ?? "",
-      currentTime: 0,
-      duration_ms: v.duration_ms,
-    });
-  }, [playerState.nowPlaying?.videoId]);
+    if (!joined || !canControlPlayback || !playerState.nowPlaying?.videoId) return;
 
-  // Host: sync pause & resume
+    const playbackState =
+      playerState.playerState === "playing"
+        ? "playing"
+        : playerState.playerState === "paused"
+          ? "paused"
+          : playerState.playerState === "loading"
+            ? "buffering"
+            : null;
+
+    if (!playbackState) return;
+
+    const liveCurrentTime =
+      playerState.playerRef.current?.getCurrentTime?.() ?? progressState.currentTime;
+    sendPlaybackState(playbackState, liveCurrentTime);
+  }, [
+    canControlPlayback,
+    joined,
+    playerState.nowPlaying?.videoId,
+    playerState.playerRef,
+    playerState.playerState,
+    sendPlaybackState,
+  ]);
+
   useEffect(() => {
-    if (!canControlPlayback || !joined) return;
+    if (!joined || !canControlPlayback || playerState.playerState !== "playing") {
+      return;
+    }
 
-    if (playerState.playerState === "paused") {
-      isPausedRef.current = true;
-      sendPause(progressState.currentTime);
-    }
-    if (playerState.playerState === "playing" && playerState.nowPlaying) {
-      // Only sync play if we are resuming from a paused state
-      if (isPausedRef.current) {
-        isPausedRef.current = false;
-        sendPlay({
-          id: playerState.nowPlaying.id,
-          videoId: playerState.nowPlaying.videoId!,
-          trackName: playerState.nowPlaying.name,
-          artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
-          image: playerState.nowPlaying.image ?? "",
-          currentTime: progressState.currentTime,
-          duration_ms: playerState.nowPlaying.duration_ms,
-        });
-      }
-    }
-  }, [playerState.playerState, playerState.nowPlaying?.videoId]);
+    const heartbeatId = window.setInterval(() => {
+      const liveCurrentTime =
+        playerState.playerRef.current?.getCurrentTime?.() ?? progressState.currentTime;
+      sendPlaybackState("playing", liveCurrentTime);
+    }, 2000);
+
+    return () => window.clearInterval(heartbeatId);
+  }, [
+    canControlPlayback,
+    joined,
+    playerState.playerRef,
+    playerState.playerState,
+    sendPlaybackState,
+  ]);
 
   const handleLeave = () => {
     leaveRoom();
@@ -493,7 +685,7 @@ export default function RoomPage() {
             duration={progressState.duration}
             volume={playerState.volume}
             isMuted={playerState.isMuted}
-            onPlayPause={canControlPlayback ? playerState.togglePlayPause : undefined}
+            onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
             onMute={playerState.toggleMute}
             onVolume={playerState.handleVolume}
             onSeek={canControlPlayback ? handleSeekAction : undefined}
