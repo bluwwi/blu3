@@ -150,8 +150,8 @@ export function RoomPanel({
 
       {/* Members */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-zinc-800/50">
-        {members.map((m) => (
-          <div key={m.userId} title={m.name}>
+        {members.map((m,index) => (
+          <div key={index} title={m.name}>
             {m.avatar ? (
               <img
                 src={m.avatar}

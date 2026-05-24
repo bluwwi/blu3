@@ -13,11 +13,8 @@ import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { Track } from "@/utils/types";
-import { SearchTab } from "@/components/Player/ui/SearchTab";
 import { CDPlayer } from "@/components/Player/ui/Cdplayer";
 import { asTrackFromPlayback, asTrackFromRecent, T } from "@/utils/roomHelpers";
-import { LeftTabBar } from "@/components/Player/ui/LeftTabBar";
-import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 
@@ -42,8 +39,8 @@ export default function RoomPage() {
 
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
-  const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
-  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -649,12 +646,20 @@ export default function RoomPage() {
     sendPlaybackState,
   ]);
   const openSearchOverlay = useCallback(() => {
-    setShowSearchOverlay(true);
+    setChatOpen(false);
+    setSearchOpen(true);
   }, []);
   const closeSearchOverlay = useCallback(() => {
     suggestState.hideSuggestions();
-    setShowSearchOverlay(false);
+    setSearchOpen(false);
   }, [suggestState]);
+  const openChatOverlay = useCallback(() => {
+    setSearchOpen(false);
+    setChatOpen(true);
+  }, []);
+  const closeChatOverlay = useCallback(() => {
+    setChatOpen(false);
+  }, []);
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -663,11 +668,12 @@ export default function RoomPage() {
       }
       if (event.key === "Escape") {
         closeSearchOverlay();
+        closeChatOverlay();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeSearchOverlay, openSearchOverlay]);
+  }, [closeChatOverlay, closeSearchOverlay, openSearchOverlay]);
 
   const handleLeave = () => {
     leaveRoom();
@@ -699,7 +705,7 @@ export default function RoomPage() {
           background: T.bg,
           color: T.text,
           display: "grid",
-          gridTemplateColumns: "1fr 300px",
+          gridTemplateColumns: "1fr 360px",
           gridTemplateRows: "56px 1fr",
           fontFamily: T.font,
           overflow: "hidden",
@@ -732,155 +738,98 @@ export default function RoomPage() {
             flexDirection: "column",
             overflow: "hidden",
             background: T.bg,
+            justifyContent: "center",
           }}
         >
-          {/* Tab bar */}
-          <LeftTabBar
-            leftTab={leftTab}
-            setLeftTab={setLeftTab}
-            queueLength={queue.length}
-            recentTracksLength={recentTracks.length}
-          />
-
-          {/* Scrollable content */}
           <div
-            style={{ flex: 1, overflowY: "auto", padding: "0 24px 24px" }}
+            style={{
+              flex: 1,
+              overflowY: "auto",
+              padding: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
             className="room-scroll"
           >
-            {/* CD Player — always visible */}
-            <CDPlayer
-              track={footerTrack}
-              playerState={footerPlayerState}
-              progress={progressState.progress}
-              currentTime={progressState.currentTime}
-              duration={progressState.duration}
-              shuffleEnabled={playbackMode.shuffle}
-              repeatMode={playbackMode.repeatMode}
-              onPlayPause={
-                canControlPlayback ? handlePlayPauseAction : undefined
-              }
-              onToggleShuffle={
-                canControlPlayback ? handleToggleShuffle : undefined
-              }
-              onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
-              onSeek={canControlPlayback ? handleSeekAction : undefined}
-            />
-
-            {/* Tab content */}
-            <div style={{ maxWidth: "560px", margin: "0 auto" }}>
-              {leftTab === "search" && (
-                <>
-                  {!canControlPlayback ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        padding: "8px 12px",
-                        background: T.surface2,
-                        border: `1px solid ${T.border}`,
-                        borderRadius: "8px",
-                        fontSize: "10px",
-                        color: T.text3,
-                        marginBottom: "14px",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: "6px",
-                          height: "6px",
-                          borderRadius: "50%",
-                          background: "#22c55e",
-                          animation: "pulse 1.5s ease-in-out infinite",
-                          flexShrink: 0,
-                          display: "inline-block",
-                        }}
-                      />
-                      synced to host — music plays automatically
-                    </div>
-                  ) : !isHost ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        padding: "8px 12px",
-                        background: T.purpleGhost,
-                        border: `1px solid rgba(106,90,205,0.25)`,
-                        borderRadius: "8px",
-                        fontSize: "10px",
-                        color: T.purpleLight,
-                        marginBottom: "14px",
-                        letterSpacing: "0.05em",
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: "6px",
-                          height: "6px",
-                          borderRadius: "50%",
-                          background: T.purple,
-                          animation: "pulse 1.5s ease-in-out infinite",
-                          flexShrink: 0,
-                          display: "inline-block",
-                        }}
-                      />
-                      ⚡ Collaborative mode: host is away — you can control
-                      playback!
-                    </div>
-                  ) : null}
-
-                  <SearchTab
-                    searchQuery={searchState.searchQuery}
-                    suggestions={suggestState.suggestions}
-                    showSuggestions={suggestState.showSuggestions}
-                    results={searchState.results}
-                    isSearching={searchState.isSearching}
-                    searchError={searchState.searchError}
-                    activeTrackId={playerState.nowPlaying?.id ?? null}
-                    loadingTrackId={playerState.loadingId}
-                    isPlaying={playerState.playerState === "playing"}
-                    onSearchInput={searchState.onSearchInput}
-                    onSearch={searchState.doSearch}
-                    onSuggestionSelect={(s) => {
-                      searchState.setSearchQuery(s);
-                      searchState.doSearch(s);
-                      suggestState.hideSuggestions();
-                    }}
-                    onTrackSelect={
-                      canControlPlayback ? handleAdminPlayTrack : undefined
-                    }
-                    onAddToQueue={addToQueue}
-                    onFocus={() =>
-                      suggestState.suggestions.length > 0 &&
-                      suggestState.setShowSuggestions(true)
-                    }
-                    onBlur={() =>
-                      setTimeout(() => suggestState.hideSuggestions(), 200)
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        searchState.doSearch(searchState.searchQuery);
-                        suggestState.hideSuggestions();
-                      }
-                      if (e.key === "Escape") suggestState.hideSuggestions();
+            <div style={{ width: "100%", maxWidth: "520px" }}>
+              {!canControlPlayback ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    background: T.surface2,
+                    border: `1px solid ${T.border}`,
+                    borderRadius: "8px",
+                    fontSize: "10px",
+                    color: T.text3,
+                    marginBottom: "14px",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      background: "#22c55e",
+                      animation: "pulse 1.5s ease-in-out infinite",
+                      flexShrink: 0,
+                      display: "inline-block",
                     }}
                   />
-                </>
-              )}
+                  synced to host - music plays automatically
+                </div>
+              ) : !isHost ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "8px 12px",
+                    background: T.purpleGhost,
+                    border: `1px solid rgba(106,90,205,0.25)`,
+                    borderRadius: "8px",
+                    fontSize: "10px",
+                    color: T.purpleLight,
+                    marginBottom: "14px",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      background: T.purple,
+                      animation: "pulse 1.5s ease-in-out infinite",
+                      flexShrink: 0,
+                      display: "inline-block",
+                    }}
+                  />
+                  Collaborative mode: host is away - you can control playback.
+                </div>
+              ) : null}
 
-              {leftTab === "queue" && (
-                <QueueAndHistory
-                  queue={queue}
-                  recentTracks={recentTracks}
-                  canControlPlayback={canControlPlayback}
-                  handleAdminPlayTrack={handleAdminPlayTrack}
-                  removeFromQueue={removeFromQueue}
-                  addToQueue={addToQueue}
-                  activeVideoId={playerState.nowPlaying?.videoId}
-                />
-              )}
+              <CDPlayer
+                track={footerTrack}
+                playerState={footerPlayerState}
+                progress={progressState.progress}
+                currentTime={progressState.currentTime}
+                duration={progressState.duration}
+                shuffleEnabled={playbackMode.shuffle}
+                repeatMode={playbackMode.repeatMode}
+                onPlayPause={
+                  canControlPlayback ? handlePlayPauseAction : undefined
+                }
+                onToggleShuffle={
+                  canControlPlayback ? handleToggleShuffle : undefined
+                }
+                onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
+                onSeek={canControlPlayback ? handleSeekAction : undefined}
+              />
             </div>
           </div>
         </div>
@@ -892,6 +841,55 @@ export default function RoomPage() {
           chatInput={chatInput}
           setChatInput={setChatInput}
           handleSendChat={handleSendChat}
+          queue={queue}
+          recentTracks={recentTracks}
+          canControlPlayback={canControlPlayback}
+          handleAdminPlayTrack={handleAdminPlayTrack}
+          removeFromQueue={removeFromQueue}
+          addToQueue={addToQueue}
+          activeVideoId={playerState.nowPlaying?.videoId}
+          searchOpen={searchOpen}
+          chatOpen={chatOpen}
+          onOpenSearch={openSearchOverlay}
+          onCloseSearch={closeSearchOverlay}
+          onOpenChat={openChatOverlay}
+          onCloseChat={closeChatOverlay}
+          searchQuery={searchState.searchQuery}
+          suggestions={suggestState.suggestions}
+          showSuggestions={suggestState.showSuggestions}
+          results={searchState.results}
+          isSearching={searchState.isSearching}
+          searchError={searchState.searchError}
+          activeTrackId={playerState.nowPlaying?.id ?? null}
+          loadingTrackId={playerState.loadingId}
+          isPlaying={playerState.playerState === "playing"}
+          onSearchInput={searchState.onSearchInput}
+          onSearch={searchState.doSearch}
+          onSuggestionSelect={(s) => {
+            searchState.setSearchQuery(s);
+            searchState.doSearch(s);
+            suggestState.hideSuggestions();
+          }}
+          onTrackSelect={
+            canControlPlayback ? handleAdminPlayTrack : undefined
+          }
+          onSearchFocus={() =>
+            suggestState.suggestions.length > 0 &&
+            suggestState.setShowSuggestions(true)
+          }
+          onSearchBlur={() =>
+            setTimeout(() => suggestState.hideSuggestions(), 200)
+          }
+          onSearchKeyDown={(e) => {
+            if (e.key === "Enter") {
+              searchState.doSearch(searchState.searchQuery);
+              suggestState.hideSuggestions();
+            }
+            if (e.key === "Escape") {
+              suggestState.hideSuggestions();
+              closeSearchOverlay();
+            }
+          }}
         />
       </div>
 
