@@ -15,71 +15,15 @@ import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { Track } from "@/utils/types";
 import { SearchTab } from "@/components/Player/ui/SearchTab";
 import { CDPlayer } from "@/components/Player/ui/Cdplayer";
+import { asTrackFromPlayback, asTrackFromRecent, T } from "@/utils/roomHelpers";
+import { LeftTabBar } from "@/components/Player/ui/LeftTabBar";
+import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
+import { RightSidebar } from "@/components/Player/ui/RightSidebar";
+import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
 
-/* ─── helpers (unchanged) ─────────────────────────────────────────── */
-function asTrackFromPlayback(
-  playback: {
-    videoId: string | null;
-    trackName: string;
-    artistName: string;
-    image: string;
-    currentTime?: number;
-  } | null,
-): Track | null {
-  if (!playback?.videoId) return null;
-  return {
-    id: `room-${playback.videoId}`,
-    videoId: playback.videoId,
-    name: playback.trackName,
-    duration_ms: 0,
-    explicit: false,
-    artists: [{ name: playback.artistName }],
-    album: { name: "" },
-    image: playback.image,
-  };
-}
-
-function asTrackFromRecent(recentTrack?: {
-  videoId: string;
-  trackName: string;
-  artistName: string;
-  image: string;
-}): Track | null {
-  if (!recentTrack) return null;
-  return {
-    id: recentTrack.videoId,
-    videoId: recentTrack.videoId,
-    name: recentTrack.trackName,
-    duration_ms: 0,
-    explicit: false,
-    artists: [{ name: recentTrack.artistName }],
-    album: { name: "" },
-    image: recentTrack.image,
-  };
-}
-
-/* ─── Design tokens ───────────────────────────────────────────────── */
-const T = {
-  bg: "#050508",
-  surface: "#0D0D14",
-  surface2: "#13131E",
-  surface3: "#1A1A28",
-  border: "rgba(106,90,205,0.18)",
-  border2: "rgba(255,255,255,0.06)",
-  purple: "#6A5ACD",
-  purpleLight: "#8B7CE8",
-  purpleDim: "#3D3280",
-  purpleGhost: "rgba(106,90,205,0.12)",
-  text: "#F0EFF8",
-  text2: "#9B97B8",
-  text3: "#4A4870",
-  font: "'DM Mono', monospace",
-};
-
-/* ─── Page ────────────────────────────────────────────────────────── */
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
@@ -99,7 +43,7 @@ export default function RoomPage() {
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
   const [leftTab, setLeftTab] = useState<"search" | "queue">("search");
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const [showSearchOverlay, setShowSearchOverlay] = useState(false);
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -207,7 +151,7 @@ export default function RoomPage() {
         : "paused"
       : playerState.playerState;
 
-  /* ─── Scheduling helpers (unchanged logic) ─────────────────────── */
+  /* ─── Scheduling helpers ─────────────────────── */
   const clearScheduledTimeout = useCallback(
     (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
       if (ref.current) {
@@ -332,7 +276,7 @@ export default function RoomPage() {
     [clearScheduledTimeout, progressState, scheduleSyncedAction],
   );
 
-  /* ─── Playback sync on join (unchanged) ────────────────────────── */
+  /* ─── Playback sync on join ────────────────────────── */
   useEffect(() => {
     if (
       !joined ||
@@ -384,7 +328,7 @@ export default function RoomPage() {
     scheduleRoomPlay,
   ]);
 
-  /* ─── Queue advance (unchanged) ────────────────────────────────── */
+  /* ─── Queue advance ────────────────────────────────── */
   const maybeAdvanceQueue = useCallback(() => {
     if (!canControlPlayback || !joined) return;
     const activeTrack = playerState.nowPlaying;
@@ -520,7 +464,7 @@ export default function RoomPage() {
     queue,
   ]);
 
-  /* ─── Admin play (unchanged) ────────────────────────────────────── */
+  /* ─── Admin play ────────────────────────────────────── */
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback) return;
@@ -543,7 +487,7 @@ export default function RoomPage() {
     [canControlPlayback, sendPlay, setQueue],
   );
 
-  /* ─── Silent audio context (unchanged) ─────────────────────────── */
+  /* ─── Silent audio context ─────────────────────────── */
   const audioContextRef = useRef<AudioContext | null>(null);
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -584,7 +528,7 @@ export default function RoomPage() {
     };
   }, []);
 
-  /* ─── Seek / play-pause / shuffle / repeat ──────────────────────── */
+  /* ─── Seek / play-pause / shuffle / repeat ──────────────── */
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -630,7 +574,7 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
-  /* ─── Lifecycle effects (unchanged) ────────────────────────────── */
+  /* ─── Lifecycle effects ────────────────────────────── */
   useEffect(() => {
     return () => {
       clearScheduledPlaybackActions();
@@ -650,9 +594,6 @@ export default function RoomPage() {
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (
@@ -707,6 +648,26 @@ export default function RoomPage() {
     playerState.playerState,
     sendPlaybackState,
   ]);
+  const openSearchOverlay = useCallback(() => {
+    setShowSearchOverlay(true);
+  }, []);
+  const closeSearchOverlay = useCallback(() => {
+    suggestState.hideSuggestions();
+    setShowSearchOverlay(false);
+  }, [suggestState]);
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        openSearchOverlay();
+      }
+      if (event.key === "Escape") {
+        closeSearchOverlay();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeSearchOverlay, openSearchOverlay]);
 
   const handleLeave = () => {
     leaveRoom();
@@ -720,30 +681,7 @@ export default function RoomPage() {
 
   /* ─── Loading ───────────────────────────────────────────────────── */
   if (authLoading || !joined) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: T.bg,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <p
-          style={{
-            color: T.text3,
-            fontSize: "12px",
-            fontFamily: T.font,
-            letterSpacing: "0.2em",
-            animation: "pulse 1.4s ease-in-out infinite",
-          }}
-        >
-          joining room...
-        </p>
-        <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}`}</style>
-      </div>
-    );
+    return <RoomLoading />;
   }
 
   /* ─── Render ────────────────────────────────────────────────────── */
@@ -797,65 +735,12 @@ export default function RoomPage() {
           }}
         >
           {/* Tab bar */}
-          <div
-            style={{
-              display: "flex",
-              padding: "0 24px",
-              borderBottom: `1px solid ${T.border}`,
-              background: "rgba(13,13,20,0.6)",
-              flexShrink: 0,
-            }}
-          >
-            {(["search", "queue"] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setLeftTab(tab)}
-                style={{
-                  fontSize: "10px",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  padding: "14px 0",
-                  marginRight: "24px",
-                  border: "none",
-                  background: "none",
-                  color: leftTab === tab ? T.text : T.text3,
-                  cursor: "pointer",
-                  position: "relative",
-                  fontFamily: T.font,
-                  transition: "color 0.15s",
-                }}
-              >
-                {tab === "search" ? "⌕ Search & Discover" : `≡ Queue & History`}
-                {tab === "queue" && (
-                  <span
-                    style={{
-                      fontSize: "9px",
-                      background: T.surface3,
-                      color: T.text3,
-                      padding: "1px 6px",
-                      borderRadius: "20px",
-                      marginLeft: "6px",
-                    }}
-                  >
-                    {queue.length + recentTracks.length}
-                  </span>
-                )}
-                {leftTab === tab && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: -1,
-                      left: 0,
-                      right: 0,
-                      height: "2px",
-                      background: T.purple,
-                      borderRadius: "2px 2px 0 0",
-                    }}
-                  />
-                )}
-              </button>
-            ))}
-          </div>
+          <LeftTabBar
+            leftTab={leftTab}
+            setLeftTab={setLeftTab}
+            queueLength={queue.length}
+            recentTracksLength={recentTracks.length}
+          />
 
           {/* Scrollable content */}
           <div
@@ -986,523 +871,28 @@ export default function RoomPage() {
               )}
 
               {leftTab === "queue" && (
-                <div style={{ paddingTop: "8px" }}>
-                  {/* Queue */}
-                  <p
-                    style={{
-                      fontSize: "9px",
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      color: T.text3,
-                      paddingBottom: "8px",
-                      borderBottom: `1px solid ${T.border}`,
-                      marginBottom: "10px",
-                    }}
-                  >
-                    Room Queue
-                  </p>
-                  {queue.length === 0 ? (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "32px 20px",
-                        color: T.text3,
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "28px",
-                          marginBottom: "10px",
-                          opacity: 0.4,
-                        }}
-                      >
-                        ⊞
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "10px",
-                          letterSpacing: "0.15em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Queue is empty
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      {queue.map((track, i) => (
-                        <div
-                          key={`${track.id}-${i}`}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "10px",
-                            padding: "8px 10px",
-                            borderRadius: "10px",
-                            border: `1px solid ${T.border2}`,
-                            background: T.surface,
-                            marginBottom: "6px",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "10px",
-                              color: T.text3,
-                              width: "14px",
-                              textAlign: "right",
-                              flexShrink: 0,
-                            }}
-                          >
-                            {i + 1}
-                          </span>
-                          <img
-                            src={track.image}
-                            alt=""
-                            style={{
-                              width: "40px",
-                              height: "40px",
-                              borderRadius: "8px",
-                              objectFit: "cover",
-                              flexShrink: 0,
-                              background: T.surface3,
-                            }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p
-                              style={{
-                                fontSize: "12px",
-                                fontWeight: 500,
-                                color: T.text,
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                              }}
-                            >
-                              {track.name}
-                            </p>
-                            <p
-                              style={{
-                                fontSize: "10px",
-                                color: T.text2,
-                                marginTop: "2px",
-                              }}
-                            >
-                              {track.artists?.[0]?.name}
-                            </p>
-                          </div>
-                          {canControlPlayback && (
-                            <button
-                              onClick={() => {
-                                handleAdminPlayTrack(track);
-                                removeFromQueue(track.id);
-                              }}
-                              style={{
-                                fontSize: "9px",
-                                color: T.purpleLight,
-                                border: `1px solid rgba(106,90,205,0.3)`,
-                                background: T.purpleGhost,
-                                padding: "4px 10px",
-                                borderRadius: "6px",
-                                cursor: "pointer",
-                                fontFamily: T.font,
-                                letterSpacing: "0.1em",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              Play
-                            </button>
-                          )}
-                          <button
-                            onClick={() => removeFromQueue(track.id)}
-                            style={{
-                              color: T.text3,
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              padding: "4px",
-                              borderRadius: "6px",
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* History */}
-                  <p
-                    style={{
-                      fontSize: "9px",
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      color: T.text3,
-                      paddingBottom: "8px",
-                      borderBottom: `1px solid ${T.border}`,
-                      marginBottom: "10px",
-                      marginTop: "24px",
-                    }}
-                  >
-                    Room History{" "}
-                    <span style={{ marginLeft: "8px", opacity: 0.5 }}>
-                      {recentTracks.length} played
-                    </span>
-                  </p>
-                  {recentTracks.length === 0 ? (
-                    <div
-                      style={{
-                        textAlign: "center",
-                        padding: "32px 20px",
-                        color: T.text3,
-                      }}
-                    >
-                      <div
-                        style={{
-                          fontSize: "28px",
-                          marginBottom: "10px",
-                          opacity: 0.4,
-                        }}
-                      >
-                        🕘
-                      </div>
-                      <p
-                        style={{
-                          fontSize: "10px",
-                          letterSpacing: "0.15em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        No history yet
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      {recentTracks.map((track, i) => {
-                        const historyTrack: Track = {
-                          id: track.videoId,
-                          videoId: track.videoId,
-                          name: track.trackName,
-                          artists: [{ name: track.artistName }],
-                          album: { name: "" },
-                          image: track.image,
-                          duration_ms: 0,
-                          explicit: false,
-                        };
-                        const isActive =
-                          playerState.nowPlaying?.videoId === track.videoId;
-                        return (
-                          <div
-                            key={`${track.videoId}-${i}`}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                              padding: "8px 10px",
-                              borderRadius: "10px",
-                              border: isActive
-                                ? `1px solid rgba(106,90,205,0.3)`
-                                : `1px solid ${T.border2}`,
-                              background: isActive ? T.purpleGhost : T.surface,
-                              marginBottom: "6px",
-                            }}
-                          >
-                            <span
-                              style={{
-                                fontSize: "10px",
-                                color: T.text3,
-                                width: "14px",
-                                textAlign: "right",
-                                flexShrink: 0,
-                              }}
-                            >
-                              {i + 1}
-                            </span>
-                            <img
-                              src={track.image}
-                              alt=""
-                              style={{
-                                width: "40px",
-                                height: "40px",
-                                borderRadius: "8px",
-                                objectFit: "cover",
-                                flexShrink: 0,
-                                background: T.surface3,
-                              }}
-                            />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p
-                                style={{
-                                  fontSize: "12px",
-                                  fontWeight: 500,
-                                  color: isActive ? T.purpleLight : T.text,
-                                  whiteSpace: "nowrap",
-                                  overflow: "hidden",
-                                  textOverflow: "ellipsis",
-                                }}
-                              >
-                                {track.trackName}
-                              </p>
-                              <p
-                                style={{
-                                  fontSize: "10px",
-                                  color: T.text2,
-                                  marginTop: "2px",
-                                }}
-                              >
-                                {track.artistName}
-                              </p>
-                            </div>
-                            {canControlPlayback && (
-                              <button
-                                onClick={() =>
-                                  handleAdminPlayTrack(historyTrack)
-                                }
-                                style={{
-                                  fontSize: "9px",
-                                  color: T.purpleLight,
-                                  border: `1px solid rgba(106,90,205,0.3)`,
-                                  background: T.purpleGhost,
-                                  padding: "4px 10px",
-                                  borderRadius: "6px",
-                                  cursor: "pointer",
-                                  fontFamily: T.font,
-                                  letterSpacing: "0.1em",
-                                  textTransform: "uppercase",
-                                }}
-                              >
-                                Play
-                              </button>
-                            )}
-                            <button
-                              onClick={() => addToQueue(historyTrack)}
-                              style={{
-                                width: "30px",
-                                height: "30px",
-                                borderRadius: "7px",
-                                border: `1px solid ${T.border}`,
-                                background: T.surface3,
-                                color: T.text2,
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontSize: "16px",
-                                flexShrink: 0,
-                              }}
-                            >
-                              ＋
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                <QueueAndHistory
+                  queue={queue}
+                  recentTracks={recentTracks}
+                  canControlPlayback={canControlPlayback}
+                  handleAdminPlayTrack={handleAdminPlayTrack}
+                  removeFromQueue={removeFromQueue}
+                  addToQueue={addToQueue}
+                  activeVideoId={playerState.nowPlaying?.videoId}
+                />
               )}
             </div>
           </div>
         </div>
 
-        {/* Sidebar: members + chat */}
-        <div
-          style={{
-            borderLeft: `1px solid ${T.border}`,
-            display: "flex",
-            flexDirection: "column",
-            background: T.surface,
-            overflow: "hidden",
-          }}
-        >
-          {/* Members */}
-          <div
-            style={{
-              padding: "14px 16px",
-              borderBottom: `1px solid ${T.border}`,
-              flexShrink: 0,
-            }}
-          >
-            <p
-              style={{
-                fontSize: "9px",
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
-                color: T.text3,
-                marginBottom: "10px",
-              }}
-            >
-              {members.length} listening
-            </p>
-            {members.map((m) => (
-              <div
-                key={m.userId}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  marginBottom: "8px",
-                }}
-              >
-                {m.avatar ? (
-                  <img
-                    src={m.avatar}
-                    style={{
-                      width: "26px",
-                      height: "26px",
-                      borderRadius: "50%",
-                      border: `1px solid ${T.border}`,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "26px",
-                      height: "26px",
-                      borderRadius: "50%",
-                      background: T.purpleDim,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "10px",
-                      color: T.purpleLight,
-                      fontWeight: 500,
-                      border: `1px solid rgba(106,90,205,0.3)`,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {m.name[0]}
-                  </div>
-                )}
-                <span style={{ fontSize: "11px", color: T.text2 }}>
-                  {m.name.split(" ")[0]}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Messages */}
-          <div
-            style={{ flex: 1, overflowY: "auto", padding: "12px 14px" }}
-            className="room-scroll"
-          >
-            {messages.length === 0 && (
-              <p
-                style={{
-                  fontSize: "11px",
-                  color: T.text3,
-                  textAlign: "center",
-                  marginTop: "30px",
-                }}
-              >
-                no messages yet
-              </p>
-            )}
-            {messages.map((msg) => (
-              <div
-                key={msg.id}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "8px",
-                  marginBottom: "10px",
-                }}
-              >
-                {msg.avatar ? (
-                  <img
-                    src={msg.avatar}
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "50%",
-                      marginTop: "1px",
-                      flexShrink: 0,
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "20px",
-                      height: "20px",
-                      borderRadius: "50%",
-                      background: T.surface3,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "9px",
-                      color: T.text3,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {msg.name[0]}
-                  </div>
-                )}
-                <div>
-                  <span
-                    style={{
-                      fontSize: "10px",
-                      color: T.text3,
-                      marginRight: "6px",
-                    }}
-                  >
-                    {msg.name.split(" ")[0]}
-                  </span>
-                  <span style={{ fontSize: "11px", color: T.text2 }}>
-                    {msg.text}
-                  </span>
-                </div>
-              </div>
-            ))}
-            <div ref={chatEndRef} />
-          </div>
-
-          {/* Chat input */}
-          <div
-            style={{
-              display: "flex",
-              gap: "8px",
-              padding: "10px 12px",
-              borderTop: `1px solid ${T.border}`,
-              flexShrink: 0,
-            }}
-          >
-            <input
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-              placeholder="say something…"
-              style={{
-                flex: 1,
-                background: T.surface3,
-                border: `1px solid ${T.border}`,
-                color: T.text,
-                fontSize: "11px",
-                padding: "8px 12px",
-                borderRadius: "8px",
-                outline: "none",
-                fontFamily: T.font,
-              }}
-            />
-            <button
-              onClick={handleSendChat}
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "8px",
-                border: "none",
-                background: T.surface3,
-                color: T.text2,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "14px",
-                transition: "all 0.15s",
-              }}
-            >
-              ↑
-            </button>
-          </div>
-        </div>
+        {/* Sidebar */}
+        <RightSidebar
+          members={members}
+          messages={messages}
+          chatInput={chatInput}
+          setChatInput={setChatInput}
+          handleSendChat={handleSendChat}
+        />
       </div>
 
       <style>{`

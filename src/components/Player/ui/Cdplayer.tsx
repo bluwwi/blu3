@@ -40,7 +40,7 @@ export function CDPlayer({
   onToggleShuffle,
   onCycleRepeat,
   onSeek,
-  roomLabel = "now playing · room sync active",
+  roomLabel = "get bluee",
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -100,7 +100,7 @@ export function CDPlayer({
         {roomLabel}
       </p>
 
-      {/* CD Stage */}
+      {/* Album Art */}
       <div
         style={{
           position: "relative",
@@ -118,7 +118,7 @@ export function CDPlayer({
           style={{
             position: "absolute",
             inset: "-20px",
-            borderRadius: "50%",
+            borderRadius: "16px",
             background:
               "radial-gradient(circle,rgba(106,90,205,0.28) 0%,transparent 65%)",
             opacity: isPlaying ? 1 : 0.12,
@@ -127,90 +127,49 @@ export function CDPlayer({
           }}
         />
 
-        {/* Disc */}
+        {/* Album art */}
         <div
           style={{
             width: "204px",
             height: "204px",
-            borderRadius: "50%",
+            borderRadius: "12px",
+            overflow: "hidden",
             position: "relative",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
             flexShrink: 0,
-            animation: isPlaying ? "cdSpin 3s linear infinite" : "none",
           }}
         >
-          {/* Conic base */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              background:
-                "conic-gradient(#0e0c18 0deg,#161326 40deg,#1c1630 80deg,#100e1c 120deg,#181530 160deg,#0c0b18 200deg,#1a1724 240deg,#0e0c18 280deg,#14112a 320deg,#0e0c18 360deg)",
-            }}
-          />
-          {/* Rainbow tint */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              background:
-                "conic-gradient(rgba(106,90,205,0.09) 0deg,transparent 30deg,rgba(139,124,232,0.07) 60deg,transparent 90deg,rgba(106,90,205,0.06) 120deg,transparent 150deg,rgba(160,148,240,0.08) 180deg,transparent 210deg,rgba(106,90,205,0.06) 240deg,transparent 270deg,rgba(139,124,232,0.07) 300deg,transparent 330deg)",
-            }}
-          />
-          {/* Album art */}
-          {albumArt && (
+          {albumArt ? (
             <img
               src={albumArt}
               alt=""
               style={{
-                position: "absolute",
-                inset: 0,
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                borderRadius: "50%",
-                opacity: 0.85,
               }}
             />
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                background: "linear-gradient(135deg, #1a1a28, #0d0d14)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "48px",
+                  opacity: 0.3,
+                }}
+              >
+                🎵
+              </span>
+            </div>
           )}
-          {/* Sheen */}
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              background:
-                "conic-gradient(transparent 0deg,rgba(255,255,255,0.06) 45deg,transparent 90deg,rgba(255,255,255,0.03) 135deg,transparent 180deg,rgba(255,255,255,0.05) 225deg,transparent 270deg,rgba(255,255,255,0.02) 315deg,transparent 360deg)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Inner ring */}
-          <div
-            style={{
-              position: "absolute",
-              inset: "44px",
-              borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,0.05)",
-              boxShadow: "inset 0 0 12px rgba(0,0,0,0.8)",
-              pointerEvents: "none",
-            }}
-          />
-          {/* Center hole */}
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%,-50%)",
-              width: "26px",
-              height: "26px",
-              borderRadius: "50%",
-              background: "#050508",
-              border: "1.5px solid rgba(255,255,255,0.08)",
-              zIndex: 2,
-            }}
-          />
         </div>
       </div>
 
@@ -494,7 +453,6 @@ export function CDPlayer({
       </div>
 
       <style>{`
-        @keyframes cdSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
         @keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
         .cd-prog-bar:hover .cd-prog-thumb { opacity: 1 !important; }
         .cd-prog-bar:hover { background: #1A1A28 !important; }
