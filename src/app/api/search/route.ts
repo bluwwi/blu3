@@ -4,9 +4,11 @@ export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q");
   if (!q) return NextResponse.json({ tracks: [] });
 
+  const API_URL = process.env.API_URL || "http://localhost:8000";
+
   try {
     const res = await fetch(
-      `http://localhost:8000/api/search?q=${encodeURIComponent(q)}`,
+      `${API_URL}/api/search?q=${encodeURIComponent(q)}`,
     );
     const data = await res.json();
     return NextResponse.json(data);
