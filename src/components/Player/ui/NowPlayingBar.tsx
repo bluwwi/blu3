@@ -7,6 +7,7 @@ import {
   List,
   Loader2,
   MessageSquare,
+  MoreHorizontal,
   Pause,
   Play,
   Repeat,
@@ -64,16 +65,22 @@ export function NowPlayingBar({
   const hasTrack = Boolean(track || activeVideoId);
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
+
   const title =
     track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
-  const artist = track?.artists.map((a) => a.name).join(", ") ?? "";
-  const album = track?.album?.name ?? "";
+  const artist = track?.artists?.map((a) => a.name).join(", ") ?? "";
+  const albumName = track?.album?.name ?? "";
+  const subtitle = [artist, albumName].filter(Boolean).join(" – ");
   const albumArt =
     track?.image ||
-    `https://picsum.photos/seed/${activeVideoId || "blu3"}/96/96`;
-  const iconButtonClass =
+    (activeVideoId
+      ? `https://i.ytimg.com/vi/${activeVideoId}/default.jpg`
+      : `https://picsum.photos/seed/nowplaying/96/96`);
+
+  const iconBtn =
     "flex h-8 w-8 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:text-white/25";
-  const modeButtonClass = (active: boolean) =>
+
+  const modeBtn = (active: boolean) =>
     `flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
       active
         ? "border-white/25 bg-white/18 text-white"
@@ -81,40 +88,18 @@ export function NowPlayingBar({
     } disabled:cursor-not-allowed disabled:opacity-40`;
 
   return (
-    <div className="fixed bottom-3 w-screen left-3 right-3 z-50">
-      <div className="mx-auto max-w-4xl rounded-[24px] border border-white/20 bg-white/10 px-3 py-2.5 text-white shadow-2xl backdrop-blur-xl">
-        <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center gap-2.5 lg:w-[30%]">
-            <img
-              src={albumArt}
-              alt={title}
-              className="h-9 w-9 shrink-0 rounded-lg object-cover"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium text-white">
-                {title}
-              </p>
-              <p className="truncate text-[11px] text-white/60">
-                {[artist, album].filter(Boolean).join(" · ") ||
-                  "Ready to listen"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-1 items-center justify-center gap-2.5">
-            <button
-              type="button"
-              className={iconButtonClass}
-              disabled
-              aria-label="Skip back"
-            >
-              <SkipBack size={16} />
-            </button>
+    <div className="fixed bottom-3 left-3 right-3 z-50">
+      {/* outer glass pill — same as original */}
+      <div className="mx-auto max-w-4xl  border border-white/20 bg-white/10 px-4 pt-2.5 text-white shadow-2xl backdrop-blur-xl">
+        {/* single row */}
+        <div className="flex items-center gap-3">
+          {/* ── LEFT: skip-back · play/pause · skip-forward ── */}
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={onPlayPause}
               disabled={isLoading || !onPlayPause}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/25 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30 disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-white/35"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
               {isLoading ? (
@@ -122,47 +107,74 @@ export function NowPlayingBar({
               ) : isPlaying ? (
                 <Pause size={18} className="fill-current" />
               ) : (
-                <Play size={18} className="fill-current" />
+                <Play size={18} className="fill-current translate-x-[1px]" />
               )}
             </button>
-            <button
-              type="button"
-              className={iconButtonClass}
-              disabled
-              aria-label="Skip forward"
-            >
-              <SkipForward size={16} />
-            </button>
-            <span className="min-w-[76px] text-center text-[11px] text-white/55">
-              {hasTrack
-                ? `${fmtSec(currentTime)} / ${fmtSec(duration)}`
-                : "0:00 / 0:00"}
-            </span>
           </div>
 
-          <div className="flex items-center justify-end gap-1.5 text-white/70 lg:w-[30%]">
+          {/* ── CENTRE: darker inset pill with art + title + time + dot + more ── */}
+          <div className="flex flex-1 items-center gap-3 rounded-2xl border border-white/10 bg-black/30 px-3 py-1.5 backdrop-blur-sm min-w-0">
+            {/* album art */}
+            <img
+              src={albumArt}
+              alt={title}
+              className="h-9 w-9 shrink-0 rounded-xl object-cover shadow-lg"
+            />
+
+            {/* title + artist */}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold leading-tight text-white">
+                {title}
+              </p>
+              {subtitle && (
+                <p className="truncate text-[11px] leading-tight text-white/50 mt-0.5">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+
+            {/* time */}
+            <span className="shrink-0 text-[12px] tabular-nums text-white/55">
+              {hasTrack ? fmtSec(currentTime) : "0:00"}
+            </span>
+
+            {/* dot indicator */}
+            <div className="h-2 w-2 shrink-0 rounded-full bg-white/30" />
+
+            {/* more */}
+            <button
+              type="button"
+              className="shrink-0 text-white/50 hover:text-white transition-colors"
+              aria-label="More options"
+            >
+              <MoreHorizontal size={15} />
+            </button>
+          </div>
+
+          {/* ── RIGHT: chat · queue · shuffle · repeat · mute · volume ── */}
+          <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={onChatClick}
-              className={iconButtonClass}
-              aria-label="Open chat"
+              className={iconBtn}
+              aria-label="Chat"
             >
-              <MessageSquare size={14} />
+              <MessageSquare size={15} />
             </button>
             <button
               type="button"
               onClick={onQueueClick}
-              className={iconButtonClass}
-              aria-label="Open queue"
+              className={iconBtn}
+              aria-label="Queue"
             >
-              <List size={14} />
+              <List size={15} />
             </button>
             <button
               type="button"
               onClick={onToggleShuffle}
               disabled={!onToggleShuffle}
-              className={modeButtonClass(shuffleEnabled)}
-              aria-label="Toggle shuffle"
+              className={modeBtn(shuffleEnabled)}
+              aria-label="Shuffle"
             >
               <Shuffle size={14} />
             </button>
@@ -170,8 +182,8 @@ export function NowPlayingBar({
               type="button"
               onClick={onCycleRepeat}
               disabled={!onCycleRepeat}
-              className={modeButtonClass(repeatMode !== "off")}
-              aria-label="Toggle repeat"
+              className={modeBtn(repeatMode !== "off")}
+              aria-label="Repeat"
             >
               {repeatMode === "one" ? (
                 <Repeat1 size={14} />
@@ -182,10 +194,10 @@ export function NowPlayingBar({
             <button
               type="button"
               onClick={onMute}
-              className={iconButtonClass}
+              className={iconBtn}
               aria-label={isMuted ? "Unmute" : "Mute"}
             >
-              {isMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+              {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
             </button>
             <input
               type="range"
