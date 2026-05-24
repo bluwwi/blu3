@@ -81,8 +81,8 @@ export function NowPlayingBar({
     } disabled:cursor-not-allowed disabled:opacity-40`;
 
   return (
-    <div className="fixed bottom-3 left-3 right-3 z-50">
-      <div className="mx-auto max-w-5xl rounded-[24px] border border-white/20 bg-white/10 px-3 py-2.5 text-white shadow-2xl backdrop-blur-xl">
+    <div className="fixed bottom-3 w-screen left-3 right-3 z-50">
+      <div className="mx-auto max-w-4xl rounded-[24px] border border-white/20 bg-white/10 px-3 py-2.5 text-white shadow-2xl backdrop-blur-xl">
         <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex min-w-0 items-center gap-2.5 lg:w-[30%]">
             <img
@@ -91,9 +91,12 @@ export function NowPlayingBar({
               className="h-9 w-9 shrink-0 rounded-lg object-cover"
             />
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium text-white">{title}</p>
+              <p className="truncate text-[13px] font-medium text-white">
+                {title}
+              </p>
               <p className="truncate text-[11px] text-white/60">
-                {[artist, album].filter(Boolean).join(" · ") || "Ready to listen"}
+                {[artist, album].filter(Boolean).join(" · ") ||
+                  "Ready to listen"}
               </p>
             </div>
           </div>
@@ -170,7 +173,11 @@ export function NowPlayingBar({
               className={modeButtonClass(repeatMode !== "off")}
               aria-label="Toggle repeat"
             >
-              {repeatMode === "one" ? <Repeat1 size={14} /> : <Repeat size={14} />}
+              {repeatMode === "one" ? (
+                <Repeat1 size={14} />
+              ) : (
+                <Repeat size={14} />
+              )}
             </button>
             <button
               type="button"

@@ -39,11 +39,6 @@ export function RightSidebar({
 }: Props) {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
-  const themeOptions: Array<{ id: RoomTheme; label: string }> = [
-    { id: "purple", label: "Lilac" },
-    { id: "mono", label: "Mono" },
-    { id: "yellow", label: "Gold" },
-  ];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,23 +48,6 @@ export function RightSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 text-white">
       <div className="space-y-3">
-        <div className="flex gap-1.5">
-          {themeOptions.map((theme) => (
-            <button
-              key={theme.id}
-              type="button"
-              onClick={() => onThemeChange(theme.id)}
-              className={`flex-1 rounded-full border px-2.5 py-1.5 text-[9px] uppercase tracking-[0.16em] transition-colors ${
-                roomTheme === theme.id
-                  ? "border-white/30 bg-white/20 text-white"
-                  : "border-white/15 bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {theme.label}
-            </button>
-          ))}
-        </div>
-
         <p className="text-[10px] uppercase tracking-[0.2em] text-white/45">
           {members.length} listening
         </p>
@@ -86,9 +64,7 @@ export function RightSidebar({
                   className="h-5 w-5 rounded-full border border-white/10 object-cover"
                 />
               ) : (
-                <div
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[9px] text-white/80"
-                >
+                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[9px] text-white/80">
                   {member.name[0]}
                 </div>
               )}

@@ -46,7 +46,7 @@ export function SearchInput({
           onKeyDown={onKeyDown}
           onFocus={onFocus}
           onBlur={onBlur}
-          placeholder={placeholder}
+          placeholder={"What do you want to listen to?"}
           className="w-full bg-transparent text-[13px] text-white outline-none placeholder:text-white/45"
           autoFocus
         />
@@ -79,9 +79,7 @@ export function SearchInput({
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div
-          className="room-scroll absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 overflow-y-auto rounded-[20px] border border-white/20 bg-slate-950/70 p-1.5 shadow-2xl backdrop-blur-xl"
-        >
+        <div className="room-scroll absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 overflow-y-auto rounded-[20px] border border-white/20 bg-slate-950/70 p-1.5 shadow-2xl backdrop-blur-xl">
           {suggestions.map((s, i) => (
             <button
               key={i}

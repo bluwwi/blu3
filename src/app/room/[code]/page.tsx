@@ -25,6 +25,7 @@ import { NowPlayingBar } from "@/components/Player/ui/NowPlayingBar";
 import { SearchInput } from "@/components/Player/ui/SearchInput";
 import { TrackList } from "@/components/Player/ui/TrackList";
 import { Disc3, Search, X } from "lucide-react";
+import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -156,11 +157,8 @@ export default function RoomPage() {
         ? "loading"
         : "paused"
       : playerState.playerState;
-  const carouselTracks = (queue.length > 0
-    ? queue
-    : footerTrack
-      ? [footerTrack]
-      : []
+  const carouselTracks = (
+    queue.length > 0 ? queue : footerTrack ? [footerTrack] : []
   ).slice(0, 8);
 
   /* ─── Scheduling helpers ─────────────────────── */
@@ -753,7 +751,7 @@ export default function RoomPage() {
       <YouTubeIframe />
       <div className="h-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
         <div className="h-screen overflow-hidden bg-slate-950/55">
-          <div className="mx-auto flex h-screen max-w-7xl flex-col px-3 pb-24 pt-3 md:px-5 lg:px-6">
+          <div className="mx-auto flex h-screen max-w-4xl flex-col px-4 pb-28 pt-4 md:px-6 lg:px-8">
             <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
               <RoomTopBar
                 roomName={room?.name ?? "Room"}
@@ -762,13 +760,17 @@ export default function RoomPage() {
                 connected={connected}
                 track={footerTrack}
                 roomTheme={roomTheme}
-                activeVideoId={playerState.activeVideoId ?? playback?.videoId ?? null}
+                activeVideoId={
+                  playerState.activeVideoId ?? playback?.videoId ?? null
+                }
                 playerState={footerPlayerState}
-                onCopyInvite={() => navigator.clipboard.writeText(window.location.href)}
+                onCopyInvite={() =>
+                  navigator.clipboard.writeText(window.location.href)
+                }
                 onLeave={handleLeave}
               />
 
-              <div className="flex min-h-0 flex-1 flex-col gap-3 pt-3">
+              <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
                 <div
                   role="button"
                   tabIndex={0}
@@ -779,19 +781,22 @@ export default function RoomPage() {
                       openSearchOverlay();
                     }
                   }}
-                  className="flex w-full cursor-pointer items-center gap-2.5 rounded-[24px] border border-white/20 bg-white/10 px-3.5 py-2.5 text-white backdrop-blur-xl transition-colors hover:bg-white/15"
+                  className="flex w-full cursor-pointer items-center gap-3 rounded-[28px] border border-white/20 bg-white/10 px-4 py-3 text-white backdrop-blur-xl transition-colors hover:bg-white/15"
                 >
-                  <Search size={14} className="shrink-0 text-white/70" />
-                  <div className="w-full text-[13px]">
+                  <Search size={16} className="shrink-0 text-white/70" />
+                  <div className="w-full text-sm">
                     <span
                       className={
-                        searchState.searchQuery ? "text-white/80" : "text-white/45"
+                        searchState.searchQuery
+                          ? "text-white/80"
+                          : "text-white/45"
                       }
                     >
-                      {searchState.searchQuery || "Search by title, artist or album..."}
+                      {searchState.searchQuery ||
+                        "What do you want to listen to?"}
                     </span>
                   </div>
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-[11px] font-semibold">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
                     {user?.avatar ? (
                       <img
                         src={user.avatar}
@@ -799,12 +804,14 @@ export default function RoomPage() {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      (user?.name || user?.email || "U").slice(0, 1).toUpperCase()
+                      (user?.name || user?.email || "U")
+                        .slice(0, 1)
+                        .toUpperCase()
                     )}
                   </div>
                 </div>
 
-                <div className="scrollbar-hide flex gap-2.5 overflow-x-auto pb-1">
+                <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
                   {(carouselTracks.length > 0
                     ? carouselTracks
                     : Array.from({ length: 8 }, (_, index) => index)
@@ -822,7 +829,7 @@ export default function RoomPage() {
                     return (
                       <div
                         key={key}
-                        className="h-24 w-24 shrink-0 overflow-hidden rounded-[20px] border border-white/15 bg-white/10"
+                        className="h-28 w-28 shrink-0 overflow-hidden rounded-[24px] border border-white/15 bg-white/10"
                       >
                         <img
                           src={image}
@@ -834,25 +841,8 @@ export default function RoomPage() {
                   })}
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 self-start rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[9px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-xl">
-                  <span
-                    className={`h-2 w-2 rounded-full ${
-                      !canControlPlayback
-                        ? "bg-emerald-400"
-                        : isHost
-                          ? "bg-fuchsia-300"
-                          : "bg-sky-300"
-                    }`}
-                  />
-                  {!canControlPlayback
-                    ? "Synced to host"
-                    : isHost
-                      ? "Host controls active"
-                      : "Collaborative control enabled"}
-                </div>
-
-                <div className="relative flex min-h-0 flex-1 gap-3 max-lg:flex-col">
-                  <aside className="min-h-0 flex-[55%] rounded-[24px] border border-white/20 bg-white/10 p-4 text-white backdrop-blur-xl">
+                <div className="relative flex min-h-0 flex-1 gap-4 max-lg:flex-col">
+                  <aside className="min-h-0 flex-[55%] rounded-[28px] border border-white/20 bg-white/10 p-5 text-white backdrop-blur-xl">
                     <QueueAndHistory
                       queue={queue}
                       recentTracks={recentTracks}
@@ -864,7 +854,7 @@ export default function RoomPage() {
                     />
                   </aside>
 
-                  <aside className="min-h-0 flex-[45%] rounded-[24px] border border-white/20 bg-white/10 p-4 text-white backdrop-blur-xl">
+                  <aside className="min-h-0 flex-[45%] rounded-[28px] border border-white/20 bg-white/10 p-5 text-white backdrop-blur-xl">
                     <RightSidebar
                       members={members}
                       messages={messages}
@@ -904,139 +894,56 @@ export default function RoomPage() {
         onQueueClick={showQueuePanel}
       />
 
-      {searchOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-3 backdrop-blur-md"
-          onClick={closeSearchOverlay}
-        >
-          <div
-            className="search-modal-enter flex max-h-[76vh] w-full max-w-xl flex-col rounded-[24px] border border-white/20 bg-slate-900/95 p-3 text-white shadow-2xl backdrop-blur-xl transition-all duration-200"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-3 flex items-start gap-2">
-              <SearchInput
-                value={searchState.searchQuery}
-                suggestions={suggestState.suggestions}
-                showSuggestions={false}
-                isSearching={searchState.isSearching}
-                onInput={handleSearchInputChange}
-                onSearch={(query) => {
-                  searchState.doSearch(query);
-                  suggestState.hideSuggestions();
-                }}
-                onSuggestionSelect={(suggestion) => {
-                  searchState.setSearchQuery(suggestion);
-                  searchState.doSearch(suggestion);
-                  suggestState.hideSuggestions();
-                }}
-                onFocus={() =>
-                  suggestState.suggestions.length > 0 &&
-                  suggestState.setShowSuggestions(true)
-                }
-                onBlur={() =>
-                  setTimeout(() => suggestState.hideSuggestions(), 200)
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    searchState.doSearch(searchState.searchQuery);
-                    suggestState.hideSuggestions();
-                  }
-                  if (e.key === "Escape") {
-                    closeSearchOverlay();
-                  }
-                }}
-                avatarUrl={user?.avatar}
-                avatarLabel={user?.name ?? user?.email ?? "U"}
-                className="flex-1"
-              />
-              <button
-                type="button"
-                onClick={closeSearchOverlay}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white/70 transition-colors hover:bg-white/10 hover:text-white"
-                aria-label="Close search"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="room-scroll flex-1 overflow-y-auto">
-              {suggestState.showSuggestions &&
-                suggestState.suggestions.length > 0 && (
-                  <div className="mb-3 space-y-1 rounded-[20px] border border-white/10 bg-white/5 p-1.5">
-                    {suggestState.suggestions.map((suggestion) => (
-                      <button
-                        key={suggestion}
-                        type="button"
-                        onClick={() => {
-                          searchState.setSearchQuery(suggestion);
-                          searchState.doSearch(suggestion);
-                          suggestState.hideSuggestions();
-                        }}
-                        className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-[13px] text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-                      >
-                        <Search size={14} className="text-white/45" />
-                        <span className="truncate">{suggestion}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-              {!searchState.searchQuery &&
-              searchState.results.length === 0 &&
-              !searchState.isSearching &&
-              !searchState.searchError ? (
-                <div className="flex flex-col items-center justify-center px-5 py-10 text-center">
-                  <Disc3 size={32} className="mb-3 text-white/45" />
-                  <p className="text-[13px] text-white/75">Search YouTube Music</p>
-                  <div className="mt-5 flex flex-wrap justify-center gap-2">
-                    {popularGenres.map((genre) => (
-                      <button
-                        key={genre}
-                        type="button"
-                        onClick={() => {
-                          searchState.setSearchQuery(genre);
-                          searchState.doSearch(genre);
-                          suggestState.hideSuggestions();
-                        }}
-                        className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[11px] text-white/75 transition-colors hover:bg-white/15 hover:text-white"
-                      >
-                        {genre}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <TrackList
-                  tracks={searchState.results}
-                  activeTrackId={playerState.nowPlaying?.id ?? null}
-                  loadingTrackId={playerState.loadingId}
-                  isPlaying={playerState.playerState === "playing"}
-                  onTrackSelect={
-                    canControlPlayback ? handleSearchTrackSelect : undefined
-                  }
-                  onAddToQueue={addToQueue}
-                  isSearching={searchState.isSearching}
-                  searchQuery={searchState.searchQuery}
-                  searchError={searchState.searchError}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       <style>{`
         .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .room-scroll::-webkit-scrollbar-track { background: transparent; }
         .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        .search-modal-enter { animation: modalIn 0.18s ease forwards; }
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.96) translateY(-8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
       `}</style>
+      <SearchOverlay
+        isOpen={searchOpen}
+        onClose={closeSearchOverlay}
+        // search state (from useSearch / useSuggestions)
+        searchQuery={searchState.searchQuery}
+        suggestions={suggestState.suggestions}
+        showSuggestions={suggestState.showSuggestions}
+        results={searchState.results}
+        isSearching={searchState.isSearching}
+        searchError={searchState.searchError ?? ""}
+        // recent tracks for the empty state
+        recentTracks={
+          recentTracks.map(asTrackFromRecent).filter(Boolean) as Track[]
+        }
+        // player state
+        activeTrackId={playerState.nowPlaying?.id ?? null}
+        loadingTrackId={null}
+        isPlaying={playerState.playerState === "playing"}
+        // handlers
+        onSearchInput={(val) => {
+          searchState.onSearchInput(val);
+          suggestState.onSuggestInput(val);
+        }}
+        onSearch={(q) => {
+          suggestState.hideSuggestions();
+          if (q.trim()) searchState.doSearch(q.trim());
+          else searchState.setResults([]);
+        }}
+        onSuggestionSelect={(s) => {
+          suggestState.hideSuggestions();
+          searchState.onSearchInput(s);
+          searchState.doSearch(s);
+        }}
+        onTrackSelect={handleSearchTrackSelect} // plays immediately + closes overlay
+        onAddToQueue={(track) => {
+          addToQueue(track);
+          // optionally close: closeSearchOverlay();
+        }}
+        // user avatar
+        avatarUrl={user?.avatar}
+        avatarLabel={user?.name || user?.email || "U"}
+        popularGenres={popularGenres}
+      />
     </div>
-  );  
+  );
 }
