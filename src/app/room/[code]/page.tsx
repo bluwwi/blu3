@@ -603,7 +603,6 @@ export default function RoomPage() {
           ctx.resume();
         }
 
-        console.log("Background silent loop active to maintain tab visibility priority.");
       } catch (err) {
         console.error("Failed to start background tab keeper:", err);
       }
@@ -706,7 +705,11 @@ export default function RoomPage() {
   // Re-sync playback when tab becomes visible again to fix background throttling drift
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && joined) {
+      if (
+        document.visibilityState === "visible" &&
+        joined &&
+        !canControlPlayback
+      ) {
         requestSync();
       }
     };
@@ -714,7 +717,7 @@ export default function RoomPage() {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [joined, requestSync]);
+  }, [canControlPlayback, joined, requestSync]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !playerState.nowPlaying?.videoId) return;
@@ -875,9 +878,9 @@ export default function RoomPage() {
                   leftTab === "queue" ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
-                ⊞ Room Queue
+                ≡ Queue & History
                 <span className="bg-zinc-900 text-[10px] px-1.5 py-0.5 rounded-full text-zinc-400 font-mono">
-                  {queue.length}
+                  {queue.length + recentTracks.length}
                 </span>
                 {leftTab === "queue" && (
                   <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-green-500 rounded-full" />
@@ -901,7 +904,6 @@ export default function RoomPage() {
                     </div>
                   ) : null}
                   <SearchTab
-                    recentTracks={recentTracks}
                     searchQuery={searchState.searchQuery}
                     suggestions={suggestState.suggestions}
                     showSuggestions={suggestState.showSuggestions}
@@ -942,12 +944,12 @@ export default function RoomPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-zinc-900 pb-2">
                     <h3 className="text-xs text-zinc-500 tracking-widest uppercase font-semibold">
-                      Up Next in Room
+                      Room Queue
                     </h3>
                   </div>
 
                   {queue.length === 0 ? (
-                    <div className="text-center py-24 space-y-3">
+                    <div className="text-center py-12 space-y-3">
                       <span className="text-4xl text-zinc-800 select-none block">⊞</span>
                       <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
                         The queue is empty
@@ -1002,6 +1004,102 @@ export default function RoomPage() {
                           </div>
                         </div>
                       ))}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between border-b border-zinc-900 pb-2 pt-4">
+                    <h3 className="text-xs text-zinc-500 tracking-widest uppercase font-semibold">
+                      Room History
+                    </h3>
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-700">
+                      {recentTracks.length} played
+                    </span>
+                  </div>
+
+                  {recentTracks.length === 0 ? (
+                    <div className="text-center py-12 space-y-3">
+                      <span className="text-4xl text-zinc-800 select-none block">🕘</span>
+                      <p className="text-zinc-500 text-xs tracking-wider uppercase font-semibold">
+                        No room history yet
+                      </p>
+                      <p className="text-zinc-600 text-[10px] max-w-xs mx-auto leading-relaxed">
+                        Played tracks will appear here for everyone in the room.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {recentTracks.map((track, i) => {
+                        const historyTrack: Track = {
+                          id: track.videoId,
+                          videoId: track.videoId,
+                          name: track.trackName,
+                          artists: [{ name: track.artistName }],
+                          album: { name: "" },
+                          image: track.image,
+                          duration_ms: 0,
+                          explicit: false,
+                        };
+                        const isTrackActive =
+                          playerState.nowPlaying?.videoId === track.videoId;
+
+                        return (
+                          <div
+                            key={`${track.videoId}-${track.playedAt}-${i}`}
+                            className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all ${
+                              isTrackActive
+                                ? "border-green-500/20 bg-green-500/10"
+                                : "border-zinc-900/60 bg-zinc-950/30 hover:border-zinc-800"
+                            }`}
+                          >
+                            <span className="w-4 text-right font-mono text-xs text-zinc-600">
+                              {i + 1}
+                            </span>
+                            <img
+                              src={track.image}
+                              alt=""
+                              className="h-10 w-10 flex-shrink-0 rounded-lg object-cover"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                canControlPlayback
+                                  ? handleAdminPlayTrack(historyTrack)
+                                  : undefined
+                              }
+                              disabled={!canControlPlayback}
+                              className="min-w-0 flex-1 text-left"
+                            >
+                              <p
+                                className={`truncate text-xs font-bold ${
+                                  isTrackActive ? "text-green-400" : "text-white"
+                                }`}
+                              >
+                                {track.trackName}
+                              </p>
+                              <p className="mt-0.5 truncate text-[10px] text-zinc-500">
+                                {track.artistName}
+                              </p>
+                            </button>
+                            <div className="flex items-center gap-2">
+                              {canControlPlayback && (
+                                <button
+                                  onClick={() => handleAdminPlayTrack(historyTrack)}
+                                  className="rounded-lg border border-green-950/40 bg-green-500/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-green-500 transition-all hover:border-green-900 hover:text-green-400"
+                                >
+                                  Play
+                                </button>
+                              )}
+                              <button
+                                onClick={() => addToQueue(historyTrack)}
+                                className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-sm font-bold text-zinc-400 shadow-sm transition-all hover:border-zinc-700 hover:bg-zinc-800 hover:text-white active:scale-95"
+                                title="Add to room queue"
+                              >
+                                ＋
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

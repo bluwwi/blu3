@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useRoom } from "@/hooks/useRoom";
-import { useRoomSocket, ChatMessage, Member } from "@/hooks/useRoomSocket";
+import { useRoomSocket } from "@/hooks/useRoomSocket";
 
 interface RoomPanelProps {
   onPlaybackPlay?: (state: any) => void;
@@ -24,9 +24,6 @@ export function RoomPanel({
 
   const { connected, isHost, members, messages, sendChat } = useRoomSocket({
     roomCode: room?.code ?? null,
-    onPlaybackPlay,
-    onPlaybackPause,
-    onPlaybackSeek,
     onPlaybackSync: onPlaybackPlay,
   });
 

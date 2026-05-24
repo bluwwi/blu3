@@ -57,9 +57,16 @@ export function usePlayerState(): UsePlayerStateReturn {
         }
       }
 
+      const playerVars = {
+        ...CONFIG.YT_PLAYER_PARAMS,
+        origin: window.location.origin,
+        widget_referrer: window.location.origin,
+      };
+
       playerRef.current = new window.YT.Player("yt-player", {
+        host: CONFIG.YT_HOST,
         videoId,
-        playerVars: CONFIG.YT_PLAYER_PARAMS,
+        playerVars,
         events: {
           onReady: (e: any) => {
             e.target.setVolume(volume);

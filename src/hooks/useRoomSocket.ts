@@ -199,20 +199,16 @@ export function useRoomSocket({
     if (!token) return;
 
     const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${roomCode}`;
-    console.log("Connecting WS:", wsUrl);
-
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("WS connected");
       setConnected(true);
       sendPing();
       if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
       pingIntervalRef.current = setInterval(sendPing, CLOCK_SYNC_INTERVAL_MS);
     };
-    ws.onclose = (e) => {
-      console.log("WS closed:", e.code, e.reason);
+    ws.onclose = () => {
       setConnected(false);
       if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
       pingIntervalRef.current = null;
@@ -227,7 +223,6 @@ export function useRoomSocket({
       } catch {
         return;
       }
-      console.log("WS msg:", msg.type); // debug
 
       switch (msg.type) {
         case "clock_sync":
