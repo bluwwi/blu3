@@ -17,30 +17,39 @@ export function ProgressBar({
   onSeek,
   className = "",
 }: Props) {
-  if (!duration) return null;
+  const safeDuration = Math.max(duration, 0);
+  const safeCurrentTime = Math.min(Math.max(currentTime, 0), safeDuration || 0);
+  const safeProgress = safeDuration > 0 ? Math.max(0, Math.min(progress, 100)) : 0;
+  const canSeek = Boolean(onSeek && safeDuration > 0);
 
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <span className="text-zinc-600 text-xs tabular-nums w-9">
-        {fmtSec(currentTime)}
+        {fmtSec(safeCurrentTime)}
       </span>
       <div
-        className={`flex-1 h-1 bg-zinc-800 rounded-full ${onSeek ? "cursor-pointer group" : "cursor-default"}`}
-        onClick={onSeek}
+        className={`group flex-1 h-1.5 rounded-full transition-colors ${
+          canSeek
+            ? "cursor-pointer bg-zinc-800 hover:bg-zinc-700"
+            : "cursor-default bg-zinc-900"
+        }`}
+        onClick={canSeek ? onSeek : undefined}
         role="slider"
-        aria-valuenow={Math.round(progress)}
+        aria-valuenow={Math.round(safeProgress)}
         aria-valuemin={0}
-        aria-valuemax={100}
+        aria-valuemax={safeDuration > 0 ? 100 : 0}
       >
         <div
-          className="h-full bg-green-500 rounded-full relative transition-all"
-          style={{ width: `${progress}%` }}
+          className="relative h-full rounded-full bg-green-500 transition-all"
+          style={{ width: `${safeProgress}%` }}
         >
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow" />
+          {canSeek && (
+            <div className="absolute right-0 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white opacity-0 shadow transition-opacity group-hover:opacity-100" />
+          )}
         </div>
       </div>
       <span className="text-zinc-600 text-xs tabular-nums w-9 text-right">
-        {fmtSec(duration)}
+        {fmtSec(safeDuration)}
       </span>
     </div>
   );

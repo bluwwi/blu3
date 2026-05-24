@@ -34,6 +34,13 @@ export interface PlaybackState {
   updatedAt: number;
 }
 
+export type RepeatMode = "off" | "all" | "one";
+
+export interface PlaybackMode {
+  shuffle: boolean;
+  repeatMode: RepeatMode;
+}
+
 export type WSMessage =
   | { type: "clock_sync"; serverTime: number }
   | { type: "ping"; clientTime: number }
@@ -69,6 +76,7 @@ type RoomSocketMessage =
       isHost: boolean;
       members?: Member[];
       playback?: PlaybackState | null;
+      playbackMode?: PlaybackMode;
       recentTracks?: RecentTrack[];
       queue?: Track[];
     }
@@ -83,9 +91,11 @@ type RoomSocketMessage =
       isPlaying: boolean;
       currentTime: number;
       updatedAt: number;
+      playbackMode?: PlaybackMode;
       recentTracks?: RecentTrack[];
       queue?: Track[];
     }
+  | { type: "room:playback_mode"; playbackMode: PlaybackMode }
   | { type: "room:queue_update"; queue?: Track[] };
 
 interface UseRoomSocketProps {
@@ -125,6 +135,10 @@ export function useRoomSocket({
   const [isHost, setIsHost] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [playback, setPlayback] = useState<PlaybackState | null>(null);
+  const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>({
+    shuffle: false,
+    repeatMode: "off",
+  });
   // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
@@ -237,6 +251,7 @@ export function useRoomSocket({
           setIsHost(msg.isHost);
           setMembers(msg.members ?? []);
           setPlayback(msg.playback ?? null);
+          if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           if (!msg.isHost && msg.playback?.videoId) {
@@ -302,9 +317,13 @@ export function useRoomSocket({
             currentTime: msg.currentTime ?? 0,
             updatedAt: msg.updatedAt ?? Date.now(),
           });
+          if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           onPlaybackSyncRef.current?.(msg, getSyncedTime);
+          break;
+        case "room:playback_mode":
+          setPlaybackModeState(msg.playbackMode);
           break;
         case "room:queue_update":
           if (msg.queue) setQueue(msg.queue);
@@ -355,6 +374,10 @@ export function useRoomSocket({
     wsRef.current?.send(JSON.stringify({ type: "playback:sync_request" }));
   }, []);
 
+  const sendPlaybackMode = useCallback((mode: Partial<PlaybackMode>) => {
+    wsRef.current?.send(JSON.stringify({ type: "playback:mode", ...mode }));
+  }, []);
+
   const sendPlaybackState = useCallback(
     (state: "playing" | "paused" | "buffering", currentTime: number) => {
       wsRef.current?.send(
@@ -372,12 +395,17 @@ export function useRoomSocket({
     wsRef.current?.send(JSON.stringify({ type: "queue:remove", trackId }));
   }, []);
 
+  const cycleQueueCurrent = useCallback((trackId: string) => {
+    wsRef.current?.send(JSON.stringify({ type: "queue:cycle_current", trackId }));
+  }, []);
+
   return {
     connected,
     clockOffsetMs,
     isHost,
     members,
     playback,
+    playbackMode,
     messages,
     recentTracks,
     queue,
@@ -387,9 +415,11 @@ export function useRoomSocket({
     sendPause,
     sendSeek,
     requestSync,
+    sendPlaybackMode,
     sendPlaybackState,
     getSyncedTime,
     addToQueue,
     removeFromQueue,
+    cycleQueueCurrent,
   };
 }
