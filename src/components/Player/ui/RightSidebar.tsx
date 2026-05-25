@@ -6,7 +6,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, T } from "@/utils/roomHelpers";
 
-type SideTab = "queue" | "playlist" | "chat";
+type SideTab = "queue" | "history" | "chat";
 
 interface Member {
   userId: string;
@@ -41,6 +41,7 @@ interface Props {
   handleSendChat: () => void;
   roomTheme: RoomTheme;
   onThemeChange: (theme: RoomTheme) => void;
+  playerState?: string;
 }
 
 export function RightSidebar({
@@ -56,6 +57,7 @@ export function RightSidebar({
   chatInput,
   setChatInput,
   handleSendChat,
+  playerState,
 }: Props) {
   const [tab, setTab] = useState<SideTab>("queue");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -121,12 +123,12 @@ export function RightSidebar({
           )}
         </button>
         <button
-          className={tabBtn("playlist", tab === "playlist")}
-          onClick={() => setTab("playlist")}
+          className={tabBtn("history", tab === "history")}
+          onClick={() => setTab("history")}
         >
           <Clock3 size={11} />
-          playlist
-          {tab === "playlist" && (
+          History
+          {tab === "history" && (
             <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
           )}
         </button>
@@ -144,7 +146,7 @@ export function RightSidebar({
 
       {/* Panel body */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {/* Queue & History reuse existing component, filter by internal tab */}
+        {/* Queue and history share the same panel component */}
         {(tab === "queue" || tab === "history") && (
           <div className="flex-1 min-h-0 p-2">
             <QueueAndHistory
@@ -155,7 +157,8 @@ export function RightSidebar({
               removeFromQueue={removeFromQueue}
               addToQueue={addToQueue}
               activeVideoId={activeVideoId}
-              defaultTab={tab} // pass this if you want to sync the internal tab
+              defaultTab={tab}
+              playerState={playerState}
             />
           </div>
         )}

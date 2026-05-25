@@ -35,6 +35,8 @@ interface Props {
   onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
   onToggleShuffle?: () => void;
   onCycleRepeat?: () => void;
+  onSkipBack?: () => void;
+  onSkipForward?: () => void;
 }
 
 export function SquarePlayer({
@@ -54,6 +56,8 @@ export function SquarePlayer({
   onSeek,
   onToggleShuffle,
   onCycleRepeat,
+  onSkipBack,
+  onSkipForward,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -112,7 +116,9 @@ export function SquarePlayer({
         </button>
 
         <button
-          className="text-white/60 hover:text-white transition-colors"
+          onClick={onSkipBack}
+          disabled={!onSkipBack}
+          className="text-white/60 hover:text-white transition-colors disabled:opacity-30"
           aria-label="Previous"
         >
           <SkipBack size={16} fill="currentColor" />
@@ -134,7 +140,9 @@ export function SquarePlayer({
         </button>
 
         <button
-          className="text-white/60 hover:text-white transition-colors"
+          onClick={onSkipForward}
+          disabled={!onSkipForward}
+          className="text-white/60 hover:text-white transition-colors disabled:opacity-30"
           aria-label="Next"
         >
           <SkipForward size={16} fill="currentColor" />

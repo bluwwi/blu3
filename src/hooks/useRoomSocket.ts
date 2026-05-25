@@ -127,6 +127,7 @@ export function useRoomSocket({
 }: UseRoomSocketProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const clockOffsetRef = useRef(0);
+  const lastMeasuredRttRef = useRef(0);
   const pingSentAtRef = useRef<number | null>(null);
   const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const resyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -153,6 +154,21 @@ export function useRoomSocket({
     () => Date.now() + clockOffsetRef.current,
     [],
   );
+
+  const safeSend = useCallback((data: string) => {
+    const ws = wsRef.current;
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(data);
+    }
+  }, []);
+
+  const getAdaptiveLeadMs = useCallback((kind: "play" | "control") => {
+    const rtt = lastMeasuredRttRef.current;
+    if (kind === "play") {
+      return Math.min(Math.max(Math.round(rtt * 0.75 + 180), 250), 700);
+    }
+    return Math.min(Math.max(Math.round(rtt * 0.5 + 80), 120), 320);
+  }, []);
 
   const applyClockOffset = useCallback((sampleOffset: number) => {
     const prevOffset = clockOffsetRef.current;
@@ -236,6 +252,7 @@ export function useRoomSocket({
         case "pong": {
           const sentAt = pingSentAtRef.current;
           const measuredRtt = sentAt ? Date.now() - sentAt : msg.rtt;
+          lastMeasuredRttRef.current = measuredRtt;
           const offsetSample =
             (msg.serverTime - (sentAt ?? Date.now())) - measuredRtt / 2;
           applyClockOffset(offsetSample);
@@ -251,9 +268,7 @@ export function useRoomSocket({
           if (msg.queue) setQueue(msg.queue);
           if (!msg.isHost && msg.playback?.videoId) {
             window.setTimeout(() => {
-              wsRef.current?.send(
-                JSON.stringify({ type: "playback:sync_request" }),
-              );
+              safeSend(JSON.stringify({ type: "playback:sync_request" }));
             }, 0);
           }
           break;
@@ -335,14 +350,6 @@ export function useRoomSocket({
     };
   }, [applyClockOffset, getSyncedTime, roomCode, sendPing]);
 
-  /** Only send if the WebSocket is actually open */
-  const safeSend = useCallback((data: string) => {
-    const ws = wsRef.current;
-    if (ws && ws.readyState === WebSocket.OPEN) {
-      ws.send(data);
-    }
-  }, []);
-
   const sendChat = useCallback((text: string) => {
     if (!text.trim()) return;
     safeSend(JSON.stringify({ type: "chat:send", text }));
@@ -358,20 +365,36 @@ export function useRoomSocket({
       currentTime?: number;
       duration_ms?: number;
     }) => {
-      safeSend(JSON.stringify({ type: "playback:play", ...track }));
+      safeSend(
+        JSON.stringify({
+          type: "playback:play",
+          leadMs: getAdaptiveLeadMs("play"),
+          ...track,
+        }),
+      );
     },
-    [safeSend],
+    [getAdaptiveLeadMs, safeSend],
   );
 
   const sendPause = useCallback((currentTime: number) => {
     safeSend(
-      JSON.stringify({ type: "playback:pause", currentTime }),
+      JSON.stringify({
+        type: "playback:pause",
+        currentTime,
+        leadMs: getAdaptiveLeadMs("control"),
+      }),
     );
-  }, [safeSend]);
+  }, [getAdaptiveLeadMs, safeSend]);
 
   const sendSeek = useCallback((currentTime: number) => {
-    safeSend(JSON.stringify({ type: "playback:seek", currentTime }));
-  }, [safeSend]);
+    safeSend(
+      JSON.stringify({
+        type: "playback:seek",
+        currentTime,
+        leadMs: getAdaptiveLeadMs("control"),
+      }),
+    );
+  }, [getAdaptiveLeadMs, safeSend]);
 
   const requestSync = useCallback(() => {
     safeSend(JSON.stringify({ type: "playback:sync_request" }));
@@ -389,6 +412,10 @@ export function useRoomSocket({
     },
     [safeSend],
   );
+
+  const sendTrackEnded = useCallback((currentTime: number) => {
+    safeSend(JSON.stringify({ type: "playback:ended", currentTime }));
+  }, [safeSend]);
 
   const addToQueue = useCallback((track: Track) => {
     safeSend(JSON.stringify({ type: "queue:add", track }));
@@ -420,6 +447,7 @@ export function useRoomSocket({
     requestSync,
     sendPlaybackMode,
     sendPlaybackState,
+    sendTrackEnded,
     getSyncedTime,
     addToQueue,
     removeFromQueue,

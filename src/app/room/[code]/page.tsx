@@ -75,6 +75,7 @@ export default function RoomPage() {
     requestSync,
     sendPlaybackMode,
     sendPlaybackState,
+    sendTrackEnded,
     getSyncedTime,
     addToQueue,
     removeFromQueue,
@@ -112,11 +113,6 @@ export default function RoomPage() {
         if (state.isPlaying) playerState.play?.();
         else playerState.pause?.();
         progressState.seekTo(actualCurrentTime);
-        setTimeout(() => {
-          if (state.isPlaying) playerState.play?.();
-          else playerState.pause?.();
-          progressState.seekTo(actualCurrentTime);
-        }, 150);
       } else {
         playerState.playTrack(
           {
@@ -217,6 +213,15 @@ export default function RoomPage() {
       const initialLateBySec =
         Math.max(syncedTime() - state.targetTime, 0) / 1000;
       const initialSeekTo = state.seekTo + initialLateBySec;
+      if (canControlPlayback) {
+        if (playerState.nowPlaying?.videoId === state.videoId) {
+          progressState.seekTo(initialSeekTo);
+          playerState.play?.();
+        } else {
+          playerState.playTrack(track, initialSeekTo, true);
+        }
+        return;
+      }
       if (playerState.nowPlaying?.videoId === state.videoId) {
         playerState.pause?.();
         progressState.seekTo(initialSeekTo);
@@ -233,14 +238,11 @@ export default function RoomPage() {
           const liveSeekTo = state.seekTo + liveLateBySec;
           progressState.seekTo(liveSeekTo);
           playerState.play?.();
-          setTimeout(() => {
-            progressState.seekTo(liveSeekTo);
-            playerState.play?.();
-          }, 150);
         },
       );
     },
     [
+      canControlPlayback,
       clearScheduledPlaybackActions,
       playerState.nowPlaying?.videoId,
       playerState.pause,
@@ -252,6 +254,10 @@ export default function RoomPage() {
   );
   const scheduleRoomPause = useCallback(
     (state: { targetTime: number }, syncedTime: () => number) => {
+      if (canControlPlayback) {
+        playerState.pause?.();
+        return;
+      }
       clearScheduledTimeout(scheduledPauseTimeoutRef);
       scheduleSyncedAction(
         scheduledPauseTimeoutRef,
@@ -262,13 +268,22 @@ export default function RoomPage() {
         },
       );
     },
-    [clearScheduledTimeout, playerState.pause, scheduleSyncedAction],
+    [
+      canControlPlayback,
+      clearScheduledTimeout,
+      playerState.pause,
+      scheduleSyncedAction,
+    ],
   );
   const scheduleRoomSeek = useCallback(
     (
       state: { seekTo: number; targetTime: number },
       syncedTime: () => number,
     ) => {
+      if (canControlPlayback) {
+        progressState.seekTo(state.seekTo);
+        return;
+      }
       clearScheduledTimeout(scheduledSeekTimeoutRef);
       scheduleSyncedAction(
         scheduledSeekTimeoutRef,
@@ -279,7 +294,12 @@ export default function RoomPage() {
         },
       );
     },
-    [clearScheduledTimeout, progressState, scheduleSyncedAction],
+    [
+      canControlPlayback,
+      clearScheduledTimeout,
+      progressState,
+      scheduleSyncedAction,
+    ],
   );
 
   /* ─── Playback sync on join ────────────────────────── */
@@ -338,54 +358,82 @@ export default function RoomPage() {
   const maybeAdvanceQueue = useCallback(() => {
     if (!canControlPlayback || !joined) return;
     const activeTrack = playerState.nowPlaying;
+    if (!activeTrack) return;
+
     const currentQueueTrack = queue[0];
-    if (!activeTrack || !currentQueueTrack) return;
-    const isCurrentQueueTrack =
-      currentQueueTrack.videoId === activeTrack.videoId ||
-      currentQueueTrack.id === activeTrack.id;
-    if (!isCurrentQueueTrack) return;
+    if (!currentQueueTrack) return;
+
     const activeKey = activeTrack.videoId || activeTrack.id;
     if (!activeKey || queueAdvanceLockRef.current === activeKey) return;
     queueAdvanceLockRef.current = activeKey;
-    if (playbackMode.repeatMode === "one") {
+
+    sendTrackEnded(
+      activeTrack.duration_ms ? activeTrack.duration_ms / 1000 : 0,
+    );
+
+    const isCurrentQueueTrack =
+      currentQueueTrack.videoId === activeTrack.videoId ||
+      currentQueueTrack.id === activeTrack.id;
+
+    if (isCurrentQueueTrack) {
+      if (playbackMode.repeatMode === "one") {
+        sendPlay({
+          id: activeTrack.id,
+          videoId: activeTrack.videoId,
+          trackName: activeTrack.name,
+          artistName: activeTrack.artists?.[0]?.name ?? "",
+          image: activeTrack.image ?? "",
+          currentTime: 0,
+          duration_ms: activeTrack.duration_ms,
+        });
+        return;
+      }
+
+      const upcomingTracks = queue.slice(1);
+      const nextTrack =
+        upcomingTracks.length > 0
+          ? playbackMode.shuffle
+            ? upcomingTracks[Math.floor(Math.random() * upcomingTracks.length)]
+            : upcomingTracks[0]
+          : playbackMode.repeatMode === "all"
+            ? currentQueueTrack
+            : null;
+
+      if (
+        playbackMode.repeatMode === "all" &&
+        nextTrack &&
+        nextTrack.id !== currentQueueTrack.id
+      )
+        cycleQueueCurrent(currentQueueTrack.id);
+
+      if (nextTrack) {
+        sendPlay({
+          id: nextTrack.id,
+          videoId: nextTrack.videoId,
+          trackName: nextTrack.name,
+          artistName: nextTrack.artists?.[0]?.name ?? "",
+          image: nextTrack.image ?? "",
+          currentTime: 0,
+          duration_ms: nextTrack.duration_ms,
+        });
+      }
+
+      if (playbackMode.repeatMode !== "all")
+        removeFromQueue(currentQueueTrack.id);
+    } else {
+      // If the currently playing track is NOT the first track in the queue,
+      // it means we just finished playing a one-off track or skipped into a manual track.
+      // We should start playing the first track in the queue!
       sendPlay({
-        id: activeTrack.id,
-        videoId: activeTrack.videoId,
-        trackName: activeTrack.name,
-        artistName: activeTrack.artists?.[0]?.name ?? "",
-        image: activeTrack.image ?? "",
+        id: currentQueueTrack.id,
+        videoId: currentQueueTrack.videoId,
+        trackName: currentQueueTrack.name,
+        artistName: currentQueueTrack.artists?.[0]?.name ?? "",
+        image: currentQueueTrack.image ?? "",
         currentTime: 0,
-        duration_ms: activeTrack.duration_ms,
+        duration_ms: currentQueueTrack.duration_ms,
       });
-      return;
     }
-    const upcomingTracks = queue.slice(1);
-    const nextTrack =
-      upcomingTracks.length > 0
-        ? playbackMode.shuffle
-          ? upcomingTracks[Math.floor(Math.random() * upcomingTracks.length)]
-          : upcomingTracks[0]
-        : playbackMode.repeatMode === "all"
-          ? currentQueueTrack
-          : null;
-    if (
-      playbackMode.repeatMode === "all" &&
-      nextTrack &&
-      nextTrack.id !== currentQueueTrack.id
-    )
-      cycleQueueCurrent(currentQueueTrack.id);
-    if (nextTrack)
-      sendPlay({
-        id: nextTrack.id,
-        videoId: nextTrack.videoId,
-        trackName: nextTrack.name,
-        artistName: nextTrack.artists?.[0]?.name ?? "",
-        image: nextTrack.image ?? "",
-        currentTime: 0,
-        duration_ms: nextTrack.duration_ms,
-      });
-    if (playbackMode.repeatMode !== "all")
-      removeFromQueue(currentQueueTrack.id);
   }, [
     cycleQueueCurrent,
     canControlPlayback,
@@ -394,6 +442,7 @@ export default function RoomPage() {
     playbackMode.shuffle,
     playerState.nowPlaying,
     queue,
+    sendTrackEnded,
     sendPlay,
     removeFromQueue,
   ]);
@@ -480,6 +529,7 @@ export default function RoomPage() {
         );
         return [track, ...filtered];
       });
+      playerState.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
         videoId: track.videoId,
@@ -490,7 +540,7 @@ export default function RoomPage() {
         duration_ms: track.duration_ms,
       });
     },
-    [canControlPlayback, sendPlay, setQueue],
+    [canControlPlayback, playerState.playTrack, sendPlay, setQueue],
   );
 
   /* ─── Silent audio context ─────────────────────────── */
@@ -540,6 +590,7 @@ export default function RoomPage() {
     const rect = e.currentTarget.getBoundingClientRect();
     const seekToTime =
       ((e.clientX - rect.left) / rect.width) * progressState.duration;
+    progressState.seekTo(seekToTime);
     sendSeek(seekToTime);
   };
   const handlePlayPauseAction = useCallback(() => {
@@ -590,6 +641,7 @@ export default function RoomPage() {
           ? queue[0]
           : null;
     if (!nextTrack) return;
+    playerState.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
       videoId: nextTrack.videoId,
@@ -638,6 +690,7 @@ export default function RoomPage() {
           : -1;
     if (prevIdx < 0 || !queue[prevIdx]) return;
     const prevTrack = queue[prevIdx];
+    playerState.playTrack(prevTrack, 0, true);
     sendPlay({
       id: prevTrack.id,
       videoId: prevTrack.videoId,
@@ -876,7 +929,7 @@ export default function RoomPage() {
 
             <div className="flex h-full gap-4 pt-4 min-h-0">
               <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
-                <aside className="w-1/2 h-full shrink-0 min-h-0 rounded-[20px] border border-white/20">
+                <aside className="w-[55%] h-full shrink-0 min-h-0 rounded-[20px] border border-white/20">
                   <SquarePlayer
                     track={footerTrack}
                     activeVideoId={
@@ -902,10 +955,14 @@ export default function RoomPage() {
                     onCycleRepeat={
                       canControlPlayback ? handleCycleRepeat : undefined
                     }
+                    onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                    onSkipForward={
+                      canControlPlayback ? handleSkipForward : undefined
+                    }
                   />
                 </aside>
 
-                <aside className="flex-1 min-w-0 h-full min-h-0 w-1/2 rounded-[20px] border border-white/20  overflow-hidden">
+                <aside className="flex-1 min-w-0 h-full min-h-0 w-[45%] rounded-[20px] border border-white/20  overflow-hidden">
                   <RightSidebar
                     members={members}
                     messages={messages}
@@ -915,12 +972,15 @@ export default function RoomPage() {
                     handleAdminPlayTrack={handleAdminPlayTrack}
                     removeFromQueue={removeFromQueue}
                     addToQueue={addToQueue}
-                    activeVideoId={playerState.nowPlaying?.videoId}
+                    activeVideoId={
+                      playerState.activeVideoId ?? playback?.videoId ?? null
+                    }
                     chatInput={chatInput}
                     setChatInput={setChatInput}
                     handleSendChat={handleSendChat}
                     roomTheme={roomTheme}
                     onThemeChange={setRoomTheme}
+                    playerState={footerPlayerState}
                   />
                 </aside>
               </div>

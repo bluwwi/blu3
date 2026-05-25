@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
 
@@ -34,7 +34,29 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
+  const [ytReady, setYtReady] = useState(() => typeof window !== "undefined" && !!window.YT?.Player);
+  const [pendingTrack, setPendingTrack] = useState<{
+    track: Track;
+    startTime?: number;
+    shouldPlay: boolean;
+  } | null>(null);
+
   const playerRef = useRef<YT.Player | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.YT?.Player) {
+      setYtReady(true);
+      return;
+    }
+    const checkYT = setInterval(() => {
+      if (window.YT?.Player) {
+        setYtReady(true);
+        clearInterval(checkYT);
+      }
+    }, 100);
+    return () => clearInterval(checkYT);
+  }, []);
 
   /** Check whether the existing YT.Player is still usable */
   const isPlayerAlive = useCallback((): boolean => {
@@ -161,6 +183,11 @@ export function usePlayerState(): UsePlayerStateReturn {
         playerRef.current = null;
       }
 
+      if (!window.YT?.Player) {
+        setPendingTrack({ track, startTime, shouldPlay });
+        return;
+      }
+
       initPlayer(track.videoId, (player) => {
         if (startTime) {
           player.seekTo(startTime, true);
@@ -173,6 +200,22 @@ export function usePlayerState(): UsePlayerStateReturn {
     },
     [initPlayer, isPlayerAlive],
   );
+
+  useEffect(() => {
+    if (ytReady && pendingTrack) {
+      const { track, startTime, shouldPlay } = pendingTrack;
+      setPendingTrack(null);
+      initPlayer(track.videoId, (player) => {
+        if (startTime) {
+          player.seekTo(startTime, true);
+        }
+        if (!shouldPlay) {
+          player.pauseVideo();
+        }
+      });
+      setLoadingId(null);
+    }
+  }, [ytReady, pendingTrack, initPlayer]);
 
   const play = useCallback(() => {
     playerRef.current?.playVideo();
