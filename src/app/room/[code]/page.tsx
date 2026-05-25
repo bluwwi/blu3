@@ -48,6 +48,7 @@ export default function RoomPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
+  const [joinToasts, setJoinToasts] = useState<Array<{ id: string; name: string; avatar?: string }>>([]);
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -83,8 +84,11 @@ export default function RoomPage() {
     removeFromQueue,
     cycleQueueCurrent,
     clearQueue,
+    unreadChatCount,
+    resetUnreadChat,
   } = useRoomSocket({
     roomCode: joined ? code : null,
+    chatOpen,
     onSchedulePlay: (state, syncedTime) => scheduleRoomPlay(state, syncedTime),
     onSchedulePause: (state, syncedTime) =>
       scheduleRoomPause(state, syncedTime),
@@ -133,6 +137,13 @@ export default function RoomPage() {
         );
       }
     },
+    onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
+      const toastId = Date.now().toString();
+      setJoinToasts((prev) => [...prev, { id: toastId, name: user.name, avatar: user.avatar }]);
+      setTimeout(() => {
+        setJoinToasts((prev) => prev.filter((t) => t.id !== toastId));
+      }, 3000);
+    }, []),
   });
 
   const isHost = room?.hostId === user?.sub || socketIsHost;
@@ -961,45 +972,63 @@ export default function RoomPage() {
               }
               onLeave={handleLeave}
               onSearchClick={openSearchOverlay}
-              onChatToggle={() => setChatOpen(!chatOpen)}
             />
 
             <div className="flex h-full gap-4 pt-4 min-h-0">
               <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
-                <aside className={`${chatOpen ? 'w-[30%]' : 'w-[55%]'} h-full shrink-0 min-h-0 rounded-[20px] border border-white/20 transition-all duration-300`}>
-                  <SquarePlayer
-                    track={footerTrack}
-                    activeVideoId={
-                      playerState.activeVideoId ?? playback?.videoId ?? null
-                    }
-                    playerState={footerPlayerState}
-                    progress={progressState.progress}
-                    currentTime={progressState.currentTime}
-                    duration={progressState.duration}
-                    volume={playerState.volume}
-                    isMuted={playerState.isMuted}
-                    shuffleEnabled={playbackMode.shuffle}
-                    repeatMode={playbackMode.repeatMode}
-                    onPlayPause={
-                      canControlPlayback ? handlePlayPauseAction : undefined
-                    }
-                    onMute={playerState.toggleMute}
-                    onVolume={playerState.handleVolume}
-                    onSeek={canControlPlayback ? handleSeekAction : undefined}
-                    onToggleShuffle={
-                      canControlPlayback ? handleToggleShuffle : undefined
-                    }
-                    onCycleRepeat={
-                      canControlPlayback ? handleCycleRepeat : undefined
-                    }
-                    onSkipBack={canControlPlayback ? handleSkipBack : undefined}
-                    onSkipForward={
-                      canControlPlayback ? handleSkipForward : undefined
-                    }
-                  />
+                <aside className="w-[55%] h-full shrink-0 min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
+                  {chatOpen ? (
+                    <div className="absolute inset-0 animate-in fade-in duration-300">
+                      <ChatPanel
+                        messages={messages}
+                        chatInput={chatInput}
+                        setChatInput={setChatInput}
+                        handleSendChat={handleSendChat}
+                        onClose={() => setChatOpen(false)}
+                        track={footerTrack}
+                        isPlaying={playerState.playerState === "playing"}
+                        canControlPlayback={canControlPlayback}
+                        onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
+                        onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                        onSkipForward={canControlPlayback ? handleSkipForward : undefined}
+                        userProfile={{ name: user?.name || user?.email || "U", avatar: user?.avatar }}
+                      />
+                    </div>
+                  ) : (
+                    <SquarePlayer
+                      track={footerTrack}
+                      activeVideoId={
+                        playerState.activeVideoId ?? playback?.videoId ?? null
+                      }
+                      playerState={footerPlayerState}
+                      progress={progressState.progress}
+                      currentTime={progressState.currentTime}
+                      duration={progressState.duration}
+                      volume={playerState.volume}
+                      isMuted={playerState.isMuted}
+                      shuffleEnabled={playbackMode.shuffle}
+                      repeatMode={playbackMode.repeatMode}
+                      onPlayPause={
+                        canControlPlayback ? handlePlayPauseAction : undefined
+                      }
+                      onMute={playerState.toggleMute}
+                      onVolume={playerState.handleVolume}
+                      onSeek={canControlPlayback ? handleSeekAction : undefined}
+                      onToggleShuffle={
+                        canControlPlayback ? handleToggleShuffle : undefined
+                      }
+                      onCycleRepeat={
+                        canControlPlayback ? handleCycleRepeat : undefined
+                      }
+                      onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                      onSkipForward={
+                        canControlPlayback ? handleSkipForward : undefined
+                      }
+                    />
+                  )}
                 </aside>
 
-                <aside className={`flex-1 min-w-0 h-full min-h-0 ${chatOpen ? 'w-[35%]' : 'w-[45%]'} rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300`}>
+                <aside className="flex-1 min-w-0 h-full min-h-0 w-[45%] rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300">
                   <RightSidebar
                     members={members}
                     messages={messages}
@@ -1016,27 +1045,9 @@ export default function RoomPage() {
                     roomTheme={roomTheme}
                     onThemeChange={setRoomTheme}
                     playerState={footerPlayerState}
+                    onChatToggle={() => setChatOpen(!chatOpen)}
                   />
                 </aside>
-
-                {chatOpen && (
-                  <aside className="w-[35%] h-full shrink-0 min-h-0 transition-all duration-300 animate-in slide-in-from-right-8 fade-in">
-                    <ChatPanel
-                      messages={messages}
-                      chatInput={chatInput}
-                      setChatInput={setChatInput}
-                      handleSendChat={handleSendChat}
-                      onClose={() => setChatOpen(false)}
-                      track={footerTrack}
-                      isPlaying={playerState.playerState === "playing"}
-                      canControlPlayback={canControlPlayback}
-                      onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
-                      onSkipBack={canControlPlayback ? handleSkipBack : undefined}
-                      onSkipForward={canControlPlayback ? handleSkipForward : undefined}
-                      userProfile={{ name: user?.name || user?.email || "U", avatar: user?.avatar }}
-                    />
-                  </aside>
-                )}
               </div>
             </div>
           </div>

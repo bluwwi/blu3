@@ -46,10 +46,10 @@ export function ChatPanel({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-[#1e1e1e]/90 backdrop-blur-3xl rounded-[20px] border border-white/20 overflow-hidden text-white w-full">
+    <div className="flex flex-col h-full bg-transparent rounded-[20px] overflow-hidden text-white w-full">
       {/* Mini Player Header */}
       {track && (
-        <div className="flex items-center justify-between p-3 border-b border-white/10 bg-black/20">
+        <div className="flex items-center justify-between p-3 border-b border-white/10 bg-transparent">
           <div className="flex items-center gap-3 overflow-hidden">
             <img
               src={track.image || "https://via.placeholder.com/150"}
@@ -96,29 +96,35 @@ export function ChatPanel({
       )}
 
       {/* Chat Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-black/10">
-        <h2 className="text-lg font-bold">Chat</h2>
-        
-        <div className="flex items-center justify-center absolute left-1/2 -translate-x-1/2">
-           {userProfile?.avatar ? (
-              <img
-                src={userProfile.avatar}
-                alt=""
-                className="w-7 h-7 rounded-full object-cover border border-orange-500"
-              />
-            ) : userProfile?.name ? (
-              <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-xs font-semibold border border-orange-400">
-                {userProfile.name.charAt(0).toUpperCase()}
-              </div>
-            ) : null}
+      {/* Chat Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-transparent">
+        {/* Left: Title */}
+        <h2 className="text-lg font-bold w-20">Chat</h2>
+
+        {/* Center: Avatar */}
+        <div className="flex-1 flex justify-center">
+          {userProfile?.avatar ? (
+            <img
+              src={userProfile.avatar}
+              alt=""
+              className="w-7 h-7 rounded-full object-cover border border-orange-500"
+            />
+          ) : userProfile?.name ? (
+            <div className="w-7 h-7 rounded-full bg-orange-500 flex items-center justify-center text-xs font-semibold border border-orange-400">
+              {userProfile.name.charAt(0).toUpperCase()}
+            </div>
+          ) : null}
         </div>
 
-        <button
-          onClick={onClose}
-          className="p-1 text-white/70 hover:text-white transition-colors"
-        >
-          <X size={20} />
-        </button>
+        {/* Right: Close Button */}
+        <div className="w-20 flex justify-end">
+          <button
+            onClick={onClose}
+            className="p-1 text-white/70 hover:text-white transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
       </div>
 
       {/* Chat Messages */}
@@ -155,7 +161,7 @@ export function ChatPanel({
       </div>
 
       {/* Chat Input */}
-      <div className="p-3 border-t border-white/10 bg-black/20">
+      <div className="p-3 border-t border-white/10 bg-transparent">
         <div className="relative flex items-center">
           <div className="absolute left-3 text-white/40 flex items-center gap-2">
             <div className="w-6 h-5 border border-white/40 rounded flex items-center justify-center text-[8px] font-bold">

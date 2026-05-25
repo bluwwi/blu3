@@ -80,7 +80,8 @@ type RoomSocketMessage =
       recentTracks?: RecentTrack[];
       queue?: Track[];
     }
-  | { type: "room:member_joined" | "room:member_left"; members?: Member[] }
+  | { type: "room:member_joined"; members?: Member[]; user?: { userId: string; name: string; avatar?: string } }
+  | { type: "room:member_left"; members?: Member[]; userId?: string }
   | { type: "chat:message"; message: ChatMessage }
   | {
       type: "playback:sync";
@@ -116,6 +117,8 @@ interface UseRoomSocketProps {
     state: PlaybackState,
     getSyncedTime: () => number,
   ) => void;
+  onMemberJoined?: (user: { name: string; avatar?: string }) => void;
+  chatOpen?: boolean;
 }
 
 export function useRoomSocket({
@@ -124,6 +127,8 @@ export function useRoomSocket({
   onSchedulePause,
   onScheduleSeek,
   onPlaybackSync,
+  onMemberJoined,
+  chatOpen,
 }: UseRoomSocketProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const clockOffsetRef = useRef(0);
@@ -144,11 +149,14 @@ export function useRoomSocket({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const onSchedulePlayRef = useRef(onSchedulePlay);
   const onSchedulePauseRef = useRef(onSchedulePause);
   const onScheduleSeekRef = useRef(onScheduleSeek);
   const onPlaybackSyncRef = useRef(onPlaybackSync);
+  const onMemberJoinedRef = useRef(onMemberJoined);
+  const chatOpenRef = useRef(chatOpen);
 
   const getSyncedTime = useCallback(
     () => Date.now() + clockOffsetRef.current,
@@ -207,7 +215,12 @@ export function useRoomSocket({
     onSchedulePauseRef.current = onSchedulePause;
     onScheduleSeekRef.current = onScheduleSeek;
     onPlaybackSyncRef.current = onPlaybackSync;
-  }, [onSchedulePause, onSchedulePlay, onScheduleSeek, onPlaybackSync]);
+    onMemberJoinedRef.current = onMemberJoined;
+  }, [onSchedulePause, onSchedulePlay, onScheduleSeek, onPlaybackSync, onMemberJoined]);
+
+  useEffect(() => {
+    chatOpenRef.current = chatOpen;
+  }, [chatOpen]);
 
   useEffect(() => {
     if (!roomCode) return;
@@ -266,18 +279,26 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
-          if (!msg.isHost && msg.playback?.videoId) {
+          if (msg.playback?.videoId) {
             window.setTimeout(() => {
               safeSend(JSON.stringify({ type: "playback:sync_request" }));
             }, 0);
           }
           break;
         case "room:member_joined":
+          setMembers(msg.members ?? []);
+          if (msg.user) {
+            onMemberJoinedRef.current?.(msg.user);
+          }
+          break;
         case "room:member_left":
           setMembers(msg.members ?? []);
           break;
         case "chat:message":
           setMessages((prev) => [...prev.slice(-199), msg.message]);
+          if (!chatOpenRef.current) {
+            setUnreadChatCount((c) => c + 1);
+          }
           break;
         case "schedule_play":
           setPlayback({
@@ -457,5 +478,7 @@ export function useRoomSocket({
     removeFromQueue,
     cycleQueueCurrent,
     clearQueue,
+    unreadChatCount,
+    resetUnreadChat: useCallback(() => setUnreadChatCount(0), []),
   };
 }

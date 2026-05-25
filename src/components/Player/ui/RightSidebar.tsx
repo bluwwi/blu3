@@ -1,4 +1,3 @@
-// components/Player/ui/RightSidebar.tsx  (replace existing)
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { Clock3, ListMusic, MessageSquare } from "lucide-react";
@@ -40,6 +39,8 @@ interface Props {
   roomTheme: RoomTheme;
   onThemeChange: (theme: RoomTheme) => void;
   playerState?: string;
+  onChatToggle?: () => void;
+  unreadChatCount?: number;
 }
 
 export function RightSidebar({
@@ -54,10 +55,10 @@ export function RightSidebar({
   clearQueue,
   activeVideoId,
   playerState,
+  onChatToggle,
+  unreadChatCount = 0,
 }: Props) {
   const [tab, setTab] = useState<SideTab>("queue");
-
-
 
   const tabBtn = (t: SideTab, active: boolean) =>
     `flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-colors rounded-t-lg ${
@@ -70,9 +71,24 @@ export function RightSidebar({
     <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
       {/* Members strip (always visible) */}
       <div className="px-4 pt-3 pb-2 border-b border-white/10 flex-shrink-0">
-        <p className="text-[9px] uppercase tracking-[0.2em] text-white/35 mb-2">
-          {members.length} listening
-        </p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-white/35">
+            {members.length} listening
+          </p>
+          {onChatToggle && (
+            <button 
+              onClick={onChatToggle}
+              className="relative text-white/40 hover:text-white transition-colors"
+            >
+              <MessageSquare size={14} />
+              {unreadChatCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
+                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
         <div className="flex flex-wrap gap-1.5">
           {members.map((m, i) => (
             <div
@@ -123,7 +139,6 @@ export function RightSidebar({
             <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
           )}
         </button>
-        </button>
       </div>
 
       {/* Panel body */}
@@ -145,7 +160,6 @@ export function RightSidebar({
             />
           </div>
         )}
-
       </div>
     </div>
   );

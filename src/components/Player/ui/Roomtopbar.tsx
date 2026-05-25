@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Track } from "@/utils/types";
 import { RoomTheme } from "@/utils/roomHelpers";
-import { LogOut, X, MessageSquare } from "lucide-react";
+import { LogOut, X } from "lucide-react";
 import Image from "next/image";
 
 interface Props {
@@ -17,7 +17,6 @@ interface Props {
   onCopyInvite: () => void;
   onLeave: () => void;
   onSearchClick: () => void;
-  onChatToggle: () => void;
 }
 
 export function RoomTopBar({
@@ -25,7 +24,6 @@ export function RoomTopBar({
   connected,
   onLeave,
   onSearchClick,
-  onChatToggle,
 }: Props) {
   const [showLeavePopup, setShowLeavePopup] = useState(false);
 
@@ -91,13 +89,6 @@ export function RoomTopBar({
           className="flex items-center gap-2 flex-shrink-0"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={onChatToggle}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-white/20 bg-white/10 hover:bg-white/15 transition-colors text-white"
-          >
-            <MessageSquare size={16} />
-          </button>
-
           <button
             type="button"
             onClick={() => setShowLeavePopup(true)}
