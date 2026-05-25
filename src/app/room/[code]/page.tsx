@@ -401,12 +401,12 @@ export default function RoomPage() {
             ? currentQueueTrack
             : null;
 
-      if (
-        playbackMode.repeatMode === "all" &&
-        nextTrack &&
-        nextTrack.id !== currentQueueTrack.id
-      )
+      if (nextTrack && nextTrack.id !== currentQueueTrack.id) {
         cycleQueueCurrent(currentQueueTrack.id);
+      } else if (!nextTrack && queue.length === 1) {
+        // If there's only one song, just cycle it so it's not removed
+        cycleQueueCurrent(currentQueueTrack.id);
+      }
 
       if (nextTrack) {
         sendPlay({
@@ -419,9 +419,6 @@ export default function RoomPage() {
           duration_ms: nextTrack.duration_ms,
         });
       }
-
-      if (playbackMode.repeatMode !== "all")
-        removeFromQueue(currentQueueTrack.id);
     } else {
       // If the currently playing track is NOT the first track in the queue,
       // it means we just finished playing a one-off track or skipped into a manual track.
