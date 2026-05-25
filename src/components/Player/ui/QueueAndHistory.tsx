@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Track } from "@/utils/types";
-import {
-  Clock3,
-  ListMusic,
-  Plus,
-  Play,
-  Trash2,
-} from "lucide-react";
+import { Clock3, ListMusic, Plus, Play, Trash2 } from "lucide-react";
 
 interface Props {
   queue: Track[];
@@ -75,14 +69,16 @@ export function QueueAndHistory({
         </div>
 
         <div className={sectionLabelClass}>
-          {isQueueTab ? `${queue.length} queued` : `${recentTracks.length} played`}
+          {isQueueTab
+            ? `${queue.length} queued`
+            : `${recentTracks.length} played`}
         </div>
       </div>
 
       <section className="flex min-h-0 flex-1 flex-col">
         {isQueueTab ? (
           queue.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-5 py-8 text-center text-white/55">
+            <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-3 py-8 text-center text-white/55">
               <div>
                 <ListMusic size={24} className="mx-auto mb-2.5" />
                 <p className="text-[13px]">Queue is empty</p>
@@ -97,9 +93,6 @@ export function QueueAndHistory({
                     key={`${track.id}-${i}`}
                     className={`${rowClass} ${isActive ? "bg-white/15" : "hover:bg-white/10"}`}
                   >
-                    <span className="w-4 shrink-0 text-right text-[11px] text-white/40">
-                      {i + 1}
-                    </span>
                     <div
                       role={canControlPlayback ? "button" : undefined}
                       tabIndex={canControlPlayback ? 0 : -1}
@@ -126,7 +119,9 @@ export function QueueAndHistory({
                       {canControlPlayback && (
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover/img:opacity-100">
                           {isActive ? (
-                            <span className="text-[10px] font-semibold text-white">||</span>
+                            <span className="text-[10px] font-semibold text-white">
+                              ||
+                            </span>
                           ) : (
                             <Play size={12} className="fill-white text-white" />
                           )}
@@ -182,9 +177,6 @@ export function QueueAndHistory({
                   key={`${track.videoId}-${i}`}
                   className={`${rowClass} ${isActive ? "bg-white/15" : "hover:bg-white/10"}`}
                 >
-                  <span className="w-4 shrink-0 text-right text-[11px] text-white/40">
-                    {i + 1}
-                  </span>
                   <div
                     role={canControlPlayback ? "button" : undefined}
                     tabIndex={canControlPlayback ? 0 : -1}
@@ -209,7 +201,9 @@ export function QueueAndHistory({
                     {canControlPlayback && (
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 group-hover/img:opacity-100">
                         {isActive ? (
-                          <span className="text-[10px] font-semibold text-white">||</span>
+                          <span className="text-[10px] font-semibold text-white">
+                            ||
+                          </span>
                         ) : (
                           <Play size={12} className="fill-white text-white" />
                         )}

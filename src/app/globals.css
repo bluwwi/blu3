@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+* {
+    /*border: 1px solid black;*/
+}
+
 @font-face {
     font-family: "Marmelat";
     src: url("/fonts/Marmelat Book.otf") format("opentype");

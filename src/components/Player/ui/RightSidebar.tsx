@@ -1,14 +1,18 @@
+// components/Player/ui/RightSidebar.tsx  (replace existing)
 "use client";
-
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Clock3, ListMusic, MessageSquare } from "lucide-react";
+import { QueueAndHistory } from "./QueueAndHistory";
+import { Track } from "@/utils/types";
 import { RoomTheme, T } from "@/utils/roomHelpers";
+
+type SideTab = "queue" | "playlist" | "chat";
 
 interface Member {
   userId: string;
   name: string;
   avatar?: string;
 }
-
 interface Message {
   id: string;
   name: string;
@@ -19,146 +23,197 @@ interface Message {
 interface Props {
   members: Member[];
   messages: Message[];
-  roomTheme: RoomTheme;
-  onThemeChange: (theme: RoomTheme) => void;
+  queue: Track[];
+  recentTracks: Array<{
+    videoId: string;
+    trackName: string;
+    artistName: string;
+    image: string;
+    playedAt: number;
+  }>;
+  canControlPlayback: boolean;
+  handleAdminPlayTrack: (track: Track) => void;
+  removeFromQueue: (id: string) => void;
+  addToQueue: (track: Track) => void;
+  activeVideoId: string | null | undefined;
   chatInput: string;
   setChatInput: (val: string) => void;
   handleSendChat: () => void;
-  chatOpen: boolean;
+  roomTheme: RoomTheme;
+  onThemeChange: (theme: RoomTheme) => void;
 }
 
 export function RightSidebar({
   members,
   messages,
-  roomTheme,
-  onThemeChange,
+  queue,
+  recentTracks,
+  canControlPlayback,
+  handleAdminPlayTrack,
+  removeFromQueue,
+  addToQueue,
+  activeVideoId,
   chatInput,
   setChatInput,
   handleSendChat,
-  chatOpen,
 }: Props) {
+  const [tab, setTab] = useState<SideTab>("queue");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    if (chatOpen) chatInputRef.current?.focus();
-  }, [chatOpen, messages]);
+    if (tab === "chat") chatInputRef.current?.focus();
+  }, [tab, messages]);
+
+  const tabBtn = (t: SideTab, active: boolean) =>
+    `flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-colors rounded-t-lg ${
+      active
+        ? "text-white"
+        : "text-white/40 hover:text-white/70 hover:bg-white/5"
+    }`;
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 text-white">
-      <div className="space-y-3">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-white/45">
+    <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
+      {/* Members strip (always visible) */}
+      <div className="px-4 pt-3 pb-2 border-b border-white/10 flex-shrink-0">
+        <p className="text-[9px] uppercase tracking-[0.2em] text-white/35 mb-2">
           {members.length} listening
         </p>
         <div className="flex flex-wrap gap-1.5">
-          {members.map((member) => (
+          {members.map((m, i) => (
             <div
-              key={member.userId}
+              key={i}
               className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2 py-1"
             >
-              {member.avatar ? (
+              {m.avatar ? (
                 <img
-                  src={member.avatar}
+                  src={m.avatar}
                   alt=""
-                  className="h-5 w-5 rounded-full border border-white/10 object-cover"
+                  className="h-4 w-4 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-5 w-5 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[9px] text-white/80">
-                  {member.name[0]}
+                <div className="h-4 w-4 rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
+                  {m.name[0]}
                 </div>
               )}
-              <span className="text-[10px] text-white/80">
-                {member.name.split(" ")[0]}
+              <span className="text-[10px] text-white/70">
+                {m.name.split(" ")[0]}
               </span>
             </div>
           ))}
         </div>
       </div>
 
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[20px] border border-white/10 bg-white/5">
-        <div className="border-b border-white/10 px-3 py-2.5">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-white/45">
-            Room Chat
-          </p>
-        </div>
-
-        <div className="room-scroll flex-1 overflow-y-auto px-3 py-2.5">
-          {messages.length === 0 && (
-            <p
-              style={{
-                fontSize: "11px",
-                color: T.text3,
-                textAlign: "center",
-                marginTop: "30px",
-              }}
-            >
-              no messages yet
-            </p>
+      {/* Tabs */}
+      <div className="flex border-b border-white/10 flex-shrink-0">
+        <button
+          className={tabBtn("queue", tab === "queue")}
+          onClick={() => setTab("queue")}
+        >
+          <ListMusic size={11} />
+          Queue
+          <span className="text-[9px] bg-white/10 text-white/50 px-1.5 py-0.5 rounded-full ml-0.5">
+            {queue.length}
+          </span>
+          {tab === "queue" && (
+            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
           )}
-          {messages.map((msg) => (
-            <div key={msg.id} className="mb-2.5 flex items-start gap-2">
-              {msg.avatar ? (
-                <img
-                  src={msg.avatar}
-                  alt=""
-                  className="mt-[1px] h-4.5 w-4.5 shrink-0 rounded-full object-cover"
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "18px",
-                    height: "18px",
-                    borderRadius: "50%",
-                    background: T.surface3,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "8px",
-                    color: T.text3,
-                    flexShrink: 0,
-                  }}
-                >
-                  {msg.name[0]}
-                </div>
-              )}
-              <div className="min-w-0">
-                <span
-                  style={{
-                    fontSize: "9px",
-                    color: T.text3,
-                    marginRight: "6px",
-                  }}
-                >
-                  {msg.name.split(" ")[0]}
-                </span>
-                <span style={{ fontSize: "10px", color: T.text2 }}>
-                  {msg.text}
-                </span>
-              </div>
-            </div>
-          ))}
-          <div ref={chatEndRef} />
-        </div>
+        </button>
+        <button
+          className={tabBtn("playlist", tab === "playlist")}
+          onClick={() => setTab("playlist")}
+        >
+          <Clock3 size={11} />
+          playlist
+          {tab === "playlist" && (
+            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
+          )}
+        </button>
+        <button
+          className={tabBtn("chat", tab === "chat")}
+          onClick={() => setTab("chat")}
+        >
+          <MessageSquare size={11} />
+          Chat
+          {tab === "chat" && (
+            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
+          )}
+        </button>
+      </div>
 
-        <div className="flex gap-2 border-t border-white/10 p-2.5">
-          <input
-            ref={chatInputRef}
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-            placeholder="say something..."
-            className="flex-1 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[10px] text-white outline-none placeholder:text-white/40"
-          />
-          <button
-            type="button"
-            onClick={handleSendChat}
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/10 text-xs text-white/80 transition-colors hover:bg-white/15 hover:text-white"
-          >
-            ↑
-          </button>
-        </div>
-      </section>
+      {/* Panel body */}
+      <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+        {/* Queue & History reuse existing component, filter by internal tab */}
+        {(tab === "queue" || tab === "history") && (
+          <div className="flex-1 min-h-0 p-2">
+            <QueueAndHistory
+              queue={queue}
+              recentTracks={recentTracks}
+              canControlPlayback={canControlPlayback}
+              handleAdminPlayTrack={handleAdminPlayTrack}
+              removeFromQueue={removeFromQueue}
+              addToQueue={addToQueue}
+              activeVideoId={activeVideoId}
+              defaultTab={tab} // pass this if you want to sync the internal tab
+            />
+          </div>
+        )}
+
+        {/* Chat */}
+        {tab === "chat" && (
+          <div className="flex flex-col flex-1 min-h-0">
+            <div className="room-scroll flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2.5">
+              {messages.length === 0 && (
+                <p className="text-[11px] text-white/35 text-center mt-8">
+                  no messages yet
+                </p>
+              )}
+              {messages.map((msg) => (
+                <div key={msg.id} className="flex items-start gap-2">
+                  {msg.avatar ? (
+                    <img
+                      src={msg.avatar}
+                      alt=""
+                      className="h-5 w-5 rounded-full object-cover flex-shrink-0 mt-0.5"
+                    />
+                  ) : (
+                    <div className="h-5 w-5 rounded-full bg-violet-400/20 flex items-center justify-center text-[8px] text-violet-300 flex-shrink-0 mt-0.5">
+                      {msg.name[0]}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <span className="text-[9px] text-white/40 mr-1.5">
+                      {msg.name.split(" ")[0]}
+                    </span>
+                    <span className="text-[11px] text-white/75">
+                      {msg.text}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+            <div className="flex gap-2 border-t border-white/10 p-2.5">
+              <input
+                ref={chatInputRef}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+                placeholder="say something..."
+                className="flex-1 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] text-white outline-none placeholder:text-white/35"
+              />
+              <button
+                type="button"
+                onClick={handleSendChat}
+                className="h-8 w-8 rounded-full border border-white/15 bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors text-sm flex items-center justify-center"
+              >
+                ↑
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

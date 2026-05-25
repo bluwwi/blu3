@@ -20,12 +20,8 @@ import {
 } from "@/utils/roomHelpers";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
-import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
-import { NowPlayingBar } from "@/components/Player/ui/NowPlayingBar";
-import { SearchInput } from "@/components/Player/ui/SearchInput";
-import { TrackList } from "@/components/Player/ui/TrackList";
-import { Disc3, Search, X } from "lucide-react";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
+import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -747,179 +743,123 @@ export default function RoomPage() {
   }
 
   return (
-    <div>
+    <div className="w-full h-full">
       <YouTubeIframe />
-      <div className="h-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1600')] bg-cover bg-center bg-fixed">
-        <div className="h-screen overflow-hidden bg-slate-950/55">
-          <div className="mx-auto flex h-screen max-w-3xl flex-col  pb-26 ">
-            <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col">
-              <RoomTopBar
-                roomName={room?.name ?? "Room"}
-                roomCode={code}
-                isHost={isHost}
-                connected={connected}
-                track={footerTrack}
-                roomTheme={roomTheme}
-                activeVideoId={
-                  playerState.activeVideoId ?? playback?.videoId ?? null
-                }
-                playerState={footerPlayerState}
-                onCopyInvite={() =>
-                  navigator.clipboard.writeText(window.location.href)
-                }
-                onLeave={handleLeave}
-              />
+      <div className="w-full h-full  bg-[#F9DBE0] absolute -z-10"></div>
 
-              <div className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={openSearchOverlay}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      openSearchOverlay();
+      <div className="h-screen  overflow-hidden bg-cover bg-center bg-fixed">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute bottom-0  right-0 w-2/3 h-full object-cover"
+          style={{ zIndex: -1 }}
+        >
+          <source src="/dance.mp4" type="video/mp4" />
+        </video>
+        <div className="h-screen w-full overflow-hidden bg-black/50">
+          <div
+            className="mx-auto flex h-full flex-col pb-40"
+            style={{ width: "clamp(10rem, 58vw, 12000rem)" }}
+          >
+            {/* TopBar — NOT clickable as a whole, RoomTopBar handles its own search bar click internally */}
+            <RoomTopBar
+              roomName={room?.name ?? "Room"}
+              roomCode={code}
+              isHost={isHost}
+              connected={connected}
+              track={footerTrack}
+              roomTheme={roomTheme}
+              activeVideoId={
+                playerState.activeVideoId ?? playback?.videoId ?? null
+              }
+              playerState={footerPlayerState}
+              onCopyInvite={() =>
+                navigator.clipboard.writeText(window.location.href)
+              }
+              onLeave={handleLeave}
+              onSearchClick={openSearchOverlay}
+            />
+
+            <div className="flex h-full gap-4 pt-4 min-h-0">
+              <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
+                <aside className="w-1/2 h-full shrink-0 min-h-0 rounded-[20px] border border-white/20">
+                  <SquarePlayer
+                    track={footerTrack}
+                    activeVideoId={
+                      playerState.activeVideoId ?? playback?.videoId ?? null
                     }
-                  }}
-                  className="flex w-full cursor-pointer items-center gap-3 rounded-[28px] border border-white/20 bg-white/10 px-4 py-3 text-white backdrop-blur-xl transition-colors hover:bg-white/15"
-                >
-                  <Search size={16} className="shrink-0 text-white/70" />
-                  <div className="w-full text-sm">
-                    <span
-                      className={
-                        searchState.searchQuery
-                          ? "text-white/80"
-                          : "text-white/45"
-                      }
-                    >
-                      {searchState.searchQuery ||
-                        "What do you want to listen to?"}
-                    </span>
-                  </div>
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-xs font-semibold">
-                    {user?.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      (user?.name || user?.email || "U")
-                        .slice(0, 1)
-                        .toUpperCase()
-                    )}
-                  </div>
-                </div>
+                    playerState={footerPlayerState}
+                    progress={progressState.progress}
+                    currentTime={progressState.currentTime}
+                    duration={progressState.duration}
+                    volume={playerState.volume}
+                    isMuted={playerState.isMuted}
+                    shuffleEnabled={playbackMode.shuffle}
+                    repeatMode={playbackMode.repeatMode}
+                    onPlayPause={
+                      canControlPlayback ? handlePlayPauseAction : undefined
+                    }
+                    onMute={playerState.toggleMute}
+                    onVolume={playerState.handleVolume}
+                    onSeek={canControlPlayback ? handleSeekAction : undefined}
+                    onToggleShuffle={
+                      canControlPlayback ? handleToggleShuffle : undefined
+                    }
+                    onCycleRepeat={
+                      canControlPlayback ? handleCycleRepeat : undefined
+                    }
+                  />
+                </aside>
 
-                <div className="scrollbar-hide flex gap-3 overflow-x-auto pb-1">
-                  {(carouselTracks.length > 0
-                    ? carouselTracks
-                    : Array.from({ length: 8 }, (_, index) => index)
-                  ).map((item, index) => {
-                    const image =
-                      typeof item === "number"
-                        ? `https://picsum.photos/seed/${index}/160/160`
-                        : item.image ||
-                          `https://i.ytimg.com/vi/${item.videoId}/hqdefault.jpg`;
-                    const key =
-                      typeof item === "number"
-                        ? `placeholder-${item}`
-                        : `${item.id}-${index}`;
-
-                    return (
-                      <div
-                        key={key}
-                        className="h-28 w-28 shrink-0 overflow-hidden rounded-[24px] border border-white/15 bg-white/10"
-                      >
-                        <img
-                          src={image}
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-
-                <div className="relative flex min-h-0 flex-1 gap-4 max-lg:flex-col">
-                  <aside className="min-h-0 flex-[55%] rounded-[28px] border border-white/20 bg-white/10 p-5 text-white backdrop-blur-xl">
-                    <QueueAndHistory
-                      queue={queue}
-                      recentTracks={recentTracks}
-                      canControlPlayback={canControlPlayback}
-                      handleAdminPlayTrack={handleAdminPlayTrack}
-                      removeFromQueue={removeFromQueue}
-                      addToQueue={addToQueue}
-                      activeVideoId={playerState.nowPlaying?.videoId}
-                    />
-                  </aside>
-
-                  <aside className="min-h-0 flex-[45%] rounded-[28px] border border-white/20 bg-white/10 p-5 text-white backdrop-blur-xl">
-                    <RightSidebar
-                      members={members}
-                      messages={messages}
-                      roomTheme={roomTheme}
-                      onThemeChange={setRoomTheme}
-                      chatInput={chatInput}
-                      setChatInput={setChatInput}
-                      handleSendChat={handleSendChat}
-                      chatOpen={chatOpen}
-                    />
-                  </aside>
-                </div>
+                <aside className="flex-1 min-w-0 h-full min-h-0 w-1/2 rounded-[20px] border border-white/20  overflow-hidden">
+                  <RightSidebar
+                    members={members}
+                    messages={messages}
+                    queue={queue}
+                    recentTracks={recentTracks}
+                    canControlPlayback={canControlPlayback}
+                    handleAdminPlayTrack={handleAdminPlayTrack}
+                    removeFromQueue={removeFromQueue}
+                    addToQueue={addToQueue}
+                    activeVideoId={playerState.nowPlaying?.videoId}
+                    chatInput={chatInput}
+                    setChatInput={setChatInput}
+                    handleSendChat={handleSendChat}
+                    roomTheme={roomTheme}
+                    onThemeChange={setRoomTheme}
+                  />
+                </aside>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <NowPlayingBar
-        track={footerTrack}
-        activeVideoId={playerState.activeVideoId ?? playback?.videoId ?? null}
-        playerState={footerPlayerState}
-        progress={progressState.progress}
-        currentTime={progressState.currentTime}
-        duration={progressState.duration}
-        volume={playerState.volume}
-        isMuted={playerState.isMuted}
-        shuffleEnabled={playbackMode.shuffle}
-        repeatMode={playbackMode.repeatMode}
-        onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
-        onToggleShuffle={canControlPlayback ? handleToggleShuffle : undefined}
-        onCycleRepeat={canControlPlayback ? handleCycleRepeat : undefined}
-        onMute={playerState.toggleMute}
-        onVolume={playerState.handleVolume}
-        onSeek={canControlPlayback ? handleSeekAction : undefined}
-        onChatClick={openChatOverlay}
-        onQueueClick={showQueuePanel}
-      />
-
       <style>{`
-        .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .room-scroll::-webkit-scrollbar-track { background: transparent; }
-        .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
+          .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+          .room-scroll::-webkit-scrollbar-track { background: transparent; }
+          .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        `}</style>
+
       <SearchOverlay
         isOpen={searchOpen}
         onClose={closeSearchOverlay}
-        // search state (from useSearch / useSuggestions)
         searchQuery={searchState.searchQuery}
         suggestions={suggestState.suggestions}
         showSuggestions={suggestState.showSuggestions}
         results={searchState.results}
         isSearching={searchState.isSearching}
         searchError={searchState.searchError ?? ""}
-        // recent tracks for the empty state
         recentTracks={
           recentTracks.map(asTrackFromRecent).filter(Boolean) as Track[]
         }
-        // player state
         activeTrackId={playerState.nowPlaying?.id ?? null}
         loadingTrackId={null}
         isPlaying={playerState.playerState === "playing"}
-        // handlers
         onSearchInput={(val) => {
           searchState.onSearchInput(val);
           suggestState.onSuggestInput(val);
@@ -934,12 +874,10 @@ export default function RoomPage() {
           searchState.onSearchInput(s);
           searchState.doSearch(s);
         }}
-        onTrackSelect={handleSearchTrackSelect} // plays immediately + closes overlay
+        onTrackSelect={handleSearchTrackSelect}
         onAddToQueue={(track) => {
           addToQueue(track);
-          // optionally close: closeSearchOverlay();
         }}
-        // user avatar
         avatarUrl={user?.avatar}
         avatarLabel={user?.name || user?.email || "U"}
         popularGenres={popularGenres}
