@@ -534,7 +534,7 @@ export default function RoomPage() {
     };
   }, []);
 
-  /* ─── Seek / play-pause / shuffle / repeat ──────────────── */
+  /* ─── Seek / play-pause / shuffle / repeat / skip ──────────────── */
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -545,9 +545,13 @@ export default function RoomPage() {
   const handlePlayPauseAction = useCallback(() => {
     if (!canControlPlayback || !playerState.nowPlaying?.videoId) return;
     if (playerState.playerState === "playing") {
+      // Optimistic: pause locally first, then tell server
+      playerState.pause?.();
       sendPause(progressState.currentTime);
       return;
     }
+    // Optimistic: play locally first, then tell server
+    playerState.play?.();
     sendPlay({
       id: playerState.nowPlaying.id,
       videoId: playerState.nowPlaying.videoId,
@@ -561,10 +565,98 @@ export default function RoomPage() {
     canControlPlayback,
     playerState.nowPlaying,
     playerState.playerState,
+    playerState.pause,
+    playerState.play,
     progressState.currentTime,
     sendPause,
     sendPlay,
   ]);
+
+  const handleSkipForward = useCallback(() => {
+    if (!canControlPlayback || !joined) return;
+    const currentIdx = queue.findIndex(
+      (t) =>
+        t.videoId === playerState.nowPlaying?.videoId ||
+        t.id === playerState.nowPlaying?.id,
+    );
+    if (currentIdx === -1) return;
+    const upcomingTracks = queue.slice(currentIdx + 1);
+    const nextTrack =
+      upcomingTracks.length > 0
+        ? playbackMode.shuffle
+          ? upcomingTracks[Math.floor(Math.random() * upcomingTracks.length)]
+          : upcomingTracks[0]
+        : playbackMode.repeatMode === "all"
+          ? queue[0]
+          : null;
+    if (!nextTrack) return;
+    sendPlay({
+      id: nextTrack.id,
+      videoId: nextTrack.videoId,
+      trackName: nextTrack.name,
+      artistName: nextTrack.artists?.[0]?.name ?? "",
+      image: nextTrack.image ?? "",
+      currentTime: 0,
+      duration_ms: nextTrack.duration_ms,
+    });
+  }, [
+    canControlPlayback,
+    joined,
+    playbackMode.repeatMode,
+    playbackMode.shuffle,
+    playerState.nowPlaying,
+    queue,
+    sendPlay,
+  ]);
+
+  const handleSkipBack = useCallback(() => {
+    if (!canControlPlayback || !joined) return;
+    // If more than 3 seconds in, restart current track
+    if (progressState.currentTime > 3 && playerState.nowPlaying) {
+      sendPlay({
+        id: playerState.nowPlaying.id,
+        videoId: playerState.nowPlaying.videoId,
+        trackName: playerState.nowPlaying.name,
+        artistName: playerState.nowPlaying.artists?.[0]?.name ?? "",
+        image: playerState.nowPlaying.image ?? "",
+        currentTime: 0,
+        duration_ms: playerState.nowPlaying.duration_ms,
+      });
+      return;
+    }
+    // Otherwise go to previous track in queue (wrap if repeat all)
+    const currentIdx = queue.findIndex(
+      (t) =>
+        t.videoId === playerState.nowPlaying?.videoId ||
+        t.id === playerState.nowPlaying?.id,
+    );
+    const prevIdx =
+      currentIdx > 0
+        ? currentIdx - 1
+        : playbackMode.repeatMode === "all"
+          ? queue.length - 1
+          : -1;
+    if (prevIdx < 0 || !queue[prevIdx]) return;
+    const prevTrack = queue[prevIdx];
+    sendPlay({
+      id: prevTrack.id,
+      videoId: prevTrack.videoId,
+      trackName: prevTrack.name,
+      artistName: prevTrack.artists?.[0]?.name ?? "",
+      image: prevTrack.image ?? "",
+      currentTime: 0,
+      duration_ms: prevTrack.duration_ms,
+    });
+  }, [
+    canControlPlayback,
+    joined,
+    playbackMode.repeatMode,
+    playerState.nowPlaying,
+    progressState.currentTime,
+    queue,
+    sendPlay,
+  ]);
+
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     sendPlaybackMode({ shuffle: !playbackMode.shuffle });

@@ -24,7 +24,6 @@ export function RoomTopBar({
   connected,
   onLeave,
   onSearchClick,
-  user,
 }: Props) {
   const [showLeavePopup, setShowLeavePopup] = useState(false);
 

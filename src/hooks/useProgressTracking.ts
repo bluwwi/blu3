@@ -19,8 +19,8 @@ export function useProgressTracking(
       const player = playerRef.current;
       if (!player) return;
 
-      const cur = player.getCurrentTime?.() ?? 0;
-      const tot = player.getDuration?.() ?? 0;
+      const cur = typeof player.getCurrentTime === "function" ? (player.getCurrentTime() ?? 0) : 0;
+      const tot = typeof player.getDuration === "function" ? (player.getDuration() ?? 0) : 0;
 
       setCurrentTime(cur);
       setDuration(tot);
@@ -39,9 +39,15 @@ export function useProgressTracking(
     (time: number) => {
       const player = playerRef.current;
       if (!player) return;
-      player.seekTo(time, true);
+      if (typeof player.seekTo !== "function") return;
+      try {
+        player.seekTo(time, true);
+      } catch (err) {
+        console.warn("seekTo failed (stale player?):", err);
+        return;
+      }
       setCurrentTime(time);
-      const tot = player.getDuration?.() ?? 0;
+      const tot = typeof player.getDuration === "function" ? (player.getDuration() ?? 0) : 0;
       if (tot > 0) {
         setProgress((time / tot) * 100);
       }
