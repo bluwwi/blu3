@@ -11,7 +11,12 @@ import {
   Volume2,
   VolumeX,
   Heart,
+  Shuffle,
+  Repeat,
+  Repeat1,
 } from "lucide-react";
+
+type RepeatMode = "off" | "all" | "one";
 
 interface Props {
   track: Track | null;
@@ -22,10 +27,14 @@ interface Props {
   duration: number;
   volume: number;
   isMuted: boolean;
+  shuffleEnabled?: boolean;
+  repeatMode?: RepeatMode;
   onPlayPause?: () => void;
   onMute: () => void;
   onVolume: (val: number) => void;
   onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onToggleShuffle?: () => void;
+  onCycleRepeat?: () => void;
 }
 
 export function SquarePlayer({
@@ -37,10 +46,14 @@ export function SquarePlayer({
   duration,
   volume,
   isMuted,
+  shuffleEnabled = false,
+  repeatMode = "off",
   onPlayPause,
   onMute,
   onVolume,
   onSeek,
+  onToggleShuffle,
+  onCycleRepeat,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -54,6 +67,9 @@ export function SquarePlayer({
     (activeVideoId
       ? `https://i.ytimg.com/vi/${activeVideoId}/maxresdefault.jpg`
       : `https://picsum.photos/seed/nowplaying/400/400`);
+
+  const RepeatIcon = repeatMode === "one" ? Repeat1 : Repeat;
+  const repeatActive = repeatMode !== "off";
 
   return (
     <div className="flex flex-col text-black  items-center rounded-[28px]  p-5 h-full overflow-hidden">
@@ -79,8 +95,22 @@ export function SquarePlayer({
         )}
       </div>
 
-      {/* Controls row: skip back · play · skip forward · volume icon · volume slider · heart */}
+      {/* Controls row: shuffle · skip back · play · skip forward · repeat · volume · heart */}
       <div className="flex items-center w-full gap-3 justify-center  mb-3">
+        <button
+          onClick={onToggleShuffle}
+          disabled={!onToggleShuffle}
+          className={`transition-colors disabled:opacity-30 ${
+            shuffleEnabled
+              ? "text-violet-400 hover:text-violet-300"
+              : "text-white/60 hover:text-white"
+          }`}
+          aria-label="Shuffle"
+          title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
+        >
+          <Shuffle size={15} />
+        </button>
+
         <button
           className="text-white/60 hover:text-white transition-colors"
           aria-label="Previous"
@@ -108,6 +138,26 @@ export function SquarePlayer({
           aria-label="Next"
         >
           <SkipForward size={16} fill="currentColor" />
+        </button>
+
+        <button
+          onClick={onCycleRepeat}
+          disabled={!onCycleRepeat}
+          className={`transition-colors disabled:opacity-30 ${
+            repeatActive
+              ? "text-violet-400 hover:text-violet-300"
+              : "text-white/60 hover:text-white"
+          }`}
+          aria-label="Repeat"
+          title={
+            repeatMode === "one"
+              ? "Repeat one"
+              : repeatMode === "all"
+                ? "Repeat all"
+                : "Repeat off"
+          }
+        >
+          <RepeatIcon size={15} />
         </button>
 
         {/* Volume */}

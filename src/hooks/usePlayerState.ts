@@ -36,25 +36,45 @@ export function usePlayerState(): UsePlayerStateReturn {
 
   const playerRef = useRef<YT.Player | null>(null);
 
+  /** Check whether the existing YT.Player is still usable */
+  const isPlayerAlive = useCallback((): boolean => {
+    const player = playerRef.current;
+    if (!player) return false;
+    // Must have the critical API methods
+    if (typeof player.loadVideoById !== "function") return false;
+    if (typeof player.seekTo !== "function") return false;
+    // Its iframe must still be in the document
+    try {
+      const iframe = player.getIframe?.();
+      if (!iframe || !document.contains(iframe)) return false;
+    } catch {
+      return false;
+    }
+    return true;
+  }, []);
+
   const initPlayer = useCallback(
     (videoId: string, onReady?: (player: YT.Player) => void) => {
       if (!window.YT?.Player) return;
 
       if (playerRef.current) {
-        try {
-          playerRef.current.loadVideoById({
-            videoId,
-            startSeconds: 0,
-          });
-          onReady?.(playerRef.current);
-          return;
-        } catch (err) {
-          console.warn("Failed to reuse existing player, recreating:", err);
+        if (isPlayerAlive()) {
           try {
-            playerRef.current.destroy();
-          } catch {}
-          playerRef.current = null;
+            playerRef.current.loadVideoById({
+              videoId,
+              startSeconds: 0,
+            });
+            onReady?.(playerRef.current);
+            return;
+          } catch (err) {
+            console.warn("Failed to reuse existing player, recreating:", err);
+          }
         }
+        // Player is stale or call failed — destroy and recreate
+        try {
+          playerRef.current.destroy();
+        } catch {}
+        playerRef.current = null;
       }
 
       const playerVars = {
@@ -99,7 +119,7 @@ export function usePlayerState(): UsePlayerStateReturn {
         },
       });
     },
-    [volume],
+    [volume, isPlayerAlive],
   );
 
   const playTrack = useCallback(
@@ -117,24 +137,28 @@ export function usePlayerState(): UsePlayerStateReturn {
         return;
       }
 
-      if (playerRef.current && typeof playerRef.current.loadVideoById === "function") {
+      if (isPlayerAlive()) {
         try {
-          playerRef.current.loadVideoById({
+          playerRef.current!.loadVideoById({
             videoId: track.videoId,
             startSeconds: startTime || 0,
           });
           if (!shouldPlay) {
-            playerRef.current.pauseVideo();
+            playerRef.current!.pauseVideo();
           }
           setLoadingId(null);
           return;
         } catch (e) {
           console.warn("Failed to reuse player, recreating:", e);
           try {
-            playerRef.current.destroy();
+            playerRef.current!.destroy();
           } catch {}
           playerRef.current = null;
         }
+      } else if (playerRef.current) {
+        // Player ref exists but is stale — clean up
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
       }
 
       initPlayer(track.videoId, (player) => {
@@ -147,7 +171,7 @@ export function usePlayerState(): UsePlayerStateReturn {
       });
       setLoadingId(null);
     },
-    [initPlayer],
+    [initPlayer, isPlayerAlive],
   );
 
   const play = useCallback(() => {

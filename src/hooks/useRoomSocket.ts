@@ -335,10 +335,18 @@ export function useRoomSocket({
     };
   }, [applyClockOffset, getSyncedTime, roomCode, sendPing]);
 
+  /** Only send if the WebSocket is actually open */
+  const safeSend = useCallback((data: string) => {
+    const ws = wsRef.current;
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(data);
+    }
+  }, []);
+
   const sendChat = useCallback((text: string) => {
     if (!text.trim()) return;
-    wsRef.current?.send(JSON.stringify({ type: "chat:send", text }));
-  }, []);
+    safeSend(JSON.stringify({ type: "chat:send", text }));
+  }, [safeSend]);
 
   const sendPlay = useCallback(
     (track: {
@@ -350,49 +358,49 @@ export function useRoomSocket({
       currentTime?: number;
       duration_ms?: number;
     }) => {
-      wsRef.current?.send(JSON.stringify({ type: "playback:play", ...track }));
+      safeSend(JSON.stringify({ type: "playback:play", ...track }));
     },
-    [],
+    [safeSend],
   );
 
   const sendPause = useCallback((currentTime: number) => {
-    wsRef.current?.send(
+    safeSend(
       JSON.stringify({ type: "playback:pause", currentTime }),
     );
-  }, []);
+  }, [safeSend]);
 
   const sendSeek = useCallback((currentTime: number) => {
-    wsRef.current?.send(JSON.stringify({ type: "playback:seek", currentTime }));
-  }, []);
+    safeSend(JSON.stringify({ type: "playback:seek", currentTime }));
+  }, [safeSend]);
 
   const requestSync = useCallback(() => {
-    wsRef.current?.send(JSON.stringify({ type: "playback:sync_request" }));
-  }, []);
+    safeSend(JSON.stringify({ type: "playback:sync_request" }));
+  }, [safeSend]);
 
   const sendPlaybackMode = useCallback((mode: Partial<PlaybackMode>) => {
-    wsRef.current?.send(JSON.stringify({ type: "playback:mode", ...mode }));
-  }, []);
+    safeSend(JSON.stringify({ type: "playback:mode", ...mode }));
+  }, [safeSend]);
 
   const sendPlaybackState = useCallback(
     (state: "playing" | "paused" | "buffering", currentTime: number) => {
-      wsRef.current?.send(
+      safeSend(
         JSON.stringify({ type: "playback_state", state, currentTime }),
       );
     },
-    [],
+    [safeSend],
   );
 
   const addToQueue = useCallback((track: Track) => {
-    wsRef.current?.send(JSON.stringify({ type: "queue:add", track }));
-  }, []);
+    safeSend(JSON.stringify({ type: "queue:add", track }));
+  }, [safeSend]);
 
   const removeFromQueue = useCallback((trackId: string) => {
-    wsRef.current?.send(JSON.stringify({ type: "queue:remove", trackId }));
-  }, []);
+    safeSend(JSON.stringify({ type: "queue:remove", trackId }));
+  }, [safeSend]);
 
   const cycleQueueCurrent = useCallback((trackId: string) => {
-    wsRef.current?.send(JSON.stringify({ type: "queue:cycle_current", trackId }));
-  }, []);
+    safeSend(JSON.stringify({ type: "queue:cycle_current", trackId }));
+  }, [safeSend]);
 
   return {
     connected,
