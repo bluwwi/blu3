@@ -188,13 +188,6 @@ export function SquarePlayer({
           className="accent-violet-500 h-1 flex-shrink-0"
           aria-label="Volume"
         />
-
-        <button
-          className="text-white/40 hover:text-white/80 transition-colors"
-          aria-label="Like"
-        >
-          <Heart size={15} />
-        </button>
       </div>
 
       {/* Progress bar + timestamps */}
@@ -211,7 +204,7 @@ export function SquarePlayer({
               onSeek={onSeek}
             />
           </div>
-          <span className="text-[11px] text-white/45 tabular-nums w-7 flex-shrink-0">
+          <span className="text-[11px] text-white tabular-nums w-7 flex-shrink-0">
             {fmtSec(duration)}
           </span>
         </div>

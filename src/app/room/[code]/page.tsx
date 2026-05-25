@@ -48,7 +48,9 @@ export default function RoomPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
-  const [joinToasts, setJoinToasts] = useState<Array<{ id: string; name: string; avatar?: string }>>([]);
+  const [joinToasts, setJoinToasts] = useState<
+    Array<{ id: string; name: string; avatar?: string }>
+  >([]);
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -139,7 +141,10 @@ export default function RoomPage() {
     },
     onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
       const toastId = Date.now().toString();
-      setJoinToasts((prev) => [...prev, { id: toastId, name: user.name, avatar: user.avatar }]);
+      setJoinToasts((prev) => [
+        ...prev,
+        { id: toastId, name: user.name, avatar: user.avatar },
+      ]);
       setTimeout(() => {
         setJoinToasts((prev) => prev.filter((t) => t.id !== toastId));
       }, 3000);
@@ -974,7 +979,7 @@ export default function RoomPage() {
               onSearchClick={openSearchOverlay}
             />
 
-            <div className="flex h-full gap-4 pt-4 min-h-0">
+            <div className="flex h-full gap-2 pt-1 min-h-0">
               <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
                 <aside className="w-[55%] h-full shrink-0 min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
                   {chatOpen ? (
@@ -988,10 +993,19 @@ export default function RoomPage() {
                         track={footerTrack}
                         isPlaying={playerState.playerState === "playing"}
                         canControlPlayback={canControlPlayback}
-                        onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
-                        onSkipBack={canControlPlayback ? handleSkipBack : undefined}
-                        onSkipForward={canControlPlayback ? handleSkipForward : undefined}
-                        userProfile={{ name: user?.name || user?.email || "U", avatar: user?.avatar }}
+                        onPlayPause={
+                          canControlPlayback ? handlePlayPauseAction : undefined
+                        }
+                        onSkipBack={
+                          canControlPlayback ? handleSkipBack : undefined
+                        }
+                        onSkipForward={
+                          canControlPlayback ? handleSkipForward : undefined
+                        }
+                        userProfile={{
+                          name: user?.name || user?.email || "U",
+                          avatar: user?.avatar,
+                        }}
                       />
                     </div>
                   ) : (
@@ -1020,7 +1034,9 @@ export default function RoomPage() {
                       onCycleRepeat={
                         canControlPlayback ? handleCycleRepeat : undefined
                       }
-                      onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                      onSkipBack={
+                        canControlPlayback ? handleSkipBack : undefined
+                      }
                       onSkipForward={
                         canControlPlayback ? handleSkipForward : undefined
                       }

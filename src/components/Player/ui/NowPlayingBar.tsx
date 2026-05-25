@@ -190,7 +190,6 @@ export function NowPlayingBar({
           </div>
         </div>
 
-        {/* progress bar — flush to bottom, no padding */}
         <ProgressBar
           progress={progress}
           currentTime={currentTime}
