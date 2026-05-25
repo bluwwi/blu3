@@ -147,11 +147,11 @@ export function ChatPanel({
                 {msg.name[0]?.toUpperCase()}
               </div>
             )}
-            <div className="min-w-0 bg-white/5 rounded-2xl rounded-tl-sm px-3 py-2 border border-white/5">
-              <span className="text-[10px] text-white/40 block mb-0.5">
+            <div className="min-w-0 flex gap-2 rounded-2xl rounded-tl-sm px-3 py-2 border border-white/5">
+              <span className="text-[12px] text-white/50 block mb-0.5">
                 {msg.name.split(" ")[0]}
               </span>
-              <span className="text-[12px] text-white/90 break-words">
+              <span className="text-[12px] text-white wrap-break-words">
                 {msg.text}
               </span>
             </div>
