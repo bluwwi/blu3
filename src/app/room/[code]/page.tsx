@@ -600,42 +600,6 @@ export default function RoomPage() {
     };
   }, []);
 
-  /* ─── Background Video Looper ──────────────────────── */
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const forcePlay = () => {
-      if (video.paused) {
-        video.play().catch((err) => {
-          console.debug("Video play auto-recovery triggered:", err);
-        });
-      }
-    };
-
-    forcePlay();
-
-    video.addEventListener("pause", forcePlay);
-    video.addEventListener("ended", forcePlay);
-
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        forcePlay();
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    const intervalId = setInterval(forcePlay, 5000);
-
-    return () => {
-      video.removeEventListener("pause", forcePlay);
-      video.removeEventListener("ended", forcePlay);
-      document.removeEventListener("visibilitychange", handleVisibility);
-      clearInterval(intervalId);
-    };
-  }, []);
-
-  /* ─── Seek / play-pause / shuffle / repeat / skip ──────────────── */
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -933,6 +897,52 @@ export default function RoomPage() {
     "Bollywood",
     "EDM",
   ];
+  /* ─── Background Video Looper ──────────────────────── */
+  useEffect(() => {
+    if (!joined) return;
+    const video = videoRef.current;
+    if (!video) return;
+
+    const LOOP_START = 10.55;
+    const LOOP_END = 17.6; // a bit before 17.9 — gives rAF time to catch it
+
+    let rafId: number;
+
+    const forcePlay = () => {
+      if (video.paused) video.play().catch(() => {});
+    };
+
+    const tick = () => {
+      if (video.currentTime >= LOOP_END) {
+        video.currentTime = LOOP_START;
+        // No need to call play() here — video wasn't paused, just seeking
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const handleEnded = () => {
+      video.currentTime = LOOP_START;
+      forcePlay();
+    };
+
+    forcePlay();
+    rafId = requestAnimationFrame(tick);
+
+    video.addEventListener("ended", handleEnded);
+    video.addEventListener("pause", forcePlay);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") forcePlay();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      video.removeEventListener("ended", handleEnded);
+      video.removeEventListener("pause", forcePlay);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, [joined]);
 
   if (authLoading || !joined) {
     return <RoomLoading />;
@@ -947,7 +957,6 @@ export default function RoomPage() {
         <video
           ref={videoRef}
           autoPlay
-          loop
           muted
           playsInline
           className="absolute bottom-0  right-0 w-2/3 h-full object-cover"
