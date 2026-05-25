@@ -61,12 +61,13 @@ function useRooms(user: any, authLoading: boolean) {
 
 export default function BrowsePage() {
   const router = useRouter();
-  const { user, loading: authLoading, login } = useAuth();
+  const { user, loading: authLoading, login, logout } = useAuth();
   const { rooms, loading, removeRoom } = useRooms(user, authLoading);
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const handleJoin = () => {
     if (!joinCode.trim()) return;
@@ -214,17 +215,33 @@ export default function BrowsePage() {
         }
       `}</style>
 
-      <div className="absolute top-5 right-6 flex items-center gap-4 z-10">
+      <div className="absolute top-5 right-6 flex items-center gap-4 z-50">
         {user ? (
-          <>
+          <div className="relative">
             {user.avatar && (
-              <img
-                src={user.avatar}
-                alt=""
-                className="w-7 h-7 rounded-full border border-zinc-700 object-cover"
-              />
+              <button onClick={() => setShowProfileMenu(!showProfileMenu)}>
+                <img
+                  src={user.avatar}
+                  alt=""
+                  className="w-7 h-7 rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer"
+                />
+              </button>
             )}
-          </>
+            
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-32 rounded-xl bg-black/40 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl">
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    logout();
+                  }}
+                  className="w-full text-left px-4 py-2 text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
+                >
+                  Log out
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <button
             onClick={login}

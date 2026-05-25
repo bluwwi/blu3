@@ -22,6 +22,7 @@ import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
+import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -960,11 +961,12 @@ export default function RoomPage() {
               }
               onLeave={handleLeave}
               onSearchClick={openSearchOverlay}
+              onChatToggle={() => setChatOpen(!chatOpen)}
             />
 
             <div className="flex h-full gap-4 pt-4 min-h-0">
               <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
-                <aside className="w-[55%] h-full shrink-0 min-h-0 rounded-[20px] border border-white/20">
+                <aside className={`${chatOpen ? 'w-[30%]' : 'w-[55%]'} h-full shrink-0 min-h-0 rounded-[20px] border border-white/20 transition-all duration-300`}>
                   <SquarePlayer
                     track={footerTrack}
                     activeVideoId={
@@ -997,7 +999,7 @@ export default function RoomPage() {
                   />
                 </aside>
 
-                <aside className="flex-1 min-w-0 h-full min-h-0 w-[45%] rounded-[20px] border border-white/20  overflow-hidden">
+                <aside className={`flex-1 min-w-0 h-full min-h-0 ${chatOpen ? 'w-[35%]' : 'w-[45%]'} rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300`}>
                   <RightSidebar
                     members={members}
                     messages={messages}
@@ -1011,14 +1013,30 @@ export default function RoomPage() {
                     activeVideoId={
                       playerState.activeVideoId ?? playback?.videoId ?? null
                     }
-                    chatInput={chatInput}
-                    setChatInput={setChatInput}
-                    handleSendChat={handleSendChat}
                     roomTheme={roomTheme}
                     onThemeChange={setRoomTheme}
                     playerState={footerPlayerState}
                   />
                 </aside>
+
+                {chatOpen && (
+                  <aside className="w-[35%] h-full shrink-0 min-h-0 transition-all duration-300 animate-in slide-in-from-right-8 fade-in">
+                    <ChatPanel
+                      messages={messages}
+                      chatInput={chatInput}
+                      setChatInput={setChatInput}
+                      handleSendChat={handleSendChat}
+                      onClose={() => setChatOpen(false)}
+                      track={footerTrack}
+                      isPlaying={playerState.playerState === "playing"}
+                      canControlPlayback={canControlPlayback}
+                      onPlayPause={canControlPlayback ? handlePlayPauseAction : undefined}
+                      onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                      onSkipForward={canControlPlayback ? handleSkipForward : undefined}
+                      userProfile={{ name: user?.name || user?.email || "U", avatar: user?.avatar }}
+                    />
+                  </aside>
+                )}
               </div>
             </div>
           </div>

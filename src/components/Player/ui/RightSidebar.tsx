@@ -6,7 +6,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, T } from "@/utils/roomHelpers";
 
-type SideTab = "queue" | "history" | "chat";
+type SideTab = "queue" | "history";
 
 interface Member {
   userId: string;
@@ -37,9 +37,6 @@ interface Props {
   addToQueue: (track: Track) => void;
   clearQueue?: () => void;
   activeVideoId: string | null | undefined;
-  chatInput: string;
-  setChatInput: (val: string) => void;
-  handleSendChat: () => void;
   roomTheme: RoomTheme;
   onThemeChange: (theme: RoomTheme) => void;
   playerState?: string;
@@ -56,19 +53,11 @@ export function RightSidebar({
   addToQueue,
   clearQueue,
   activeVideoId,
-  chatInput,
-  setChatInput,
-  handleSendChat,
   playerState,
 }: Props) {
   const [tab, setTab] = useState<SideTab>("queue");
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const chatInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    if (tab === "chat") chatInputRef.current?.focus();
-  }, [tab, messages]);
+
 
   const tabBtn = (t: SideTab, active: boolean) =>
     `flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-colors rounded-t-lg ${
@@ -134,15 +123,6 @@ export function RightSidebar({
             <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
           )}
         </button>
-        <button
-          className={tabBtn("chat", tab === "chat")}
-          onClick={() => setTab("chat")}
-        >
-          <MessageSquare size={11} />
-          Chat
-          {tab === "chat" && (
-            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
-          )}
         </button>
       </div>
 
@@ -166,59 +146,6 @@ export function RightSidebar({
           </div>
         )}
 
-        {/* Chat */}
-        {tab === "chat" && (
-          <div className="flex flex-col flex-1 min-h-0">
-            <div className="room-scroll flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2.5">
-              {messages.length === 0 && (
-                <p className="text-[11px] text-white/35 text-center mt-8">
-                  no messages yet
-                </p>
-              )}
-              {messages.map((msg) => (
-                <div key={msg.id} className="flex items-start gap-2">
-                  {msg.avatar ? (
-                    <img
-                      src={msg.avatar}
-                      alt=""
-                      className="h-5 w-5 rounded-full object-cover flex-shrink-0 mt-0.5"
-                    />
-                  ) : (
-                    <div className="h-5 w-5 rounded-full bg-violet-400/20 flex items-center justify-center text-[8px] text-violet-300 flex-shrink-0 mt-0.5">
-                      {msg.name[0]}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <span className="text-[9px] text-white/40 mr-1.5">
-                      {msg.name.split(" ")[0]}
-                    </span>
-                    <span className="text-[11px] text-white/75">
-                      {msg.text}
-                    </span>
-                  </div>
-                </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-            <div className="flex gap-2 border-t border-white/10 p-2.5">
-              <input
-                ref={chatInputRef}
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-                placeholder="say something..."
-                className="flex-1 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-[11px] text-white outline-none placeholder:text-white/35"
-              />
-              <button
-                type="button"
-                onClick={handleSendChat}
-                className="h-8 w-8 rounded-full border border-white/15 bg-white/10 text-white/70 hover:bg-white/20 hover:text-white transition-colors text-sm flex items-center justify-center"
-              >
-                ↑
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
