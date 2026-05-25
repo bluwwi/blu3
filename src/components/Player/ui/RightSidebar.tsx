@@ -35,6 +35,7 @@ interface Props {
   handleAdminPlayTrack: (track: Track) => void;
   removeFromQueue: (id: string) => void;
   addToQueue: (track: Track) => void;
+  clearQueue?: () => void;
   activeVideoId: string | null | undefined;
   chatInput: string;
   setChatInput: (val: string) => void;
@@ -53,6 +54,7 @@ export function RightSidebar({
   handleAdminPlayTrack,
   removeFromQueue,
   addToQueue,
+  clearQueue,
   activeVideoId,
   chatInput,
   setChatInput,
@@ -156,6 +158,7 @@ export function RightSidebar({
               handleAdminPlayTrack={handleAdminPlayTrack}
               removeFromQueue={removeFromQueue}
               addToQueue={addToQueue}
+              clearQueue={clearQueue}
               activeVideoId={activeVideoId}
               defaultTab={tab}
               playerState={playerState}

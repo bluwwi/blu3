@@ -16,6 +16,7 @@ interface Props {
   handleAdminPlayTrack: (track: Track) => void;
   removeFromQueue: (id: string) => void;
   addToQueue: (track: Track) => void;
+  clearQueue?: () => void;
   activeVideoId: string | null | undefined;
   defaultTab?: "queue" | "history";
   playerState?: string;
@@ -28,6 +29,7 @@ export function QueueAndHistory({
   handleAdminPlayTrack,
   removeFromQueue,
   addToQueue,
+  clearQueue,
   activeVideoId,
   defaultTab,
   playerState,
@@ -53,10 +55,20 @@ export function QueueAndHistory({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
-        
-
-      
+      <div className="flex items-center justify-between gap-3 px-1">
+        <span className={sectionLabelClass}>
+          {isQueueTab ? "Up Next" : "Recently Played"}
+        </span>
+        {isQueueTab && queue.length > 0 && canControlPlayback && clearQueue && (
+          <button
+            type="button"
+            onClick={clearQueue}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 hover:border-red-500/40 text-[9px] text-red-400 font-semibold uppercase tracking-[0.15em] transition-all cursor-pointer"
+          >
+            <Trash2 size={11} />
+            Clear Queue
+          </button>
+        )}
       </div>
 
       <section className="flex min-h-0 flex-1 flex-col">

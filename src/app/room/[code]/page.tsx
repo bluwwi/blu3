@@ -51,6 +51,7 @@ export default function RoomPage() {
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const videoRef = useRef<HTMLVideoElement>(null);
   const scheduledPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -80,6 +81,7 @@ export default function RoomPage() {
     addToQueue,
     removeFromQueue,
     cycleQueueCurrent,
+    clearQueue,
   } = useRoomSocket({
     roomCode: joined ? code : null,
     onSchedulePlay: (state, syncedTime) => scheduleRoomPlay(state, syncedTime),
@@ -584,6 +586,41 @@ export default function RoomPage() {
     };
   }, []);
 
+  /* ─── Background Video Looper ──────────────────────── */
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const forcePlay = () => {
+      if (video.paused) {
+        video.play().catch((err) => {
+          console.debug("Video play auto-recovery triggered:", err);
+        });
+      }
+    };
+
+    forcePlay();
+
+    video.addEventListener("pause", forcePlay);
+    video.addEventListener("ended", forcePlay);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        forcePlay();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    const intervalId = setInterval(forcePlay, 5000);
+
+    return () => {
+      video.removeEventListener("pause", forcePlay);
+      video.removeEventListener("ended", forcePlay);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      clearInterval(intervalId);
+    };
+  }, []);
+
   /* ─── Seek / play-pause / shuffle / repeat / skip ──────────────── */
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
@@ -894,6 +931,7 @@ export default function RoomPage() {
 
       <div className="h-screen  overflow-hidden bg-cover bg-center bg-fixed">
         <video
+          ref={videoRef}
           autoPlay
           loop
           muted
@@ -972,6 +1010,7 @@ export default function RoomPage() {
                     handleAdminPlayTrack={handleAdminPlayTrack}
                     removeFromQueue={removeFromQueue}
                     addToQueue={addToQueue}
+                    clearQueue={clearQueue}
                     activeVideoId={
                       playerState.activeVideoId ?? playback?.videoId ?? null
                     }

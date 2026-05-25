@@ -429,6 +429,10 @@ export function useRoomSocket({
     safeSend(JSON.stringify({ type: "queue:cycle_current", trackId }));
   }, [safeSend]);
 
+  const clearQueue = useCallback(() => {
+    safeSend(JSON.stringify({ type: "queue:clear" }));
+  }, [safeSend]);
+
   return {
     connected,
     clockOffsetMs,
@@ -452,5 +456,6 @@ export function useRoomSocket({
     addToQueue,
     removeFromQueue,
     cycleQueueCurrent,
+    clearQueue,
   };
 }
