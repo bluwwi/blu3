@@ -227,7 +227,7 @@ export default function BrowsePage() {
                 />
               </button>
             )}
-            
+
             {showProfileMenu && (
               <div className="absolute right-0 mt-2 w-32 rounded-xl bg-black/40 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl">
                 <button
@@ -276,7 +276,7 @@ export default function BrowsePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-x-4 gap-y-6 w-full max-w-5xl">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 items-center justify-center gap-x-4 gap-y-6 w-full">
             {loading
               ? Array.from({ length: 9 }).map((_, i) => (
                   <SkeletonCard key={i} />
