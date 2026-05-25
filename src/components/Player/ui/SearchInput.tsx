@@ -37,7 +37,7 @@ export function SearchInput({
 }: Props) {
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-center gap-2.5 rounded-[20px] border border-white/20 bg-white/10 px-3 py-2.5 text-white backdrop-blur-xl">
+      <div className="flex items-center gap-2.5 rounded-[20px] border border-white/10 bg-transparent px-3 py-2.5 text-white transition-all focus-within:border-white/20">
         <Search size={14} className="shrink-0 text-white/70" />
         <input
           type="text"
@@ -79,7 +79,7 @@ export function SearchInput({
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div className="room-scroll absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 overflow-y-auto rounded-[20px] border border-white/20 bg-slate-950/70 p-1.5 shadow-2xl backdrop-blur-xl">
+        <div className="room-scroll absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 overflow-y-auto rounded-[20px] border border-white/25 bg-white/15 p-1.5 shadow-2xl backdrop-blur-2xl">
           {suggestions.map((s, i) => (
             <button
               key={i}

@@ -119,7 +119,7 @@ export function SearchOverlay({
         }`}
         style={{ backdropFilter: isOpen ? "blur(12px)" : "blur(0px)" }}
       >
-        <div className="absolute inset-0 bg-slate-950/80" />
+        <div className="absolute inset-0 bg-slate-950/35" />
       </div>
 
       {/* panel */}
@@ -138,7 +138,7 @@ export function SearchOverlay({
           }`}
         >
           {/* search bar */}
-          <div className="flex items-center gap-3 rounded-[22px] border border-white/25 bg-white/12 px-4 py-3 shadow-2xl backdrop-blur-2xl">
+          <div className="flex items-center gap-3 rounded-[22px] border border-white/25 bg-white/15 px-4 py-3 shadow-2xl backdrop-blur-3xl transition-all focus-within:border-white/40 focus-within:bg-white/20">
             <Search size={16} className="shrink-0 text-white/60" />
             <input
               ref={inputRef}
@@ -147,7 +147,7 @@ export function SearchOverlay({
               onChange={(e) => onSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, artist or album..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/40"
+              className="w-full bg-transparent text-sm marmelat text-white outline-none placeholder:text-white/40"
             />
             {isSearching ? (
               <Loader2
@@ -161,37 +161,16 @@ export function SearchOverlay({
                   onSearchInput("");
                   onSearch("");
                 }}
-                className="rounded-full p-1 text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-full p-1 text-white/50 marmelat transition-colors hover:bg-white/10 hover:text-white"
               >
                 <X size={13} />
               </button>
             ) : null}
-
-            {/* avatar */}
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-white/20 bg-white/10 text-[11px] font-semibold text-white">
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={avatarLabel}
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                avatarLabel.slice(0, 1).toUpperCase()
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <X size={15} />
-            </button>
           </div>
 
           {/* dropdown results panel */}
           <div
-            className={`mt-3 overflow-hidden rounded-[22px] border border-white/15 bg-slate-950/80 shadow-2xl backdrop-blur-2xl transition-all duration-200 ${
+            className={`mt-3 overflow-hidden rounded-[22px] border border-white/25 bg-white/15 shadow-2xl backdrop-blur-3xl transition-all duration-200 ${
               showSuggestions || showResults || showEmpty
                 ? "max-h-[60vh] opacity-100"
                 : "max-h-0 opacity-0"
@@ -254,8 +233,17 @@ export function SearchOverlay({
                   return (
                     <div
                       key={index}
-                      className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors ${
-                        isActive ? "bg-white/12" : "hover:bg-white/8"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onTrackSelect?.(track)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onTrackSelect?.(track);
+                        }
+                      }}
+                      className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors cursor-pointer select-none ${
+                        isActive ? "bg-white/20" : "hover:bg-white/10"
                       }`}
                     >
                       {/* thumbnail */}
@@ -329,19 +317,6 @@ export function SearchOverlay({
                             className="flex h-7 w-7 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
                           >
                             <Plus size={14} />
-                          </button>
-                        )}
-                        {onTrackSelect && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onTrackSelect(track);
-                            }}
-                            title="Play now"
-                            className="flex h-7 w-7 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-                          >
-                            <Play size={12} className="translate-x-[1px]" />
                           </button>
                         )}
                       </div>
