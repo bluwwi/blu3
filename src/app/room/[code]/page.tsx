@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
@@ -30,6 +30,8 @@ type RepeatMode = "off" | "all" | "one";
 export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const queuePlaylistId = searchParams ? searchParams.get("queuePlaylistId") : null;
   const code = (params.code as string)?.toUpperCase();
 
   const { user, loading: authLoading } = useAuth();
@@ -150,6 +152,38 @@ export default function RoomPage() {
       }, 3000);
     }, []),
   });
+
+  // Automatically queue all songs from imported/custom playlist on join
+  useEffect(() => {
+    if (!connected || !joined || !queuePlaylistId) return;
+
+    const token = localStorage.getItem("blu3_token");
+    if (!token) return;
+
+    fetch(`${API_URL}/api/playlists/${queuePlaylistId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.tracks && data.tracks.length > 0) {
+          data.tracks.forEach((t: any) => {
+            addToQueue({
+              id: t.id,
+              videoId: t.videoId,
+              name: t.trackName,
+              artists: [{ name: t.artistName }],
+              album: { name: "" },
+              image: t.image || "",
+              duration_ms: t.durationMs || 0,
+            });
+          });
+        }
+      })
+      .catch((err) => console.error("Failed to auto-queue playlist:", err))
+      .finally(() => {
+        router.replace(`/room/${code}`);
+      });
+  }, [connected, joined, queuePlaylistId, code, addToQueue, router]);
 
   const isHost = room?.hostId === user?.sub || socketIsHost;
   const isHostPresent = room?.hostId
@@ -750,10 +784,14 @@ export default function RoomPage() {
     if (authLoading || !user || !code) return;
     if (room?.code === code) {
       setJoined(true);
+      localStorage.setItem("blu3_last_room", code);
       return;
     }
     joinRoom(code).then((r) => {
-      if (r) setJoined(true);
+      if (r) {
+        setJoined(true);
+        localStorage.setItem("blu3_last_room", code);
+      }
       else router.replace("/browse");
     });
   }, [authLoading, user, code]);
