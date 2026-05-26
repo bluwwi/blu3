@@ -76,7 +76,7 @@ export function RightSidebar({
             {members.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center rounded-full border border-white/10 "
+                className="flex items-center rounded-full border-2  border-white/60 "
               >
                 {m.avatar ? (
                   <img
@@ -92,19 +92,12 @@ export function RightSidebar({
               </div>
             ))}
           </div>
-          <div>
-            <button
-              onClick={onChatToggle}
-              className="relative text-white/40 hover:text-white transition-colors"
-            >
+          <div className="flex gap-1">
+            {/*FOR SEARCH*/}
+            <button className="relative text-white/40 hover:text-white transition-colors">
               <div className="rounded-xl border-white/40 border p-3">
                 <Search size={14} className="text-white/50" />
               </div>
-              {unreadChatCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
-                  {unreadChatCount > 9 ? "9+" : unreadChatCount}
-                </span>
-              )}
             </button>
             {onChatToggle && (
               <button
