@@ -3,6 +3,7 @@
 import { fmt } from "@/utils/formatters";
 import { Track } from "@/utils/types";
 import { Heart, MoreHorizontal, Music2, Plus } from "lucide-react";
+import { usePlaylists } from "@/hooks/usePlaylists";
 
 interface Props {
   track: Track;
@@ -23,6 +24,8 @@ export function TrackItem({
   onAddToQueue,
   index,
 }: Props) {
+  const { likedTrackIds, toggleLike } = usePlaylists();
+  const isLiked = likedTrackIds.has(track.videoId);
   const artists = track.artists.map((artist) => artist.name).join(", ");
   const detail = [artists, track.album.name].filter(Boolean).join(" · ");
 
@@ -100,10 +103,16 @@ export function TrackItem({
       <div className="flex shrink-0 items-center gap-1 text-white/55 opacity-0 transition-opacity group-hover:opacity-100">
         <button
           type="button"
-          className="rounded-full p-1 transition-colors hover:bg-white/10 hover:text-white"
-          aria-label="Like track"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleLike(track);
+          }}
+          className={`rounded-full p-1 transition-colors hover:bg-white/10 ${
+            isLiked ? "text-rose-500 fill-rose-500 hover:text-rose-400" : "text-white/55 hover:text-white"
+          }`}
+          aria-label={isLiked ? "Unlike track" : "Like track"}
         >
-          <Heart size={12} />
+          <Heart size={12} className={isLiked ? "fill-current" : ""} />
         </button>
         <button
           type="button"

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { PlaylistsProvider } from "@/hooks/usePlaylists";
 
 export const metadata: Metadata = {
   title: "Blu3",
@@ -13,7 +14,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`marmelat  text-black h-full antialiased`}>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <PlaylistsProvider>
+          {children}
+        </PlaylistsProvider>
+      </body>
     </html>
   );
 }
