@@ -42,6 +42,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   } | null>(null);
 
   const playerRef = useRef<YT.Player | null>(null);
+  const desiredPlayStateRef = useRef<"playing" | "paused" | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -113,6 +114,11 @@ export function usePlayerState(): UsePlayerStateReturn {
           onReady: (e: any) => {
             e.target.setVolume(volume);
             onReady?.(e.target);
+            if (desiredPlayStateRef.current === "playing") {
+              e.target.playVideo();
+            } else if (desiredPlayStateRef.current === "paused") {
+              e.target.pauseVideo();
+            }
           },
           onStateChange: (e: any) => {
             const S = window.YT.PlayerState;
@@ -152,6 +158,8 @@ export function usePlayerState(): UsePlayerStateReturn {
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
+      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
+
       if (!track.videoId) {
         setPlayerState("error");
         setError("No video ID.");
@@ -165,7 +173,9 @@ export function usePlayerState(): UsePlayerStateReturn {
             videoId: track.videoId,
             startSeconds: startTime || 0,
           });
-          if (!shouldPlay) {
+          if (shouldPlay) {
+            playerRef.current!.playVideo();
+          } else {
             playerRef.current!.pauseVideo();
           }
           setLoadingId(null);
@@ -192,9 +202,6 @@ export function usePlayerState(): UsePlayerStateReturn {
         if (startTime) {
           player.seekTo(startTime, true);
         }
-        if (!shouldPlay) {
-          player.pauseVideo();
-        }
       });
       setLoadingId(null);
     },
@@ -209,19 +216,18 @@ export function usePlayerState(): UsePlayerStateReturn {
         if (startTime) {
           player.seekTo(startTime, true);
         }
-        if (!shouldPlay) {
-          player.pauseVideo();
-        }
       });
       setLoadingId(null);
     }
   }, [ytReady, pendingTrack, initPlayer]);
 
   const play = useCallback(() => {
+    desiredPlayStateRef.current = "playing";
     playerRef.current?.playVideo();
   }, []);
 
   const pause = useCallback(() => {
+    desiredPlayStateRef.current = "paused";
     playerRef.current?.pauseVideo();
   }, []);
 
@@ -230,8 +236,10 @@ export function usePlayerState(): UsePlayerStateReturn {
     if (!player) return;
 
     if (playerState === "playing") {
+      desiredPlayStateRef.current = "paused";
       player.pauseVideo();
     } else {
+      desiredPlayStateRef.current = "playing";
       player.playVideo();
     }
   }, [playerState]);

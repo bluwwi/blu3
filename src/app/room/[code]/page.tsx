@@ -157,6 +157,11 @@ export default function RoomPage() {
     }, []),
   });
 
+  const playbackRef = useRef(playback);
+  useEffect(() => {
+    playbackRef.current = playback;
+  }, [playback]);
+
   // Automatically queue all songs from imported/custom playlist on join
   useEffect(() => {
     if (!connected || !joined || !queuePlaylistId) return;
@@ -609,28 +614,44 @@ export default function RoomPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const startSilentAudio = () => {
-      if (audioContextRef.current) return;
-      const AudioContextClass =
-        window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) return;
-      try {
-        const ctx = new AudioContextClass();
-        audioContextRef.current = ctx;
-        const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-        const channelData = buffer.getChannelData(0);
-        for (let i = 0; i < channelData.length; i++)
-          channelData[i] = (Math.random() - 0.5) * 0.00001;
-        const source = ctx.createBufferSource();
-        source.buffer = buffer;
-        source.loop = true;
-        const gainNode = ctx.createGain();
-        gainNode.gain.value = 0.0001;
-        source.connect(gainNode);
-        gainNode.connect(ctx.destination);
-        source.start(0);
-        if (ctx.state === "suspended") ctx.resume();
-      } catch (err) {
-        console.error("Failed to start background tab keeper:", err);
+      if (!audioContextRef.current) {
+        const AudioContextClass =
+          window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          try {
+            const ctx = new AudioContextClass();
+            audioContextRef.current = ctx;
+            const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+            const channelData = buffer.getChannelData(0);
+            for (let i = 0; i < channelData.length; i++)
+              channelData[i] = (Math.random() - 0.5) * 0.00001;
+            const source = ctx.createBufferSource();
+            source.buffer = buffer;
+            source.loop = true;
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = 0.0001;
+            source.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            source.start(0);
+            if (ctx.state === "suspended") ctx.resume();
+          } catch (err) {
+            console.error("Failed to start background tab keeper:", err);
+          }
+        }
+      }
+
+      // Try to unblock YouTube player autoplay
+      const currentPlayback = playbackRef.current;
+      if (currentPlayback?.isPlaying && playerState.playerRef.current) {
+        try {
+          const ytState = playerState.playerRef.current.getPlayerState?.();
+          // If player exists but is not playing (or is unstarted/paused), try to play it to unblock
+          if (ytState !== 1) { // 1 is YT.PlayerState.PLAYING
+            playerState.playerRef.current.playVideo?.();
+          }
+        } catch (e) {
+          console.warn("Failed to unblock YouTube player:", e);
+        }
       }
     };
     const events = ["click", "keydown", "touchstart", "mousedown"];
@@ -682,6 +703,23 @@ export default function RoomPage() {
     sendPause,
     sendPlay,
   ]);
+
+  const handleListenerPlay = useCallback(() => {
+    if (!playback?.isPlaying) return;
+    let actualCurrentTime = playback.currentTime ?? 0;
+    if (playback.updatedAt) {
+      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+    }
+    progressState.seekTo(actualCurrentTime);
+    playerState.play?.();
+  }, [playback, getSyncedTime, progressState, playerState.play]);
+
+  const onPlayPauseAction = canControlPlayback
+    ? handlePlayPauseAction
+    : (playback?.isPlaying && playerState.playerState !== "playing")
+      ? handleListenerPlay
+      : undefined;
 
   const handleSkipForward = useCallback(() => {
     if (!canControlPlayback || !joined) return;
@@ -1050,9 +1088,7 @@ export default function RoomPage() {
                         track={footerTrack}
                         isPlaying={playerState.playerState === "playing"}
                         canControlPlayback={canControlPlayback}
-                        onPlayPause={
-                          canControlPlayback ? handlePlayPauseAction : undefined
-                        }
+                        onPlayPause={onPlayPauseAction}
                         onSkipBack={
                           canControlPlayback ? handleSkipBack : undefined
                         }
@@ -1081,9 +1117,7 @@ export default function RoomPage() {
                       isMuted={playerState.isMuted}
                       shuffleEnabled={playbackMode.shuffle}
                       repeatMode={playbackMode.repeatMode}
-                      onPlayPause={
-                        canControlPlayback ? handlePlayPauseAction : undefined
-                      }
+                      onPlayPause={onPlayPauseAction}
                       onMute={playerState.toggleMute}
                       onVolume={playerState.handleVolume}
                       onSeek={canControlPlayback ? handleSeekAction : undefined}

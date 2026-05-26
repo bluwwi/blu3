@@ -70,7 +70,10 @@ export function RightSidebar({
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -93,7 +96,8 @@ export function RightSidebar({
       return;
     }
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${API_URL}/api/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -112,7 +116,8 @@ export function RightSidebar({
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -180,6 +185,17 @@ export function RightSidebar({
                 <Search size={14} className="text-white/50" />
               </div>
             </button>
+
+            <button
+              onClick={handlePlusClick}
+              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+              title="Add playlist to queue"
+            >
+              <div className="rounded-xl border-white/40 border p-3">
+                <Plus size={14} className="text-white/50" />
+              </div>
+            </button>
+
             {onChatToggle && (
               <button
                 onClick={onChatToggle}
@@ -196,17 +212,6 @@ export function RightSidebar({
                 )}
               </button>
             )}
-            
-            {/* PLUS BUTTON TO QUEUE PLAYLISTS */}
-            <button
-              onClick={handlePlusClick}
-              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
-              title="Add playlist to queue"
-            >
-              <div className="rounded-xl border-white/40 border p-3">
-                <Plus size={14} className="text-white/50" />
-              </div>
-            </button>
 
             {showDropdown && (
               <div className="absolute right-0 mt-12 w-48 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50 py-1 max-h-56 overflow-y-auto room-scroll">
@@ -214,9 +219,13 @@ export function RightSidebar({
                   Queue Playlist
                 </div>
                 {loadingPlaylists ? (
-                  <div className="px-3 py-2 text-[10px] text-zinc-400">Loading...</div>
+                  <div className="px-3 py-2 text-[10px] text-zinc-400">
+                    Loading...
+                  </div>
                 ) : playlists.length === 0 ? (
-                  <div className="px-3 py-2 text-[10px] text-zinc-400">No playlists found</div>
+                  <div className="px-3 py-2 text-[10px] text-zinc-400">
+                    No playlists found
+                  </div>
                 ) : (
                   playlists.map((p) => (
                     <button
