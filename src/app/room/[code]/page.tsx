@@ -646,7 +646,8 @@ export default function RoomPage() {
         try {
           const ytState = playerState.playerRef.current.getPlayerState?.();
           // If player exists but is not playing (or is unstarted/paused), try to play it to unblock
-          if (ytState !== 1) { // 1 is YT.PlayerState.PLAYING
+          if (ytState !== 1) {
+            // 1 is YT.PlayerState.PLAYING
             playerState.playerRef.current.playVideo?.();
           }
         } catch (e) {
@@ -717,7 +718,7 @@ export default function RoomPage() {
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
-    : (playback?.isPlaying && playerState.playerState !== "playing")
+    : playback?.isPlaying && playerState.playerState !== "playing"
       ? handleListenerPlay
       : undefined;
 
@@ -1053,9 +1054,8 @@ export default function RoomPage() {
         <div className="h-screen w-full overflow-hidden bg-black/55">
           <div
             className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2 sm:px-4 overflow-y-auto lg:overflow-hidden"
-            style={{ width: "clamp(1rem, 95vw, 200rem)" }}
+            style={{ width: "clamp(1rem, 60vw, 200rem)" }}
           >
-            {/* TopBar — NOT clickable as a whole, RoomTopBar handles its own search bar click internally */}
             <RoomTopBar
               roomName={room?.name ?? "Room"}
               roomCode={code}
