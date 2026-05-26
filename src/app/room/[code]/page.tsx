@@ -1038,7 +1038,7 @@ export default function RoomPage() {
 
             <div className="flex h-full gap-2 pt-2 min-h-0">
               <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
-                <aside className="w-full lg:w-[55%] h-[60vh] lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
+                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
                   {chatOpen ? (
                     <div className="absolute inset-0 animate-in fade-in duration-300">
                       <ChatPanel
