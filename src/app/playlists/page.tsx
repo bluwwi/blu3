@@ -54,7 +54,9 @@ export default function PlaylistsPage() {
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
 
-  const [activePlaylist, setActivePlaylist] = useState<PlaylistInfo | null>(null);
+  const [activePlaylist, setActivePlaylist] = useState<PlaylistInfo | null>(
+    null,
+  );
   const [activeTracks, setActiveTracks] = useState<PlaylistTrack[]>([]);
   const [loadingTracks, setLoadingTracks] = useState(false);
 
@@ -154,7 +156,10 @@ export default function PlaylistsPage() {
         setShowImportModal(false);
         setImportUrl("");
       } else {
-        setImportError(data.error || "Failed to import playlist. Make sure the URL is valid and public.");
+        setImportError(
+          data.error ||
+            "Failed to import playlist. Make sure the URL is valid and public.",
+        );
       }
     } catch (err) {
       console.error(err);
@@ -165,7 +170,11 @@ export default function PlaylistsPage() {
   };
 
   // Delete custom playlist
-  const handleDeletePlaylist = async (e: React.MouseEvent, id: string, name: string) => {
+  const handleDeletePlaylist = async (
+    e: React.MouseEvent,
+    id: string,
+    name: string,
+  ) => {
     e.stopPropagation();
     if (!confirm(`Delete playlist "${name}"? This cannot be undone.`)) return;
     const token = localStorage.getItem("blu3_token");
@@ -207,10 +216,14 @@ export default function PlaylistsPage() {
   const handleQueueAll = () => {
     if (!activePlaylist) return;
     if (!lastRoomCode) {
-      const code = prompt("You need to be in a room to queue songs! Enter a Room Code:");
+      const code = prompt(
+        "You need to be in a room to queue songs! Enter a Room Code:",
+      );
       if (!code || !code.trim()) return;
       localStorage.setItem("blu3_last_room", code.trim().toUpperCase());
-      router.push(`/room/${code.trim().toUpperCase()}?queuePlaylistId=${activePlaylist.id}`);
+      router.push(
+        `/room/${code.trim().toUpperCase()}?queuePlaylistId=${activePlaylist.id}`,
+      );
     } else {
       router.push(`/room/${lastRoomCode}?queuePlaylistId=${activePlaylist.id}`);
     }
@@ -220,10 +233,13 @@ export default function PlaylistsPage() {
     if (!activePlaylist) return;
     const token = localStorage.getItem("blu3_token");
     try {
-      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks/${trackId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${API_URL}/api/playlists/${activePlaylist.id}/tracks/${trackId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       if (res.ok) {
         setActiveTracks((prev) => prev.filter((t) => t.id !== trackId));
       }
@@ -255,7 +271,8 @@ export default function PlaylistsPage() {
   const handleDrop = async (e: React.DragEvent, targetIdx: number) => {
     e.preventDefault();
     setDragOverIdx(null);
-    if (draggedIdx === null || draggedIdx === targetIdx || !activePlaylist) return;
+    if (draggedIdx === null || draggedIdx === targetIdx || !activePlaylist)
+      return;
 
     const updated = [...activeTracks];
     const [moved] = updated.splice(draggedIdx, 1);
@@ -267,14 +284,17 @@ export default function PlaylistsPage() {
 
     const token = localStorage.getItem("blu3_token");
     try {
-      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks/reorder`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const res = await fetch(
+        `${API_URL}/api/playlists/${activePlaylist.id}/tracks/reorder`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ trackIds: updated.map((t) => t.id) }),
         },
-        body: JSON.stringify({ trackIds: updated.map((t) => t.id) }),
-      });
+      );
       if (!res.ok) {
         throw new Error("Reorder failed on server");
       }
@@ -284,7 +304,9 @@ export default function PlaylistsPage() {
     }
   };
 
-  const modalSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modalSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
 
   const handleModalSearchChange = (val: string) => {
     setModalSearchQuery(val);
@@ -313,7 +335,9 @@ export default function PlaylistsPage() {
     }
     setIsSearchingModal(true);
     try {
-      const res = await fetch(`${API_URL}/api/search?q=${encodeURIComponent(q.trim())}`);
+      const res = await fetch(
+        `${API_URL}/api/search?q=${encodeURIComponent(q.trim())}`,
+      );
       const data = await res.json();
       if (data.tracks) {
         setModalSearchResults(data.tracks);
@@ -330,31 +354,38 @@ export default function PlaylistsPage() {
     setAddingTrackId(track.id);
     const token = localStorage.getItem("blu3_token");
     try {
-      const artistName = track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist";
-      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const artistName =
+        track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist";
+      const res = await fetch(
+        `${API_URL}/api/playlists/${activePlaylist.id}/tracks`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            videoId: track.videoId,
+            trackName: track.name,
+            artistName,
+            image: track.image || "",
+            durationMs: track.duration_ms || 0,
+          }),
         },
-        body: JSON.stringify({
-          videoId: track.videoId,
-          trackName: track.name,
-          artistName,
-          image: track.image || "",
-          durationMs: track.duration_ms || 0,
-        }),
-      });
+      );
       const data = await res.json();
       if (res.ok && data.track) {
-        setActiveTracks((prev) => [...prev, {
-          id: data.track.id,
-          videoId: data.track.videoId,
-          trackName: data.track.trackName,
-          artistName: data.track.artistName,
-          image: data.track.image,
-          durationMs: data.track.durationMs,
-        }]);
+        setActiveTracks((prev) => [
+          ...prev,
+          {
+            id: data.track.id,
+            videoId: data.track.videoId,
+            trackName: data.track.trackName,
+            artistName: data.track.artistName,
+            image: data.track.image,
+            durationMs: data.track.durationMs,
+          },
+        ]);
       }
     } catch (err) {
       console.error("Failed to add track to playlist:", err);
@@ -504,9 +535,7 @@ export default function PlaylistsPage() {
         {!user && !authLoading ? (
           <div className="text-center my-auto glass-panel p-10 rounded-[32px] max-w-sm border border-white/10 relative overflow-hidden">
             <div className="liked-card-glow" />
-            <p className="text-4xl font-black tracking-tight mb-2">
-              blu3
-            </p>
+            <p className="text-4xl font-black tracking-tight mb-2">blu3</p>
             <p className="text-[10px] text-zinc-500 tracking-widest uppercase mb-8">
               listen together
             </p>
@@ -551,87 +580,106 @@ export default function PlaylistsPage() {
               </div>
             </div>
 
-            {/* Playlists flex grid (Centered) */}
             {loadingPlaylists ? (
-              <div className="flex flex-wrap items-center justify-center gap-6 w-full">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 w-full max-w-6xl">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="w-40 sm:w-44 md:w-48 lg:w-52 aspect-[3/4] rounded-[24px] bg-white/5 animate-pulse border border-white/5" />
+                  <div
+                    key={i}
+                    className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40"
+                  >
+                    <div className="aspect-square rounded-xl bg-zinc-900 animate-pulse border border-white/5" />
+                    <div className="h-2.5 w-3/4 bg-zinc-900/40 rounded animate-pulse mt-1" />
+                    <div className="h-2 w-1/2 bg-zinc-900/20 rounded animate-pulse" />
+                  </div>
                 ))}
               </div>
             ) : playlists.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 glass-panel border border-white/5 rounded-[28px]">
-                <FolderHeart size={44} className="text-zinc-600 mb-4 animate-pulse" />
-                <p className="text-sm font-bold tracking-wide text-zinc-300 mb-1">No playlists yet</p>
+              <div className="flex flex-col items-center justify-center py-24 glass-panel border border-white/5 rounded-[28px] max-w-md w-full mx-auto shadow-2xl">
+                <FolderHeart
+                  size={44}
+                  className="text-zinc-650 mb-4 animate-pulse"
+                />
+                <p className="text-sm font-bold tracking-wide text-zinc-300 mb-1">
+                  No playlists yet
+                </p>
                 <p className="text-xs text-zinc-500 max-w-xs text-center leading-relaxed px-6">
-                  Create a custom playlist or import one from Spotify/YouTube to get started.
+                  Create a custom playlist or import one from Spotify/YouTube to
+                  get started.
                 </p>
               </div>
             ) : (
-              <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 w-full">
+              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 w-full max-w-6xl">
                 {playlists.map((playlist) => {
-                  const hasCover = playlist.coverImage && playlist.coverImage.trim().length > 0;
-                  
+                  const hasCover =
+                    playlist.coverImage &&
+                    playlist.coverImage.trim().length > 0;
+
                   return (
                     <div
                       key={playlist.id}
                       onClick={() => handleViewPlaylist(playlist)}
-                      className={`playlist-card w-40 sm:w-44 md:w-48 lg:w-52 aspect-[3/4] rounded-[24px] p-4 flex flex-col justify-between relative group overflow-hidden cursor-pointer ${
-                        playlist.isLiked 
-                          ? "bg-gradient-to-b from-violet-950/20 to-purple-950/10 border border-violet-900/30 hover:border-violet-500/50" 
-                          : "bg-white/5 border border-white/5"
-                      }`}
+                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40 select-none cursor-pointer"
                     >
-                      {playlist.isLiked && <div className="liked-card-glow" />}
-
-                      {/* Aspect square first song cover or fallback */}
-                      <div className="relative w-full aspect-square rounded-[18px] overflow-hidden bg-zinc-900 border border-white/5 transition-transform duration-300 group-hover:scale-[1.02] shadow-inner shrink-0">
+                      {/* aspect-square artwork thumbnail exactly mirroring browse page */}
+                      <div className="relative aspect-square rounded-xl overflow-hidden bg-zinc-900 border border-white/5 shadow-md">
                         {hasCover ? (
-                          <img 
-                            src={playlist.coverImage} 
-                            className="w-full h-full object-cover" 
-                            alt={playlist.name} 
+                          <img
+                            src={playlist.coverImage}
+                            className="room-card-img w-full h-full object-cover"
+                            alt={playlist.name}
                             loading="lazy"
                           />
                         ) : playlist.isLiked ? (
-                          <div className="w-full h-full bg-gradient-to-br from-violet-650 via-purple-750 to-pink-650 flex items-center justify-center relative">
-                            <Heart size={32} className="text-white fill-white drop-shadow-[0_0_12px_rgba(244,63,94,0.6)] animate-pulse" />
+                          <div className="room-card-img w-full h-full bg-gradient-to-br from-violet-650 via-purple-750 to-pink-650 flex items-center justify-center relative">
+                            <Heart
+                              size={26}
+                              className="text-white fill-white drop-shadow-[0_0_12px_rgba(244,63,94,0.6)] animate-pulse"
+                            />
                           </div>
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
-                            <Music2 size={32} className="text-white/20" />
+                          <div className="room-card-img w-full h-full flex items-center justify-center bg-gradient-to-br from-zinc-800 to-zinc-900">
+                            <Music2
+                              size={24}
+                              className="text-white/20 animate-pulse"
+                            />
                           </div>
                         )}
 
-                        {/* Animated overlay play icon */}
-                        <div className="absolute inset-0 bg-black/45 backdrop-blur-[3px] opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center transform scale-90 group-hover:scale-100 transition-transform duration-300 shadow-xl">
-                            <Play size={16} className="fill-current ml-0.5" />
+                        {/* Glass play overlay just like browse page hover overlay */}
+                        <div className="room-card-overlay absolute inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-200">
+                          <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl transform scale-90 group-hover/card:scale-100 transition-transform duration-200">
+                            <Play size={14} className="fill-current ml-0.5" />
                           </div>
                         </div>
+
+                        {/* Hover delete button placed at bottom-right just like browse page */}
+                        {!playlist.isLiked && (
+                          <button
+                            onClick={(e) =>
+                              handleDeletePlaylist(
+                                e,
+                                playlist.id,
+                                playlist.name,
+                              )
+                            }
+                            className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/75 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 hover:bg-red-500/80 hover:border-red-400/40 transition-all cursor-pointer z-20"
+                            title="Delete playlist"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
 
-                      {/* Bottom Info details */}
-                      <div className="mt-3 flex-1 flex flex-col justify-between z-10">
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-bold text-white tracking-wide truncate mt-1 group-hover:text-purple-400 transition-colors">
-                            {playlist.name}
-                          </p>
-                          <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5 font-bold">
-                            {playlist.trackCount || 0} track{playlist.trackCount !== 1 && "s"}
-                          </p>
-                        </div>
+                      {/* Info labels below - matching browse page perfectly */}
+                      <div className="px-0.5">
+                        <p className="text-[11px] text-zinc-200 truncate leading-tight font-bold group-hover/card:text-violet-400 transition-colors">
+                          {playlist.name}
+                        </p>
+                        <p className="text-[10px] text-zinc-650 truncate tracking-widest mt-0.5 uppercase font-medium">
+                          {playlist.trackCount || 0} track
+                          {playlist.trackCount !== 1 && "s"}
+                        </p>
                       </div>
-
-                      {/* Custom playlist action: delete button on hover */}
-                      {!playlist.isLiked && (
-                        <button
-                          onClick={(e) => handleDeletePlaylist(e, playlist.id, playlist.name)}
-                          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-red-500/80 hover:text-white hover:border-red-400/40 transition-all duration-200 cursor-pointer z-20"
-                          title="Delete playlist"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
                     </div>
                   );
                 })}
@@ -641,7 +689,6 @@ export default function PlaylistsPage() {
         )}
       </div>
 
-      {/* ── Create Playlist Modal ── */}
       {showCreateModal && (
         <div
           className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
@@ -652,13 +699,13 @@ export default function PlaylistsPage() {
             }
           }}
         >
-          <div className="modal-box w-full max-w-sm mx-4 rounded-[28px] p-6 glass-panel border border-white/10 relative overflow-hidden">
+          <div className="modal-box w-full max-w-sm mx-4 rounded-[28px] p-7 glass-panel border border-white/15 relative overflow-hidden bg-zinc-950/40 backdrop-blur-3xl shadow-[0_24px_50px_rgba(0,0,0,0.8)]">
             <div className="liked-card-glow" />
-            <p className="text-base font-black tracking-tight mb-1 text-white">
+            <p className="text-base font-black tracking-wide mb-1 text-white">
               new playlist
             </p>
-            <p className="text-[9px] text-zinc-500 tracking-widest uppercase mb-5 font-bold">
-              name your collection
+            <p className="text-[9px] text-zinc-550 tracking-widest uppercase mb-6 font-bold">
+              name your sound collection
             </p>
 
             <input
@@ -668,23 +715,23 @@ export default function PlaylistsPage() {
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               placeholder="e.g. Chill Beats..."
               maxLength={40}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 mb-5 transition-colors focus:bg-white/10"
+              className="w-full bg-white/5 border border-white/10 rounded-[20px] px-5 py-3.5 text-xs text-white placeholder-zinc-500 mb-6 transition-all focus:bg-white/10 shadow-inner"
             />
 
-            <div className="flex gap-2.5">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowCreateModal(false);
                   setNewPlaylistName("");
                 }}
-                className="flex-1 py-3.5 rounded-2xl border border-white/10 text-zinc-400 text-[10px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-200 transition-colors cursor-pointer"
+                className="flex-1 py-3.5 rounded-full border border-white/10 text-zinc-450 text-[10px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-200 transition-colors cursor-pointer bg-white/5"
               >
                 cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!newPlaylistName.trim() || creating}
-                className="flex-1 py-3.5 rounded-2xl bg-white text-black text-[10px] font-black tracking-widest uppercase disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer active:scale-95 shadow-lg"
+                className="flex-1 py-3.5 rounded-full bg-white text-black text-[10px] font-black tracking-widest uppercase disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer active:scale-95 shadow-[0_4px_16px_rgba(255,255,255,0.15)]"
               >
                 {creating ? "creating…" : "create"}
               </button>
@@ -693,7 +740,7 @@ export default function PlaylistsPage() {
         </div>
       )}
 
-      {/* ── Import Playlist Modal ── */}
+      {/* ── Import Playlist Modal (Redesigned curvy plastic/glassy box) ── */}
       {showImportModal && (
         <div
           className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md"
@@ -705,12 +752,12 @@ export default function PlaylistsPage() {
             }
           }}
         >
-          <div className="modal-box w-full max-w-md mx-4 rounded-[28px] p-6 glass-panel border border-white/10 relative overflow-hidden">
+          <div className="modal-box w-full max-w-md mx-4 rounded-[28px] p-7 glass-panel border border-white/15 relative overflow-hidden bg-zinc-950/40 backdrop-blur-3xl shadow-[0_24px_50px_rgba(0,0,0,0.8)]">
             <div className="liked-card-glow" />
-            <p className="text-base font-black tracking-tight mb-1 text-white">
+            <p className="text-base font-black tracking-wide mb-1 text-white">
               import playlist
             </p>
-            <p className="text-[9px] text-zinc-500 tracking-widest uppercase mb-5 font-bold">
+            <p className="text-[9px] text-zinc-550 tracking-widest uppercase mb-6 font-bold">
               Paste Spotify or YouTube Music link
             </p>
 
@@ -721,26 +768,29 @@ export default function PlaylistsPage() {
               disabled={importing}
               onKeyDown={(e) => e.key === "Enter" && handleImport()}
               placeholder="https://open.spotify.com/playlist/... or YouTube link..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white placeholder-zinc-500 mb-4 transition-colors focus:bg-white/10 disabled:opacity-50"
+              className="w-full bg-white/5 border border-white/10 rounded-[20px] px-5 py-3.5 text-xs text-white placeholder-zinc-500 mb-5 transition-all focus:bg-white/10 disabled:opacity-50 shadow-inner"
             />
 
             {importError && (
-              <p className="text-[10px] text-red-400 mb-4 bg-red-950/20 border border-red-900/30 rounded-2xl p-3 leading-relaxed">
+              <p className="text-[10px] text-red-400 mb-5 bg-red-950/20 border border-red-900/30 rounded-2xl p-3 leading-relaxed">
                 {importError}
               </p>
             )}
 
             {importing && (
-              <div className="flex flex-col items-center justify-center py-4 mb-4 gap-2.5">
+              <div className="flex flex-col items-center justify-center py-4 mb-5 gap-2.5">
                 <Loader2 size={24} className="animate-spin text-purple-400" />
                 <p className="text-[10px] text-zinc-400 animate-pulse tracking-widest font-bold uppercase text-center leading-relaxed">
-                  Importing tracks & resolving Spotify titles...<br />
-                  <span className="text-[8px] text-zinc-600">(This might take a moment)</span>
+                  Importing tracks & resolving Spotify titles...
+                  <br />
+                  <span className="text-[8px] text-zinc-650">
+                    (This might take a moment)
+                  </span>
                 </p>
               </div>
             )}
 
-            <div className="flex gap-2.5">
+            <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowImportModal(false);
@@ -748,14 +798,14 @@ export default function PlaylistsPage() {
                   setImportError("");
                 }}
                 disabled={importing}
-                className="flex-1 py-3.5 rounded-2xl border border-white/10 text-zinc-400 text-[10px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-200 transition-colors disabled:opacity-30 cursor-pointer"
+                className="flex-1 py-3.5 rounded-full border border-white/10 text-zinc-450 text-[10px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-200 transition-colors disabled:opacity-30 cursor-pointer bg-white/5"
               >
                 cancel
               </button>
               <button
                 onClick={handleImport}
                 disabled={!importUrl.trim() || importing}
-                className="flex-1 py-3.5 rounded-2xl bg-white text-black text-[10px] font-black tracking-widest uppercase disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer active:scale-95 shadow-lg"
+                className="flex-1 py-3.5 rounded-full bg-white text-black text-[10px] font-black tracking-widest uppercase disabled:opacity-30 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer active:scale-95 shadow-[0_4px_16px_rgba(255,255,255,0.15)]"
               >
                 {importing ? "importing…" : "import"}
               </button>
@@ -776,17 +826,24 @@ export default function PlaylistsPage() {
         >
           <div className="modal-box w-full max-w-2xl mx-4 rounded-[28px] flex flex-col h-[80vh] glass-panel border border-white/10 overflow-hidden shadow-2xl relative">
             <div className="liked-card-glow" />
-            
+
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b border-white/5 shrink-0 z-10 bg-black/10 backdrop-blur-md">
               <div className="flex items-center gap-4 min-w-0">
                 {/* Visual artwork thumbnail */}
                 <div className="w-14 h-14 rounded-2xl overflow-hidden bg-zinc-900 border border-white/10 shrink-0 shadow-lg relative">
                   {activePlaylist.coverImage ? (
-                    <img src={activePlaylist.coverImage} className="w-full h-full object-cover" alt="" />
+                    <img
+                      src={activePlaylist.coverImage}
+                      className="w-full h-full object-cover"
+                      alt=""
+                    />
                   ) : activePlaylist.isLiked ? (
                     <div className="w-full h-full bg-gradient-to-br from-violet-600 to-pink-500 flex items-center justify-center">
-                      <Heart size={20} className="text-white fill-white animate-pulse" />
+                      <Heart
+                        size={20}
+                        className="text-white fill-white animate-pulse"
+                      />
                     </div>
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
@@ -794,13 +851,14 @@ export default function PlaylistsPage() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="min-w-0">
                   <h2 className="text-lg font-black text-white truncate tracking-wide leading-tight">
                     {activePlaylist.name}
                   </h2>
                   <p className="text-[9px] text-zinc-500 tracking-widest uppercase mt-1 font-bold">
-                    {activeTracks.length} song{activeTracks.length !== 1 && "s"} inside
+                    {activeTracks.length} song{activeTracks.length !== 1 && "s"}{" "}
+                    inside
                   </p>
                 </div>
               </div>
@@ -832,10 +890,15 @@ export default function PlaylistsPage() {
                 </div>
               ) : activeTracks.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-zinc-500 py-10">
-                  <Music2 size={36} className="text-zinc-700 mb-3 animate-bounce" />
-                  <p className="text-xs font-bold text-zinc-400">No tracks in this playlist</p>
+                  <Music2
+                    size={36}
+                    className="text-zinc-700 mb-3 animate-bounce"
+                  />
+                  <p className="text-xs font-bold text-zinc-400">
+                    No tracks in this playlist
+                  </p>
                   <p className="text-[10px] text-zinc-500 mt-1 max-w-xs text-center leading-relaxed">
-                    {activePlaylist.isLiked 
+                    {activePlaylist.isLiked
                       ? "Heart tracks on search or in rooms to populate this list."
                       : "Use the search bar below to add tracks to your playlist."}
                   </p>
@@ -851,8 +914,8 @@ export default function PlaylistsPage() {
                       onDragEnd={handleDragEnd}
                       onDrop={(e) => handleDrop(e, idx)}
                       className={`flex items-center justify-between p-2.5 rounded-2xl border border-transparent transition-all group/item ${
-                        !activePlaylist.isLiked 
-                          ? "hover:bg-white/5 hover:border-white/5 cursor-grab active:cursor-grabbing" 
+                        !activePlaylist.isLiked
+                          ? "hover:bg-white/5 hover:border-white/5 cursor-grab active:cursor-grabbing"
                           : "hover:bg-white/5 hover:border-white/5"
                       } ${draggedIdx === idx ? "opacity-30 bg-zinc-900/50 border-zinc-800 border-dashed" : ""} ${
                         dragOverIdx === idx && draggedIdx !== idx
@@ -863,12 +926,21 @@ export default function PlaylistsPage() {
                       <div className="flex items-center gap-3.5 min-w-0">
                         {/* Drag handle icon only for custom playlists */}
                         {!activePlaylist.isLiked && (
-                          <GripVertical size={13} className="text-zinc-650 group-hover/item:text-zinc-400 cursor-grab flex-shrink-0" />
+                          <GripVertical
+                            size={13}
+                            className="text-zinc-650 group-hover/item:text-zinc-400 cursor-grab flex-shrink-0"
+                          />
                         )}
-                        <span className="text-[10px] text-zinc-600 w-4 text-right font-bold tabular-nums">{idx + 1}</span>
+                        <span className="text-[10px] text-zinc-600 w-4 text-right font-bold tabular-nums">
+                          {idx + 1}
+                        </span>
                         <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-zinc-900 border border-white/5 shadow-sm">
                           {track.image ? (
-                            <img src={track.image} className="w-full h-full object-cover" alt="" />
+                            <img
+                              src={track.image}
+                              className="w-full h-full object-cover"
+                              alt=""
+                            />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-zinc-700">
                               <Music2 size={16} />
@@ -876,8 +948,12 @@ export default function PlaylistsPage() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-[12px] font-bold text-white truncate leading-snug">{track.trackName}</p>
-                          <p className="text-[10px] text-zinc-500 truncate mt-0.5 font-medium">{track.artistName}</p>
+                          <p className="text-[12px] font-bold text-white truncate leading-snug">
+                            {track.trackName}
+                          </p>
+                          <p className="text-[10px] text-zinc-500 truncate mt-0.5 font-medium">
+                            {track.artistName}
+                          </p>
                         </div>
                       </div>
 
@@ -912,7 +988,9 @@ export default function PlaylistsPage() {
                   <input
                     value={modalSearchQuery}
                     onChange={(e) => handleModalSearchChange(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleModalSearch(modalSearchQuery)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleModalSearch(modalSearchQuery)
+                    }
                     placeholder="Search songs on YouTube to add..."
                     className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 transition-colors focus:bg-white/10"
                   />
@@ -934,14 +1012,20 @@ export default function PlaylistsPage() {
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <img
-                            src={track.image || "https://via.placeholder.com/150"}
+                            src={
+                              track.image || "https://via.placeholder.com/150"
+                            }
                             alt=""
                             className="w-9 h-9 rounded-xl object-cover flex-shrink-0 border border-white/5 shadow"
                           />
                           <div className="min-w-0">
-                            <p className="text-[11px] font-bold text-white truncate leading-snug">{track.name}</p>
+                            <p className="text-[11px] font-bold text-white truncate leading-snug">
+                              {track.name}
+                            </p>
                             <p className="text-[9px] text-zinc-500 truncate mt-0.5 font-medium">
-                              {track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist"}
+                              {track.artists
+                                ?.map((a: any) => a.name)
+                                .join(", ") || "Unknown Artist"}
                             </p>
                           </div>
                         </div>

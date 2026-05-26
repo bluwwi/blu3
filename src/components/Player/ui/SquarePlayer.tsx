@@ -80,98 +80,128 @@ export function SquarePlayer({
   const repeatActive = repeatMode !== "off";
 
   return (
-    <div className="flex flex-col text-black  items-center rounded-[28px]  p-5 h-full overflow-hidden">
+    <div className="flex flex-col text-white items-center rounded-[28px] p-5 h-full overflow-hidden w-full">
       {/* Spark icon */}
-      <div className="self-end text-white/50 text-xl mb-2 flex-shrink-0">✦</div>
+      <div className="self-end text-white/40 text-xl mb-1 flex-shrink-0 select-none">
+        ✦
+      </div>
 
-      {/* Album art */}
-      <div className="w-full max-w-[280px] aspect-square flex items-center justify-center min-h-0 rounded-[18px] overflow-hidden mb-4 flex-1">
+      {/* Album art — guaranteed perfect square across all device resolutions */}
+      <div className="w-48 h-48 sm:w-60 sm:h-60 rounded-[22px] overflow-hidden mb-5 flex-shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/10 relative select-none">
         <img
           src={albumArt}
           alt={title}
-          className="w-full h-full rounded-xl object-cover shadow-2xl"
+          className="w-full h-full object-cover"
         />
       </div>
 
-      {/* Track info */}
-      <div className="w-full text-center flex-shrink-0 mb-4">
-        <p className="text-white font-semibold text-[15px] truncate">{title}</p>
-        {subtitle && (
-          <p className="text-white/55 text-[12px] truncate mt-0.5">
-            {subtitle}
+      {/* Track info + Heart button */}
+      <div className="w-full flex items-center justify-between px-3 mb-4 flex-shrink-0 select-none">
+        <div className="text-left min-w-0 flex-1 pr-4">
+          <p className="text-white font-bold text-sm sm:text-base md:text-lg truncate tracking-wide">
+            {title}
           </p>
-        )}
-      </div>
-
-      {/* Controls row: shuffle · skip back · play · skip forward · repeat · volume · heart */}
-      <div className="flex items-center w-full gap-3 justify-center  mb-3">
+          {subtitle && (
+            <p className="text-white/55 text-[10px] sm:text-xs truncate mt-0.5 font-medium">
+              {subtitle}
+            </p>
+          )}
+        </div>
         {onToggleLike && (
           <button
             onClick={onToggleLike}
-            className={`transition-colors cursor-pointer mr-1 ${
-              isLiked ? "text-rose-500 fill-rose-500 hover:text-rose-400" : "text-white/60 hover:text-white"
+            className={`transition-all cursor-pointer p-2 rounded-full hover:bg-white/5 flex-shrink-0 ${
+              isLiked
+                ? "text-rose-500 fill-rose-500 scale-105"
+                : "text-white/50 hover:text-white"
             }`}
             aria-label={isLiked ? "Unlike track" : "Like track"}
             title={isLiked ? "Unlike track" : "Like track"}
           >
-            <Heart size={15} className={isLiked ? "fill-current" : ""} />
+            <Heart size={18} className={isLiked ? "fill-current" : ""} />
           </button>
         )}
+      </div>
 
+      {/* Progress bar + timestamps */}
+      <div className="w-full px-3 mb-5 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-white/40 tabular-nums w-8 text-right shrink-0">
+            {fmtSec(currentTime)}
+          </span>
+          <div className="flex-1">
+            <ProgressBar
+              progress={progress}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={onSeek}
+            />
+          </div>
+          <span className="text-[10px] text-white/40 tabular-nums w-8 shrink-0">
+            {fmtSec(duration)}
+          </span>
+        </div>
+      </div>
+
+      {/* Main playback controls row */}
+      <div className="flex items-center justify-center gap-5 sm:gap-7 mb-5 flex-shrink-0 w-full select-none">
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}
-          className={`transition-colors disabled:opacity-30 ${
+          className={`transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
             shuffleEnabled
               ? "text-violet-400 hover:text-violet-300"
-              : "text-white/60 hover:text-white"
+              : "text-white/50 hover:text-white"
           }`}
           aria-label="Shuffle"
           title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
         >
-          <Shuffle size={15} />
+          <Shuffle size={16} />
         </button>
 
         <button
           onClick={onSkipBack}
           disabled={!onSkipBack}
-          className="text-white/60 hover:text-white transition-colors disabled:opacity-30"
+          className="text-white/50 hover:text-white hover:scale-110 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Previous"
         >
-          <SkipBack size={16} fill="currentColor" />
+          <SkipBack size={18} fill="currentColor" />
         </button>
 
         <button
           onClick={onPlayPause}
           disabled={isLoading || !onPlayPause}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-violet-500 hover:bg-violet-400 text-white transition-colors disabled:opacity-40 flex-shrink-0"
+          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-[0_4px_16px_rgba(255,255,255,0.15)] flex-shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
-            <Loader2 size={18} className="animate-spin" />
+            <Loader2 size={18} className="animate-spin text-black" />
           ) : isPlaying ? (
-            <Pause size={18} className="fill-current" />
+            <Pause size={18} className="fill-current text-black" />
           ) : (
-            <Play size={18} className="fill-current translate-x-[1px]" />
+            <Play
+              size={18}
+              className="fill-current text-black translate-x-[1px]"
+            />
           )}
         </button>
 
         <button
           onClick={onSkipForward}
           disabled={!onSkipForward}
-          className="text-white/60 hover:text-white transition-colors disabled:opacity-30"
+          className="text-white/50 hover:text-white hover:scale-110 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Next"
         >
-          <SkipForward size={16} fill="currentColor" />
+          <SkipForward size={18} fill="currentColor" />
         </button>
 
         <button
           onClick={onCycleRepeat}
           disabled={!onCycleRepeat}
-          className={`transition-colors disabled:opacity-30 ${
+          className={`transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
             repeatActive
               ? "text-violet-400 hover:text-violet-300"
-              : "text-white/60 hover:text-white"
+              : "text-white/50 hover:text-white"
           }`}
           aria-label="Repeat"
           title={
@@ -182,13 +212,15 @@ export function SquarePlayer({
                 : "Repeat off"
           }
         >
-          <RepeatIcon size={15} />
+          <RepeatIcon size={16} />
         </button>
+      </div>
 
-        {/* Volume */}
+      {/* Volume control row (Separated elegantly) */}
+      <div className="flex items-center justify-center gap-3 w-full max-w-[180px] flex-shrink-0 px-3 mt-1">
         <button
           onClick={onMute}
-          className="text-white/55 hover:text-white transition-colors ml-1"
+          className="text-white/40 hover:text-white transition-colors cursor-pointer flex-shrink-0"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
@@ -201,30 +233,9 @@ export function SquarePlayer({
           step={1}
           value={isMuted ? 0 : volume}
           onChange={(e) => onVolume(Number(e.target.value))}
-          style={{ width: "80px" }}
-          className="accent-violet-500 h-1 flex-shrink-0"
+          className="accent-white h-1 flex-1 cursor-pointer bg-white/10 rounded-lg outline-none w-full"
           aria-label="Volume"
         />
-      </div>
-
-      {/* Progress bar + timestamps */}
-      <div className="w-full flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] text-white/45 tabular-nums w-7 text-right flex-shrink-0">
-            {fmtSec(currentTime)}
-          </span>
-          <div className="flex-1">
-            <ProgressBar
-              progress={progress}
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={onSeek}
-            />
-          </div>
-          <span className="text-[11px] text-white tabular-nums w-7 flex-shrink-0">
-            {fmtSec(duration)}
-          </span>
-        </div>
       </div>
     </div>
   );
