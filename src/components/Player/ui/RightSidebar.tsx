@@ -58,6 +58,7 @@ export function RightSidebar({
   playerState,
   onChatToggle,
   unreadChatCount = 0,
+  onSearchClick,
 }: Props) {
   const [tab, setTab] = useState<SideTab>("queue");
 
@@ -126,6 +127,7 @@ export function RightSidebar({
             album: { name: "" },
             image: t.image || "",
             duration_ms: t.durationMs || 0,
+            explicit: false,
           });
         });
       }

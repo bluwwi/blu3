@@ -177,6 +177,7 @@ export default function RoomPage() {
               album: { name: "" },
               image: t.image || "",
               duration_ms: t.durationMs || 0,
+              explicit: false,
             });
           });
         }
@@ -1119,6 +1120,7 @@ export default function RoomPage() {
                     onThemeChange={setRoomTheme}
                     playerState={footerPlayerState}
                     onChatToggle={() => setChatOpen(!chatOpen)}
+                    onSearchClick={openSearchOverlay}
                   />
                 </aside>
               </div>
