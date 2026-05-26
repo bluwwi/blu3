@@ -53,7 +53,7 @@ export function QueueAndHistory({
   }, [defaultTab]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4">
+    <div className="flex h-full min-h-0 flex-col gap-4 p-1">
       <div className="flex items-center justify-between gap-3 px-1">
         {isQueueTab && queue.length > 0 && canControlPlayback && clearQueue && (
           <button
@@ -171,9 +171,20 @@ export function QueueAndHistory({
                             ? "text-rose-500 fill-rose-500 hover:text-rose-450"
                             : "text-white/55 hover:bg-white/10 hover:text-white"
                         }`}
-                        title={likedTrackIds.has(track.videoId) ? "Unlike track" : "Like track"}
+                        title={
+                          likedTrackIds.has(track.videoId)
+                            ? "Unlike track"
+                            : "Like track"
+                        }
                       >
-                        <Heart size={12} className={likedTrackIds.has(track.videoId) ? "fill-current" : ""} />
+                        <Heart
+                          size={12}
+                          className={
+                            likedTrackIds.has(track.videoId)
+                              ? "fill-current"
+                              : ""
+                          }
+                        />
                       </button>
                       {canControlPlayback && (
                         <button
@@ -299,9 +310,20 @@ export function QueueAndHistory({
                           ? "text-rose-500 fill-rose-500 hover:text-rose-450"
                           : "text-white/55 hover:bg-white/10 hover:text-white"
                       }`}
-                      title={likedTrackIds.has(historyTrack.videoId) ? "Unlike track" : "Like track"}
+                      title={
+                        likedTrackIds.has(historyTrack.videoId)
+                          ? "Unlike track"
+                          : "Like track"
+                      }
                     >
-                      <Heart size={12} className={likedTrackIds.has(historyTrack.videoId) ? "fill-current" : ""} />
+                      <Heart
+                        size={12}
+                        className={
+                          likedTrackIds.has(historyTrack.videoId)
+                            ? "fill-current"
+                            : ""
+                        }
+                      />
                     </button>
                     <button
                       type="button"

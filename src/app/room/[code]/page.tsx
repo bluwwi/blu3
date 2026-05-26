@@ -1053,8 +1053,9 @@ export default function RoomPage() {
         </video>
         <div className="h-screen w-full overflow-hidden bg-black/55">
           <div
-            className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2 sm:px-4 overflow-y-auto lg:overflow-hidden"
-            style={{ width: "clamp(1rem, 60vw, 200rem)" }}
+            className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2
+              w-full sm:w-full md:w-[60%]
+              overflow-y-auto lg:overflow-hidden"
           >
             <RoomTopBar
               roomName={room?.name ?? "Room"}

@@ -81,7 +81,7 @@ export function SquarePlayer({
   const repeatActive = repeatMode !== "off";
 
   return (
-    <div className="flex  flex-col text-white items-center rounded-[28px] p-5 h-full overflow-hidden w-full">
+    <div className="flex  flex-col text-white items-center justify-center rounded-[28px] p-5 h-full overflow-hidden w-full">
       <div className="w-[80%] aspect-square sm:w-60 sm:h-60 rounded-[22px] overflow-hidden mb-5 flex-shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/10 relative select-none">
         <Image
           width={400}
