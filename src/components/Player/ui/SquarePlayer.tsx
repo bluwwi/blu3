@@ -15,6 +15,7 @@ import {
   Repeat,
   Repeat1,
 } from "lucide-react";
+import Image from "next/image";
 
 type RepeatMode = "off" | "all" | "one";
 
@@ -80,15 +81,11 @@ export function SquarePlayer({
   const repeatActive = repeatMode !== "off";
 
   return (
-    <div className="flex flex-col text-white items-center rounded-[28px] p-5 h-full overflow-hidden w-full">
-      {/* Spark icon */}
-      <div className="self-end text-white/40 text-xl mb-1 flex-shrink-0 select-none">
-        ✦
-      </div>
-
-      {/* Album art — guaranteed perfect square across all device resolutions */}
-      <div className="w-48 h-48 sm:w-60 sm:h-60 rounded-[22px] overflow-hidden mb-5 flex-shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/10 relative select-none">
-        <img
+    <div className="flex  flex-col text-white items-center rounded-[28px] p-5 h-full overflow-hidden w-full">
+      <div className="w-[80%] aspect-square sm:w-60 sm:h-60 rounded-[22px] overflow-hidden mb-5 flex-shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/10 relative select-none">
+        <Image
+          width={400}
+          height={400}
           src={albumArt}
           alt={title}
           className="w-full h-full object-cover"
