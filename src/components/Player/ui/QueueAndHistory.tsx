@@ -151,7 +151,12 @@ export function QueueAndHistory({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[13px] font-medium text-white">
+                      <p
+                        className="truncate font-medium text-white"
+                        style={{
+                          fontSize: "clamp(0.85rem,0.75vw,199rem)",
+                        }}
+                      >
                         {track.name}
                       </p>
                       <p className="truncate text-[11px] text-white/60">
@@ -203,7 +208,7 @@ export function QueueAndHistory({
             </div>
           )
         ) : visibleRecentTracks.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-5 py-8 text-center text-white/55">
+          <div className="flex flex-1 items-center justify-center rounded-[20px] md:border border-white/10 bg-white/5 px-5 py-8 text-center text-white/55">
             <div>
               <Clock3 size={24} className="mx-auto mb-2.5" />
               <p className="text-[13px]">No history yet</p>

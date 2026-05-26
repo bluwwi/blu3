@@ -82,7 +82,7 @@ export function SquarePlayer({
 
   return (
     <div className="flex  flex-col text-white items-center justify-center rounded-[28px] p-5 h-full overflow-hidden w-full">
-      <div className="w-[80%] aspect-square sm:w-60 sm:h-60 rounded-[22px] overflow-hidden mb-5 flex-shrink-0 shadow-[0_12px_40px_rgba(0,0,0,0.5)] border border-white/10 relative select-none">
+      <div className="w-[80%] aspect-square sm:w-[55%]  rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none">
         <Image
           width={400}
           height={400}
@@ -92,56 +92,23 @@ export function SquarePlayer({
         />
       </div>
 
-      {/* Track info + Heart button */}
-      <div className="w-full flex items-center justify-between px-3 mb-4 flex-shrink-0 select-none">
-        <div className="text-left min-w-0 flex-1 pr-4">
+      <div className=" w-[80%] flex justify-center items-center mb-4 shrink-0 ">
+        <div className="text-center w-fit flex-1">
           <p className="text-white font-bold text-sm sm:text-base md:text-lg truncate tracking-wide">
             {title}
           </p>
           {subtitle && (
-            <p className="text-white/55 text-[10px] sm:text-xs truncate mt-0.5 font-medium">
+            <p className="text-white/75 text-[10px] sm:text-xs truncate  ">
               {subtitle}
             </p>
           )}
         </div>
-        {onToggleLike && (
-          <button
-            onClick={onToggleLike}
-            className={`transition-all cursor-pointer p-2 rounded-full hover:bg-white/5 flex-shrink-0 ${
-              isLiked
-                ? "text-rose-500 fill-rose-500 scale-105"
-                : "text-white/50 hover:text-white"
-            }`}
-            aria-label={isLiked ? "Unlike track" : "Like track"}
-            title={isLiked ? "Unlike track" : "Like track"}
-          >
-            <Heart size={18} className={isLiked ? "fill-current" : ""} />
-          </button>
-        )}
       </div>
 
       {/* Progress bar + timestamps */}
-      <div className="w-full px-3 mb-5 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] text-white/40 tabular-nums w-8 text-right shrink-0">
-            {fmtSec(currentTime)}
-          </span>
-          <div className="flex-1">
-            <ProgressBar
-              progress={progress}
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={onSeek}
-            />
-          </div>
-          <span className="text-[10px] text-white/40 tabular-nums w-8 shrink-0">
-            {fmtSec(duration)}
-          </span>
-        </div>
-      </div>
 
       {/* Main playback controls row */}
-      <div className="flex items-center justify-center gap-5 sm:gap-7 mb-5 flex-shrink-0 w-full select-none">
+      <div className="flex items-center justify-center gap-2 sm:gap-7 mb-5 flex-shrink-0 w-full select-none">
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}
@@ -211,29 +178,63 @@ export function SquarePlayer({
         >
           <RepeatIcon size={16} />
         </button>
+        <div className="flex items-center justify-center gap-3 w-full max-w-[180px] flex-shrink-0 px-3 mt-1">
+          <button
+            onClick={onMute}
+            className="text-white/40 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          </button>
+
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={isMuted ? 0 : volume}
+            onChange={(e) => onVolume(Number(e.target.value))}
+            className="accent-white h-1 flex-1 cursor-pointer bg-white/10 rounded-lg outline-none w-full"
+            aria-label="Volume"
+          />
+        </div>
+
+        {onToggleLike && (
+          <button
+            onClick={onToggleLike}
+            className={`transition-all cursor-pointer p-2 rounded-full hover:bg-white/5 flex-shrink-0 ${
+              isLiked
+                ? "text-rose-500 fill-rose-500 scale-105"
+                : "text-white/50 hover:text-white"
+            }`}
+            aria-label={isLiked ? "Unlike track" : "Like track"}
+            title={isLiked ? "Unlike track" : "Like track"}
+          >
+            <Heart size={18} className={isLiked ? "fill-current" : ""} />
+          </button>
+        )}
+      </div>
+
+      <div className="w-full px-3 mb-5 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <span className="text-[10px] text-white/40 tabular-nums w-8 text-right shrink-0">
+            {fmtSec(currentTime)}
+          </span>
+          <div className="flex-1">
+            <ProgressBar
+              progress={progress}
+              currentTime={currentTime}
+              duration={duration}
+              onSeek={onSeek}
+            />
+          </div>
+          <span className="text-[10px] text-white/40 tabular-nums w-8 shrink-0">
+            {fmtSec(duration)}
+          </span>
+        </div>
       </div>
 
       {/* Volume control row (Separated elegantly) */}
-      <div className="flex items-center justify-center gap-3 w-full max-w-[180px] flex-shrink-0 px-3 mt-1">
-        <button
-          onClick={onMute}
-          className="text-white/40 hover:text-white transition-colors cursor-pointer flex-shrink-0"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-        </button>
-
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={isMuted ? 0 : volume}
-          onChange={(e) => onVolume(Number(e.target.value))}
-          className="accent-white h-1 flex-1 cursor-pointer bg-white/10 rounded-lg outline-none w-full"
-          aria-label="Volume"
-        />
-      </div>
     </div>
   );
 }
