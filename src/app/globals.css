@@ -89,10 +89,8 @@ body {
         var(--background);
 }
 
-/* Custom icon pack: make dark SVG icons adopt white color by default */
+/* Custom icon pack: icons use currentColor via CSS mask */
 .icon-inherit-color {
-    filter: brightness(0) invert(1);
     opacity: 1;
-    transition: filter 0.15s ease, opacity 0.15s ease;
+    transition: opacity 0.15s ease;
 }
-

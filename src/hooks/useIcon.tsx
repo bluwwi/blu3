@@ -90,12 +90,8 @@ interface IconProps {
 }
 
 /**
- * Renders an SVG icon from the custom /icons/ pack as an <img> tag
- * that uses CSS filters to follow the current text color.
- *
- * The SVGs use dark fills/strokes by default so we apply
- * `brightness(0) invert(1)` to make them white, and then
- * let className color overrides apply via CSS.
+ * Renders an SVG icon from the custom /icons/ pack using a CSS mask
+ * so the icon follows `currentColor`.
  */
 export function Icon({
   name,
@@ -123,19 +119,27 @@ export function Icon({
   }
 
   return (
-    <img
-      src={`/icons/${filename}`}
-      alt={rest["aria-label"] ?? name}
-      width={size}
-      height={size}
+    <span
+      role="img"
+      aria-label={rest["aria-label"] ?? name}
       className={`icon-inherit-color ${className}`}
       style={{
         display: "inline-block",
         verticalAlign: "middle",
         flexShrink: 0,
+        width: size,
+        height: size,
+        backgroundColor: "currentColor",
+        maskImage: `url(/icons/${filename})`,
+        maskRepeat: "no-repeat",
+        maskPosition: "center",
+        maskSize: "contain",
+        WebkitMaskImage: `url(/icons/${filename})`,
+        WebkitMaskRepeat: "no-repeat",
+        WebkitMaskPosition: "center",
+        WebkitMaskSize: "contain",
         ...style,
       }}
-      draggable={false}
       {...rest}
     />
   );

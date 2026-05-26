@@ -1,9 +1,9 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Clock3, ListMusic, MessageSquare, Search, Plus } from "lucide-react";
 import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
-import { RoomTheme, T } from "@/utils/roomHelpers";
+import { RoomTheme } from "@/utils/roomHelpers";
+import { Icon } from "@/hooks/useIcon";
 
 type SideTab = "queue" | "history";
 
@@ -178,33 +178,27 @@ export function RightSidebar({
             {/*FOR SEARCH*/}
             <button
               onClick={() => onSearchClick?.()}
-              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
               title="Search songs"
             >
-              <div className="rounded-xl border-white/40 border p-3">
-                <Search size={14} className="text-white/50" />
-              </div>
+              <Icon name="search" size={14} className="text-current" />
             </button>
 
             <button
               onClick={handlePlusClick}
-              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
               title="Add playlist to queue"
             >
-              <div className="rounded-xl border-white/40 border p-3">
-                <Plus size={14} className="text-white/50" />
-              </div>
+              <Icon name="plus" size={14} className="text-current" />
             </button>
 
             {onChatToggle && (
               <button
                 onClick={onChatToggle}
-                className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
                 title="Toggle chat"
               >
-                <div className="rounded-xl border-white/40 border p-3">
-                  <MessageSquare size={14} className="text-white/50 " />
-                </div>
+                <Icon name="message-square" size={14} className="text-current" />
                 {unreadChatCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
                     {unreadChatCount > 9 ? "9+" : unreadChatCount}
@@ -248,7 +242,7 @@ export function RightSidebar({
           className={tabBtn("queue", tab === "queue")}
           onClick={() => setTab("queue")}
         >
-          <ListMusic size={11} />
+          <Icon name="list-music" size={11} className="text-current" />
           <span className="text-[9px] bg-white/10 text-white/80 px-1.5 py-0.5 rounded-full ml-0.5">
             {queue.length}
           </span>
@@ -260,7 +254,7 @@ export function RightSidebar({
           className={tabBtn("history", tab === "history")}
           onClick={() => setTab("history")}
         >
-          <Clock3 size={11} />
+          <Icon name="clock-3" size={11} className="text-current" />
           {tab === "history" && (
             <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
           )}

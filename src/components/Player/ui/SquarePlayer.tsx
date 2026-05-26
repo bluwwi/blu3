@@ -2,19 +2,8 @@
 import { Track } from "@/utils/types";
 import { ProgressBar } from "./ProgressBar";
 import { fmtSec } from "@/utils/formatters";
-import {
-  Spinner,
-  Pause,
-  Play,
-  SkipBack,
-  SkipForward,
-  SpeakerHigh,
-  SpeakerSlash,
-  Heart,
-  Shuffle,
-  Repeat,
-} from "@phosphor-icons/react";
 import Image from "next/image";
+import { Icon } from "@/hooks/useIcon";
 
 type RepeatMode = "off" | "all" | "one";
 
@@ -80,7 +69,7 @@ export function SquarePlayer({
   const getRepeatButtonProps = () => {
     if (repeatMode === "one") {
       return {
-        weight: "fill" as const,
+        iconName: "repeat-1",
         label: "Repeat one",
         title: "Repeat: one",
         active: true,
@@ -88,14 +77,14 @@ export function SquarePlayer({
     }
     if (repeatMode === "all") {
       return {
-        weight: "bold" as const,
+        iconName: "repeat",
         label: "Repeat all",
         title: "Repeat: all",
         active: true,
       };
     }
     return {
-      weight: "regular" as const,
+      iconName: "repeat",
       label: "Repeat off",
       title: "Repeat: off",
       active: false,
@@ -144,7 +133,7 @@ export function SquarePlayer({
           aria-label="Shuffle"
           title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
         >
-          <Shuffle weight={shuffleEnabled ? "bold" : "regular"} size={16} />
+          <Icon name="shuffle" size={16} className="text-current" />
         </button>
 
         {/* Skip Back */}
@@ -154,30 +143,26 @@ export function SquarePlayer({
           className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Previous"
         >
-          <SkipBack weight="fill" size={18} />
+          <Icon name="skip-back" size={18} className="text-current" />
         </button>
 
         {/* Play/Pause - Centerpiece */}
         <button
           onClick={onPlayPause}
           disabled={isLoading || !onPlayPause}
-          className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-lg flex-shrink-0 cursor-pointer"
+          className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-black fill-black hover:scale-105 active:scale-95 transition-all shadow-lg shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
-            <Spinner
-              weight="bold"
+            <Icon
+              name="refresh"
               size={18}
               className="animate-spin text-black"
             />
           ) : isPlaying ? (
-            <Pause weight="fill" size={18} className="text-black" />
+            <Icon name="pause" size={18} className="text-black" />
           ) : (
-            <Play
-              weight="fill"
-              size={18}
-              className="text-black translate-x-[1px]"
-            />
+            <Icon name="play" size={18} className="text-black translate-x-[1px]" />
           )}
         </button>
 
@@ -188,7 +173,7 @@ export function SquarePlayer({
           className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Next"
         >
-          <SkipForward weight="fill" size={18} />
+          <Icon name="skip-forward" size={18} className="text-current" />
         </button>
 
         {/* Repeat - Single button, cycles modes */}
@@ -203,7 +188,11 @@ export function SquarePlayer({
           aria-label={repeatBtn.label}
           title={repeatBtn.title}
         >
-          <Repeat weight={repeatBtn.weight} size={16} />
+          <Icon
+            name={repeatBtn.iconName}
+            size={16}
+            className="text-current"
+          />
         </button>
 
         {/* Divider */}
@@ -216,9 +205,9 @@ export function SquarePlayer({
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted ? (
-            <SpeakerSlash weight="bold" size={16} />
+            <Icon name="volume-x" size={16} className="text-current" />
           ) : (
-            <SpeakerHigh weight="bold" size={16} />
+            <Icon name="volume-up" size={16} className="text-current" />
           )}
         </button>
 
@@ -245,10 +234,10 @@ export function SquarePlayer({
             aria-label={isLiked ? "Unlike track" : "Like track"}
             title={isLiked ? "Unlike track" : "Like track"}
           >
-            <Heart
-              weight={isLiked ? "fill" : "regular"}
+            <Icon
+              name={isLiked ? "favorite" : "heart"}
               size={16}
-              className={isLiked ? "text-rose-500" : ""}
+              className={isLiked ? "text-rose-500" : "text-current"}
             />
           </button>
         )}

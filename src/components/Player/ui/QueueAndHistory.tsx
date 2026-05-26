@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Track } from "@/utils/types";
-import { Clock3, ListMusic, Plus, Play, Trash2, Heart } from "lucide-react";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
+import { Icon } from "@/hooks/useIcon";
 
 interface Props {
   queue: Track[];
@@ -61,7 +61,7 @@ export function QueueAndHistory({
             onClick={clearQueue}
             className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-red-400 transition-all hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer"
           >
-            <Trash2 size={11} />
+            <Icon name="trash-2" size={11} className="text-current" />
           </button>
         )}
       </div>
@@ -71,7 +71,9 @@ export function QueueAndHistory({
           queue.length === 0 ? (
             <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-3 py-8 text-center text-white/55">
               <div>
-                <ListMusic size={24} className="mx-auto mb-2.5" />
+                <div className="mx-auto mb-2.5 flex justify-center">
+                  <Icon name="list-music" size={24} className="text-white/55" />
+                </div>
                 <p className="text-[13px]">Queue is empty</p>
               </div>
             </div>
@@ -144,7 +146,7 @@ export function QueueAndHistory({
                               ||
                             </span>
                           ) : (
-                            <Play size={12} className="fill-white text-white" />
+                            <Icon name="play" size={12} className="text-white" />
                           )}
                         </div>
                       )}
@@ -182,13 +184,10 @@ export function QueueAndHistory({
                             : "Like track"
                         }
                       >
-                        <Heart
+                        <Icon
+                          name={likedTrackIds.has(track.videoId) ? "favorite" : "heart"}
                           size={12}
-                          className={
-                            likedTrackIds.has(track.videoId)
-                              ? "fill-current"
-                              : ""
-                          }
+                          className="text-current"
                         />
                       </button>
                       {canControlPlayback && (
@@ -198,7 +197,7 @@ export function QueueAndHistory({
                           className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
                           aria-label="Remove from queue"
                         >
-                          <Trash2 size={12} />
+                          <Icon name="trash-2" size={12} className="text-current" />
                         </button>
                       )}
                     </div>
@@ -210,7 +209,9 @@ export function QueueAndHistory({
         ) : visibleRecentTracks.length === 0 ? (
           <div className="flex flex-1 items-center justify-center rounded-[20px] md:border border-white/10 bg-white/5 px-5 py-8 text-center text-white/55">
             <div>
-              <Clock3 size={24} className="mx-auto mb-2.5" />
+              <div className="mx-auto mb-2.5 flex justify-center">
+                <Icon name="clock-3" size={24} className="text-white/55" />
+              </div>
               <p className="text-[13px]">No history yet</p>
             </div>
           </div>
@@ -291,7 +292,7 @@ export function QueueAndHistory({
                             ||
                           </span>
                         ) : (
-                          <Play size={12} className="fill-white text-white" />
+                          <Icon name="play" size={12} className="text-white" />
                         )}
                       </div>
                     )}
@@ -321,13 +322,14 @@ export function QueueAndHistory({
                           : "Like track"
                       }
                     >
-                      <Heart
-                        size={12}
-                        className={
+                      <Icon
+                        name={
                           likedTrackIds.has(historyTrack.videoId)
-                            ? "fill-current"
-                            : ""
+                            ? "favorite"
+                            : "heart"
                         }
+                        size={12}
+                        className="text-current"
                       />
                     </button>
                     <button
@@ -336,7 +338,7 @@ export function QueueAndHistory({
                       className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
                       aria-label="Add track to queue"
                     >
-                      <Plus size={12} />
+                      <Icon name="plus" size={12} className="text-current" />
                     </button>
                   </div>
                 </div>
