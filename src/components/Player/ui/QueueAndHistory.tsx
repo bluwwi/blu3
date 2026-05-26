@@ -53,10 +53,6 @@ export function QueueAndHistory({
   return (
     <div className="flex h-full min-h-0 flex-col gap-4">
       <div className="flex items-center justify-between gap-3 px-1">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-white/45">
-          {isQueueTab ? "Up Next" : "Recently Played"}
-        </span>
-
         {isQueueTab && queue.length > 0 && canControlPlayback && clearQueue && (
           <button
             type="button"
@@ -187,7 +183,7 @@ export function QueueAndHistory({
             </div>
           </div>
         ) : (
-          <div className="room-scroll flex-1 space-y-1.5 overflow-y-auto pr-1">
+          <div className="room-scroll flex-1 space-y-1 overflow-y-auto pr-1">
             {visibleRecentTracks.map((track, i) => {
               const historyTrack: Track = {
                 id: track.videoId,
@@ -222,9 +218,10 @@ export function QueueAndHistory({
                         handleAdminPlayTrack(historyTrack);
                       }
                     }}
-                    className={`relative group/img h-12 w-12 shrink-0 cursor-pointer rounded-lg ${
-                      isActive ? "" : ""
-                    }`}
+                    style={{
+                      width: "clamp(3rem,3.5vw,199rem)",
+                    }}
+                    className={`relative group/img shrink-0 aspect-square  cursor-pointer rounded-lg`}
                   >
                     <Image
                       width={200}
