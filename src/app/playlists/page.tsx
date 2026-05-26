@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
@@ -15,6 +15,7 @@ import {
   FolderHeart,
   ChevronRight,
   Loader2,
+  GripVertical,
 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -222,15 +223,29 @@ export default function PlaylistsPage() {
     }
   };
 
-  const handleMoveTrack = async (fromIdx: number, toIdx: number) => {
-    if (!activePlaylist) return;
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIdx(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === targetIdx || !activePlaylist) return;
+
     const updated = [...activeTracks];
-    const [moved] = updated.splice(fromIdx, 1);
-    updated.splice(toIdx, 0, moved);
-    
+    const [moved] = updated.splice(draggedIdx, 1);
+    updated.splice(targetIdx, 0, moved);
+
     // Optimistic UI update
     setActiveTracks(updated);
-    
+    setDraggedIdx(null);
+
     const token = localStorage.getItem("blu3_token");
     try {
       const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks/reorder`, {
@@ -248,6 +263,25 @@ export default function PlaylistsPage() {
       console.error("Failed to reorder tracks:", err);
       handleViewPlaylist(activePlaylist);
     }
+  };
+
+  const modalSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleModalSearchChange = (val: string) => {
+    setModalSearchQuery(val);
+
+    if (modalSearchTimeoutRef.current) {
+      clearTimeout(modalSearchTimeoutRef.current);
+    }
+
+    if (!val.trim()) {
+      setModalSearchResults([]);
+      return;
+    }
+
+    modalSearchTimeoutRef.current = setTimeout(() => {
+      handleModalSearch(val);
+    }, 400);
   };
 
   const handleModalSearch = async (q: string) => {
@@ -312,6 +346,9 @@ export default function PlaylistsPage() {
     setActiveTracks([]);
     setModalSearchQuery("");
     setModalSearchResults([]);
+    if (modalSearchTimeoutRef.current) {
+      clearTimeout(modalSearchTimeoutRef.current);
+    }
   };
 
   return (
@@ -761,9 +798,21 @@ export default function PlaylistsPage() {
                   {activeTracks.map((track, idx) => (
                     <div
                       key={track.id}
-                      className="flex items-center justify-between p-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-zinc-900 transition-all group/item"
+                      draggable={!activePlaylist.isLiked ? "true" : "false"}
+                      onDragStart={(e) => handleDragStart(e, idx)}
+                      onDragOver={(e) => handleDragOver(e, idx)}
+                      onDrop={(e) => handleDrop(e, idx)}
+                      className={`flex items-center justify-between p-2 rounded-xl border border-transparent transition-all group/item ${
+                        !activePlaylist.isLiked 
+                          ? "hover:bg-white/5 hover:border-zinc-800 cursor-grab active:cursor-grabbing" 
+                          : "hover:bg-white/5"
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
+                        {/* Drag handle icon only for custom playlists */}
+                        {!activePlaylist.isLiked && (
+                          <GripVertical size={13} className="text-zinc-650 group-hover/item:text-zinc-400 cursor-grab flex-shrink-0" />
+                        )}
                         <span className="text-[10px] text-zinc-650 w-4 text-right tabular-nums">{idx + 1}</span>
                         <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-zinc-900 border border-zinc-850">
                           {track.image ? (
@@ -780,29 +829,14 @@ export default function PlaylistsPage() {
                         </div>
                       </div>
 
-                      {/* Reorder and Delete actions for custom playlists */}
+                      {/* Delete actions for custom playlists */}
                       {!activePlaylist.isLiked && (
                         <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                          {idx > 0 && (
-                            <button
-                              onClick={() => handleMoveTrack(idx, idx - 1)}
-                              className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 cursor-pointer text-[10px]"
-                              title="Move Up"
-                            >
-                              ▲
-                            </button>
-                          )}
-                          {idx < activeTracks.length - 1 && (
-                            <button
-                              onClick={() => handleMoveTrack(idx, idx + 1)}
-                              className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 cursor-pointer text-[10px]"
-                              title="Move Down"
-                            >
-                              ▼
-                            </button>
-                          )}
                           <button
-                            onClick={() => handleDeleteTrack(track.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTrack(track.id);
+                            }}
                             className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-650 hover:border-red-950 hover:bg-red-950/20 hover:text-red-400 cursor-pointer"
                             title="Remove from playlist"
                           >
@@ -825,7 +859,7 @@ export default function PlaylistsPage() {
                 <div className="flex gap-2 mb-3">
                   <input
                     value={modalSearchQuery}
-                    onChange={(e) => setModalSearchQuery(e.target.value)}
+                    onChange={(e) => handleModalSearchChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleModalSearch(modalSearchQuery)}
                     placeholder="Search songs on YouTube to add..."
                     className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
