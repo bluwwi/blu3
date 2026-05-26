@@ -3,18 +3,17 @@ import { Track } from "@/utils/types";
 import { ProgressBar } from "./ProgressBar";
 import { fmtSec } from "@/utils/formatters";
 import {
-  Loader2,
+  Spinner,
   Pause,
   Play,
   SkipBack,
   SkipForward,
-  Volume2,
-  VolumeX,
+  SpeakerHigh,
+  SpeakerSlash,
   Heart,
   Shuffle,
   Repeat,
-  Repeat1,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import Image from "next/image";
 
 type RepeatMode = "off" | "all" | "one";
@@ -77,12 +76,37 @@ export function SquarePlayer({
       ? `https://i.ytimg.com/vi/${activeVideoId}/maxresdefault.jpg`
       : `https://picsum.photos/seed/nowplaying/400/400`);
 
-  const RepeatIcon = repeatMode === "one" ? Repeat1 : Repeat;
-  const repeatActive = repeatMode !== "off";
+  // Repeat button: single button that cycles through all modes
+  const getRepeatButtonProps = () => {
+    if (repeatMode === "one") {
+      return {
+        weight: "fill" as const,
+        label: "Repeat one",
+        title: "Repeat: one",
+        active: true,
+      };
+    }
+    if (repeatMode === "all") {
+      return {
+        weight: "bold" as const,
+        label: "Repeat all",
+        title: "Repeat: all",
+        active: true,
+      };
+    }
+    return {
+      weight: "regular" as const,
+      label: "Repeat off",
+      title: "Repeat: off",
+      active: false,
+    };
+  };
+  const repeatBtn = getRepeatButtonProps();
 
   return (
-    <div className="flex  flex-col text-white items-center justify-center rounded-[28px] p-5 h-full overflow-hidden w-full">
-      <div className="w-[80%] aspect-square sm:w-[55%]  rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none">
+    <div className="flex flex-col text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
+      {/* Album Art */}
+      <div className="w-[75%] sm:w-[60%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none">
         <Image
           width={400}
           height={400}
@@ -92,27 +116,27 @@ export function SquarePlayer({
         />
       </div>
 
-      <div className=" w-[80%] flex justify-center items-center mb-4 shrink-0 ">
+      {/* Track Info */}
+      <div className="w-[90%] flex justify-center items-center mb-3 shrink-0">
         <div className="text-center w-fit flex-1">
-          <p className="text-white font-bold text-sm sm:text-base md:text-lg truncate tracking-wide">
+          <p className="text-white font-bold text-sm sm:text-base truncate tracking-wide">
             {title}
           </p>
           {subtitle && (
-            <p className="text-white/75 text-[10px] sm:text-xs truncate  ">
+            <p className="text-white/70 text-[10px] sm:text-xs truncate">
               {subtitle}
             </p>
           )}
         </div>
       </div>
 
-      {/* Progress bar + timestamps */}
-
-      {/* Main playback controls row */}
-      <div className="flex items-center justify-center gap-2 sm:gap-7 mb-5 flex-shrink-0 w-full select-none">
+      {/* COMPACT CONTROLS ROW - Single line, no wrap */}
+      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 flex-nowrap w-full select-none">
+        {/* Shuffle */}
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}
-          className={`transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
+          className={`p-1.5 rounded-full transition-all hover:scale-105 disabled:opacity-30 cursor-pointer ${
             shuffleEnabled
               ? "text-violet-400 hover:text-violet-300"
               : "text-white/50 hover:text-white"
@@ -120,104 +144,120 @@ export function SquarePlayer({
           aria-label="Shuffle"
           title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
         >
-          <Shuffle size={16} />
+          <Shuffle weight={shuffleEnabled ? "bold" : "regular"} size={16} />
         </button>
 
+        {/* Skip Back */}
         <button
           onClick={onSkipBack}
           disabled={!onSkipBack}
-          className="text-white/50 hover:text-white hover:scale-110 transition-all disabled:opacity-30 cursor-pointer"
+          className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Previous"
         >
-          <SkipBack size={18} fill="currentColor" />
+          <SkipBack weight="fill" size={18} />
         </button>
 
+        {/* Play/Pause - Centerpiece */}
         <button
           onClick={onPlayPause}
           disabled={isLoading || !onPlayPause}
-          className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-[0_4px_16px_rgba(255,255,255,0.15)] flex-shrink-0 cursor-pointer"
+          className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-black hover:scale-105 active:scale-95 transition-all shadow-lg flex-shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
-            <Loader2 size={18} className="animate-spin text-black" />
+            <Spinner
+              weight="bold"
+              size={18}
+              className="animate-spin text-black"
+            />
           ) : isPlaying ? (
-            <Pause size={18} className="fill-current text-black" />
+            <Pause weight="fill" size={18} className="text-black" />
           ) : (
             <Play
+              weight="fill"
               size={18}
-              className="fill-current text-black translate-x-[1px]"
+              className="text-black translate-x-[1px]"
             />
           )}
         </button>
 
+        {/* Skip Forward */}
         <button
           onClick={onSkipForward}
           disabled={!onSkipForward}
-          className="text-white/50 hover:text-white hover:scale-110 transition-all disabled:opacity-30 cursor-pointer"
+          className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Next"
         >
-          <SkipForward size={18} fill="currentColor" />
+          <SkipForward weight="fill" size={18} />
         </button>
 
+        {/* Repeat - Single button, cycles modes */}
         <button
           onClick={onCycleRepeat}
           disabled={!onCycleRepeat}
-          className={`transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
-            repeatActive
+          className={`p-1.5 rounded-full transition-all hover:scale-105 disabled:opacity-30 cursor-pointer ${
+            repeatBtn.active
               ? "text-violet-400 hover:text-violet-300"
               : "text-white/50 hover:text-white"
           }`}
-          aria-label="Repeat"
-          title={
-            repeatMode === "one"
-              ? "Repeat one"
-              : repeatMode === "all"
-                ? "Repeat all"
-                : "Repeat off"
-          }
+          aria-label={repeatBtn.label}
+          title={repeatBtn.title}
         >
-          <RepeatIcon size={16} />
+          <Repeat weight={repeatBtn.weight} size={16} />
         </button>
-        <div className="flex items-center justify-center gap-3 w-full max-w-[180px] flex-shrink-0 px-3 mt-1">
-          <button
-            onClick={onMute}
-            className="text-white/40 hover:text-white transition-colors cursor-pointer flex-shrink-0"
-            aria-label={isMuted ? "Unmute" : "Mute"}
-          >
-            {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-          </button>
 
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={isMuted ? 0 : volume}
-            onChange={(e) => onVolume(Number(e.target.value))}
-            className="accent-white h-1 flex-1 cursor-pointer bg-white/10 rounded-lg outline-none w-full"
-            aria-label="Volume"
-          />
-        </div>
+        {/* Divider */}
+        <div className="w-px h-5 bg-white/10 mx-0.5" />
 
+        {/* Volume + Mute */}
+        <button
+          onClick={onMute}
+          className="p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+          aria-label={isMuted ? "Unmute" : "Mute"}
+        >
+          {isMuted ? (
+            <SpeakerSlash weight="bold" size={16} />
+          ) : (
+            <SpeakerHigh weight="bold" size={16} />
+          )}
+        </button>
+
+        <input
+          type="range"
+          min={0}
+          max={100}
+          step={1}
+          value={isMuted ? 0 : volume}
+          onChange={(e) => onVolume(Number(e.target.value))}
+          className="accent-white h-1.5 w-12 sm:w-16 cursor-pointer bg-white/10 rounded-lg outline-none flex-shrink-0"
+          aria-label="Volume"
+        />
+
+        {/* Like Button */}
         {onToggleLike && (
           <button
             onClick={onToggleLike}
-            className={`transition-all cursor-pointer p-2 rounded-full hover:bg-white/5 flex-shrink-0 ${
+            className={`p-1.5 rounded-full transition-all cursor-pointer flex-shrink-0 ${
               isLiked
-                ? "text-rose-500 fill-rose-500 scale-105"
+                ? "text-rose-500 scale-105"
                 : "text-white/50 hover:text-white"
             }`}
             aria-label={isLiked ? "Unlike track" : "Like track"}
             title={isLiked ? "Unlike track" : "Like track"}
           >
-            <Heart size={18} className={isLiked ? "fill-current" : ""} />
+            <Heart
+              weight={isLiked ? "fill" : "regular"}
+              size={16}
+              className={isLiked ? "text-rose-500" : ""}
+            />
           </button>
         )}
       </div>
 
-      <div className="w-full px-3 mb-5 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] text-white/40 tabular-nums w-8 text-right shrink-0">
+      {/* Progress Bar + Timestamps */}
+      <div className="w-[90%] px-2 mb-2 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] text-white/40 tabular-nums w-7 text-right shrink-0">
             {fmtSec(currentTime)}
           </span>
           <div className="flex-1">
@@ -228,13 +268,11 @@ export function SquarePlayer({
               onSeek={onSeek}
             />
           </div>
-          <span className="text-[10px] text-white/40 tabular-nums w-8 shrink-0">
+          <span className="text-[9px] text-white/40 tabular-nums w-7 shrink-0">
             {fmtSec(duration)}
           </span>
         </div>
       </div>
-
-      {/* Volume control row (Separated elegantly) */}
     </div>
   );
 }
