@@ -959,12 +959,12 @@ export default function RoomPage() {
           autoPlay
           muted
           playsInline
-          className="absolute bottom-0  right-0 w-2/3 h-full object-cover"
+          className="absolute bottom-0   right-0 w-2/3 h-full object-cover"
           style={{ zIndex: -1 }}
         >
           <source src="/dance.mp4" type="video/mp4" />
         </video>
-        <div className="h-screen w-full overflow-hidden bg-black/50">
+        <div className="h-screen w-full overflow-hidden bg-black/60">
           <div
             className="mx-auto flex h-full flex-col pb-40"
             style={{ width: "clamp(10rem, 58vw, 12000rem)" }}
