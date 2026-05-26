@@ -215,6 +215,30 @@ export default function BrowsePage() {
         }
       `}</style>
 
+      <div className="absolute top-5 left-6 flex items-center gap-6 z-50 select-none">
+        <Link
+          href="/browse"
+          className="text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition-opacity"
+          style={{ fontFamily: "'Syne', sans-serif" }}
+        >
+          blu3
+        </Link>
+        <div className="flex items-center gap-4 border-l border-zinc-800 pl-6 h-4">
+          <Link
+            href="/browse"
+            className="text-[10px] tracking-widest uppercase text-white font-medium transition-colors"
+          >
+            Rooms
+          </Link>
+          <Link
+            href="/playlists"
+            className="text-[10px] tracking-widest uppercase text-zinc-500 hover:text-white font-medium transition-colors"
+          >
+            Playlists
+          </Link>
+        </div>
+      </div>
+
       <div className="absolute top-5 right-6 flex items-center gap-4 z-50">
         {user ? (
           <div className="relative">

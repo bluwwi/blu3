@@ -15,7 +15,9 @@ import {
   Shuffle,
   Volume2,
   VolumeX,
+  Heart,
 } from "lucide-react";
+import { usePlaylists } from "@/hooks/usePlaylists";
 
 type RepeatMode = "off" | "all" | "one";
 
@@ -60,7 +62,9 @@ export function NowPlayingBar({
   onChatClick,
   onQueueClick,
 }: Props) {
+  const { likedTrackIds, toggleLike } = usePlaylists();
   const hasTrack = Boolean(track || activeVideoId);
+  const isLiked = track ? likedTrackIds.has(track.videoId) : false;
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
 
@@ -107,6 +111,21 @@ export function NowPlayingBar({
                 </p>
               )}
             </div>
+            {track && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLike(track);
+                }}
+                className={`shrink-0 ml-1 rounded-full p-1.5 transition-colors hover:bg-white/10 ${
+                  isLiked ? "text-rose-500 fill-rose-500 hover:text-rose-400" : "text-white/45 hover:text-white"
+                }`}
+                aria-label={isLiked ? "Unlike song" : "Like song"}
+              >
+                <Heart size={14} className={isLiked ? "fill-current" : ""} />
+              </button>
+            )}
             <span className="shrink-0 text-[12px] tabular-nums text-white/55">
               {hasTrack
                 ? `${fmtSec(currentTime)} / ${fmtSec(duration)}`
