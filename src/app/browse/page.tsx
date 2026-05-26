@@ -127,7 +127,7 @@ export default function BrowsePage() {
   };
 
   const SkeletonCard = () => (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40">
       <div className="aspect-square rounded-xl bg-zinc-900 animate-pulse" />
       <div className="h-2.5 w-3/4 bg-zinc-900 rounded animate-pulse mt-1" />
       <div className="h-2 w-1/2 bg-zinc-900/60 rounded animate-pulse" />
@@ -137,11 +137,8 @@ export default function BrowsePage() {
   return (
     <div
       className="h-screen bg-[#080808] text-white flex flex-col overflow-hidden"
-      style={{ fontFamily: "'DM Mono', monospace" }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
-
         .room-card-img {
           transition: transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                       filter 0.38s ease;
@@ -219,7 +216,6 @@ export default function BrowsePage() {
         <Link
           href="/browse"
           className="text-lg font-extrabold tracking-tight text-white hover:opacity-80 transition-opacity"
-          style={{ fontFamily: "'Syne', sans-serif" }}
         >
           blu3
         </Link>
@@ -282,7 +278,6 @@ export default function BrowsePage() {
           <div className="text-center">
             <p
               className="text-4xl font-extrabold tracking-tight mb-2"
-              style={{ fontFamily: "'Syne', sans-serif" }}
             >
               blu3
             </p>
@@ -300,7 +295,7 @@ export default function BrowsePage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 items-center justify-center gap-x-4 gap-y-6 w-full">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 w-full max-w-6xl">
             {loading
               ? Array.from({ length: 9 }).map((_, i) => (
                   <SkeletonCard key={i} />
@@ -310,7 +305,7 @@ export default function BrowsePage() {
                   return (
                     <div
                       key={room.id}
-                      className="room-card flex flex-col gap-2 relative group/card"
+                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
                       onClick={() => router.push(`/room/${room.code}`)}
                     >
                       {/* Thumbnail */}
@@ -349,11 +344,11 @@ export default function BrowsePage() {
                         <p className="text-[11px] text-zinc-300 truncate leading-tight">
                           {room.name}
                         </p>
-                        <p className="text-[10px] text-zinc-600 truncate tracking-widest mt-0.5">
+                        <p className="text-[10px] text-zinc-650 truncate tracking-widest mt-0.5">
                           {isHost ? (
                             <span className="text-zinc-500">host</span>
                           ) : (
-                            <span className="text-zinc-600">joined</span>
+                            <span className="text-zinc-650">joined</span>
                           )}
                         </p>
                       </div>
@@ -363,16 +358,16 @@ export default function BrowsePage() {
 
             {!loading && (
               <div
-                className="create-card flex flex-col gap-2"
+                className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40"
                 onClick={() => setShowCreateModal(true)}
               >
-                <div className="aspect-square rounded-xl border  border-zinc-600 flex items-center justify-center">
+                <div className="aspect-square rounded-xl border border-zinc-700 flex items-center justify-center bg-zinc-900/10 hover:bg-zinc-900/20">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
                     strokeWidth="2"
-                    className="create-plus w-16 h-16"
-                    stroke="rgba(255,255,255,0.5)"
+                    className="create-plus w-12 h-12 animate-pulse"
+                    stroke="rgba(255,255,255,0.4)"
                   >
                     <path strokeLinecap="round" d="M12 4v16M4 12h16" />
                   </svg>
@@ -389,9 +384,9 @@ export default function BrowsePage() {
       </div>
 
       {(user || !authLoading) && (
-        <div className="fixed bottom-0 left-0  right-0 flex justify-center pb-8 pointer-events-none">
-          <div className="flex items-center gap-3  pointer-events-auto">
-            <div className="border-2 border-white/30 flex items-center rounded-2xl  overflow-hidden pl-4 pr-1 py-1">
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none">
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <div className="border-2 border-white/20 flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-black/40 backdrop-blur-xl">
               <input
                 value={joinCode}
                 onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
@@ -402,7 +397,7 @@ export default function BrowsePage() {
               />
               <button
                 onClick={handleJoin}
-                className="join-btn px-4 py-1.5 bg-white text-black text-xs font-medium rounded-xl tracking-widest uppercase"
+                className="join-btn px-4 py-1.5 bg-white text-black text-xs font-medium rounded-xl tracking-widest uppercase cursor-pointer"
               >
                 Join
               </button>
@@ -436,7 +431,6 @@ export default function BrowsePage() {
           >
             <p
               className="text-base font-bold tracking-tight mb-1"
-              style={{ fontFamily: "'Syne', sans-serif" }}
             >
               new room
             </p>
@@ -466,7 +460,7 @@ export default function BrowsePage() {
                   setShowCreateModal(false);
                   setNewRoomName("");
                 }}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-800 text-zinc-500 text-xs tracking-widest uppercase hover:border-zinc-600 hover:text-zinc-300 transition-all"
+                className="flex-1 py-2.5 rounded-xl border border-zinc-800 text-zinc-500 text-xs tracking-widest uppercase hover:border-zinc-650 hover:text-zinc-300 transition-all"
               >
                 cancel
               </button>
