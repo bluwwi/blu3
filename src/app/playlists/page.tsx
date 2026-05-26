@@ -12,7 +12,7 @@ import {
   Play,
   X,
   Music2,
-  FolderMusic,
+  FolderHeart,
   ChevronRight,
   Loader2,
 } from "lucide-react";
@@ -393,7 +393,7 @@ export default function PlaylistsPage() {
               </div>
             ) : playlists.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/10">
-                <FolderMusic size={40} className="text-zinc-700 mb-3" />
+                <FolderHeart size={40} className="text-zinc-700 mb-3" />
                 <p className="text-sm text-zinc-500 tracking-wide mb-1">No playlists yet</p>
                 <p className="text-xs text-zinc-600">Create one or import from Spotify/YouTube to get started.</p>
               </div>
@@ -604,7 +604,7 @@ export default function PlaylistsPage() {
                   {activePlaylist.isLiked ? (
                     <Heart size={16} className="text-rose-500 fill-current shrink-0" />
                   ) : (
-                    <FolderMusic size={16} className="text-zinc-400 shrink-0" />
+                    <FolderHeart size={16} className="text-zinc-400 shrink-0" />
                   )}
                   <h2
                     className="text-lg font-bold tracking-tight truncate font-syne"
