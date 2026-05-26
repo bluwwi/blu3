@@ -37,6 +37,8 @@ interface Props {
   onCycleRepeat?: () => void;
   onSkipBack?: () => void;
   onSkipForward?: () => void;
+  isLiked?: boolean;
+  onToggleLike?: () => void;
 }
 
 export function SquarePlayer({
@@ -58,6 +60,8 @@ export function SquarePlayer({
   onCycleRepeat,
   onSkipBack,
   onSkipForward,
+  isLiked = false,
+  onToggleLike,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -101,6 +105,19 @@ export function SquarePlayer({
 
       {/* Controls row: shuffle · skip back · play · skip forward · repeat · volume · heart */}
       <div className="flex items-center w-full gap-3 justify-center  mb-3">
+        {onToggleLike && (
+          <button
+            onClick={onToggleLike}
+            className={`transition-colors cursor-pointer mr-1 ${
+              isLiked ? "text-rose-500 fill-rose-500 hover:text-rose-400" : "text-white/60 hover:text-white"
+            }`}
+            aria-label={isLiked ? "Unlike track" : "Like track"}
+            title={isLiked ? "Unlike track" : "Like track"}
+          >
+            <Heart size={15} className={isLiked ? "fill-current" : ""} />
+          </button>
+        )}
+
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}

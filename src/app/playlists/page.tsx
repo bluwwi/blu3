@@ -58,6 +58,12 @@ export default function PlaylistsPage() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [lastRoomCode, setLastRoomCode] = useState<string | null>(null);
 
+  // Search and edit states inside details modal
+  const [modalSearchQuery, setModalSearchQuery] = useState("");
+  const [modalSearchResults, setModalSearchResults] = useState<any[]>([]);
+  const [isSearchingModal, setIsSearchingModal] = useState(false);
+  const [addingTrackId, setAddingTrackId] = useState<string | null>(null);
+
   // Fetch all playlists
   const fetchPlaylists = async () => {
     const token = localStorage.getItem("blu3_token");
@@ -200,10 +206,112 @@ export default function PlaylistsPage() {
     }
   };
 
-  const removeTrackFromPlaylist = async (trackId: string) => {
-    // Optional stretch: implement track deletion in custom playlists
-    // For now we can simply update local UI
-    setActiveTracks((prev) => prev.filter((t) => t.id !== trackId));
+  const handleDeleteTrack = async (trackId: string) => {
+    if (!activePlaylist) return;
+    const token = localStorage.getItem("blu3_token");
+    try {
+      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks/${trackId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        setActiveTracks((prev) => prev.filter((t) => t.id !== trackId));
+      }
+    } catch (err) {
+      console.error("Failed to delete track:", err);
+    }
+  };
+
+  const handleMoveTrack = async (fromIdx: number, toIdx: number) => {
+    if (!activePlaylist) return;
+    const updated = [...activeTracks];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    
+    // Optimistic UI update
+    setActiveTracks(updated);
+    
+    const token = localStorage.getItem("blu3_token");
+    try {
+      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks/reorder`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ trackIds: updated.map((t) => t.id) }),
+      });
+      if (!res.ok) {
+        throw new Error("Reorder failed on server");
+      }
+    } catch (err) {
+      console.error("Failed to reorder tracks:", err);
+      handleViewPlaylist(activePlaylist);
+    }
+  };
+
+  const handleModalSearch = async (q: string) => {
+    if (!q.trim()) {
+      setModalSearchResults([]);
+      return;
+    }
+    setIsSearchingModal(true);
+    try {
+      const res = await fetch(`${API_URL}/api/search?q=${encodeURIComponent(q.trim())}`);
+      const data = await res.json();
+      if (data.tracks) {
+        setModalSearchResults(data.tracks);
+      }
+    } catch (err) {
+      console.error("Modal search failed:", err);
+    } finally {
+      setIsSearchingModal(false);
+    }
+  };
+
+  const handleAddTrackToPlaylist = async (track: any) => {
+    if (!activePlaylist) return;
+    setAddingTrackId(track.id);
+    const token = localStorage.getItem("blu3_token");
+    try {
+      const artistName = track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist";
+      const res = await fetch(`${API_URL}/api/playlists/${activePlaylist.id}/tracks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          videoId: track.videoId,
+          trackName: track.name,
+          artistName,
+          image: track.image || "",
+          durationMs: track.duration_ms || 0,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.track) {
+        setActiveTracks((prev) => [...prev, {
+          id: data.track.id,
+          videoId: data.track.videoId,
+          trackName: data.track.trackName,
+          artistName: data.track.artistName,
+          image: data.track.image,
+          durationMs: data.track.durationMs,
+        }]);
+      }
+    } catch (err) {
+      console.error("Failed to add track to playlist:", err);
+    } finally {
+      setAddingTrackId(null);
+    }
+  };
+
+  const handleCloseDetailsModal = () => {
+    setActivePlaylist(null);
+    setActiveTracks([]);
+    setModalSearchQuery("");
+    setModalSearchResults([]);
   };
 
   return (
@@ -588,8 +696,7 @@ export default function PlaylistsPage() {
           style={{ background: "rgba(0,0,0,0.85)", backdropFilter: "blur(16px)" }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
-              setActivePlaylist(null);
-              setActiveTracks([]);
+              handleCloseDetailsModal();
             }
           }}
         >
@@ -629,10 +736,7 @@ export default function PlaylistsPage() {
                   </button>
                 )}
                 <button
-                  onClick={() => {
-                    setActivePlaylist(null);
-                    setActiveTracks([]);
-                  }}
+                  onClick={handleCloseDetailsModal}
                   className="p-1 rounded-lg border border-zinc-800 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 transition-colors"
                 >
                   <X size={16} />
@@ -676,21 +780,99 @@ export default function PlaylistsPage() {
                         </div>
                       </div>
 
-                      {/* Remove track action (stretch placeholder) */}
+                      {/* Reorder and Delete actions for custom playlists */}
                       {!activePlaylist.isLiked && (
-                        <button
-                          onClick={() => removeTrackFromPlaylist(track.id)}
-                          className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-600 opacity-0 group-hover/item:opacity-100 transition-opacity hover:border-red-950 hover:bg-red-950/20 hover:text-red-400 cursor-pointer"
-                          title="Remove from playlist"
-                        >
-                          <X size={10} />
-                        </button>
+                        <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                          {idx > 0 && (
+                            <button
+                              onClick={() => handleMoveTrack(idx, idx - 1)}
+                              className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 cursor-pointer text-[10px]"
+                              title="Move Up"
+                            >
+                              ▲
+                            </button>
+                          )}
+                          {idx < activeTracks.length - 1 && (
+                            <button
+                              onClick={() => handleMoveTrack(idx, idx + 1)}
+                              className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-500 hover:border-zinc-700 hover:text-zinc-300 cursor-pointer text-[10px]"
+                              title="Move Down"
+                            >
+                              ▼
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteTrack(track.id)}
+                            className="w-6 h-6 rounded-full border border-zinc-850 flex items-center justify-center text-zinc-650 hover:border-red-950 hover:bg-red-950/20 hover:text-red-400 cursor-pointer"
+                            title="Remove from playlist"
+                          >
+                            <X size={10} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   ))}
                 </div>
               )}
             </div>
+
+            {/* Modal Search and Add Tracks Section (Only for Custom Playlists) */}
+            {!activePlaylist.isLiked && (
+              <div className="shrink-0 border-t border-zinc-900 p-6 bg-zinc-950/20">
+                <p className="text-[10px] font-bold tracking-widest mb-2.5 uppercase text-zinc-500">
+                  Search & Add songs
+                </p>
+                <div className="flex gap-2 mb-3">
+                  <input
+                    value={modalSearchQuery}
+                    onChange={(e) => setModalSearchQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleModalSearch(modalSearchQuery)}
+                    placeholder="Search songs on YouTube to add..."
+                    className="flex-1 bg-zinc-900/80 border border-zinc-800 rounded-xl px-4 py-2 text-xs text-white placeholder-zinc-600 transition-colors"
+                  />
+                  <button
+                    onClick={() => handleModalSearch(modalSearchQuery)}
+                    disabled={isSearchingModal || !modalSearchQuery.trim()}
+                    className="px-4 py-2 bg-white text-black text-xs font-semibold rounded-xl uppercase tracking-wider btn-premium disabled:opacity-30"
+                  >
+                    {isSearchingModal ? "..." : "Search"}
+                  </button>
+                </div>
+
+                {modalSearchResults.length > 0 && (
+                  <div className="room-scroll max-h-40 overflow-y-auto flex flex-col gap-2 p-1 border border-zinc-900 rounded-xl bg-zinc-950/40">
+                    {modalSearchResults.map((track) => (
+                      <div
+                        key={track.id}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 border border-transparent transition-all"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img
+                            src={track.image || "https://via.placeholder.com/150"}
+                            alt=""
+                            className="w-8 h-8 rounded object-cover flex-shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-medium text-white truncate">{track.name}</p>
+                            <p className="text-[9px] text-zinc-500 truncate mt-0.5">
+                              {track.artists?.map((a: any) => a.name).join(", ") || "Unknown Artist"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => handleAddTrackToPlaylist(track)}
+                          disabled={addingTrackId === track.id}
+                          className="px-2 py-1 rounded bg-zinc-800 hover:bg-white hover:text-black text-[9px] font-semibold tracking-wider uppercase transition-colors"
+                        >
+                          {addingTrackId === track.id ? "Adding..." : "+ Add"}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

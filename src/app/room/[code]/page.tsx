@@ -18,6 +18,7 @@ import {
   asTrackFromRecent,
   RoomTheme,
 } from "@/utils/roomHelpers";
+import { usePlaylists } from "@/hooks/usePlaylists";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
@@ -37,6 +38,7 @@ export default function RoomPage() {
   const { user, loading: authLoading } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const playerState = usePlayerState();
+  const { likedTrackIds, toggleLike } = usePlaylists();
   const progressState = useProgressTracking(
     playerState.playerRef,
     playerState.playerState,
@@ -196,6 +198,12 @@ export default function RoomPage() {
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
   const footerTrack =
     playerState.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
+  const isLiked = footerTrack ? likedTrackIds.has(footerTrack.videoId) : false;
+  const handleToggleLike = () => {
+    if (footerTrack) {
+      toggleLike(footerTrack);
+    }
+  };
   const footerPlayerState =
     playerState.playerState === "idle" && playback?.videoId
       ? playback.isPlaying
@@ -1062,6 +1070,8 @@ export default function RoomPage() {
                         playerState.activeVideoId ?? playback?.videoId ?? null
                       }
                       playerState={footerPlayerState}
+                      isLiked={isLiked}
+                      onToggleLike={handleToggleLike}
                       progress={progressState.progress}
                       currentTime={progressState.currentTime}
                       duration={progressState.duration}
