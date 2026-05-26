@@ -903,7 +903,7 @@ export default function RoomPage() {
     const video = videoRef.current;
     if (!video) return;
 
-    const LOOP_START = 0;
+    const LOOP_START = 10.58;
     const LOOP_END = 17.6; // a bit before 17.9 — gives rAF time to catch it
 
     let rafId: number;
@@ -951,7 +951,7 @@ export default function RoomPage() {
   return (
     <div className="w-full h-full">
       <YouTubeIframe />
-      <div className="w-full h-full  bg-[#D9DBDD] absolute -z-10"></div>
+      <div className="w-full h-full  bg-[#F9DBE0] absolute -z-10"></div>
 
       <div className="h-screen  overflow-hidden bg-cover bg-center bg-fixed">
         <video
@@ -959,14 +959,14 @@ export default function RoomPage() {
           autoPlay
           muted
           playsInline
-          className="absolute bottom-0 -scale-x-100  right-0 w-3/3 h-full object-cover"
+          className="absolute bottom-0 -scale-x-100 right-0 w-2/3 h-full object-cover"
           style={{ zIndex: -1 }}
         >
-          <source src="/pro.mp4" type="video/mp4" />
+          <source src="/dance.mp4" type="video/mp4" />
         </video>
         <div className="h-screen w-full overflow-hidden bg-black/55">
           <div
-            className="mx-auto flex h-full flex-col pb-40"
+            className="mx-auto flex h-full flex-col pb-20"
             style={{ width: "clamp(10rem, 58vw, 12000rem)" }}
           >
             {/* TopBar — NOT clickable as a whole, RoomTopBar handles its own search bar click internally */}
