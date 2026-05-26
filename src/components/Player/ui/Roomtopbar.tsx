@@ -32,7 +32,7 @@ export function RoomTopBar({
 
   return (
     <>
-      <div className="flex items-center border-white/30 mt-2 border rounded-2xl justify-between gap-4 px-6 py-2">
+      <div className="flex items-center border-white/30 mt-2 border rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2">
         {/* Logo */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <Image
@@ -57,7 +57,7 @@ export function RoomTopBar({
             e.stopPropagation();
             onSearchClick();
           }}
-          className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/30 px-4 py-2.5 transition-colors  text-left"
+          className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/30 px-3 sm:px-4 py-2 sm:py-2.5 transition-colors text-left min-w-0"
         >
           <svg
             width="14"
@@ -71,8 +71,9 @@ export function RoomTopBar({
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
-          <span className="flex-1 text-[13px] text-white/80">
-            What do you want to play next?
+          <span className="flex-1 text-[13px] text-white/80 truncate">
+            <span className="hidden sm:inline">What do you want to play next?</span>
+            <span className="sm:hidden">Search next...</span>
           </span>
         </button>
 

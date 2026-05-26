@@ -32,7 +32,9 @@ export default function RoomPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const queuePlaylistId = searchParams ? searchParams.get("queuePlaylistId") : null;
+  const queuePlaylistId = searchParams
+    ? searchParams.get("queuePlaylistId")
+    : null;
   const code = (params.code as string)?.toUpperCase();
 
   const { user, loading: authLoading } = useAuth();
@@ -800,8 +802,7 @@ export default function RoomPage() {
       if (r) {
         setJoined(true);
         localStorage.setItem("blu3_last_room", code);
-      }
-      else router.replace("/browse");
+      } else router.replace("/browse");
     });
   }, [authLoading, user, code]);
   useEffect(() => {
@@ -1006,15 +1007,15 @@ export default function RoomPage() {
           autoPlay
           muted
           playsInline
-          className="absolute bottom-0 -scale-x-100 right-0 w-2/3 h-full object-cover"
+          className="absolute bottom-0 -scale-x-100 right-0 md:w-2/3 h-full object-cover"
           style={{ zIndex: -1 }}
         >
           <source src="/dance.mp4" type="video/mp4" />
         </video>
         <div className="h-screen w-full overflow-hidden bg-black/55">
           <div
-            className="mx-auto flex h-full flex-col pb-20"
-            style={{ width: "clamp(10rem, 58vw, 12000rem)" }}
+            className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2 sm:px-4 overflow-y-auto lg:overflow-hidden"
+            style={{ width: "clamp(1rem, 95vw, 200rem)" }}
           >
             {/* TopBar — NOT clickable as a whole, RoomTopBar handles its own search bar click internally */}
             <RoomTopBar
@@ -1035,9 +1036,9 @@ export default function RoomPage() {
               onSearchClick={openSearchOverlay}
             />
 
-            <div className="flex h-full gap-2 pt-1 min-h-0">
-              <div className="relative w-full h-full flex min-h-0 flex-1 gap-3">
-                <aside className="w-[55%] h-full shrink-0 min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
+            <div className="flex h-full gap-2 pt-2 min-h-0">
+              <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
+                <aside className="w-full lg:w-[55%] h-[60vh] lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
                   {chatOpen ? (
                     <div className="absolute inset-0 animate-in fade-in duration-300">
                       <ChatPanel
@@ -1102,7 +1103,7 @@ export default function RoomPage() {
                   )}
                 </aside>
 
-                <aside className="flex-1 min-w-0 h-full min-h-0 w-[45%] rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300">
+                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300">
                   <RightSidebar
                     members={members}
                     messages={messages}

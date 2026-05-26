@@ -85,11 +85,11 @@ export function SquarePlayer({
       <div className="self-end text-white/50 text-xl mb-2 flex-shrink-0">✦</div>
 
       {/* Album art */}
-      <div className="w-full h-full flex items-center justify-center min-h-0 rounded-[18px] overflow-hidden mb-4">
+      <div className="w-full max-w-[280px] aspect-square flex items-center justify-center min-h-0 rounded-[18px] overflow-hidden mb-4 flex-1">
         <img
           src={albumArt}
           alt={title}
-          className="h-full rounded-xl aspect-square object-cover"
+          className="w-full h-full rounded-xl object-cover shadow-2xl"
         />
       </div>
 
