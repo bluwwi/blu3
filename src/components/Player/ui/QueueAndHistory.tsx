@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Track } from "@/utils/types";
-import { Clock3, ListMusic, Plus, Play, Trash2 } from "lucide-react";
+import { Clock3, ListMusic, Plus, Play, Trash2, Heart } from "lucide-react";
+import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
 
 interface Props {
@@ -35,6 +36,7 @@ export function QueueAndHistory({
   defaultTab,
   playerState,
 }: Props) {
+  const { likedTrackIds, toggleLike } = usePlaylists();
   const [activeTab, setActiveTab] = useState<"queue" | "history">(
     defaultTab === "history" ? "history" : "queue",
   );
@@ -159,17 +161,31 @@ export function QueueAndHistory({
                       </p>
                     </div>
 
-                    {/* Remove Button */}
-                    {canControlPlayback && (
+                    {/* Like & Remove Buttons */}
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
-                        onClick={() => removeFromQueue(track.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
-                        aria-label="Remove from queue"
+                        onClick={() => toggleLike(track)}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                          likedTrackIds.has(track.videoId)
+                            ? "text-rose-500 fill-rose-500 hover:text-rose-450"
+                            : "text-white/55 hover:bg-white/10 hover:text-white"
+                        }`}
+                        title={likedTrackIds.has(track.videoId) ? "Unlike track" : "Like track"}
                       >
-                        <Trash2 size={12} />
+                        <Heart size={12} className={likedTrackIds.has(track.videoId) ? "fill-current" : ""} />
                       </button>
-                    )}
+                      {canControlPlayback && (
+                        <button
+                          type="button"
+                          onClick={() => removeFromQueue(track.id)}
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                          aria-label="Remove from queue"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -274,14 +290,28 @@ export function QueueAndHistory({
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => addToQueue(historyTrack)}
-                    className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
-                    aria-label="Add track to queue"
-                  >
-                    <Plus size={12} />
-                  </button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      type="button"
+                      onClick={() => toggleLike(historyTrack)}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                        likedTrackIds.has(historyTrack.videoId)
+                          ? "text-rose-500 fill-rose-500 hover:text-rose-450"
+                          : "text-white/55 hover:bg-white/10 hover:text-white"
+                      }`}
+                      title={likedTrackIds.has(historyTrack.videoId) ? "Unlike track" : "Like track"}
+                    >
+                      <Heart size={12} className={likedTrackIds.has(historyTrack.videoId) ? "fill-current" : ""} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addToQueue(historyTrack)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                      aria-label="Add track to queue"
+                    >
+                      <Plus size={12} />
+                    </button>
+                  </div>
                 </div>
               );
             })}

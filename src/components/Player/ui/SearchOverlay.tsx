@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { Search, X, Plus, Play, Loader2, Music2, Clock } from "lucide-react";
+import { Search, X, Plus, Play, Loader2, Music2, Clock, Heart } from "lucide-react";
 import { Track } from "@/utils/types";
+import { usePlaylists } from "@/hooks/usePlaylists";
 
 interface Props {
   isOpen: boolean;
@@ -74,6 +75,7 @@ export function SearchOverlay({
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
+  const { likedTrackIds, toggleLike } = usePlaylists();
 
   // focus input when opened
   useEffect(() => {
@@ -306,6 +308,21 @@ export function SearchOverlay({
 
                       {/* actions */}
                       <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleLike(track);
+                          }}
+                          title={likedTrackIds.has(track.videoId) ? "Unlike track" : "Like track"}
+                          className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                            likedTrackIds.has(track.videoId)
+                              ? "text-rose-500 fill-rose-500 hover:text-rose-400"
+                              : "text-white/50 hover:bg-white/10 hover:text-white"
+                          }`}
+                        >
+                          <Heart size={13} className={likedTrackIds.has(track.videoId) ? "fill-current" : ""} />
+                        </button>
                         {onAddToQueue && (
                           <button
                             type="button"

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { Clock3, ListMusic, MessageSquare, Search } from "lucide-react";
+import { Clock3, ListMusic, MessageSquare, Search, Plus } from "lucide-react";
 import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, T } from "@/utils/roomHelpers";
@@ -41,6 +41,7 @@ interface Props {
   playerState?: string;
   onChatToggle?: () => void;
   unreadChatCount?: number;
+  onSearchClick?: () => void;
 }
 
 export function RightSidebar({
@@ -59,6 +60,80 @@ export function RightSidebar({
   unreadChatCount = 0,
 }: Props) {
   const [tab, setTab] = useState<SideTab>("queue");
+
+  // Playlist selection states for room queueing
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+    if (showDropdown) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [showDropdown]);
+
+  const handlePlusClick = async () => {
+    if (showDropdown) {
+      setShowDropdown(false);
+      return;
+    }
+    setShowDropdown(true);
+    setLoadingPlaylists(true);
+    const token = localStorage.getItem("blu3_token");
+    if (!token) {
+      setLoadingPlaylists(false);
+      return;
+    }
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/playlists`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.playlists) {
+        setPlaylists(data.playlists);
+      }
+    } catch (err) {
+      console.error("Failed to fetch playlists:", err);
+    } finally {
+      setLoadingPlaylists(false);
+    }
+  };
+
+  const handleQueuePlaylist = async (playlistId: string) => {
+    const token = localStorage.getItem("blu3_token");
+    if (!token) return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.tracks && data.tracks.length > 0) {
+        data.tracks.forEach((t: any) => {
+          addToQueue({
+            id: t.id,
+            videoId: t.videoId,
+            name: t.trackName,
+            artists: [{ name: t.artistName }],
+            album: { name: "" },
+            image: t.image || "",
+            duration_ms: t.durationMs || 0,
+          });
+        });
+      }
+      setShowDropdown(false);
+    } catch (err) {
+      console.error("Failed to queue playlist:", err);
+    }
+  };
 
   const tabBtn = (t: SideTab, active: boolean) =>
     `flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-colors rounded-t-lg ${
@@ -92,9 +167,13 @@ export function RightSidebar({
               </div>
             ))}
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1 relative" ref={dropdownRef}>
             {/*FOR SEARCH*/}
-            <button className="relative text-white/40 hover:text-white transition-colors">
+            <button
+              onClick={() => onSearchClick?.()}
+              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+              title="Search songs"
+            >
               <div className="rounded-xl border-white/40 border p-3">
                 <Search size={14} className="text-white/50" />
               </div>
@@ -102,7 +181,8 @@ export function RightSidebar({
             {onChatToggle && (
               <button
                 onClick={onChatToggle}
-                className="relative text-white/40 hover:text-white transition-colors"
+                className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+                title="Toggle chat"
               >
                 <div className="rounded-xl border-white/40 border p-3">
                   <MessageSquare size={14} className="text-white/50 " />
@@ -113,6 +193,40 @@ export function RightSidebar({
                   </span>
                 )}
               </button>
+            )}
+            
+            {/* PLUS BUTTON TO QUEUE PLAYLISTS */}
+            <button
+              onClick={handlePlusClick}
+              className="relative text-white/40 hover:text-white transition-colors cursor-pointer"
+              title="Add playlist to queue"
+            >
+              <div className="rounded-xl border-white/40 border p-3">
+                <Plus size={14} className="text-white/50" />
+              </div>
+            </button>
+
+            {showDropdown && (
+              <div className="absolute right-0 mt-12 w-48 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50 py-1 max-h-56 overflow-y-auto room-scroll">
+                <div className="px-3 py-1.5 border-b border-white/5 text-[9px] uppercase tracking-wider text-zinc-550 font-bold">
+                  Queue Playlist
+                </div>
+                {loadingPlaylists ? (
+                  <div className="px-3 py-2 text-[10px] text-zinc-400">Loading...</div>
+                ) : playlists.length === 0 ? (
+                  <div className="px-3 py-2 text-[10px] text-zinc-400">No playlists found</div>
+                ) : (
+                  playlists.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => handleQueuePlaylist(p.id)}
+                      className="w-full text-left px-3 py-2 text-[11px] text-zinc-300 hover:bg-white/10 hover:text-white transition-colors truncate"
+                    >
+                      {p.name}
+                    </button>
+                  ))
+                )}
+              </div>
             )}
           </div>
         </div>
