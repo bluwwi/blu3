@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import Image from "next/image";
-import { Delete, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -135,9 +135,7 @@ export default function BrowsePage() {
   );
 
   return (
-    <div
-      className="h-screen bg-[#080808] text-white flex flex-col overflow-hidden"
-    >
+    <div className="h-screen bg-[#080808] text-white flex flex-col overflow-hidden">
       <style>{`
         .room-card-img {
           transition: transform 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -145,7 +143,6 @@ export default function BrowsePage() {
           will-change: transform;
         }
         .room-card:hover .room-card-img {
-          transform: scale(1.06);
           filter: brightness(0.55);
         }
         .room-card-overlay {
@@ -157,10 +154,6 @@ export default function BrowsePage() {
         }
         .room-card { cursor: pointer; }
 
-        .create-card {
-          transition: border-color 0.2s ease, background 0.2s ease;
-          cursor: pointer;
-        }
         .create-card:hover {
           border-color: rgba(255,255,255,0.3);
           background: rgba(255,255,255,0.03);
@@ -168,9 +161,7 @@ export default function BrowsePage() {
         .create-card:hover .create-plus {
           stroke: rgba(255,255,255,0.55);
         }
-        .create-plus {
-          transition: stroke 0.2s ease;
-        }
+
 
         .join-pill {
           background: #111111;
@@ -276,11 +267,7 @@ export default function BrowsePage() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-28 pt-14 overflow-y-auto">
         {!user && !authLoading ? (
           <div className="text-center">
-            <p
-              className="text-4xl font-extrabold tracking-tight mb-2"
-            >
-              blu3
-            </p>
+            <p className="text-4xl font-extrabold tracking-tight mb-2">blu3</p>
             <p className="text-[11px] text-zinc-600 tracking-widest mb-10">
               listen together
             </p>
@@ -305,10 +292,9 @@ export default function BrowsePage() {
                   return (
                     <div
                       key={room.id}
-                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
+                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-48"
                       onClick={() => router.push(`/room/${room.code}`)}
                     >
-                      {/* Thumbnail */}
                       <div className="relative aspect-square rounded-xl overflow-hidden bg-zinc-900">
                         {room.lastTrack?.image ? (
                           <Image
@@ -339,16 +325,15 @@ export default function BrowsePage() {
                         </button>
                       </div>
 
-                      {/* Label — room name + host badge only */}
                       <div className="px-0.5">
-                        <p className="text-[11px] text-zinc-300 truncate leading-tight">
+                        <p className="text-[11px] text-white truncate leading-tight">
                           {room.name}
                         </p>
                         <p className="text-[10px] text-zinc-650 truncate tracking-widest mt-0.5">
                           {isHost ? (
                             <span className="text-zinc-500">host</span>
                           ) : (
-                            <span className="text-zinc-650">joined</span>
+                            <span className="text-zinc-500">joined</span>
                           )}
                         </p>
                       </div>
@@ -358,22 +343,22 @@ export default function BrowsePage() {
 
             {!loading && (
               <div
-                className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40"
+                className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48"
                 onClick={() => setShowCreateModal(true)}
               >
                 <div className="aspect-square rounded-xl border border-zinc-700 flex items-center justify-center bg-zinc-900/10 hover:bg-zinc-900/20">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
-                    strokeWidth="2"
-                    className="create-plus w-12 h-12 animate-pulse"
+                    strokeWidth="1.5"
+                    className="create-plus w-32 h-32 "
                     stroke="rgba(255,255,255,0.4)"
                   >
                     <path strokeLinecap="round" d="M12 4v16M4 12h16" />
                   </svg>
                 </div>
                 <div className="px-0.5">
-                  <p className="text-[11px] text-zinc-500 tracking-wide">
+                  <p className="text-[11px] text-white tracking-wide">
                     Create Room
                   </p>
                 </div>
@@ -429,11 +414,7 @@ export default function BrowsePage() {
               backdropFilter: "blur(24px)",
             }}
           >
-            <p
-              className="text-base font-bold tracking-tight mb-1"
-            >
-              new room
-            </p>
+            <p className="text-base font-bold tracking-tight mb-1">new room</p>
             <p className="text-[11px] text-zinc-600 tracking-widest mb-5">
               give it a name
             </p>

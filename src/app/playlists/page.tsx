@@ -17,6 +17,7 @@ import {
   Loader2,
   GripVertical,
 } from "lucide-react";
+import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -618,12 +619,13 @@ export default function PlaylistsPage() {
                     <div
                       key={playlist.id}
                       onClick={() => handleViewPlaylist(playlist)}
-                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40 select-none cursor-pointer"
+                      className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-40 lg:w-48 select-none cursor-pointer"
                     >
-                      {/* aspect-square artwork thumbnail exactly mirroring browse page */}
                       <div className="relative aspect-square rounded-xl overflow-hidden bg-zinc-900 border border-white/5 shadow-md">
                         {hasCover ? (
-                          <img
+                          <Image
+                            width={200}
+                            height={200}
                             src={playlist.coverImage}
                             className="room-card-img w-full h-full object-cover"
                             alt={playlist.name}
@@ -645,12 +647,7 @@ export default function PlaylistsPage() {
                           </div>
                         )}
 
-                        {/* Glass play overlay just like browse page hover overlay */}
-                        <div className="room-card-overlay absolute inset-0 bg-black/45 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-200">
-                          <div className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-xl transform scale-90 group-hover/card:scale-100 transition-transform duration-200">
-                            <Play size={14} className="fill-current ml-0.5" />
-                          </div>
-                        </div>
+                        <div className="room-card-overlay absolute inset-0   hover:bg-black/45 backdrop-blur-[2px] flex items-center justify-center transition-opacity duration-1000"></div>
 
                         {/* Hover delete button placed at bottom-right just like browse page */}
                         {!playlist.isLiked && (
