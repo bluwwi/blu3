@@ -518,7 +518,7 @@ export default function PlaylistsPage() {
                     <div
                       key={playlist.id}
                       onClick={() => handleViewPlaylist(playlist)}
-                      className="pc flex flex-col gap-2 relative group/card w-32 cursor-pointer select-none"
+                      className="pc flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-48 cursor-pointer select-none"
                     >
                       <div className="relative aspect-square rounded-xl overflow-hidden bg-[#111114] border border-white/6">
                         {hasCover ? (
@@ -542,12 +542,7 @@ export default function PlaylistsPage() {
                             <Music2 size={20} className="text-white/15" />
                           </div>
                         )}
-                        <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/35 transition-all flex items-center justify-center">
-                          <Play
-                            size={16}
-                            className="text-white opacity-0 group-hover/card:opacity-100 fill-white transition-opacity"
-                          />
-                        </div>
+                        <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/35 transition-all flex items-center justify-center"></div>
                         {!playlist.isLiked && (
                           <button
                             onClick={(e) =>
