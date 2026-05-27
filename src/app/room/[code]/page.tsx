@@ -609,63 +609,89 @@ export default function RoomPage() {
     [canControlPlayback, playerState.playTrack, sendPlay, setQueue],
   );
 
-  /* ─── Silent audio context ─────────────────────────── */
+  /* ─── Background audio keeper ──────────────────────── */
   const audioContextRef = useRef<AudioContext | null>(null);
+  const silentSourceRef = useRef<AudioBufferSourceNode | null>(null);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const startSilentAudio = () => {
-      if (!audioContextRef.current) {
-        const AudioContextClass =
-          window.AudioContext || (window as any).webkitAudioContext;
-        if (AudioContextClass) {
-          try {
-            const ctx = new AudioContextClass();
-            audioContextRef.current = ctx;
-            const buffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-            const channelData = buffer.getChannelData(0);
-            for (let i = 0; i < channelData.length; i++)
-              channelData[i] = (Math.random() - 0.5) * 0.00001;
-            const source = ctx.createBufferSource();
-            source.buffer = buffer;
-            source.loop = true;
-            const gainNode = ctx.createGain();
-            gainNode.gain.value = 0.0001;
-            source.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            source.start(0);
-            if (ctx.state === "suspended") ctx.resume();
-          } catch (err) {
-            console.error("Failed to start background tab keeper:", err);
-          }
-        }
-      }
 
-      // Try to unblock YouTube player autoplay
-      const currentPlayback = playbackRef.current;
-      if (currentPlayback?.isPlaying && playerState.playerRef.current) {
-        try {
-          const ytState = playerState.playerRef.current.getPlayerState?.();
-          // If player exists but is not playing (or is unstarted/paused), try to play it to unblock
-          if (ytState !== 1) {
-            // 1 is YT.PlayerState.PLAYING
-            playerState.playerRef.current.playVideo?.();
-          }
-        } catch (e) {
-          console.warn("Failed to unblock YouTube player:", e);
+    const startOrResumeAudio = () => {
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) return;
+      try {
+        if (!audioContextRef.current) audioContextRef.current = new AC();
+        const ctx = audioContextRef.current;
+        if (ctx.state === "suspended") ctx.resume();
+
+        if (!silentSourceRef.current) {
+          const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+          const d = buf.getChannelData(0);
+          for (let i = 0; i < d.length; i++)
+            d[i] = (Math.random() - 0.5) * 0.00001;
+          const src = ctx.createBufferSource();
+          src.buffer = buf;
+          src.loop = true;
+          const g = ctx.createGain();
+          g.gain.value = 0.0001;
+          src.connect(g);
+          g.connect(ctx.destination);
+          src.start(0);
+          silentSourceRef.current = src;
         }
+
+        const cp = playbackRef.current;
+        if (cp?.isPlaying && playerState.playerRef.current) {
+          try {
+            const st = playerState.playerRef.current.getPlayerState?.();
+            if (st !== 1) playerState.playerRef.current.playVideo?.();
+          } catch (e) { /* ignore */ }
+        }
+      } catch (err) {
+        console.error("Failed to start background tab keeper:", err);
       }
     };
+
     const events = ["click", "keydown", "touchstart", "mousedown"];
+    const interact = () => {
+      startOrResumeAudio();
+      events.forEach((evt) => window.removeEventListener(evt, interact));
+    };
     events.forEach((evt) =>
-      window.addEventListener(evt, startSilentAudio, { once: true }),
+      window.addEventListener(evt, interact, { once: true }),
     );
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") startOrResumeAudio();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     return () => {
-      events.forEach((evt) =>
-        window.removeEventListener(evt, startSilentAudio),
-      );
-      if (audioContextRef.current) audioContextRef.current.close();
+      events.forEach((evt) => window.removeEventListener(evt, interact));
+      document.removeEventListener("visibilitychange", onVisible);
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+        audioContextRef.current = null;
+      }
+      silentSourceRef.current = null;
     };
   }, []);
+
+  /* ─── Media Session API ────────────────────────────── */
+  useEffect(() => {
+    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
+    const t = footerTrack;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: t?.name || "Blu3",
+      artist: t?.artists?.[0]?.name || "",
+      album: "",
+      artwork: t?.image
+        ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
+        : [],
+    });
+    navigator.mediaSession.playbackState =
+      playerState.playerState === "playing" ? "playing" : "paused";
+  }, [footerTrack, playerState.playerState]);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progressState.duration) return;
@@ -1042,7 +1068,7 @@ export default function RoomPage() {
       {footerTrack?.image && (
         <div className="absolute inset-0 overflow-hidden">
           <div
-            className="w-full h-full bg-cover bg-center scale-[2] blur-3xl"
+            className="w-full h-full bg-cover bg-center scale-[1.75] blur-xl"
             style={{ backgroundImage: `url(${footerTrack.image})` }}
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
@@ -1075,7 +1101,7 @@ export default function RoomPage() {
 
           <div className="flex h-full gap-2 pt-2 min-h-0">
             <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
-                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+              <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
                 {chatOpen ? (
                   <div className="absolute inset-0 animate-in fade-in duration-300">
                     <ChatPanel
@@ -1134,7 +1160,7 @@ export default function RoomPage() {
                 )}
               </aside>
 
-                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
                 <RightSidebar
                   members={members}
                   messages={messages}
