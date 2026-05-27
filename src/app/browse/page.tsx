@@ -326,14 +326,14 @@ export default function BrowsePage() {
                       </div>
 
                       <div className="px-0.5">
-                        <p className="text-[11px] text-white truncate leading-tight">
+                        <p className="text-[11px] text-zinc-300 truncate leading-tight">
                           {room.name}
                         </p>
                         <p className="text-[10px] text-zinc-650 truncate tracking-widest mt-0.5">
                           {isHost ? (
                             <span className="text-zinc-500">host</span>
                           ) : (
-                            <span className="text-zinc-500">joined</span>
+                            <span className="text-zinc-650">joined</span>
                           )}
                         </p>
                       </div>
@@ -343,15 +343,15 @@ export default function BrowsePage() {
 
             {!loading && (
               <div
-                className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48"
+                className="create-card  flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48"
                 onClick={() => setShowCreateModal(true)}
               >
                 <div className="aspect-square rounded-xl border border-zinc-700 flex items-center justify-center bg-zinc-900/10 hover:bg-zinc-900/20">
                   <svg
                     viewBox="0 0 24 24"
                     fill="none"
-                    strokeWidth="1.5"
-                    className="create-plus w-32 h-32 "
+                    strokeWidth="2"
+                    className="create-plus w-20 h-20 "
                     stroke="rgba(255,255,255,0.4)"
                   >
                     <path strokeLinecap="round" d="M12 4v16M4 12h16" />
@@ -360,6 +360,9 @@ export default function BrowsePage() {
                 <div className="px-0.5">
                   <p className="text-[11px] text-white tracking-wide">
                     Create Room
+                  </p>
+                  <p className="text-[11px] text-white opacity-0 select-none tracking-wide">
+                    -
                   </p>
                 </div>
               </div>
