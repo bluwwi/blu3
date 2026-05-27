@@ -1036,24 +1036,22 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full bg-black relative">
       <YouTubeIframe />
-      <div className="w-full h-full  bg-[#F9DBE0] absolute -z-10"></div>
 
-      <div className="h-screen  overflow-hidden bg-cover bg-center bg-fixed">
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="absolute bottom-0 -scale-x-100 right-0 md:w-2/3 h-full object-cover"
-          style={{ zIndex: -1 }}
-        >
-          <source src="/dance.mp4" type="video/mp4" />
-        </video>
-        <div className="h-screen w-full overflow-hidden bg-black/55">
+      {footerTrack?.image && (
+        <div className="absolute inset-0 overflow-hidden">
           <div
-            className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2
+            className="w-full h-full bg-cover bg-center scale-[2] blur-3xl"
+            style={{ backgroundImage: `url(${footerTrack.image})` }}
+          />
+          <div className="absolute inset-0 bg-black/50" />
+        </div>
+      )}
+
+      <div className="relative z-10 h-screen w-full overflow-hidden">
+        <div
+          className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2
               w-full sm:w-full md:w-[60%]
               overflow-y-auto lg:overflow-hidden"
           >
@@ -1077,7 +1075,7 @@ export default function RoomPage() {
 
             <div className="flex h-full gap-2 pt-2 min-h-0">
               <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
-                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 relative overflow-hidden transition-all duration-300">
+                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 bg-white/[0.04] backdrop-blur-xl relative overflow-hidden transition-all duration-300">
                   {chatOpen ? (
                     <div className="absolute inset-0 animate-in fade-in duration-300">
                       <ChatPanel
@@ -1138,7 +1136,7 @@ export default function RoomPage() {
                   )}
                 </aside>
 
-                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[20px] border border-white/20 overflow-hidden transition-all duration-300">
+                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[20px] border border-white/20 bg-white/[0.04] backdrop-blur-xl overflow-hidden transition-all duration-300">
                   <RightSidebar
                     members={members}
                     messages={messages}
@@ -1163,9 +1161,8 @@ export default function RoomPage() {
             </div>
           </div>
         </div>
-      </div>
 
-      <style>{`
+        <style>{`
           .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
           .room-scroll::-webkit-scrollbar-track { background: transparent; }
           .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }

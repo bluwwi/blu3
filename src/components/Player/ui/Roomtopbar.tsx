@@ -32,7 +32,7 @@ export function RoomTopBar({
 
   return (
     <>
-      <div className="flex items-center border-white/30 mt-2 border rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2">
+      <div className="flex items-center border-white/30 mt-2 border rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.04] backdrop-blur-xl">
         {/* Logo */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <Image
