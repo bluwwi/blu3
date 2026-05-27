@@ -69,7 +69,7 @@ export function QueueAndHistory({
       <section className="flex min-h-0 flex-1 flex-col">
         {isQueueTab ? (
           queue.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/10 bg-white/5 px-3 py-8 text-center text-white/55">
+            <div className="flex flex-1 items-center justify-center rounded-[20px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm px-3 py-8 text-center text-white/55">
               <div>
                 <div className="mx-auto mb-2.5 flex justify-center">
                   <Icon name="list-music" size={24} className="text-white/55" />
@@ -87,8 +87,8 @@ export function QueueAndHistory({
                 return (
                   <div
                     key={`${track.id}-${i}`}
-                    className={`group flex items-center cursor-default gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors ${
-                      isActive ? "bg-white/15" : "hover:bg-white/10"
+                    className={`group flex items-center cursor-default gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
+                      isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
                     }`}
                   >
                     <div
@@ -207,7 +207,7 @@ export function QueueAndHistory({
             </div>
           )
         ) : visibleRecentTracks.length === 0 ? (
-          <div className="flex flex-1 items-center justify-center rounded-[20px] md:border border-white/10 bg-white/5 px-5 py-8 text-center text-white/55">
+          <div className="flex flex-1 items-center justify-center rounded-[20px] md:border border-white/[0.06] bg-white/[0.03] backdrop-blur-sm px-5 py-8 text-center text-white/55">
             <div>
               <div className="mx-auto mb-2.5 flex justify-center">
                 <Icon name="clock-3" size={24} className="text-white/55" />
@@ -233,8 +233,8 @@ export function QueueAndHistory({
               return (
                 <div
                   key={`${track.videoId}-${i}`}
-                  className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-colors ${
-                    isActive ? "bg-white/15" : "hover:bg-white/10"
+                  className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
+                    isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
                   }`}
                 >
                   <div

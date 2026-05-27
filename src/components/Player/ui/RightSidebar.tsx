@@ -143,10 +143,10 @@ export function RightSidebar({
   };
 
   const tabBtn = (t: SideTab, active: boolean) =>
-    `flex-1 flex items-center justify-center gap-1.5 py-2 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-colors rounded-t-lg ${
+    `flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-all ${
       active
         ? "text-white"
-        : "text-white/40 hover:text-white/70 hover:bg-white/5"
+        : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]"
     }`;
 
   return (
@@ -158,7 +158,7 @@ export function RightSidebar({
             {members.map((m, i) => (
               <div
                 key={i}
-                className="flex items-center rounded-full border-2  border-white/60 "
+                className="flex items-center rounded-full border-2 border-white/40"
               >
                 {m.avatar ? (
                   <img
@@ -247,7 +247,7 @@ export function RightSidebar({
             {queue.length}
           </span>
           {tab === "queue" && (
-            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
+            <div className="absolute bottom-[-1px] left-4 right-4 h-[2px] bg-gradient-to-r from-violet-400 to-purple-400 rounded-full" />
           )}
         </button>
         <button
@@ -256,7 +256,7 @@ export function RightSidebar({
         >
           <Icon name="clock-3" size={11} className="text-current" />
           {tab === "history" && (
-            <div className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-violet-400 rounded-t" />
+            <div className="absolute bottom-[-1px] left-4 right-4 h-[2px] bg-gradient-to-r from-violet-400 to-purple-400 rounded-full" />
           )}
         </button>
       </div>

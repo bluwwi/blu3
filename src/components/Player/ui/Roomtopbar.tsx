@@ -32,7 +32,7 @@ export function RoomTopBar({
 
   return (
     <>
-      <div className="flex items-center border-white/30 mt-2 border rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.04] backdrop-blur-xl">
+      <div className="flex items-center border border-white/[0.08] mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.05] backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
         {/* Logo */}
         <div className="flex items-center gap-1 flex-shrink-0">
           <Image
@@ -57,7 +57,7 @@ export function RoomTopBar({
             e.stopPropagation();
             onSearchClick();
           }}
-          className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/30 px-3 sm:px-4 py-2 sm:py-2.5 transition-colors text-left min-w-0"
+          className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/[0.12] bg-white/[0.03] hover:bg-white/[0.06] px-3 sm:px-4 py-2 sm:py-2.5 transition-all text-left min-w-0 focus-within:border-white/30"
         >
           <svg
             width="14"

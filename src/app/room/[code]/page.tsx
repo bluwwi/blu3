@@ -1045,124 +1045,122 @@ export default function RoomPage() {
             className="w-full h-full bg-cover bg-center scale-[2] blur-3xl"
             style={{ backgroundImage: `url(${footerTrack.image})` }}
           />
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
         </div>
       )}
 
       <div className="relative z-10 h-screen w-full overflow-hidden">
         <div
-          className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-2
-              w-full sm:w-full md:w-[60%]
+          className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-3
+              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               overflow-y-auto lg:overflow-hidden"
-          >
-            <RoomTopBar
-              roomName={room?.name ?? "Room"}
-              roomCode={code}
-              isHost={isHost}
-              connected={connected}
-              track={footerTrack}
-              roomTheme={roomTheme}
-              activeVideoId={
-                playerState.activeVideoId ?? playback?.videoId ?? null
-              }
-              playerState={footerPlayerState}
-              onCopyInvite={() =>
-                navigator.clipboard.writeText(window.location.href)
-              }
-              onLeave={handleLeave}
-              onSearchClick={openSearchOverlay}
-            />
+        >
+          <RoomTopBar
+            roomName={room?.name ?? "Room"}
+            roomCode={code}
+            isHost={isHost}
+            connected={connected}
+            track={footerTrack}
+            roomTheme={roomTheme}
+            activeVideoId={
+              playerState.activeVideoId ?? playback?.videoId ?? null
+            }
+            playerState={footerPlayerState}
+            onCopyInvite={() =>
+              navigator.clipboard.writeText(window.location.href)
+            }
+            onLeave={handleLeave}
+            onSearchClick={openSearchOverlay}
+          />
 
-            <div className="flex h-full gap-2 pt-2 min-h-0">
-              <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
-                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[20px] border border-white/20 bg-white/[0.04] backdrop-blur-xl relative overflow-hidden transition-all duration-300">
-                  {chatOpen ? (
-                    <div className="absolute inset-0 animate-in fade-in duration-300">
-                      <ChatPanel
-                        messages={messages}
-                        chatInput={chatInput}
-                        setChatInput={setChatInput}
-                        handleSendChat={handleSendChat}
-                        onClose={() => setChatOpen(false)}
-                        track={footerTrack}
-                        isPlaying={playerState.playerState === "playing"}
-                        canControlPlayback={canControlPlayback}
-                        onPlayPause={onPlayPauseAction}
-                        onSkipBack={
-                          canControlPlayback ? handleSkipBack : undefined
-                        }
-                        onSkipForward={
-                          canControlPlayback ? handleSkipForward : undefined
-                        }
-                        userProfile={{
-                          name: user?.name || user?.email || "U",
-                          avatar: user?.avatar,
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <SquarePlayer
+          <div className="flex h-full gap-2 pt-2 min-h-0">
+            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
+                <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+                {chatOpen ? (
+                  <div className="absolute inset-0 animate-in fade-in duration-300">
+                    <ChatPanel
+                      messages={messages}
+                      chatInput={chatInput}
+                      setChatInput={setChatInput}
+                      handleSendChat={handleSendChat}
+                      onClose={() => setChatOpen(false)}
                       track={footerTrack}
-                      activeVideoId={
-                        playerState.activeVideoId ?? playback?.videoId ?? null
-                      }
-                      playerState={footerPlayerState}
-                      isLiked={isLiked}
-                      onToggleLike={handleToggleLike}
-                      progress={progressState.progress}
-                      currentTime={progressState.currentTime}
-                      duration={progressState.duration}
-                      volume={playerState.volume}
-                      isMuted={playerState.isMuted}
-                      shuffleEnabled={playbackMode.shuffle}
-                      repeatMode={playbackMode.repeatMode}
+                      isPlaying={playerState.playerState === "playing"}
+                      canControlPlayback={canControlPlayback}
                       onPlayPause={onPlayPauseAction}
-                      onMute={playerState.toggleMute}
-                      onVolume={playerState.handleVolume}
-                      onSeek={canControlPlayback ? handleSeekAction : undefined}
-                      onToggleShuffle={
-                        canControlPlayback ? handleToggleShuffle : undefined
-                      }
-                      onCycleRepeat={
-                        canControlPlayback ? handleCycleRepeat : undefined
-                      }
                       onSkipBack={
                         canControlPlayback ? handleSkipBack : undefined
                       }
                       onSkipForward={
                         canControlPlayback ? handleSkipForward : undefined
                       }
+                      userProfile={{
+                        name: user?.name || user?.email || "U",
+                        avatar: user?.avatar,
+                      }}
                     />
-                  )}
-                </aside>
-
-                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[20px] border border-white/20 bg-white/[0.04] backdrop-blur-xl overflow-hidden transition-all duration-300">
-                  <RightSidebar
-                    members={members}
-                    messages={messages}
-                    queue={queue}
-                    recentTracks={recentTracks}
-                    canControlPlayback={canControlPlayback}
-                    handleAdminPlayTrack={handleAdminPlayTrack}
-                    removeFromQueue={removeFromQueue}
-                    addToQueue={addToQueue}
-                    clearQueue={clearQueue}
+                  </div>
+                ) : (
+                  <SquarePlayer
+                    track={footerTrack}
                     activeVideoId={
                       playerState.activeVideoId ?? playback?.videoId ?? null
                     }
-                    roomTheme={roomTheme}
-                    onThemeChange={setRoomTheme}
                     playerState={footerPlayerState}
-                    onChatToggle={() => setChatOpen(!chatOpen)}
-                    onSearchClick={openSearchOverlay}
+                    isLiked={isLiked}
+                    onToggleLike={handleToggleLike}
+                    progress={progressState.progress}
+                    currentTime={progressState.currentTime}
+                    duration={progressState.duration}
+                    volume={playerState.volume}
+                    isMuted={playerState.isMuted}
+                    shuffleEnabled={playbackMode.shuffle}
+                    repeatMode={playbackMode.repeatMode}
+                    onPlayPause={onPlayPauseAction}
+                    onMute={playerState.toggleMute}
+                    onVolume={playerState.handleVolume}
+                    onSeek={canControlPlayback ? handleSeekAction : undefined}
+                    onToggleShuffle={
+                      canControlPlayback ? handleToggleShuffle : undefined
+                    }
+                    onCycleRepeat={
+                      canControlPlayback ? handleCycleRepeat : undefined
+                    }
+                    onSkipBack={canControlPlayback ? handleSkipBack : undefined}
+                    onSkipForward={
+                      canControlPlayback ? handleSkipForward : undefined
+                    }
                   />
-                </aside>
-              </div>
+                )}
+              </aside>
+
+                <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+                <RightSidebar
+                  members={members}
+                  messages={messages}
+                  queue={queue}
+                  recentTracks={recentTracks}
+                  canControlPlayback={canControlPlayback}
+                  handleAdminPlayTrack={handleAdminPlayTrack}
+                  removeFromQueue={removeFromQueue}
+                  addToQueue={addToQueue}
+                  clearQueue={clearQueue}
+                  activeVideoId={
+                    playerState.activeVideoId ?? playback?.videoId ?? null
+                  }
+                  roomTheme={roomTheme}
+                  onThemeChange={setRoomTheme}
+                  playerState={footerPlayerState}
+                  onChatToggle={() => setChatOpen(!chatOpen)}
+                  onSearchClick={openSearchOverlay}
+                />
+              </aside>
             </div>
           </div>
         </div>
+      </div>
 
-        <style>{`
+      <style>{`
           .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
           .room-scroll::-webkit-scrollbar-track { background: transparent; }
           .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }

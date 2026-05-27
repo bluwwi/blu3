@@ -95,7 +95,7 @@ export function SquarePlayer({
   return (
     <div className="flex flex-col text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
       {/* Album Art */}
-      <div className="w-[75%] sm:w-[60%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none">
+      <div className="w-[75%] sm:w-[60%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
         <Image
           width={400}
           height={400}
@@ -125,10 +125,10 @@ export function SquarePlayer({
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}
-          className={`p-1.5 rounded-full transition-all hover:scale-105 disabled:opacity-30 cursor-pointer ${
+          className={`p-1.5 rounded-full transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
             shuffleEnabled
-              ? "text-violet-400 hover:text-violet-300"
-              : "text-white/50 hover:text-white"
+              ? "text-violet-400 hover:text-violet-300 bg-violet-400/10"
+              : "text-white/50 hover:text-white hover:bg-white/10"
           }`}
           aria-label="Shuffle"
           title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
@@ -140,7 +140,7 @@ export function SquarePlayer({
         <button
           onClick={onSkipBack}
           disabled={!onSkipBack}
-          className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
+          className="p-1.5 text-white/60 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Previous"
         >
           <Icon name="skip-back" size={18} className="text-current" />
@@ -150,7 +150,7 @@ export function SquarePlayer({
         <button
           onClick={onPlayPause}
           disabled={isLoading || !onPlayPause}
-          className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-white text-black fill-black hover:scale-105 active:scale-95 transition-all shadow-lg shrink-0 cursor-pointer"
+          className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-black fill-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
@@ -170,7 +170,7 @@ export function SquarePlayer({
         <button
           onClick={onSkipForward}
           disabled={!onSkipForward}
-          className="p-1.5 text-white/60 hover:text-white hover:scale-105 transition-all disabled:opacity-30 cursor-pointer"
+          className="p-1.5 text-white/60 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Next"
         >
           <Icon name="skip-forward" size={18} className="text-current" />
@@ -180,10 +180,10 @@ export function SquarePlayer({
         <button
           onClick={onCycleRepeat}
           disabled={!onCycleRepeat}
-          className={`p-1.5 rounded-full transition-all hover:scale-105 disabled:opacity-30 cursor-pointer ${
+          className={`p-1.5 rounded-full transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
             repeatBtn.active
-              ? "text-violet-400 hover:text-violet-300"
-              : "text-white/50 hover:text-white"
+              ? "text-violet-400 hover:text-violet-300 bg-violet-400/10"
+              : "text-white/50 hover:text-white hover:bg-white/10"
           }`}
           aria-label={repeatBtn.label}
           title={repeatBtn.title}
@@ -196,12 +196,12 @@ export function SquarePlayer({
         </button>
 
         {/* Divider */}
-        <div className="w-px h-5 bg-white/10 mx-0.5" />
+        <div className="w-px h-6 bg-white/10 mx-1" />
 
         {/* Volume + Mute */}
         <button
           onClick={onMute}
-          className="p-1.5 text-white/50 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+          className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer flex-shrink-0"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted ? (
@@ -228,8 +228,8 @@ export function SquarePlayer({
             onClick={onToggleLike}
             className={`p-1.5 rounded-full transition-all cursor-pointer flex-shrink-0 ${
               isLiked
-                ? "text-rose-500 scale-105"
-                : "text-white/50 hover:text-white"
+                ? "text-rose-500 scale-105 bg-rose-500/10"
+                : "text-white/50 hover:text-white hover:bg-white/10"
             }`}
             aria-label={isLiked ? "Unlike track" : "Like track"}
             title={isLiked ? "Unlike track" : "Like track"}
