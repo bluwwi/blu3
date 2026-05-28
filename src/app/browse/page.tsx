@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
@@ -68,6 +68,24 @@ export default function BrowsePage() {
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const autoCreated = useRef(false);
+
+  // Auto-create ROOM 1 for first-time users
+  useEffect(() => {
+    if (loading || !user || rooms.length > 0 || autoCreated.current) return;
+    autoCreated.current = true;
+    const token = localStorage.getItem("blu3_token");
+    fetch(`${API_URL}/api/rooms`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name: "ROOM 1" }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.room) router.replace(`/room/${data.room.code}`);
+      })
+      .catch(() => { autoCreated.current = false; });
+  }, [loading, user, rooms, router]);
 
   const handleJoin = () => {
     if (!joinCode.trim()) return;
