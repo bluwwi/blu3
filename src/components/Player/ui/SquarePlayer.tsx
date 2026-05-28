@@ -94,8 +94,7 @@ export function SquarePlayer({
 
   return (
     <div className="flex flex-col text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
-      {/* Album Art */}
-      <div className="h-[70%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
+      <div className="h-[60%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
         <Image
           width={100}
           height={400}
@@ -120,9 +119,7 @@ export function SquarePlayer({
         </div>
       </div>
 
-      {/* COMPACT CONTROLS ROW - Single line, no wrap */}
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 flex-nowrap w-full select-none">
-        {/* Shuffle */}
         <button
           onClick={onToggleShuffle}
           disabled={!onToggleShuffle}

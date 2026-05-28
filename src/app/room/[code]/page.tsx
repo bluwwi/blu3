@@ -12,6 +12,7 @@ import { useSuggestions } from "@/hooks/useSuggestions";
 import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
+import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track } from "@/utils/types";
 import {
   asTrackFromPlayback,
@@ -1093,21 +1094,14 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="w-full h-full bg-black relative">
+    <div className="w-full h-full bg-blue-500 relative">
       <YouTubeIframe />
 
       <div className="absolute inset-0 overflow-hidden">
-        {footerTrack?.image && (
-          <div
-            className="absolute inset-0 bg-cover bg-center scale-[1.75] blur-xl"
-            style={{ backgroundImage: `url(${footerTrack.image})` }}
-          />
-        )}
-        <BackgroundParticles
+        <RoomBackground
           isPlaying={player.playerState === "playing"}
-          image={footerTrack?.image}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
+          trackImage={footerTrack?.image}
+         />
       </div>
 
       <div className="relative z-10 h-screen w-full overflow-hidden">
