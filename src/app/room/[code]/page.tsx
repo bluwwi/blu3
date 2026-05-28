@@ -319,10 +319,11 @@ export default function RoomPage() {
       player.pause,
       player.play,
       player.playTrack,
-      progressState,
+      player.seekTo,
       scheduleSyncedAction,
     ],
   );
+
   const scheduleRoomPause = useCallback(
     (state: { targetTime: number }, syncedTime: () => number) => {
       if (canControlPlayback) {
@@ -368,7 +369,7 @@ export default function RoomPage() {
     [
       canControlPlayback,
       clearScheduledTimeout,
-      progressState,
+      player.seekTo,
       scheduleSyncedAction,
     ],
   );
