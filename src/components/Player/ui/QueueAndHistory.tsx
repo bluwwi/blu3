@@ -54,17 +54,7 @@ export function QueueAndHistory({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 p-1">
-      <div className="flex items-center justify-between gap-3 px-1">
-        {isQueueTab && queue.length > 0 && canControlPlayback && clearQueue && (
-          <button
-            type="button"
-            onClick={clearQueue}
-            className="flex items-center gap-1.5 rounded-lg border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.15em] text-red-400 transition-all hover:border-red-500/40 hover:bg-red-500/20 cursor-pointer"
-          >
-            <Icon name="trash-2" size={11} className="text-current" />
-          </button>
-        )}
-      </div>
+      <div className="flex items-center justify-between gap-3 px-1" />
 
       <section className="flex min-h-0 flex-1 flex-col">
         {isQueueTab ? (

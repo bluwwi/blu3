@@ -67,6 +67,7 @@ export function RightSidebar({
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
@@ -175,10 +176,9 @@ export function RightSidebar({
             ))}
           </div>
           <div className="flex gap-1 relative" ref={dropdownRef}>
-            {/*FOR SEARCH*/}
             <button
               onClick={() => onSearchClick?.()}
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
               title="Search songs"
             >
               <Icon name="search" size={14} className="text-current" />
@@ -186,7 +186,7 @@ export function RightSidebar({
 
             <button
               onClick={handlePlusClick}
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
               title="Add playlist to queue"
             >
               <Icon name="plus" size={14} className="text-current" />
@@ -195,7 +195,7 @@ export function RightSidebar({
             {onChatToggle && (
               <button
                 onClick={onChatToggle}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
                 title="Toggle chat"
               >
                 <Icon name="message-square" size={14} className="text-current" />
@@ -204,6 +204,16 @@ export function RightSidebar({
                     {unreadChatCount > 9 ? "9+" : unreadChatCount}
                   </span>
                 )}
+              </button>
+            )}
+
+            {clearQueue && canControlPlayback && tab === "queue" && queue.length > 0 && (
+              <button
+                onClick={() => setShowClearConfirm(true)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
+                title="Clear queue"
+              >
+                <Icon name="trash-2" size={14} className="text-current" />
               </button>
             )}
 
@@ -250,6 +260,24 @@ export function RightSidebar({
           </div>
         </div>
       </div>
+
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }} onClick={() => setShowClearConfirm(false)}>
+          <div className="w-72 rounded-[24px] border border-white/20 bg-slate-900/90 p-6 backdrop-blur-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-white font-semibold text-[15px]">Clear queue?</h2>
+              <button onClick={() => setShowClearConfirm(false)} className="text-white/40 hover:text-white transition-colors">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+              </button>
+            </div>
+            <p className="text-white/50 text-[12px] mb-5">Remove all tracks from the queue?</p>
+            <div className="flex gap-2">
+              <button onClick={() => setShowClearConfirm(false)} className="flex-1 rounded-full border border-white/20 bg-white/8 py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/15 hover:text-white">Cancel</button>
+              <button onClick={() => { setShowClearConfirm(false); clearQueue?.(); }} className="flex-1 rounded-full bg-red-500/80 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-red-500">Clear</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex border-b border-white/10 flex-shrink-0">
         <button
