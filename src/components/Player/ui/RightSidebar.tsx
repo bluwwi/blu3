@@ -158,7 +158,7 @@ export function RightSidebar({
   return (
     <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
       {/* Members strip (always visible) */}
-      <div className="px-4 pt-3 pb-2 border-b border-white/10 flex-shrink-0">
+      <div className="px-4 pt-3  pb-2 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 mb-2">
           <button
             onClick={() => setShowMembersPopup(true)}
