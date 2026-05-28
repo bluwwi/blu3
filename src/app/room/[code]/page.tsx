@@ -567,11 +567,11 @@ export default function RoomPage() {
       0,
     );
     const timeoutId = window.setTimeout(() => {
-      const player = player.playerRef.current;
+      const ref = player.playerRef.current;
       const currentTime =
-        player?.getCurrentTime?.() ?? player.currentTime;
+        ref?.getCurrentTime?.() ?? player.currentTime;
       const duration =
-        player?.getDuration?.() ?? activeTrack.duration_ms / 1000;
+        ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
         duration > 0 && currentTime >= Math.max(duration - 2, 0);
       if (player.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
@@ -743,7 +743,7 @@ export default function RoomPage() {
     }
     player.seekTo(actualCurrentTime);
     player.play?.();
-  }, [playback, getSyncedTime, progressState, player.play]);
+  }, [playback, getSyncedTime, player.seekTo, player.play]);
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
