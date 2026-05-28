@@ -38,7 +38,7 @@ export default function RoomPage() {
     : null;
   const code = (params.code as string)?.toUpperCase();
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const player = usePlayerState();
   const progress = useProgressTracking(player.playerRef, player.playerState);
@@ -1213,6 +1213,11 @@ export default function RoomPage() {
                   playerState={footerPlayerState}
                   onChatToggle={() => setChatOpen(!chatOpen)}
                   onSearchClick={openSearchOverlay}
+                  user={user}
+                  onLogout={() => {
+                    logout();
+                    router.push("/");
+                  }}
                 />
               </aside>
             </div>
