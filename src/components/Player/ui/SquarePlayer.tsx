@@ -101,6 +101,7 @@ export function SquarePlayer({
           height={400}
           src={albumArt}
           alt={title}
+          priority
           className="w-full h-full object-cover"
         />
       </div>
