@@ -95,9 +95,9 @@ export function SquarePlayer({
   return (
     <div className="flex flex-col text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
       {/* Album Art */}
-      <div className="w-[75%] sm:w-[60%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
+      <div className="h-[70%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
         <Image
-          width={400}
+          width={100}
           height={400}
           src={albumArt}
           alt={title}

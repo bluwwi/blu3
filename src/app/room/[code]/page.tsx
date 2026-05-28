@@ -106,6 +106,7 @@ export default function RoomPage() {
     onScheduleSeek: (state, syncedTime) => scheduleRoomSeek(state, syncedTime),
     onPlaybackSync: (state, syncedTime) => {
       if (!state.videoId) return;
+      syncHandledRef.current = true;
       if (state.isPlaying && state.updatedAt > syncedTime() + 150) {
         scheduleRoomPlay(
           {
@@ -127,12 +128,13 @@ export default function RoomPage() {
         const elapsed = (syncedTime() - state.updatedAt) / 1000;
         if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
       }
-      if (player.nowPlaying?.videoId === state.videoId) {
-        if (state.isPlaying) player.play?.();
-        else player.pause?.();
-        progress.seekTo(actualCurrentTime);
+      const p = playerRef_fix.current;
+      if (p.nowPlaying?.videoId === state.videoId) {
+        if (state.isPlaying) p.play?.();
+        else p.pause?.();
+        progressRef_fix.current.seekTo(actualCurrentTime);
       } else {
-        player.playTrack(
+        p.playTrack(
           {
             id: `room-${state.videoId}`,
             videoId: state.videoId,
@@ -210,6 +212,13 @@ export default function RoomPage() {
     : false;
   const canControlPlayback = isHost || !isHostPresent;
   const queueAdvanceLockRef = useRef<string | null>(null);
+  const syncHandledRef = useRef(false);
+  const canControlPlaybackRef = useRef(canControlPlayback);
+  const playerRef_fix = useRef(player);
+  const progressRef_fix = useRef(progress);
+  useEffect(() => { canControlPlaybackRef.current = canControlPlayback; }, [canControlPlayback]);
+  useEffect(() => { playerRef_fix.current = player; }, [player]);
+  useEffect(() => { progressRef_fix.current = progress; }, [progress]);
 
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
@@ -288,23 +297,26 @@ export default function RoomPage() {
         album: { name: "" },
         image: state.image ?? "",
       };
+      const p = playerRef_fix.current;
+      const pr = progressRef_fix.current;
+      const canControl = canControlPlaybackRef.current;
       const initialLateBySec =
         Math.max(syncedTime() - state.targetTime, 0) / 1000;
       const initialSeekTo = state.seekTo + initialLateBySec;
-      if (canControlPlayback) {
-        if (player.nowPlaying?.videoId === state.videoId) {
-          progress.seekTo(initialSeekTo);
-          player.play?.();
+      if (canControl) {
+        if (p.nowPlaying?.videoId === state.videoId) {
+          pr.seekTo(initialSeekTo);
+          p.play?.();
         } else {
-          player.playTrack(track, initialSeekTo, true);
+          p.playTrack(track, initialSeekTo, true);
         }
         return;
       }
-      if (player.nowPlaying?.videoId === state.videoId) {
-        player.pause?.();
-        progress.seekTo(initialSeekTo);
+      if (p.nowPlaying?.videoId === state.videoId) {
+        p.pause?.();
+        pr.seekTo(initialSeekTo);
       } else {
-        player.playTrack(track, initialSeekTo, false);
+        p.playTrack(track, initialSeekTo, false);
       }
       scheduleSyncedAction(
         scheduledPlayTimeoutRef,
@@ -314,27 +326,20 @@ export default function RoomPage() {
           const liveLateBySec =
             Math.max(syncedTime() - state.targetTime, 0) / 1000;
           const liveSeekTo = state.seekTo + liveLateBySec;
-          progress.seekTo(liveSeekTo);
-          player.play?.();
+          pr.seekTo(liveSeekTo);
+          p.play?.();
         },
       );
     },
-    [
-      canControlPlayback,
-      clearScheduledPlaybackActions,
-      player.nowPlaying?.videoId,
-      player.pause,
-      player.play,
-      player.playTrack,
-      progress.seekTo,
-      scheduleSyncedAction,
-    ],
+    [clearScheduledPlaybackActions, scheduleSyncedAction],
   );
 
   const scheduleRoomPause = useCallback(
     (state: { targetTime: number }, syncedTime: () => number) => {
-      if (canControlPlayback) {
-        player.pause?.();
+      const p = playerRef_fix.current;
+      const canControl = canControlPlaybackRef.current;
+      if (canControl) {
+        p.pause?.();
         return;
       }
       clearScheduledTimeout(scheduledPauseTimeoutRef);
@@ -343,24 +348,21 @@ export default function RoomPage() {
         state.targetTime,
         syncedTime,
         () => {
-          player.pause?.();
+          p.pause?.();
         },
       );
     },
-    [
-      canControlPlayback,
-      clearScheduledTimeout,
-      player.pause,
-      scheduleSyncedAction,
-    ],
+    [clearScheduledTimeout, scheduleSyncedAction],
   );
   const scheduleRoomSeek = useCallback(
     (
       state: { seekTo: number; targetTime: number },
       syncedTime: () => number,
     ) => {
-      if (canControlPlayback) {
-        progress.seekTo(state.seekTo);
+      const pr = progressRef_fix.current;
+      const canControl = canControlPlaybackRef.current;
+      if (canControl) {
+        pr.seekTo(state.seekTo);
         return;
       }
       clearScheduledTimeout(scheduledSeekTimeoutRef);
@@ -369,16 +371,11 @@ export default function RoomPage() {
         state.targetTime,
         syncedTime,
         () => {
-          progress.seekTo(state.seekTo);
+          pr.seekTo(state.seekTo);
         },
       );
     },
-    [
-      canControlPlayback,
-      clearScheduledTimeout,
-      progress.seekTo,
-      scheduleSyncedAction,
-    ],
+    [clearScheduledTimeout, scheduleSyncedAction],
   );
 
   /* ─── Playback sync on join ────────────────────────── */
@@ -386,9 +383,12 @@ export default function RoomPage() {
     if (
       !joined ||
       !playback?.videoId ||
-      player.nowPlaying?.videoId === playback.videoId
+      player.nowPlaying?.videoId === playback.videoId ||
+      syncHandledRef.current
     )
       return;
+    const p = playerRef_fix.current;
+    const pr = progressRef_fix.current;
     if (playback.isPlaying && playback.updatedAt > getSyncedTime() + 150) {
       scheduleRoomPlay(
         {
@@ -410,7 +410,7 @@ export default function RoomPage() {
       const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
       if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
     }
-    player.playTrack(
+    p.playTrack(
       {
         id: `room-${playback.videoId}`,
         videoId: playback.videoId,
@@ -429,14 +429,14 @@ export default function RoomPage() {
     joined,
     playback,
     player.nowPlaying?.videoId,
-    player.playTrack,
     scheduleRoomPlay,
   ]);
 
   /* ─── Queue advance ────────────────────────────────── */
   const maybeAdvanceQueue = useCallback(() => {
-    if (!canControlPlayback || !joined) return;
-    const activeTrack = player.nowPlaying;
+    if (!canControlPlaybackRef.current || !joined) return;
+    const p = playerRef_fix.current;
+    const activeTrack = p.nowPlaying;
     if (!activeTrack) return;
 
     const currentQueueTrack = queue[0];
@@ -884,6 +884,7 @@ export default function RoomPage() {
   useEffect(() => {
     return () => {
       clearScheduledPlaybackActions();
+      syncHandledRef.current = false;
     };
   }, [clearScheduledPlaybackActions]);
   useEffect(() => {
@@ -1194,7 +1195,7 @@ export default function RoomPage() {
                 )}
               </aside>
 
-              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[55vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-[100vh] lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
                 <RightSidebar
                   members={members}
                   messages={messages}
