@@ -7,7 +7,6 @@ import { useAudioElement } from "./useAudioElement";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-/* ─── Stream URL cache (module-level, persisted across hook instances) ─── */
 const streamUrlCache = new Map<string, string>();
 const pendingFetches = new Map<string, Promise<string>>();
 
@@ -36,7 +35,6 @@ async function fetchStreamUrl(videoId: string): Promise<string> {
   return promise;
 }
 
-/** Pre-fetch stream URLs for upcoming tracks (fire-and-forget) */
 export function preBufferStreamUrls(tracks: Track[]) {
   for (const t of tracks) {
     if (!streamUrlCache.has(t.videoId)) {
@@ -45,11 +43,6 @@ export function preBufferStreamUrls(tracks: Track[]) {
   }
 }
 
-export function clearStreamUrlCache() {
-  streamUrlCache.clear();
-}
-
-/* ─── Proxy ref that delegates to whichever source is active ─── */
 function createPlayerProxy(
   getMode: () => "youtube" | "audio",
   ytRef: React.MutableRefObject<YT.Player | null>,
@@ -122,13 +115,15 @@ function createPlayerProxy(
 
 type ProxyPlayer = ReturnType<typeof createPlayerProxy>;
 
-/* ─── Hook ─── */
 export function useHybridPlayer() {
   const yt = usePlayerState();
   const audio = useAudioElement();
 
   const modeRef = useRef<"youtube" | "audio">("youtube");
+  const fadeRef = useRef<number | null>(null);
   const preBufferRef = useRef<Set<string>>(new Set());
+  const cutoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const restoringVolRef = useRef(false);
 
   const [playerState, setPlayerState] = useState<PlayerState>("idle");
   const [volume, setVolume] = useState(80);
@@ -145,7 +140,9 @@ export function useHybridPlayer() {
   const nowPlayingRef = useRef<Track | null>(null);
   useEffect(() => { nowPlayingRef.current = nowPlaying; }, [nowPlaying]);
 
-  /* Create the proxy ref once */
+  const playerStateRef = useRef<PlayerState>("idle");
+  useEffect(() => { playerStateRef.current = playerState; }, [playerState]);
+
   const proxyRef = useRef<ProxyPlayer>(null!);
   if (!proxyRef.current) {
     proxyRef.current = createPlayerProxy(
@@ -156,19 +153,19 @@ export function useHybridPlayer() {
     );
   }
 
-  /* ─── Sync YT state (when in youtube mode) ─── */
+  /* ─── Sync YT state ─── */
   useEffect(() => {
-    if (modeRef.current !== "youtube") return;
+    if (modeRef.current !== "youtube" || restoringVolRef.current) return;
     setPlayerState(yt.playerState);
   }, [yt.playerState]);
 
-  /* ─── Sync Audio state (when in audio mode) ─── */
+  /* ─── Sync Audio state ─── */
   useEffect(() => {
     if (modeRef.current !== "audio") return;
     setPlayerState(audio.playerState as PlayerState);
   }, [audio.playerState]);
 
-  /* ─── Progress polling (via proxy → active source) ─── */
+  /* ─── Progress polling ─── */
   useEffect(() => {
     if (playerState !== "playing") return;
     const interval = setInterval(() => {
@@ -181,41 +178,83 @@ export function useHybridPlayer() {
     return () => clearInterval(interval);
   }, [playerState]);
 
-  /* ─── Visibility-based swap: only when user leaves the tab ─── */
-  useEffect(() => {
-    const onVisibility = () => {
-      if (document.visibilityState !== "hidden") return;
-      if (modeRef.current !== "youtube") return;
-      const track = nowPlayingRef.current;
-      if (!track?.videoId) return;
+  /* ─── Cancel fade helper ─── */
+  const cancelFade = useCallback(() => {
+    if (fadeRef.current !== null) {
+      cancelAnimationFrame(fadeRef.current);
+      fadeRef.current = null;
+    }
+    if (cutoverTimeoutRef.current) {
+      clearTimeout(cutoverTimeoutRef.current);
+      cutoverTimeoutRef.current = null;
+    }
+  }, []);
 
-      const cachedUrl = streamUrlCache.get(track.videoId);
-      if (!cachedUrl) return;
+  /* ─── Crossfade from YT → audio ─── */
+  const crossfadeToAudio = useCallback(
+    (streamUrl: string) => {
+      if (modeRef.current !== "youtube") return;
+      if (playerStateRef.current !== "playing") return;
 
       const pos = yt.playerRef.current?.getCurrentTime?.() ?? 0;
-      audio.setSource(cachedUrl);
+      const currentVol = volume;
+
+      audio.setSource(streamUrl);
       const el = audio.audioRef.current;
       if (!el) return;
 
-      const onReady = () => {
-        el.removeEventListener("canplay", onReady);
-        el.currentTime = pos;
-        el.play().catch(() => {});
-        yt.playerRef.current?.pauseVideo?.();
-        modeRef.current = "audio";
-        el.volume = Math.max(0, Math.min(1, volume / 100));
-        el.muted = isMuted;
-      };
-      el.addEventListener("canplay", onReady);
-    };
+      const onCanPlay = () => {
+        el.removeEventListener("canplay", onCanPlay);
+        if (modeRef.current !== "youtube") return;
+        if (playerStateRef.current !== "playing") { el.pause(); return; }
 
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [audio, yt.playerRef, volume, isMuted]);
+        el.currentTime = pos;
+        el.volume = 0;
+        el.play().catch(() => {});
+
+        const FADE_MS = 120;
+        const start = performance.now();
+
+        const fade = () => {
+          const elapsed = performance.now() - start;
+          const t = Math.min(elapsed / FADE_MS, 1);
+
+          const ytVol = Math.round(currentVol * (1 - t));
+          const audioVol = (currentVol / 100) * t;
+
+          try { yt.playerRef.current?.setVolume?.(Math.max(ytVol, 0)); } catch {}
+          el.volume = Math.min(audioVol, 1);
+
+          if (t < 1) {
+            fadeRef.current = requestAnimationFrame(fade);
+          } else {
+            fadeRef.current = null;
+            restoringVolRef.current = true;
+            try { yt.playerRef.current?.pauseVideo?.(); } catch {}
+            try { yt.playerRef.current?.setVolume?.(currentVol); } catch {}
+            restoringVolRef.current = false;
+            el.volume = Math.min(currentVol / 100, 1);
+            modeRef.current = "audio";
+            setPlayerState("playing");
+          }
+        };
+
+        fadeRef.current = requestAnimationFrame(fade);
+      };
+
+      el.addEventListener("canplay", onCanPlay);
+      cutoverTimeoutRef.current = setTimeout(() => {
+        el.removeEventListener("canplay", onCanPlay);
+      }, 10000);
+    },
+    [audio, yt.playerRef, volume],
+  );
 
   /* ─── playTrack ─── */
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
+      cancelFade();
+
       setError("");
       setLoadingId(track.id);
       setNowPlaying(track);
@@ -224,27 +263,27 @@ export function useHybridPlayer() {
       const cachedUrl = streamUrlCache.get(track.videoId);
 
       if (cachedUrl) {
-        // Cached URL → play directly via <audio> (instant, background-capable)
         audio.setSource(cachedUrl);
         audio.seekTo(startTime ?? 0);
         if (shouldPlay) audio.play();
         modeRef.current = "audio";
         setPlayerState(shouldPlay ? "playing" : "paused");
       } else {
-        // No cached URL → play via YouTube iframe (instant start)
         if (modeRef.current === "audio") {
           audio.pause();
         }
         modeRef.current = "youtube";
         yt.playTrack(track, startTime, shouldPlay);
 
-        // Background-fetch the URL for future use (swap on tab-hide or next play)
-        fetchStreamUrl(track.videoId).catch(() => {});
+        fetchStreamUrl(track.videoId).then((url) => {
+          if (nowPlayingRef.current?.videoId !== track.videoId) return;
+          crossfadeToAudio(url);
+        }).catch(() => {});
       }
 
       setLoadingId(null);
     },
-    [yt, audio],
+    [yt, audio, crossfadeToAudio, cancelFade],
   );
 
   /* ─── Controls ─── */
@@ -255,10 +294,11 @@ export function useHybridPlayer() {
   }, [audio, yt]);
 
   const pause = useCallback(() => {
+    cancelFade();
     if (modeRef.current === "audio") { audio.pause(); }
     else { yt.pause(); }
     setPlayerState("paused");
-  }, [audio, yt]);
+  }, [audio, yt, cancelFade]);
 
   const togglePlayPause = useCallback(() => {
     if (playerState === "playing") pause();
@@ -283,13 +323,10 @@ export function useHybridPlayer() {
     else { yt.toggleMute(); }
   }, [isMuted, audio, yt]);
 
-  const seekTo = useCallback(
-    (time: number) => {
-      proxyRef.current.seekTo(time, true);
-      setCurrentTime(time);
-    },
-    [],
-  );
+  const seekTo = useCallback((time: number) => {
+    proxyRef.current.seekTo(time, true);
+    setCurrentTime(time);
+  }, []);
 
   const preBuffer = useCallback((track: Track) => {
     if (!track.videoId || preBufferRef.current.has(track.videoId)) return;
@@ -298,14 +335,8 @@ export function useHybridPlayer() {
   }, []);
 
   useEffect(() => {
-    return () => {
-      if (modeRef.current === "audio") {
-        audio.pause();
-        const el = audio.audioRef.current;
-        if (el) { el.src = ""; el.load(); }
-      }
-    };
-  }, [audio]);
+    return () => { cancelFade(); };
+  }, [cancelFade]);
 
   return {
     playerRef: proxyRef as unknown as React.MutableRefObject<YT.Player | null>,
