@@ -24,6 +24,7 @@ import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 import { ChatPanel } from "@/components/Player/ui/ChatPanel";
+import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -54,6 +55,11 @@ export default function RoomPage() {
   const [joinToasts, setJoinToasts] = useState<
     Array<{ id: string; name: string; avatar?: string }>
   >([]);
+  const [queueToast, setQueueToast] = useState<{
+    playlistName: string;
+    image: string;
+    trackCount: number;
+  } | null>(null);
 
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -159,7 +165,6 @@ export default function RoomPage() {
     playbackRef.current = playback;
   }, [playback]);
 
-  // Automatically queue all songs from imported/custom playlist on join
   useEffect(() => {
     if (!connected || !joined || !queuePlaylistId) return;
 
@@ -185,6 +190,13 @@ export default function RoomPage() {
             });
           });
         }
+        const coverImage = data.tracks?.find((t: any) => t.image)?.image || "";
+        setQueueToast({
+          playlistName: data.playlist?.name || "Imported Playlist",
+          image: coverImage,
+          trackCount: data.tracks?.length || 0,
+        });
+        setTimeout(() => setQueueToast(null), 4000);
       })
       .catch((err) => console.error("Failed to auto-queue playlist:", err))
       .finally(() => {
@@ -1083,15 +1095,19 @@ export default function RoomPage() {
     <div className="w-full h-full bg-black relative">
       <YouTubeIframe />
 
-      {footerTrack?.image && (
-        <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden">
+        {footerTrack?.image && (
           <div
-            className="w-full h-full bg-cover bg-center scale-[1.75] blur-xl"
+            className="absolute inset-0 bg-cover bg-center scale-[1.75] blur-xl"
             style={{ backgroundImage: `url(${footerTrack.image})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
-        </div>
-      )}
+        )}
+        <BackgroundParticles
+          isPlaying={player.playerState === "playing"}
+          image={footerTrack?.image}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/60 to-black/80" />
+      </div>
 
       <div className="relative z-10 h-screen w-full overflow-hidden">
         <div
@@ -1203,6 +1219,30 @@ export default function RoomPage() {
           </div>
         </div>
       </div>
+
+      {queueToast && (
+        <div className="fixed top-24 right-4 lg:right-[calc(50%-35rem)] z-50 animate-in slide-in-from-right-4 fade-in duration-300">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
+            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
+              {queueToast.image ? (
+                <img
+                  src={queueToast.image}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/40">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                </div>
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-white text-sm font-semibold truncate max-w-[200px]">{queueToast.playlistName}</p>
+              <p className="text-white/50 text-xs">{queueToast.trackCount} track{queueToast.trackCount !== 1 ? "s" : ""} queued</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
           .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
