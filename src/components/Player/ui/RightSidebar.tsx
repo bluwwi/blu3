@@ -178,7 +178,7 @@ export function RightSidebar({
             {/*FOR SEARCH*/}
             <button
               onClick={() => onSearchClick?.()}
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
               title="Search songs"
             >
               <Icon name="search" size={14} className="text-current" />
@@ -186,7 +186,7 @@ export function RightSidebar({
 
             <button
               onClick={handlePlusClick}
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
               title="Add playlist to queue"
             >
               <Icon name="plus" size={14} className="text-current" />
@@ -195,7 +195,7 @@ export function RightSidebar({
             {onChatToggle && (
               <button
                 onClick={onChatToggle}
-                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/40 text-white/40 transition-colors hover:text-white cursor-pointer"
+                className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/20 bg-white/[0.07] text-white transition-colors hover:bg-white/[0.12] cursor-pointer"
                 title="Toggle chat"
               >
                 <Icon name="message-square" size={14} className="text-current" />
@@ -208,25 +208,25 @@ export function RightSidebar({
             )}
 
             {showDropdown && (
-              <div className="absolute right-0 mt-12 w-64 rounded-2xl bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-zinc-400 font-bold relative z-10">
+              <div className="absolute right-0 mt-12 w-64 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll">
+                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
                   Queue Playlist
                 </div>
                 {loadingPlaylists ? (
-                  <div className="px-3 py-3 text-[10px] text-zinc-500 relative z-10">
+                  <div className="px-3 py-3 text-[10px] text-white/40">
                     Loading...
                   </div>
                 ) : playlists.length === 0 ? (
-                  <div className="px-3 py-3 text-[10px] text-zinc-500 relative z-10">
+                  <div className="px-3 py-3 text-[10px] text-white/40">
                     No playlists found
                   </div>
                 ) : (
-                  <div className="relative z-10">
+                  <div>
                     {playlists.map((p) => (
                       <button
                         key={p.id}
                         onClick={() => handleQueuePlaylist(p.id)}
-                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-zinc-300 hover:bg-white/10 hover:text-white transition-colors"
+                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
                       >
                         <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
                           {p.coverImage ? (
@@ -238,8 +238,8 @@ export function RightSidebar({
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate">{p.name}</p>
-                          <p className="text-[9px] text-zinc-500">{p.trackCount ?? 0} tracks</p>
+                          <p className="truncate text-white/90">{p.name}</p>
+                          <p className="text-[9px] text-white/40">{p.trackCount ?? 0} tracks</p>
                         </div>
                       </button>
                     ))}

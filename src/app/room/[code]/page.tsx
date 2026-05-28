@@ -1115,7 +1115,7 @@ export default function RoomPage() {
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               overflow-y-auto lg:overflow-hidden"
         >
-          <RoomTopBar
+          {/*<RoomTopBar
             roomName={room?.name ?? "Room"}
             roomCode={code}
             isHost={isHost}
@@ -1131,9 +1131,9 @@ export default function RoomPage() {
             }
             onLeave={handleLeave}
             onSearchClick={openSearchOverlay}
-          />
+          />*/}
 
-          <div className="flex h-full gap-2 pt-2 min-h-0">
+          <div className="flex h-full mt-10 gap-2 pt-2 min-h-0">
             <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
               <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
                 {chatOpen ? (
