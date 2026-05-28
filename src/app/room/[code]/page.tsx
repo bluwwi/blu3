@@ -700,7 +700,25 @@ export default function RoomPage() {
     sendSeek(seekToTime);
   };
   const handlePlayPauseAction = useCallback(() => {
-    if (!canControlPlayback || !player.nowPlaying?.videoId) return;
+    if (!canControlPlayback) return;
+
+    // Nothing is playing — start the first track in queue if available
+    if (!player.nowPlaying?.videoId) {
+      const firstTrack = queue[0];
+      if (!firstTrack) return;
+      player.playTrack(firstTrack, 0, true);
+      sendPlay({
+        id: firstTrack.id,
+        videoId: firstTrack.videoId,
+        trackName: firstTrack.name,
+        artistName: firstTrack.artists?.[0]?.name ?? "",
+        image: firstTrack.image ?? "",
+        currentTime: 0,
+        duration_ms: firstTrack.duration_ms,
+      });
+      return;
+    }
+
     if (player.playerState === "playing") {
       // Optimistic: pause locally first, then tell server
       player.pause?.();
@@ -725,8 +743,10 @@ export default function RoomPage() {
     player.pause,
     player.play,
     progress.currentTime,
+    queue,
     sendPause,
     sendPlay,
+    player.playTrack,
   ]);
 
   const handleListenerPlay = useCallback(() => {
