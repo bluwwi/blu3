@@ -5,7 +5,8 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
-import { useHybridPlayer, preBufferStreamUrls } from "@/hooks/useHybridPlayer";
+import { usePlayerState } from "@/hooks/usePlayerState";
+import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
@@ -38,7 +39,8 @@ export default function RoomPage() {
 
   const { user, loading: authLoading } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
-  const player = useHybridPlayer();
+  const player = usePlayerState();
+  const progress = useProgressTracking(player.playerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -122,7 +124,7 @@ export default function RoomPage() {
       if (player.nowPlaying?.videoId === state.videoId) {
         if (state.isPlaying) player.play?.();
         else player.pause?.();
-        player.seekTo(actualCurrentTime);
+        progress.seekTo(actualCurrentTime);
       } else {
         player.playTrack(
           {
@@ -189,13 +191,6 @@ export default function RoomPage() {
         router.replace(`/room/${code}`);
       });
   }, [connected, joined, queuePlaylistId, code, addToQueue, router]);
-
-  /* ─── Pre-buffer stream URLs for queued tracks ──── */
-  useEffect(() => {
-    if (queue.length > 0) {
-      preBufferStreamUrls(queue);
-    }
-  }, [queue]);
 
   const isHost = room?.hostId === user?.sub || socketIsHost;
   const isHostPresent = room?.hostId
@@ -286,7 +281,7 @@ export default function RoomPage() {
       const initialSeekTo = state.seekTo + initialLateBySec;
       if (canControlPlayback) {
         if (player.nowPlaying?.videoId === state.videoId) {
-          player.seekTo(initialSeekTo);
+          progress.seekTo(initialSeekTo);
           player.play?.();
         } else {
           player.playTrack(track, initialSeekTo, true);
@@ -295,7 +290,7 @@ export default function RoomPage() {
       }
       if (player.nowPlaying?.videoId === state.videoId) {
         player.pause?.();
-        player.seekTo(initialSeekTo);
+        progress.seekTo(initialSeekTo);
       } else {
         player.playTrack(track, initialSeekTo, false);
       }
@@ -307,7 +302,7 @@ export default function RoomPage() {
           const liveLateBySec =
             Math.max(syncedTime() - state.targetTime, 0) / 1000;
           const liveSeekTo = state.seekTo + liveLateBySec;
-          player.seekTo(liveSeekTo);
+          progress.seekTo(liveSeekTo);
           player.play?.();
         },
       );
@@ -319,7 +314,7 @@ export default function RoomPage() {
       player.pause,
       player.play,
       player.playTrack,
-      player.seekTo,
+      progress.seekTo,
       scheduleSyncedAction,
     ],
   );
@@ -353,7 +348,7 @@ export default function RoomPage() {
       syncedTime: () => number,
     ) => {
       if (canControlPlayback) {
-        player.seekTo(state.seekTo);
+        progress.seekTo(state.seekTo);
         return;
       }
       clearScheduledTimeout(scheduledSeekTimeoutRef);
@@ -362,14 +357,14 @@ export default function RoomPage() {
         state.targetTime,
         syncedTime,
         () => {
-          player.seekTo(state.seekTo);
+          progress.seekTo(state.seekTo);
         },
       );
     },
     [
       canControlPlayback,
       clearScheduledTimeout,
-      player.seekTo,
+      progress.seekTo,
       scheduleSyncedAction,
     ],
   );
@@ -529,7 +524,7 @@ export default function RoomPage() {
     if (
       queueAdvanceLockRef.current === activeKey &&
       ["loading", "playing"].includes(player.playerState) &&
-      player.currentTime < 2
+      progress.currentTime < 2
     ) {
       queueAdvanceLockRef.current = null;
       return;
@@ -543,7 +538,7 @@ export default function RoomPage() {
     player.nowPlaying?.id,
     player.nowPlaying?.videoId,
     player.playerState,
-    player.currentTime,
+    progress.currentTime,
   ]);
 
   useEffect(() => {
@@ -563,13 +558,13 @@ export default function RoomPage() {
     )
       return;
     const remainingMs = Math.max(
-      activeTrack.duration_ms - player.currentTime * 1000,
+      activeTrack.duration_ms - progress.currentTime * 1000,
       0,
     );
     const timeoutId = window.setTimeout(() => {
       const ref = player.playerRef.current;
       const currentTime =
-        ref?.getCurrentTime?.() ?? player.currentTime;
+        ref?.getCurrentTime?.() ?? progress.currentTime;
       const duration =
         ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
@@ -584,7 +579,7 @@ export default function RoomPage() {
     player.nowPlaying,
     player.playerRef,
     player.playerState,
-    player.currentTime,
+    progress.currentTime,
     queue,
   ]);
 
@@ -697,11 +692,11 @@ export default function RoomPage() {
   }, [footerTrack, player.playerState]);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!canControlPlayback || !player.duration) return;
+    if (!canControlPlayback || !progress.duration) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const seekToTime =
-      ((e.clientX - rect.left) / rect.width) * player.duration;
-    player.seekTo(seekToTime);
+      ((e.clientX - rect.left) / rect.width) * progress.duration;
+    progress.seekTo(seekToTime);
     sendSeek(seekToTime);
   };
   const handlePlayPauseAction = useCallback(() => {
@@ -709,7 +704,7 @@ export default function RoomPage() {
     if (player.playerState === "playing") {
       // Optimistic: pause locally first, then tell server
       player.pause?.();
-      sendPause(player.currentTime);
+      sendPause(progress.currentTime);
       return;
     }
     // Optimistic: play locally first, then tell server
@@ -720,7 +715,7 @@ export default function RoomPage() {
       trackName: player.nowPlaying.name,
       artistName: player.nowPlaying.artists?.[0]?.name ?? "",
       image: player.nowPlaying.image ?? "",
-      currentTime: player.currentTime,
+      currentTime: progress.currentTime,
       duration_ms: player.nowPlaying.duration_ms,
     });
   }, [
@@ -729,7 +724,7 @@ export default function RoomPage() {
     player.playerState,
     player.pause,
     player.play,
-    player.currentTime,
+    progress.currentTime,
     sendPause,
     sendPlay,
   ]);
@@ -741,9 +736,9 @@ export default function RoomPage() {
       const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
       if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
     }
-    player.seekTo(actualCurrentTime);
+    progress.seekTo(actualCurrentTime);
     player.play?.();
-  }, [playback, getSyncedTime, player.seekTo, player.play]);
+  }, [playback, getSyncedTime, progress.seekTo, player.play]);
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
@@ -792,7 +787,7 @@ export default function RoomPage() {
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
     // If more than 3 seconds in, restart current track
-    if (player.currentTime > 3 && player.nowPlaying) {
+    if (progress.currentTime > 3 && player.nowPlaying) {
       sendPlay({
         id: player.nowPlaying.id,
         videoId: player.nowPlaying.videoId,
@@ -833,7 +828,7 @@ export default function RoomPage() {
     joined,
     playbackMode.repeatMode,
     player.nowPlaying,
-    player.currentTime,
+    progress.currentTime,
     queue,
     sendPlay,
   ]);
@@ -903,7 +898,7 @@ export default function RoomPage() {
     if (!playbackState) return;
     const liveCurrentTime =
       player.playerRef.current?.getCurrentTime?.() ??
-      player.currentTime;
+      progress.currentTime;
     sendPlaybackState(playbackState, liveCurrentTime);
   }, [
     canControlPlayback,
@@ -919,7 +914,7 @@ export default function RoomPage() {
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
         player.playerRef.current?.getCurrentTime?.() ??
-        player.currentTime;
+        progress.currentTime;
       sendPlaybackState("playing", liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
@@ -1138,9 +1133,9 @@ export default function RoomPage() {
                     playerState={footerPlayerState}
                     isLiked={isLiked}
                     onToggleLike={handleToggleLike}
-                    progress={player.progress}
-                    currentTime={player.currentTime}
-                    duration={player.duration}
+                    progress={progress.progress}
+                    currentTime={progress.currentTime}
+                    duration={progress.duration}
                     volume={player.volume}
                     isMuted={player.isMuted}
                     shuffleEnabled={playbackMode.shuffle}
