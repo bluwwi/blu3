@@ -45,6 +45,10 @@ export function preBufferStreamUrls(tracks: Track[]) {
   }
 }
 
+export function clearStreamUrlCache() {
+  streamUrlCache.clear();
+}
+
 /* ─── Proxy ref that delegates to whichever source is active ─── */
 function createPlayerProxy(
   getMode: () => "youtube" | "audio",
@@ -124,10 +128,8 @@ export function useHybridPlayer() {
   const audio = useAudioElement();
 
   const modeRef = useRef<"youtube" | "audio">("youtube");
-  const cutoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const preBufferRef = useRef<Set<string>>(new Set());
 
-  // Unified state that mirrors usePlayerState's interface
   const [playerState, setPlayerState] = useState<PlayerState>("idle");
   const [volume, setVolume] = useState(80);
   const [isMuted, setIsMuted] = useState(false);
@@ -136,12 +138,10 @@ export function useHybridPlayer() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Progress tracking state
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [progress, setProgress] = useState(0);
 
-  // Keep a ref of nowPlaying for async callbacks
   const nowPlayingRef = useRef<Track | null>(null);
   useEffect(() => { nowPlayingRef.current = nowPlaying; }, [nowPlaying]);
 
@@ -156,21 +156,19 @@ export function useHybridPlayer() {
     );
   }
 
-  /* ─── Sync YT state into unified state ─── */
+  /* ─── Sync YT state (when in youtube mode) ─── */
   useEffect(() => {
     if (modeRef.current !== "youtube") return;
     setPlayerState(yt.playerState);
-    setCurrentTime(yt.playerState === "playing" ? yt.playerRef.current?.getCurrentTime?.() ?? 0 : currentTime);
-  }, [yt.playerState]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [yt.playerState]);
 
-  /* ─── Sync Audio state into unified state (when in audio mode) ─── */
+  /* ─── Sync Audio state (when in audio mode) ─── */
   useEffect(() => {
     if (modeRef.current !== "audio") return;
-    const audioState = audio.playerState as PlayerState;
-    setPlayerState(audioState);
+    setPlayerState(audio.playerState as PlayerState);
   }, [audio.playerState]);
 
-  // Progress polling (works regardless of mode via proxy)
+  /* ─── Progress polling (via proxy → active source) ─── */
   useEffect(() => {
     if (playerState !== "playing") return;
     const interval = setInterval(() => {
@@ -183,45 +181,37 @@ export function useHybridPlayer() {
     return () => clearInterval(interval);
   }, [playerState]);
 
-  /* ─── swapToAudio: cut over from YT → <audio> at current position ─── */
-  const swapToAudio = useCallback(
-    (streamUrl: string, track: Track) => {
-      if (modeRef.current === "audio") return;
+  /* ─── Visibility-based swap: only when user leaves the tab ─── */
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState !== "hidden") return;
+      if (modeRef.current !== "youtube") return;
+      const track = nowPlayingRef.current;
+      if (!track?.videoId) return;
 
-      // Get current YT position
+      const cachedUrl = streamUrlCache.get(track.videoId);
+      if (!cachedUrl) return;
+
       const pos = yt.playerRef.current?.getCurrentTime?.() ?? 0;
+      audio.setSource(cachedUrl);
+      const el = audio.audioRef.current;
+      if (!el) return;
 
-      // Set up audio source
-      audio.setSource(streamUrl);
-
-      // When audio can play, seek + play + pause YT
-      const audioEl = audio.audioRef.current;
-      if (!audioEl) return;
-
-      const onCanPlay = () => {
-        audioEl.removeEventListener("canplay", onCanPlay);
-        if (modeRef.current === "audio") return;
-
-        audioEl.currentTime = pos;
-        audioEl.play().catch(() => {});
+      const onReady = () => {
+        el.removeEventListener("canplay", onReady);
+        el.currentTime = pos;
+        el.play().catch(() => {});
         yt.playerRef.current?.pauseVideo?.();
         modeRef.current = "audio";
-        setPlayerState("playing");
-
-        // Sync volume/muted to audio element
-        audioEl.volume = Math.max(0, Math.min(1, volume / 100));
-        audioEl.muted = isMuted;
+        el.volume = Math.max(0, Math.min(1, volume / 100));
+        el.muted = isMuted;
       };
+      el.addEventListener("canplay", onReady);
+    };
 
-      audioEl.addEventListener("canplay", onCanPlay);
-
-      // Safety timeout: if audio doesn't become ready, stay on YT
-      cutoverTimeoutRef.current = setTimeout(() => {
-        audioEl.removeEventListener("canplay", onCanPlay);
-      }, 10000);
-    },
-    [audio, yt.playerRef, volume, isMuted],
-  );
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, [audio, yt.playerRef, volume, isMuted]);
 
   /* ─── playTrack ─── */
   const playTrack = useCallback(
@@ -231,78 +221,55 @@ export function useHybridPlayer() {
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
-      // Cancel any pending cutover
-      if (cutoverTimeoutRef.current) {
-        clearTimeout(cutoverTimeoutRef.current);
-        cutoverTimeoutRef.current = null;
-      }
-
-      // Try to use cached stream URL → play directly via <audio>
       const cachedUrl = streamUrlCache.get(track.videoId);
-      if (cachedUrl && modeRef.current === "audio") {
+
+      if (cachedUrl) {
+        // Cached URL → play directly via <audio> (instant, background-capable)
         audio.setSource(cachedUrl);
         audio.seekTo(startTime ?? 0);
         if (shouldPlay) audio.play();
         modeRef.current = "audio";
         setPlayerState(shouldPlay ? "playing" : "paused");
-        setLoadingId(null);
-        return;
-      }
+      } else {
+        // No cached URL → play via YouTube iframe (instant start)
+        if (modeRef.current === "audio") {
+          audio.pause();
+        }
+        modeRef.current = "youtube";
+        yt.playTrack(track, startTime, shouldPlay);
 
-      // Fallback: start YT instantly for zero delay
-      modeRef.current = "youtube";
-      yt.playTrack(track, startTime, shouldPlay);
-
-      // Fetch stream URL in background → swap when ready
-      if (track.videoId) {
-        fetchStreamUrl(track.videoId).then((url) => {
-          if (nowPlayingRef.current?.videoId !== track.videoId) return;
-          swapToAudio(url, track);
-        }).catch(() => {
-          // YT fallback works — just stay on YT
-        });
+        // Background-fetch the URL for future use (swap on tab-hide or next play)
+        fetchStreamUrl(track.videoId).catch(() => {});
       }
 
       setLoadingId(null);
     },
-    [yt, audio, swapToAudio],
+    [yt, audio],
   );
 
   /* ─── Controls ─── */
   const play = useCallback(() => {
-    if (modeRef.current === "audio") {
-      audio.play();
-    } else {
-      yt.play();
-    }
+    if (modeRef.current === "audio") { audio.play(); }
+    else { yt.play(); }
     setPlayerState("playing");
   }, [audio, yt]);
 
   const pause = useCallback(() => {
-    if (modeRef.current === "audio") {
-      audio.pause();
-    } else {
-      yt.pause();
-    }
+    if (modeRef.current === "audio") { audio.pause(); }
+    else { yt.pause(); }
     setPlayerState("paused");
   }, [audio, yt]);
 
   const togglePlayPause = useCallback(() => {
-    if (playerState === "playing") {
-      pause();
-    } else {
-      play();
-    }
+    if (playerState === "playing") pause();
+    else play();
   }, [playerState, pause, play]);
 
   const handleVolume = useCallback(
     (val: number) => {
       setVolume(val);
-      if (modeRef.current === "audio") {
-        audio.setVolume(val);
-      } else {
-        yt.handleVolume(val);
-      }
+      if (modeRef.current === "audio") { audio.setVolume(val); }
+      else { yt.handleVolume(val); }
       if (val === 0) setIsMuted(true);
       else if (isMuted) setIsMuted(false);
     },
@@ -312,11 +279,8 @@ export function useHybridPlayer() {
   const toggleMute = useCallback(() => {
     const next = !isMuted;
     setIsMuted(next);
-    if (modeRef.current === "audio") {
-      audio.setMuted(next);
-    } else {
-      yt.toggleMute();
-    }
+    if (modeRef.current === "audio") { audio.setMuted(next); }
+    else { yt.toggleMute(); }
   }, [isMuted, audio, yt]);
 
   const seekTo = useCallback(
@@ -327,25 +291,24 @@ export function useHybridPlayer() {
     [],
   );
 
-  /* ─── Pre-buffer helper called externally ─── */
   const preBuffer = useCallback((track: Track) => {
     if (!track.videoId || preBufferRef.current.has(track.videoId)) return;
     preBufferRef.current.add(track.videoId);
     fetchStreamUrl(track.videoId).catch(() => {});
   }, []);
 
-  /* ─── Cleanup ─── */
   useEffect(() => {
     return () => {
-      if (cutoverTimeoutRef.current) clearTimeout(cutoverTimeoutRef.current);
+      if (modeRef.current === "audio") {
+        audio.pause();
+        const el = audio.audioRef.current;
+        if (el) { el.src = ""; el.load(); }
+      }
     };
-  }, []);
+  }, [audio]);
 
   return {
-    // Player ref (proxy that delegates to active source)
     playerRef: proxyRef as unknown as React.MutableRefObject<YT.Player | null>,
-
-    // Unified state
     playerState,
     volume,
     isMuted,
@@ -354,7 +317,6 @@ export function useHybridPlayer() {
     loadingId,
     error,
 
-    // Player controls
     playTrack,
     togglePlayPause,
     handleVolume,
@@ -362,16 +324,13 @@ export function useHybridPlayer() {
     play,
     pause,
 
-    // Progress tracking
     currentTime,
     duration,
     progress,
     seekTo,
 
-    // Pre-buffer
     preBuffer,
 
-    // Setters (for compatibility)
     setError,
     setLoadingId,
     setNowPlaying,
