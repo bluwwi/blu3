@@ -208,28 +208,42 @@ export function RightSidebar({
             )}
 
             {showDropdown && (
-              <div className="absolute right-0 mt-12 w-48 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50 py-1 max-h-56 overflow-y-auto room-scroll">
-                <div className="px-3 py-1.5 border-b border-white/5 text-[9px] uppercase tracking-wider text-zinc-550 font-bold">
+              <div className="absolute right-0 mt-12 w-64 rounded-2xl bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-zinc-400 font-bold relative z-10">
                   Queue Playlist
                 </div>
                 {loadingPlaylists ? (
-                  <div className="px-3 py-2 text-[10px] text-zinc-400">
+                  <div className="px-3 py-3 text-[10px] text-zinc-500 relative z-10">
                     Loading...
                   </div>
                 ) : playlists.length === 0 ? (
-                  <div className="px-3 py-2 text-[10px] text-zinc-400">
+                  <div className="px-3 py-3 text-[10px] text-zinc-500 relative z-10">
                     No playlists found
                   </div>
                 ) : (
-                  playlists.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleQueuePlaylist(p.id)}
-                      className="w-full text-left px-3 py-2 text-[11px] text-zinc-300 hover:bg-white/10 hover:text-white transition-colors truncate"
-                    >
-                      {p.name}
-                    </button>
-                  ))
+                  <div className="relative z-10">
+                    {playlists.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleQueuePlaylist(p.id)}
+                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-zinc-300 hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                          {p.coverImage ? (
+                            <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/30">
+                              <Icon name="list-music" size={12} className="text-current" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate">{p.name}</p>
+                          <p className="text-[9px] text-zinc-500">{p.trackCount ?? 0} tracks</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
