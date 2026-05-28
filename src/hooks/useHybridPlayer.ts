@@ -192,9 +192,16 @@ export function useHybridPlayer() {
 
   /* ─── Crossfade from YT → audio ─── */
   const crossfadeToAudio = useCallback(
-    (streamUrl: string) => {
+    (streamUrl: string, attempt = 0) => {
+      if (attempt > 15) return;
       if (modeRef.current !== "youtube") return;
-      if (playerStateRef.current !== "playing") return;
+      if (playerStateRef.current !== "playing") {
+        cutoverTimeoutRef.current = setTimeout(
+          () => crossfadeToAudio(streamUrl, attempt + 1),
+          200,
+        );
+        return;
+      }
 
       const pos = yt.playerRef.current?.getCurrentTime?.() ?? 0;
       const currentVol = volume;
@@ -203,14 +210,12 @@ export function useHybridPlayer() {
       const el = audio.audioRef.current;
       if (!el) return;
 
-      const onCanPlay = () => {
-        el.removeEventListener("canplay", onCanPlay);
-        if (modeRef.current !== "youtube") return;
-        if (playerStateRef.current !== "playing") { el.pause(); return; }
+      let canPlayFired = false;
 
-        el.currentTime = pos;
-        el.volume = 0;
-        el.play().catch(() => {});
+      const onPlaying = () => {
+        el.removeEventListener("playing", onPlaying);
+        if (modeRef.current !== "youtube") { el.pause(); return; }
+        if (playerStateRef.current !== "playing") { el.pause(); return; }
 
         const FADE_MS = 120;
         const start = performance.now();
@@ -219,8 +224,9 @@ export function useHybridPlayer() {
           const elapsed = performance.now() - start;
           const t = Math.min(elapsed / FADE_MS, 1);
 
-          const ytVol = Math.round(currentVol * (1 - t));
-          const audioVol = (currentVol / 100) * t;
+          const over = currentVol;
+          const ytVol = Math.round(over * (1 - t));
+          const audioVol = (over / 100) * t;
 
           try { yt.playerRef.current?.setVolume?.(Math.max(ytVol, 0)); } catch {}
           el.volume = Math.min(audioVol, 1);
@@ -231,9 +237,9 @@ export function useHybridPlayer() {
             fadeRef.current = null;
             restoringVolRef.current = true;
             try { yt.playerRef.current?.pauseVideo?.(); } catch {}
-            try { yt.playerRef.current?.setVolume?.(currentVol); } catch {}
+            try { yt.playerRef.current?.setVolume?.(over); } catch {}
             restoringVolRef.current = false;
-            el.volume = Math.min(currentVol / 100, 1);
+            el.volume = Math.min(over / 100, 1);
             modeRef.current = "audio";
             setPlayerState("playing");
           }
@@ -242,10 +248,23 @@ export function useHybridPlayer() {
         fadeRef.current = requestAnimationFrame(fade);
       };
 
+      const onCanPlay = () => {
+        if (canPlayFired) return;
+        canPlayFired = true;
+        el.removeEventListener("canplay", onCanPlay);
+        if (modeRef.current !== "youtube") { el.pause(); return; }
+        if (playerStateRef.current !== "playing") { el.pause(); return; }
+
+        el.currentTime = pos;
+        el.volume = 0;
+        el.addEventListener("playing", onPlaying);
+        el.play().catch(() => {});
+      };
+
       el.addEventListener("canplay", onCanPlay);
       cutoverTimeoutRef.current = setTimeout(() => {
         el.removeEventListener("canplay", onCanPlay);
-      }, 10000);
+      }, 30000);
     },
     [audio, yt.playerRef, volume],
   );
@@ -260,21 +279,16 @@ export function useHybridPlayer() {
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
+      if (modeRef.current === "audio") {
+        audio.pause();
+      }
+      modeRef.current = "youtube";
+      yt.playTrack(track, startTime, shouldPlay);
+
       const cachedUrl = streamUrlCache.get(track.videoId);
-
       if (cachedUrl) {
-        audio.setSource(cachedUrl);
-        audio.seekTo(startTime ?? 0);
-        if (shouldPlay) audio.play();
-        modeRef.current = "audio";
-        setPlayerState(shouldPlay ? "playing" : "paused");
+        crossfadeToAudio(cachedUrl);
       } else {
-        if (modeRef.current === "audio") {
-          audio.pause();
-        }
-        modeRef.current = "youtube";
-        yt.playTrack(track, startTime, shouldPlay);
-
         fetchStreamUrl(track.videoId).then((url) => {
           if (nowPlayingRef.current?.videoId !== track.videoId) return;
           crossfadeToAudio(url);
