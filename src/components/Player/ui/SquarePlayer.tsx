@@ -245,9 +245,9 @@ export function SquarePlayer({
       </div>
 
       {/* Progress Bar + Timestamps */}
-      <div className="w-[90%] px-2 mb-2 flex-shrink-0">
+      <div className="w-[90%] px-2 mb-2 shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-[9px] text-white/40 tabular-nums w-7 text-right shrink-0">
+          <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
             {fmtSec(currentTime)}
           </span>
           <div className="flex-1">
@@ -258,7 +258,7 @@ export function SquarePlayer({
               onSeek={onSeek}
             />
           </div>
-          <span className="text-[9px] text-white/40 tabular-nums w-7 shrink-0">
+          <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
             {fmtSec(duration)}
           </span>
         </div>
