@@ -272,7 +272,7 @@ export default function BrowsePage() {
                       return (
                         <div
                           key={room.id}
-                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
+                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-42"
                           onClick={() => router.push(`/room/${room.code}`)}
                         >
                           <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
@@ -282,7 +282,7 @@ export default function BrowsePage() {
                                 height={400}
                                 src={room.lastTrack.image}
                                 alt={room.name}
-                                className="room-card-img rounded-lg w-full h-full object-cover"
+                                className="room-card-img rounded-sm w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -292,7 +292,7 @@ export default function BrowsePage() {
                               </div>
                             )}
 
-                            <div className="room-play-overlay hover:bg-black/30 transition-all duration-500 cursor-pointer absolute inset-0 flex items-center justify-center"></div>
+                            <div className="room-play-overlay hover:border-2 border-white rounded-sm  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
 
                             <button
                               onClick={(e) =>
@@ -306,9 +306,9 @@ export default function BrowsePage() {
                               <Trash2 className="w-3 h-3 text-white/80" />
                             </button>
                           </div>
-                          <div className="px-0.5 flex mx-auto items-center">
-                            <p className="text-md text-white truncate  leading-tight">
-                              {room.name} • {room.hostName}
+                          <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
+                            <p className="text-xs md:text-sm text-white truncate  leading-tight">
+                              {room.hostName} • {room.name}
                             </p>
                           </div>
                         </div>
@@ -317,17 +317,17 @@ export default function BrowsePage() {
 
                 {!loading && (
                   <div
-                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48 cursor-pointer"
+                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-42 cursor-pointer"
                     onClick={() => setShowCreateModal(true)}
                   >
-                    <div className="aspect-square rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl flex items-center justify-center hover:border-white/20 hover:bg-white/[0.08] transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                    <div className="aspect-square  border border-white/30  backdrop-blur-2xl flex items-center justify-center hover:border-white/20 rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
                       <Plus
-                        className="create-plus w-10 h-10 text-white/40 transition-all"
-                        strokeWidth={1.5}
+                        className="create-plus w-20 h-20 text-white transition-all"
+                        strokeWidth={3}
                       />
                     </div>
                     <div className="px-0.5">
-                      <p className="text-[11px] text-white/80 font-bold tracking-wide">
+                      <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
                         Create Room
                       </p>
                     </div>
