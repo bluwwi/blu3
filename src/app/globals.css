@@ -5,7 +5,7 @@
 }
 
 @font-face {
-    font-family: "Marmelat";
+    font-family: "Marmelat-other";
     src: url("/fonts/Marmelat Book.otf") format("opentype");
     font-style: normal;
     font-weight: 400;
@@ -21,15 +21,15 @@
 }
 
 @font-face {
-    font-family: "Marmelat";
-    src: url("/fonts/Marmelat Bold.otf") format("opentype");
+    font-family: "Marmelat-bold";
+    src: url("/fonts/Marmelat-Bold.otf") format("opentype");
     font-style: normal;
     font-weight: 700;
     font-display: swap;
 }
 
 @font-face {
-    font-family: "Marmelat";
+    font-family: "Marmelat-black";
     src: url("/fonts/Marmelat Black.otf") format("opentype");
     font-style: normal;
     font-weight: 900;

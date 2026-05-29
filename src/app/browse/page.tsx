@@ -22,7 +22,7 @@ interface RoomInfo {
   code: string;
   name: string;
   hostId: string;
-  hostName?: string;
+  hostName: string;
   isActive: boolean;
   createdAt: string;
   lastTrack?: LastTrack | null;
@@ -46,6 +46,7 @@ function useRooms(user: any, authLoading: boolean) {
     })
       .then((r) => r.json())
       .then((data) => {
+        console.log("Rooms API response:", data);
         setRooms(data.rooms ?? []);
       })
       .catch(console.error)
@@ -158,7 +159,7 @@ export default function BrowsePage() {
   );
 
   return (
-    <div className="h-full bg-gradient-to-b from-blue-950 to-black relative overflow-hidden">
+    <div className="h-full bg-gradient-to-b from-black to-black relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.08),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.05),transparent_60%)] pointer-events-none" />
 
       <div className="relative z-10 h-full w-full overflow-hidden">
@@ -271,17 +272,17 @@ export default function BrowsePage() {
                       return (
                         <div
                           key={room.id}
-                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-48"
+                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
                           onClick={() => router.push(`/room/${room.code}`)}
                         >
                           <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
                             {room.lastTrack?.image ? (
                               <Image
-                                width={200}
-                                height={200}
+                                width={400}
+                                height={400}
                                 src={room.lastTrack.image}
                                 alt={room.name}
-                                className="room-card-img w-full h-full object-cover"
+                                className="room-card-img rounded-lg w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -305,12 +306,9 @@ export default function BrowsePage() {
                               <Trash2 className="w-3 h-3 text-white/80" />
                             </button>
                           </div>
-                          <div className="px-0.5">
-                            <p className="text-[11px] text-white/80 truncate font-bold leading-tight">
-                              {room.name}
-                            </p>
-                            <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">
-                              {isHost ? <span>host</span> : <span>joined</span>}
+                          <div className="px-0.5 flex mx-auto items-center">
+                            <p className="text-md text-white truncate  leading-tight">
+                              {room.name} • {room.hostName}
                             </p>
                           </div>
                         </div>
