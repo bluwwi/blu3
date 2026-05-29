@@ -77,14 +77,19 @@ export default function BrowsePage() {
     const token = localStorage.getItem("blu3_token");
     fetch(`${API_URL}/api/rooms`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({ name: "ROOM 1" }),
     })
       .then((r) => r.json())
       .then((data) => {
         if (data.room) router.replace(`/room/${data.room.code}`);
       })
-      .catch(() => { autoCreated.current = false; });
+      .catch(() => {
+        autoCreated.current = false;
+      });
   }, [loading, user, rooms, router]);
 
   const handleJoin = () => {
@@ -153,61 +158,35 @@ export default function BrowsePage() {
   );
 
   return (
-    <div className="h-screen bg-black relative overflow-hidden">
-      {/* Ambient gradient background */}
+    <div className="h-full bg-gradient-to-b from-blue-950 to-black relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.08),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.05),transparent_60%)] pointer-events-none" />
 
-      <style>{`
-        .room-card { cursor: pointer; }
-        .room-card-img {
-          transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.4s ease;
-          will-change: transform;
-        }
-        .room-card:hover .room-card-img {
-          transform: scale(1.08);
-          filter: brightness(0.45);
-        }
-        .room-card .room-play-overlay {
-          opacity: 0;
-          transition: opacity 0.25s ease;
-        }
-        .room-card:hover .room-play-overlay {
-          opacity: 1;
-        }
-        .create-card:hover {
-          border-color: rgba(255,255,255,0.2);
-          background: rgba(255,255,255,0.08);
-        }
-        .create-card:hover .create-plus {
-          stroke: rgba(255,255,255,0.7);
-        }
-        .join-input:focus { outline: none; }
-        .join-input::placeholder { color: rgba(255,255,255,0.3); }
-        .modal-backdrop { animation: fadeIn 0.18s ease; }
-        .modal-box { animation: slideUp 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .room-scroll::-webkit-scrollbar-track { background: transparent; }
-        .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
-      `}</style>
-
       <div className="relative z-10 h-full w-full overflow-hidden">
-        <div className="mx-auto flex h-full flex-col pb-24 px-3
-            w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]">
-          
+        <div
+          className="mx-auto flex h-full flex-col pb-24 px-3
+            w-full "
+        >
           {/* Glass Nav Bar */}
           <div className="flex items-center border border-white/[0.08] mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.05] backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <Link href="/browse" className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10">
+            <Link
+              href="/browse"
+              className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
+            >
               blu3
             </Link>
-            
+
             <div className="flex items-center gap-4 relative z-10">
               <div className="flex items-center gap-4 border-l border-white/10 pl-4 h-4">
-                <Link href="/browse" className="text-[10px] tracking-widest uppercase text-white font-medium transition-colors">
+                <Link
+                  href="/browse"
+                  className="text-[10px] tracking-widest uppercase text-white font-medium transition-colors"
+                >
                   Rooms
                 </Link>
-                <Link href="/playlists" className="text-[10px] tracking-widest uppercase text-zinc-500 hover:text-white font-medium transition-colors">
+                <Link
+                  href="/playlists"
+                  className="text-[10px] tracking-widest uppercase text-zinc-500 hover:text-white font-medium transition-colors"
+                >
                   Playlists
                 </Link>
               </div>
@@ -216,67 +195,120 @@ export default function BrowsePage() {
             <div className="relative z-10">
               {user ? (
                 <div className="relative">
-                  {user.avatar && (
-                    <button onClick={() => setShowProfileMenu(!showProfileMenu)}>
-                      <img src={user.avatar} alt="" className="w-7 h-7 rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer" />
-                    </button>
-                  )}
+                  {/* ✅ Toggle button always renders for authenticated users */}
+                  <button
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="focus:outline-none"
+                    aria-label="Open profile menu"
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt=""
+                        className="w-7 h-7 rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer"
+                      />
+                    ) : (
+                      /* Fallback: initials or default icon */
+                      <div className="w-7 h-7 rounded-full bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] font-bold text-white uppercase">
+                        {user.name?.[0] || "U"}
+                      </div>
+                    )}
+                  </button>
+
+                  {/* Popup menu */}
                   {showProfileMenu && (
                     <div className="absolute right-0 mt-2 w-32 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
-                      <button onClick={() => { setShowProfileMenu(false); logout(); }} className="w-full text-left px-4 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest">
+                      <button
+                        onClick={() => {
+                          setShowProfileMenu(false);
+                          logout();
+                        }}
+                        className="w-full text-left px-4 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
+                      >
                         Log out
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <button onClick={login} className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase">
+                <button
+                  onClick={login}
+                  className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase"
+                >
                   sign in
                 </button>
               )}
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="flex-1 flex flex-col items-center justify-center px-2 overflow-y-auto room-scroll">
             {!user && !authLoading ? (
               <div className="text-center">
-                <p className="text-4xl font-black tracking-tight mb-2 text-white">blu3</p>
-                <p className="text-[11px] text-zinc-600 tracking-widest mb-10">listen together</p>
-                <p className="text-zinc-600 text-sm mb-5 tracking-wide">sign in to create or join rooms</p>
-                <button onClick={login} className="px-5 py-2.5 bg-white text-black text-xs rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors">
+                <p className="text-4xl font-black tracking-tight mb-2 text-white">
+                  blu3
+                </p>
+                <p className="text-[11px] text-zinc-600 tracking-widest mb-10">
+                  listen together
+                </p>
+                <p className="text-zinc-600 text-sm mb-5 tracking-wide">
+                  sign in to create or join rooms
+                </p>
+                <button
+                  onClick={login}
+                  className="px-5 py-2.5 bg-white text-black text-xs rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors"
+                >
                   sign in with google
                 </button>
               </div>
             ) : (
               <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 w-full max-w-6xl py-8">
                 {loading
-                  ? Array.from({ length: 9 }).map((_, i) => <SkeletonCard key={i} />)
+                  ? Array.from({ length: 9 }).map((_, i) => (
+                      <SkeletonCard key={i} />
+                    ))
                   : rooms.map((room) => {
                       const isHost = room.hostId === user?.sub;
                       return (
-                        <div key={room.id} className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-48" onClick={() => router.push(`/room/${room.code}`)}>
-                          <div className="relative aspect-square rounded-[24px] overflow-hidden bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+                        <div
+                          key={room.id}
+                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-48"
+                          onClick={() => router.push(`/room/${room.code}`)}
+                        >
+                          <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
                             {room.lastTrack?.image ? (
-                              <Image width={200} height={200} src={room.lastTrack.image} alt={room.name} className="room-card-img w-full h-full object-cover" />
+                              <Image
+                                width={200}
+                                height={200}
+                                src={room.lastTrack.image}
+                                alt={room.name}
+                                className="room-card-img w-full h-full object-cover"
+                              />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-3xl text-white/20 select-none">♫</span>
+                                <span className="text-3xl text-white/20 select-none">
+                                  ♫
+                                </span>
                               </div>
                             )}
-                            
-                            <div className="room-play-overlay absolute inset-0 flex items-center justify-center">
-                              <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)]">
-                                <Play className="w-5 h-5 text-black fill-black ml-0.5" />
-                              </div>
-                            </div>
 
-                            <button onClick={(e) => isHost ? handleDeleteRoom(e, room) : handleLeaveRoom(e, room)} className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10" title={isHost ? "Delete room" : "Leave room"}>
+                            <div className="room-play-overlay hover:bg-black/30 transition-all duration-500 cursor-pointer absolute inset-0 flex items-center justify-center"></div>
+
+                            <button
+                              onClick={(e) =>
+                                isHost
+                                  ? handleDeleteRoom(e, room)
+                                  : handleLeaveRoom(e, room)
+                              }
+                              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
+                              title={isHost ? "Delete room" : "Leave room"}
+                            >
                               <Trash2 className="w-3 h-3 text-white/80" />
                             </button>
                           </div>
                           <div className="px-0.5">
-                            <p className="text-[11px] text-white/80 truncate font-bold leading-tight">{room.name}</p>
+                            <p className="text-[11px] text-white/80 truncate font-bold leading-tight">
+                              {room.name}
+                            </p>
                             <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">
                               {isHost ? <span>host</span> : <span>joined</span>}
                             </p>
@@ -286,12 +318,20 @@ export default function BrowsePage() {
                     })}
 
                 {!loading && (
-                  <div className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48 cursor-pointer" onClick={() => setShowCreateModal(true)}>
+                  <div
+                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48 cursor-pointer"
+                    onClick={() => setShowCreateModal(true)}
+                  >
                     <div className="aspect-square rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl flex items-center justify-center hover:border-white/20 hover:bg-white/[0.08] transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                      <Plus className="create-plus w-10 h-10 text-white/40 transition-all" strokeWidth={1.5} />
+                      <Plus
+                        className="create-plus w-10 h-10 text-white/40 transition-all"
+                        strokeWidth={1.5}
+                      />
                     </div>
                     <div className="px-0.5">
-                      <p className="text-[11px] text-white/80 font-bold tracking-wide">Create Room</p>
+                      <p className="text-[11px] text-white/80 font-bold tracking-wide">
+                        Create Room
+                      </p>
                     </div>
                   </div>
                 )}
@@ -306,8 +346,18 @@ export default function BrowsePage() {
         <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
           <div className="flex items-center gap-3 pointer-events-auto">
             <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-              <input value={joinCode} onChange={(e) => setJoinCode(e.target.value.toUpperCase())} onKeyDown={(e) => e.key === "Enter" && handleJoin()} placeholder="enter room code" maxLength={8} className="join-input bg-transparent text-sm text-white w-52 border-none tracking-wide" />
-              <button onClick={handleJoin} className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors">
+              <input
+                value={joinCode}
+                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+                placeholder="enter room code"
+                maxLength={8}
+                className="join-input bg-transparent text-sm text-white w-52 border-none tracking-wide"
+              />
+              <button
+                onClick={handleJoin}
+                className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
+              >
                 Join
               </button>
             </div>
@@ -317,18 +367,54 @@ export default function BrowsePage() {
 
       {/* Create Room Modal */}
       {showCreateModal && (
-        <div className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) { setShowCreateModal(false); setNewRoomName(""); } }}>
+        <div
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCreateModal(false);
+              setNewRoomName("");
+            }
+          }}
+        >
           <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">new room</p>
-            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">give it a name</p>
+            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
+              new room
+            </p>
+            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
+              give it a name
+            </p>
 
-            <input autoFocus value={newRoomName} onChange={(e) => setNewRoomName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") handleCreate(); if (e.key === "Escape") { setShowCreateModal(false); setNewRoomName(""); } }} placeholder="room name..." maxLength={40} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10" />
+            <input
+              autoFocus
+              value={newRoomName}
+              onChange={(e) => setNewRoomName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreate();
+                if (e.key === "Escape") {
+                  setShowCreateModal(false);
+                  setNewRoomName("");
+                }
+              }}
+              placeholder="room name..."
+              maxLength={40}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
+            />
 
             <div className="flex gap-2 relative z-10">
-              <button onClick={() => { setShowCreateModal(false); setNewRoomName(""); }} className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer">
+              <button
+                onClick={() => {
+                  setShowCreateModal(false);
+                  setNewRoomName("");
+                }}
+                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
+              >
                 cancel
               </button>
-              <button onClick={handleCreate} disabled={!newRoomName.trim() || creating} className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer">
+              <button
+                onClick={handleCreate}
+                disabled={!newRoomName.trim() || creating}
+                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+              >
                 {creating ? "creating..." : "create"}
               </button>
             </div>
