@@ -152,23 +152,17 @@ export default function BrowsePage() {
 
   const SkeletonCard = () => (
     <div className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48">
-      <div className="aspect-square rounded-[24px] bg-white/5 animate-pulse" />
+      <div className="aspect-square rounded-md bg-white/5 animate-pulse" />
       <div className="h-2.5 w-3/4 bg-white/5 rounded animate-pulse mt-1" />
       <div className="h-2 w-1/2 bg-white/5 rounded animate-pulse" />
     </div>
   );
 
   return (
-    <div className="h-full bg-gradient-to-b from-black to-black relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.08),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.05),transparent_60%)] pointer-events-none" />
-
-      <div className="relative z-10 h-full w-full overflow-hidden">
-        <div
-          className="mx-auto flex h-full flex-col pb-24 px-3
-            w-full "
-        >
-          {/* Glass Nav Bar */}
-          <div className="flex items-center border border-white/[0.08] mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.05] backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+    <div className="h-full min-h-screen relative overflow-hidden">
+      <div className=" min-h-screen flex justify-center items-center  z-10 h-full w-full overflow-hidden">
+        <div className=" flex flex-col justify-center items-center h-full min-h-screen w-full ">
+          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none  before:to-transparent">
             <Link
               href="/browse"
               className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
@@ -242,7 +236,7 @@ export default function BrowsePage() {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col items-center justify-center px-2 overflow-y-auto room-scroll">
+          <div className="flex-wrap flex   flex-col items-center justify-center h-full min-h-screen  overflow-y-auto room-scroll">
             {!user && !authLoading ? (
               <div className="text-center">
                 <p className="text-4xl font-black tracking-tight mb-2 text-white">
@@ -262,7 +256,7 @@ export default function BrowsePage() {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-8 w-full max-w-6xl py-8">
+              <div className="flex flex-wrap justify-center gap-7 py-24 md:py-0 w-full h-full">
                 {loading
                   ? Array.from({ length: 9 }).map((_, i) => (
                       <SkeletonCard key={i} />
@@ -282,7 +276,7 @@ export default function BrowsePage() {
                                 height={400}
                                 src={room.lastTrack.image}
                                 alt={room.name}
-                                className="room-card-img rounded-sm w-full h-full object-cover"
+                                className="room-card-img rounded-md w-full h-full object-cover"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
@@ -292,7 +286,7 @@ export default function BrowsePage() {
                               </div>
                             )}
 
-                            <div className="room-play-overlay hover:border-2 border-white rounded-sm  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
+                            <div className="room-play-overlay hover:border-2  border-white rounded-md  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
 
                             <button
                               onClick={(e) =>
@@ -307,7 +301,7 @@ export default function BrowsePage() {
                             </button>
                           </div>
                           <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
-                            <p className="text-xs md:text-sm text-white truncate  leading-tight">
+                            <p className="text-xs md:text-[14px]   text-white truncate  leading-tight">
                               {room.hostName} • {room.name}
                             </p>
                           </div>
@@ -320,10 +314,10 @@ export default function BrowsePage() {
                     className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-42 cursor-pointer"
                     onClick={() => setShowCreateModal(true)}
                   >
-                    <div className="aspect-square  border border-white/30  backdrop-blur-2xl flex items-center justify-center hover:border-white/20 rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                    <div className="aspect-square text-neutral-700 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
                       <Plus
-                        className="create-plus w-20 h-20 text-white transition-all"
-                        strokeWidth={3}
+                        className="create-plus w-30 h-30  transition-all"
+                        strokeWidth={2.25}
                       />
                     </div>
                     <div className="px-0.5">
