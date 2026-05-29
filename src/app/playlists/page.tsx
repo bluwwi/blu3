@@ -480,7 +480,7 @@ export default function PlaylistsPage() {
                   <div className="flex flex-col items-center justify-center py-20 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
                     <FolderHeart size={32} className="text-zinc-600 mb-3" />
                     <p className="text-sm font-bold text-zinc-400 mb-1">No playlists yet</p>
-                    <p className="text-[11px] text-zinc-600 text-center max-w-xs leading-relaxed">Create a playlist or import from Spotify / YouTube.</p>
+                    <p className="text-[11px] text-zinc-600 text-center max-w-xs leading-relaxed">Create a playlist or import from Spotify / YouTube / Apple Music.</p>
                   </div>
                 ) : (
                   <div className="flex flex-wrap gap-5">
@@ -556,7 +556,7 @@ export default function PlaylistsPage() {
                 </button>
               )}
             </div>
-            <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-4 relative z-10">spotify · youtube music</p>
+            <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-4 relative z-10">spotify · youtube music · apple music</p>
             <input autoFocus value={importUrl} onChange={(e) => setImportUrl(e.target.value)} disabled={importing} onKeyDown={(e) => e.key === "Enter" && handleImport()} placeholder="paste playlist link..." className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10" />
             {importError && (
               <p className="text-[10px] text-red-400 bg-red-950/20 border border-red-900/20 rounded-lg px-3 py-2 mb-4 leading-relaxed relative z-10">{importError}</p>
