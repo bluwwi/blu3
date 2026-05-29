@@ -61,7 +61,6 @@ type ScheduledPlayMessage = Extract<WSMessage, { type: "schedule_play" }> & {
   image?: string;
   duration_ms?: number;
   recentTracks?: RecentTrack[];
-  queue?: Track[];
 };
 
 type ScheduledPauseMessage = Extract<WSMessage, { type: "schedule_pause" }>;
@@ -311,7 +310,6 @@ export function useRoomSocket({
             updatedAt: msg.targetTime,
           });
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
-          if (msg.queue) setQueue(msg.queue);
           onSchedulePlayRef.current?.(msg, getSyncedTime);
           break;
         case "schedule_pause":

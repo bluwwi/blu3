@@ -68,9 +68,11 @@ export function useProgressTracking(
     [duration, seekTo],
   );
 
-  // Auto start/stop tracking based on player state
+  // Auto start/stop tracking based on player state.
+  // Keep tracking active while playing OR paused (not just playing),
+  // so the progress bar doesn't freeze during pause.
   useEffect(() => {
-    if (playerState === "playing") {
+    if (playerState === "playing" || playerState === "paused") {
       startTracking();
     } else {
       stopTracking();

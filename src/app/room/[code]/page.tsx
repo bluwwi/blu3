@@ -620,60 +620,61 @@ export default function RoomPage() {
     [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
-  /* ─── Background audio keeper ──────────────────────── */
+  /* ─── Audio unlock / Autoplay keeper ────────────────── */
   const audioContextRef = useRef<AudioContext | null>(null);
   const silentSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const audioStartedRef = useRef(false);
+  const [showPlayPrompt, setShowPlayPrompt] = useState(false);
+
+  const tryUnlockAudio = useCallback(() => {
+    const AC = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AC) return;
+    try {
+      if (!audioContextRef.current) audioContextRef.current = new AC();
+      const ctx = audioContextRef.current;
+      if (ctx.state === "suspended") ctx.resume();
+
+      if (!audioStartedRef.current) {
+        const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const d = buf.getChannelData(0);
+        for (let i = 0; i < d.length; i++)
+          d[i] = (Math.random() - 0.5) * 0.00001;
+        const src = ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const g = ctx.createGain();
+        g.gain.value = 0.0001;
+        src.connect(g);
+        g.connect(ctx.destination);
+        src.start(0);
+        silentSourceRef.current = src;
+        audioStartedRef.current = true;
+      }
+
+      const cp = playbackRef.current;
+      if (cp?.isPlaying && player.playerRef.current) {
+        try {
+          const st = player.playerRef.current.getPlayerState?.();
+          if (st !== 1) player.playerRef.current.playVideo?.();
+        } catch (e) { /* ignore */ }
+      }
+      setShowPlayPrompt(false);
+    } catch (err) {
+      console.error("Failed to start background tab keeper:", err);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const startOrResumeAudio = () => {
-      const AC = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AC) return;
-      try {
-        if (!audioContextRef.current) audioContextRef.current = new AC();
-        const ctx = audioContextRef.current;
-        if (ctx.state === "suspended") ctx.resume();
-
-        if (!silentSourceRef.current) {
-          const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-          const d = buf.getChannelData(0);
-          for (let i = 0; i < d.length; i++)
-            d[i] = (Math.random() - 0.5) * 0.00001;
-          const src = ctx.createBufferSource();
-          src.buffer = buf;
-          src.loop = true;
-          const g = ctx.createGain();
-          g.gain.value = 0.0001;
-          src.connect(g);
-          g.connect(ctx.destination);
-          src.start(0);
-          silentSourceRef.current = src;
-        }
-
-        const cp = playbackRef.current;
-        if (cp?.isPlaying && player.playerRef.current) {
-          try {
-            const st = player.playerRef.current.getPlayerState?.();
-            if (st !== 1) player.playerRef.current.playVideo?.();
-          } catch (e) { /* ignore */ }
-        }
-      } catch (err) {
-        console.error("Failed to start background tab keeper:", err);
-      }
-    };
-
     const events = ["click", "keydown", "touchstart", "mousedown"];
-    const interact = () => {
-      startOrResumeAudio();
-      events.forEach((evt) => window.removeEventListener(evt, interact));
-    };
+    const interact = () => { tryUnlockAudio(); };
     events.forEach((evt) =>
-      window.addEventListener(evt, interact, { once: true }),
+      window.addEventListener(evt, interact),
     );
 
     const onVisible = () => {
-      if (document.visibilityState === "visible") startOrResumeAudio();
+      if (document.visibilityState === "visible") tryUnlockAudio();
     };
     document.addEventListener("visibilitychange", onVisible);
 
@@ -685,8 +686,27 @@ export default function RoomPage() {
         audioContextRef.current = null;
       }
       silentSourceRef.current = null;
+      audioStartedRef.current = false;
     };
-  }, []);
+  }, [tryUnlockAudio]);
+
+  /* ─── Show play prompt if YT hasn't started ──────────── */
+  useEffect(() => {
+    if (canControlPlayback || !playback?.isPlaying || !joined) {
+      setShowPlayPrompt(false);
+      return;
+    }
+    if (player.playerState === "playing") {
+      setShowPlayPrompt(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      if (player.playerState !== "playing" && player.playerState !== "loading") {
+        setShowPlayPrompt(true);
+      }
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [canControlPlayback, playback?.isPlaying, joined, player.playerState]);
 
   /* ─── Media Session API ────────────────────────────── */
   useEffect(() => {
@@ -1240,6 +1260,24 @@ export default function RoomPage() {
               <p className="text-white text-sm font-semibold truncate max-w-[200px]">{queueToast.playlistName}</p>
               <p className="text-white/50 text-xs">{queueToast.trackCount} track{queueToast.trackCount !== 1 ? "s" : ""} queued</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showPlayPrompt && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 cursor-pointer"
+          onClick={() => {
+            tryUnlockAudio();
+            setShowPlayPrompt(false);
+          }}
+        >
+          <div className="flex flex-col items-center gap-4 px-8 py-12 rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl">
+            <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center animate-pulse">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </div>
+            <p className="text-white text-sm font-medium">Tap anywhere to start listening</p>
+            <p className="text-white/40 text-[11px]">Your browser requires interaction to play audio</p>
           </div>
         </div>
       )}

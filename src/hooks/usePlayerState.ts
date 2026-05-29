@@ -211,6 +211,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   useEffect(() => {
     if (ytReady && pendingTrack) {
       const { track, startTime, shouldPlay } = pendingTrack;
+      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
       setPendingTrack(null);
       initPlayer(track.videoId, (player) => {
         if (startTime) {
