@@ -93,10 +93,10 @@ export function SquarePlayer({
   const repeatBtn = getRepeatButtonProps();
 
   return (
-    <div className="flex flex-col text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
+    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
       <div className="h-[60%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
         <Image
-          width={100}
+          width={400}
           height={400}
           src={albumArt}
           alt={title}
@@ -160,7 +160,11 @@ export function SquarePlayer({
           ) : isPlaying ? (
             <Icon name="pause" size={18} className="text-black" />
           ) : (
-            <Icon name="play" size={18} className="text-black translate-x-[1px]" />
+            <Icon
+              name="play"
+              size={18}
+              className="text-black translate-x-[1px]"
+            />
           )}
         </button>
 
@@ -186,11 +190,7 @@ export function SquarePlayer({
           aria-label={repeatBtn.label}
           title={repeatBtn.title}
         >
-          <Icon
-            name={repeatBtn.iconName}
-            size={16}
-            className="text-current"
-          />
+          <Icon name={repeatBtn.iconName} size={16} className="text-current" />
         </button>
 
         {/* Divider */}
