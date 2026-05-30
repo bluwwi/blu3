@@ -56,6 +56,7 @@ export function SquarePlayer({
   const isLoading = playerState === "loading";
   const title =
     track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
+  const displayTitle = title.length > 30 ? title.slice(0, 30) + "..." : title;
   const artist = track?.artists?.map((a) => a.name).join(", ") ?? "";
   const albumName = track?.album?.name ?? "";
   const subtitle = [artist, albumName].filter(Boolean).join(" · ");
@@ -92,8 +93,8 @@ export function SquarePlayer({
   const repeatBtn = getRepeatButtonProps();
 
   return (
-    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full overflow-hidden w-full">
-      <div className="h-[60%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
+    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
+      <div className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
         <Image
           width={400}
           height={400}
@@ -104,10 +105,9 @@ export function SquarePlayer({
         />
       </div>
 
-      {/* Track Info */}
-      <div className="w-[90%] flex justify-center items-center mb-3 shrink-0">
+      <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
         <div className="text-center w-fit flex-1">
-          <p className="text-white font-bold text-sm sm:text-base truncate tracking-wide">
+          <p className="text-white text-lg  sm:text-base truncate tracking-wide">
             {title}
           </p>
           {subtitle && (
@@ -131,8 +131,21 @@ export function SquarePlayer({
           title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
         >
           <Icon name="shuffle" size={16} className="text-current" />
-        </button>
-
+        </button>{" "}
+        {onToggleLike && (
+          <button
+            onClick={onToggleLike}
+            className={`p-2 w-10 h-10  rounded-full transition-all cursor-pointer aspect-square `}
+            aria-label={isLiked ? "Unlike track" : "Like track"}
+            title={isLiked ? "Unlike track" : "Like track"}
+          >
+            <Icon
+              name={isLiked ? "heart" : "heart"}
+              size={30}
+              className={isLiked ? "text-rose-500" : "text-current"}
+            />
+          </button>
+        )}
         {/* Skip Back */}
         <button
           onClick={onSkipBack}
@@ -142,7 +155,6 @@ export function SquarePlayer({
         >
           <Icon name="skip-back" size={18} className="text-current" />
         </button>
-
         {/* Play/Pause - Centerpiece */}
         <button
           onClick={onPlayPause}
@@ -166,7 +178,6 @@ export function SquarePlayer({
             />
           )}
         </button>
-
         {/* Skip Forward */}
         <button
           onClick={onSkipForward}
@@ -176,7 +187,6 @@ export function SquarePlayer({
         >
           <Icon name="skip-forward" size={18} className="text-current" />
         </button>
-
         {/* Repeat - Single button, cycles modes */}
         <button
           onClick={onCycleRepeat}
@@ -191,10 +201,8 @@ export function SquarePlayer({
         >
           <Icon name={repeatBtn.iconName} size={16} className="text-current" />
         </button>
-
         {/* Divider */}
         <div className="w-px h-6 bg-white/10 mx-1" />
-
         {/* Volume + Mute */}
         <button
           onClick={onMute}
@@ -207,7 +215,6 @@ export function SquarePlayer({
             <Icon name="volume-up" size={16} className="text-current" />
           )}
         </button>
-
         <input
           type="range"
           min={0}
@@ -218,26 +225,7 @@ export function SquarePlayer({
           className="accent-white h-1.5 w-12 sm:w-16 cursor-pointer bg-white/10 rounded-lg outline-none flex-shrink-0"
           aria-label="Volume"
         />
-
         {/* Like Button */}
-        {onToggleLike && (
-          <button
-            onClick={onToggleLike}
-            className={`p-1.5 rounded-full transition-all cursor-pointer flex-shrink-0 ${
-              isLiked
-                ? "text-rose-500 scale-105 bg-rose-500/10"
-                : "text-white/50 hover:text-white hover:bg-white/10"
-            }`}
-            aria-label={isLiked ? "Unlike track" : "Like track"}
-            title={isLiked ? "Unlike track" : "Like track"}
-          >
-            <Icon
-              name={isLiked ? "favorite" : "heart"}
-              size={16}
-              className={isLiked ? "text-rose-500" : "text-current"}
-            />
-          </button>
-        )}
       </div>
 
       {/* Progress Bar + Timestamps */}
