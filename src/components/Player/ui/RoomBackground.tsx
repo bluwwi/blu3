@@ -282,13 +282,7 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
         />
       )}
 
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0.90) 100%)",
-        }}
-      />
+      <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/90 to-black/35" />
 
       <canvas
         ref={canvasRef}
