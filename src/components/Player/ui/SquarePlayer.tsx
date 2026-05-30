@@ -65,7 +65,6 @@ export function SquarePlayer({
       ? `https://i.ytimg.com/vi/${activeVideoId}/maxresdefault.jpg`
       : `https://picsum.photos/seed/nowplaying/400/400`);
 
-  // Repeat button: single button that cycles through all modes
   const getRepeatButtonProps = () => {
     if (repeatMode === "one") {
       return {
@@ -249,7 +248,7 @@ export function SquarePlayer({
           </span>
           <div className="flex-1">
             <ProgressBar
-              progress={progress}
+              progress={progress * 100}
               currentTime={currentTime}
               duration={duration}
               onSeek={onSeek}

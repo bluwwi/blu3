@@ -53,6 +53,7 @@ export default function RoomPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
+  const [listenerMuted, setListenerMuted] = useState(false);
   const [joinToasts, setJoinToasts] = useState<
     Array<{ id: string; name: string; avatar?: string }>
   >([]);
@@ -217,29 +218,91 @@ export default function RoomPage() {
   const canControlPlaybackRef = useRef(canControlPlayback);
   const playerRef_fix = useRef(player);
   const progressRef_fix = useRef(progress);
-  useEffect(() => { canControlPlaybackRef.current = canControlPlayback; }, [canControlPlayback]);
-  useEffect(() => { playerRef_fix.current = player; }, [player]);
-  useEffect(() => { progressRef_fix.current = progress; }, [progress]);
+  useEffect(() => {
+    canControlPlaybackRef.current = canControlPlayback;
+  }, [canControlPlayback]);
+  useEffect(() => {
+    playerRef_fix.current = player;
+  }, [player]);
+  useEffect(() => {
+    progressRef_fix.current = progress;
+  }, [progress]);
 
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
-  const footerTrack =
-    player.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
+  const footerTrack = player.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
   const isLiked = footerTrack ? likedTrackIds.has(footerTrack.videoId) : false;
   const handleToggleLike = () => {
-    if (footerTrack) {
-      toggleLike(footerTrack);
-    }
+    if (footerTrack) toggleLike(footerTrack);
   };
-  const footerPlayerState =
-    player.playerState === "idle" && playback?.videoId
+
+  // listenerMuted=true → show pause button so user can click to unmute+sync
+  const footerPlayerState = listenerMuted
+    ? "paused"
+    : player.playerState === "idle" && playback?.videoId
       ? playback.isPlaying
         ? "loading"
         : "paused"
       : player.playerState;
+
   const carouselTracks = (
     queue.length > 0 ? queue : footerTrack ? [footerTrack] : []
   ).slice(0, 8);
+
+  // Live-ticking currentTime for when listener is muted (player running silently).
+  // We can't rely on progress.currentTime (it may lag) or progress.duration (may be 0).
+  // Instead read directly from the YouTube player ref every 500ms.
+  const [listenerDisplayTime, setListenerDisplayTime] = useState(0);
+  const [listenerDisplayDuration, setListenerDisplayDuration] = useState(0);
+
+  useEffect(() => {
+    if (!listenerMuted) {
+      setListenerDisplayTime(0);
+      setListenerDisplayDuration(0);
+      return;
+    }
+    // Seed immediately from playback state
+    const seedElapsed = (getSyncedTime() - (playback?.updatedAt ?? 0)) / 1000;
+    const seedTime =
+      (playback?.currentTime ?? 0) +
+      (seedElapsed > 0 && seedElapsed < 3600 ? seedElapsed : 0);
+    setListenerDisplayTime(seedTime);
+
+    const id = window.setInterval(() => {
+      const ref = player.playerRef.current;
+      if (ref) {
+        const ct = ref.getCurrentTime?.() ?? 0;
+        const dur = ref.getDuration?.() ?? 0;
+        if (ct > 0) setListenerDisplayTime(ct);
+        if (dur > 0) setListenerDisplayDuration(dur);
+      } else {
+        // Fallback: advance from playback state manually
+        const elapsed = (getSyncedTime() - (playback?.updatedAt ?? 0)) / 1000;
+        const t =
+          (playback?.currentTime ?? 0) +
+          (elapsed > 0 && elapsed < 3600 ? elapsed : 0);
+        setListenerDisplayTime(t);
+      }
+    }, 500);
+    return () => window.clearInterval(id);
+  }, [
+    listenerMuted,
+    playback?.currentTime,
+    playback?.updatedAt,
+    getSyncedTime,
+    player.playerRef,
+  ]);
+
+  const displayCurrentTime = listenerMuted
+    ? listenerDisplayTime
+    : progress.currentTime;
+  const displayDuration = listenerMuted
+    ? listenerDisplayDuration || progress.duration
+    : progress.duration;
+  const displayProgress =
+    displayDuration > 0
+      ? displayCurrentTime / displayDuration
+      : progress.progress;
 
   /* ─── Scheduling helpers ─────────────────────── */
   const clearScheduledTimeout = useCallback(
@@ -355,6 +418,7 @@ export default function RoomPage() {
     },
     [clearScheduledTimeout, scheduleSyncedAction],
   );
+
   const scheduleRoomSeek = useCallback(
     (
       state: { seekTo: number; targetTime: number },
@@ -388,8 +452,37 @@ export default function RoomPage() {
       syncHandledRef.current
     )
       return;
+
     const p = playerRef_fix.current;
-    const pr = progressRef_fix.current;
+
+    let actualCurrentTime = playback.currentTime ?? 0;
+    if (playback.isPlaying && playback.updatedAt) {
+      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+    }
+
+    // Non-host listener joining a live room: start playing at volume 0
+    // so the progress bar ticks in sync. User clicks Play to unmute+sync.
+    if (!canControlPlayback && playback.isPlaying) {
+      if (!player.isMuted) player.toggleMute();
+      p.playTrack(
+        {
+          id: `room-${playback.videoId}`,
+          videoId: playback.videoId,
+          name: playback.trackName,
+          duration_ms: 0,
+          explicit: false,
+          artists: [{ name: playback.artistName }],
+          album: { name: "" },
+          image: playback.image,
+        },
+        actualCurrentTime,
+        true, // start playing so progress bar moves
+      );
+      setListenerMuted(true);
+      return;
+    }
+
     if (playback.isPlaying && playback.updatedAt > getSyncedTime() + 150) {
       scheduleRoomPlay(
         {
@@ -406,11 +499,7 @@ export default function RoomPage() {
       );
       return;
     }
-    let actualCurrentTime = playback.currentTime ?? 0;
-    if (playback.isPlaying && playback.updatedAt) {
-      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
-      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
-    }
+
     p.playTrack(
       {
         id: `room-${playback.videoId}`,
@@ -431,6 +520,7 @@ export default function RoomPage() {
     playback,
     player.nowPlaying?.videoId,
     scheduleRoomPlay,
+    canControlPlayback,
   ]);
 
   /* ─── Queue advance ────────────────────────────────── */
@@ -482,7 +572,6 @@ export default function RoomPage() {
       if (nextTrack && nextTrack.id !== currentQueueTrack.id) {
         cycleQueueCurrent(currentQueueTrack.id);
       } else if (!nextTrack && queue.length === 1) {
-        // If there's only one song, just cycle it so it's not removed
         cycleQueueCurrent(currentQueueTrack.id);
       }
 
@@ -498,9 +587,6 @@ export default function RoomPage() {
         });
       }
     } else {
-      // If the currently playing track is NOT the first track in the queue,
-      // it means we just finished playing a one-off track or skipped into a manual track.
-      // We should start playing the first track in the queue!
       sendPlay({
         id: currentQueueTrack.id,
         videoId: currentQueueTrack.videoId,
@@ -527,6 +613,7 @@ export default function RoomPage() {
   useEffect(() => {
     if (player.playerState === "ended") maybeAdvanceQueue();
   }, [maybeAdvanceQueue, player.playerState]);
+
   useEffect(() => {
     const activeKey =
       player.nowPlaying?.videoId || player.nowPlaying?.id || null;
@@ -576,10 +663,8 @@ export default function RoomPage() {
     );
     const timeoutId = window.setTimeout(() => {
       const ref = player.playerRef.current;
-      const currentTime =
-        ref?.getCurrentTime?.() ?? progress.currentTime;
-      const duration =
-        ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
+      const currentTime = ref?.getCurrentTime?.() ?? progress.currentTime;
+      const duration = ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
         duration > 0 && currentTime >= Math.max(duration - 2, 0);
       if (player.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
@@ -624,7 +709,6 @@ export default function RoomPage() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const silentSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const audioStartedRef = useRef(false);
-  const [showPlayPrompt, setShowPlayPrompt] = useState(false);
 
   const tryUnlockAudio = useCallback(() => {
     const AC = window.AudioContext || (window as any).webkitAudioContext;
@@ -656,9 +740,10 @@ export default function RoomPage() {
         try {
           const st = player.playerRef.current.getPlayerState?.();
           if (st !== 1) player.playerRef.current.playVideo?.();
-        } catch (e) { /* ignore */ }
+        } catch (e) {
+          /* ignore */
+        }
       }
-      setShowPlayPrompt(false);
     } catch (err) {
       console.error("Failed to start background tab keeper:", err);
     }
@@ -666,18 +751,15 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
     const events = ["click", "keydown", "touchstart", "mousedown"];
-    const interact = () => { tryUnlockAudio(); };
-    events.forEach((evt) =>
-      window.addEventListener(evt, interact),
-    );
-
+    const interact = () => {
+      tryUnlockAudio();
+    };
+    events.forEach((evt) => window.addEventListener(evt, interact));
     const onVisible = () => {
       if (document.visibilityState === "visible") tryUnlockAudio();
     };
     document.addEventListener("visibilitychange", onVisible);
-
     return () => {
       events.forEach((evt) => window.removeEventListener(evt, interact));
       document.removeEventListener("visibilitychange", onVisible);
@@ -689,24 +771,6 @@ export default function RoomPage() {
       audioStartedRef.current = false;
     };
   }, [tryUnlockAudio]);
-
-  /* ─── Show play prompt if YT hasn't started ──────────── */
-  useEffect(() => {
-    if (canControlPlayback || !playback?.isPlaying || !joined) {
-      setShowPlayPrompt(false);
-      return;
-    }
-    if (player.playerState === "playing") {
-      setShowPlayPrompt(false);
-      return;
-    }
-    const timer = setTimeout(() => {
-      if (player.playerState !== "playing" && player.playerState !== "loading") {
-        setShowPlayPrompt(true);
-      }
-    }, 800);
-    return () => clearTimeout(timer);
-  }, [canControlPlayback, playback?.isPlaying, joined, player.playerState]);
 
   /* ─── Media Session API ────────────────────────────── */
   useEffect(() => {
@@ -732,10 +796,9 @@ export default function RoomPage() {
     progress.seekTo(seekToTime);
     sendSeek(seekToTime);
   };
+
   const handlePlayPauseAction = useCallback(() => {
     if (!canControlPlayback) return;
-
-    // Nothing is playing — start the first track in queue if available
     if (!player.nowPlaying?.videoId) {
       const firstTrack = queue[0];
       if (!firstTrack) return;
@@ -751,14 +814,11 @@ export default function RoomPage() {
       });
       return;
     }
-
     if (player.playerState === "playing") {
-      // Optimistic: pause locally first, then tell server
       player.pause?.();
       sendPause(progress.currentTime);
       return;
     }
-    // Optimistic: play locally first, then tell server
     player.play?.();
     sendPlay({
       id: player.nowPlaying.id,
@@ -782,6 +842,7 @@ export default function RoomPage() {
     player.playTrack,
   ]);
 
+  // Listener clicks Play → unmute + seek to exact synced position
   const handleListenerPlay = useCallback(() => {
     if (!playback?.isPlaying) return;
     let actualCurrentTime = playback.currentTime ?? 0;
@@ -789,13 +850,15 @@ export default function RoomPage() {
       const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
       if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
     }
+    if (player.isMuted) player.toggleMute();
     progress.seekTo(actualCurrentTime);
     player.play?.();
-  }, [playback, getSyncedTime, progress.seekTo, player.play]);
+    setListenerMuted(false);
+  }, [playback, getSyncedTime, progress, player]);
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
-    : playback?.isPlaying && player.playerState !== "playing"
+    : listenerMuted || (playback?.isPlaying && player.playerState !== "playing")
       ? handleListenerPlay
       : undefined;
 
@@ -839,7 +902,6 @@ export default function RoomPage() {
 
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
-    // If more than 3 seconds in, restart current track
     if (progress.currentTime > 3 && player.nowPlaying) {
       sendPlay({
         id: player.nowPlaying.id,
@@ -852,7 +914,6 @@ export default function RoomPage() {
       });
       return;
     }
-    // Otherwise go to previous track in queue (wrap if repeat all)
     const currentIdx = queue.findIndex(
       (t) =>
         t.videoId === player.nowPlaying?.videoId ||
@@ -890,6 +951,7 @@ export default function RoomPage() {
     if (!canControlPlayback) return;
     sendPlaybackMode({ shuffle: !playbackMode.shuffle });
   }, [canControlPlayback, playbackMode.shuffle, sendPlaybackMode]);
+
   const handleCycleRepeat = useCallback(() => {
     if (!canControlPlayback) return;
     const nextRepeatMode: RepeatMode =
@@ -908,6 +970,7 @@ export default function RoomPage() {
       syncHandledRef.current = false;
     };
   }, [clearScheduledPlaybackActions]);
+
   useEffect(() => {
     if (authLoading || !user || !code) return;
     if (room?.code === code) {
@@ -922,9 +985,11 @@ export default function RoomPage() {
       } else router.replace("/browse");
     });
   }, [authLoading, user, code]);
+
   useEffect(() => {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
+
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (
@@ -938,9 +1003,9 @@ export default function RoomPage() {
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [canControlPlayback, joined, requestSync]);
+
   useEffect(() => {
-    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId)
-      return;
+    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const playbackState =
       player.playerState === "playing"
         ? "playing"
@@ -951,8 +1016,7 @@ export default function RoomPage() {
             : null;
     if (!playbackState) return;
     const liveCurrentTime =
-      player.playerRef.current?.getCurrentTime?.() ??
-      progress.currentTime;
+      player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
     sendPlaybackState(playbackState, liveCurrentTime);
   }, [
     canControlPlayback,
@@ -962,13 +1026,13 @@ export default function RoomPage() {
     player.playerState,
     sendPlaybackState,
   ]);
+
   useEffect(() => {
     if (!joined || !canControlPlayback || player.playerState !== "playing")
       return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
-        player.playerRef.current?.getCurrentTime?.() ??
-        progress.currentTime;
+        player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
       sendPlaybackState("playing", liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
@@ -979,6 +1043,7 @@ export default function RoomPage() {
     player.playerState,
     sendPlaybackState,
   ]);
+
   const openSearchOverlay = useCallback(() => {
     setChatOpen(false);
     setSearchOpen(true);
@@ -994,6 +1059,7 @@ export default function RoomPage() {
   const closeChatOverlay = useCallback(() => {
     setChatOpen(false);
   }, []);
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
@@ -1054,6 +1120,7 @@ export default function RoomPage() {
     },
     [closeSearchOverlay, handleAdminPlayTrack],
   );
+
   const popularGenres = [
     "Pop hits",
     "Hip hop",
@@ -1062,6 +1129,7 @@ export default function RoomPage() {
     "Bollywood",
     "EDM",
   ];
+
   /* ─── Background Video Looper ──────────────────────── */
   useEffect(() => {
     if (!joined) return;
@@ -1069,22 +1137,16 @@ export default function RoomPage() {
     if (!video) return;
 
     const LOOP_START = 10.58;
-    const LOOP_END = 17.6; // a bit before 17.9 — gives rAF time to catch it
-
+    const LOOP_END = 17.6;
     let rafId: number;
 
     const forcePlay = () => {
       if (video.paused) video.play().catch(() => {});
     };
-
     const tick = () => {
-      if (video.currentTime >= LOOP_END) {
-        video.currentTime = LOOP_START;
-        // No need to call play() here — video wasn't paused, just seeking
-      }
+      if (video.currentTime >= LOOP_END) video.currentTime = LOOP_START;
       rafId = requestAnimationFrame(tick);
     };
-
     const handleEnded = () => {
       video.currentTime = LOOP_START;
       forcePlay();
@@ -1092,15 +1154,12 @@ export default function RoomPage() {
 
     forcePlay();
     rafId = requestAnimationFrame(tick);
-
     video.addEventListener("ended", handleEnded);
     video.addEventListener("pause", forcePlay);
-
     const handleVisibility = () => {
       if (document.visibilityState === "visible") forcePlay();
     };
     document.addEventListener("visibilitychange", handleVisibility);
-
     return () => {
       cancelAnimationFrame(rafId);
       video.removeEventListener("ended", handleEnded);
@@ -1121,7 +1180,7 @@ export default function RoomPage() {
         <RoomBackground
           isPlaying={player.playerState === "playing"}
           trackImage={footerTrack?.image}
-         />
+        />
       </div>
 
       <div className="relative z-10 h-screen w-full overflow-hidden">
@@ -1130,26 +1189,9 @@ export default function RoomPage() {
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               overflow-y-auto lg:overflow-hidden"
         >
-          {/*<RoomTopBar
-            roomName={room?.name ?? "Room"}
-            roomCode={code}
-            isHost={isHost}
-            connected={connected}
-            track={footerTrack}
-            roomTheme={roomTheme}
-            activeVideoId={
-              player.activeVideoId ?? playback?.videoId ?? null
-            }
-            playerState={footerPlayerState}
-            onCopyInvite={() =>
-              navigator.clipboard.writeText(window.location.href)
-            }
-            onLeave={handleLeave}
-            onSearchClick={openSearchOverlay}
-          />*/}
-
           <div className="flex h-full mt-2 md:mt-10 gap-2 pt-2 min-h-0">
             <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
+              {/* Left panel — player or chat */}
               <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
                 {chatOpen ? (
                   <div className="absolute inset-0 animate-in fade-in duration-300">
@@ -1184,9 +1226,9 @@ export default function RoomPage() {
                     playerState={footerPlayerState}
                     isLiked={isLiked}
                     onToggleLike={handleToggleLike}
-                    progress={progress.progress}
-                    currentTime={progress.currentTime}
-                    duration={progress.duration}
+                    progress={displayProgress}
+                    currentTime={displayCurrentTime}
+                    duration={displayDuration}
                     volume={player.volume}
                     isMuted={player.isMuted}
                     shuffleEnabled={playbackMode.shuffle}
@@ -1209,7 +1251,8 @@ export default function RoomPage() {
                 )}
               </aside>
 
-              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0  rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent flex flex-col">
+              {/* Right panel — sidebar */}
+              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent flex flex-col">
                 <RightSidebar
                   members={members}
                   messages={messages}
@@ -1240,6 +1283,7 @@ export default function RoomPage() {
         </div>
       </div>
 
+      {/* Queue toast */}
       {queueToast && (
         <div className="fixed top-24 right-4 lg:right-[calc(50%-35rem)] z-50 animate-in slide-in-from-right-4 fade-in duration-300">
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
@@ -1252,43 +1296,41 @@ export default function RoomPage() {
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white/40">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M9 18V5l12-2v13" />
+                    <circle cx="6" cy="18" r="3" />
+                    <circle cx="18" cy="16" r="3" />
+                  </svg>
                 </div>
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-white text-sm font-semibold truncate max-w-[200px]">{queueToast.playlistName}</p>
-              <p className="text-white/50 text-xs">{queueToast.trackCount} track{queueToast.trackCount !== 1 ? "s" : ""} queued</p>
+              <p className="text-white text-sm font-semibold truncate max-w-[200px]">
+                {queueToast.playlistName}
+              </p>
+              <p className="text-white/50 text-xs">
+                {queueToast.trackCount} track
+                {queueToast.trackCount !== 1 ? "s" : ""} queued
+              </p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {showPlayPrompt && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-in fade-in duration-300 cursor-pointer"
-          onClick={() => {
-            tryUnlockAudio();
-            setShowPlayPrompt(false);
-          }}
-        >
-          <div className="flex flex-col items-center gap-4 px-8 py-12 rounded-[32px] border border-white/10 bg-white/[0.04] backdrop-blur-2xl">
-            <div className="w-16 h-16 rounded-full bg-violet-500/20 flex items-center justify-center animate-pulse">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </div>
-            <p className="text-white text-sm font-medium">Tap anywhere to start listening</p>
-            <p className="text-white/40 text-[11px]">Your browser requires interaction to play audio</p>
           </div>
         </div>
       )}
 
       <style>{`
-          .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-          .room-scroll::-webkit-scrollbar-track { background: transparent; }
-          .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+        .room-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+        .room-scroll::-webkit-scrollbar-track { background: transparent; }
+        .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 999px; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
 
       <SearchOverlay
         isOpen={searchOpen}
