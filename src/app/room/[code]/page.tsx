@@ -67,6 +67,7 @@ export default function RoomPage() {
   const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const scheduledPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
@@ -954,6 +955,7 @@ export default function RoomPage() {
     sendPlaybackMode({ shuffle: newShuffle });
     if (newShuffle) {
       setQueue((prev) => {
+        originalQueueRef.current = [...prev];
         const arr = [...prev];
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -961,6 +963,9 @@ export default function RoomPage() {
         }
         return arr;
       });
+    } else if (originalQueueRef.current.length > 0) {
+      setQueue(originalQueueRef.current);
+      originalQueueRef.current = [];
     }
   }, [canControlPlayback, playbackMode.shuffle, sendPlaybackMode, setQueue]);
 
