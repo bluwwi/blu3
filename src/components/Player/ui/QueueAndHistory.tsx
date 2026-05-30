@@ -36,13 +36,14 @@ export function QueueAndHistory({
   addToQueue,
   clearQueue,
   activeVideoId,
-  defaultTab,
   playerState,
+  shuffleEnabled = false,
+  repeatMode = "off",
+  onToggleShuffle,
+  onCycleRepeat,
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
-  const [activeTab, setActiveTab] = useState<"queue" | "history">(
-    defaultTab === "history" ? "history" : "queue",
-  );
+  const [activeTab, setActiveTab] = useState<"queue" | "history">("queue");
 
   const isQueueTab = activeTab === "queue";
 
@@ -50,14 +51,62 @@ export function QueueAndHistory({
     (track) => track.videoId !== activeVideoId,
   );
 
-  useEffect(() => {
-    if (!defaultTab) return;
-    setActiveTab(defaultTab === "history" ? "history" : "queue");
-  }, [defaultTab]);
-
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 p-1">
-      <div className="flex items-center justify-between gap-3 px-1" />
+      <div className="flex items-center gap-1.5 px-1">
+        <button
+          onClick={() => setActiveTab("queue")}
+          className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+            activeTab === "queue"
+              ? "bg-white text-black"
+              : "bg-white/20 text-white/60"
+          }`}
+          title="Queue"
+        >
+          <Icon name="list-music" size={14} className="text-current" />
+          {queue.length > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
+              {queue.length > 9 ? "9+" : queue.length}
+            </span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab("history")}
+          className={`relative flex h-10 w-10 items-center justify-center rounded-xl transition-all ${
+            activeTab === "history"
+              ? "bg-white text-black"
+              : "bg-white/20 text-white/60"
+          }`}
+          title="History"
+        >
+          <Icon name="clock-3" size={14} className="text-current" />
+        </button>
+        <div className="w-px h-6 bg-white/10 mx-0.5" />
+        <button
+          onClick={onToggleShuffle}
+          disabled={!onToggleShuffle}
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all disabled:opacity-30 ${
+            shuffleEnabled
+              ? "bg-violet-400 text-white"
+              : "bg-white text-black"
+          }`}
+          title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
+        >
+          <Icon name="shuffle" size={14} className="text-current" />
+        </button>
+        <button
+          onClick={onCycleRepeat}
+          disabled={!onCycleRepeat}
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all disabled:opacity-30 ${
+            repeatMode !== "off"
+              ? "bg-violet-400 text-white"
+              : "bg-white text-black"
+          }`}
+          title={`Repeat: ${repeatMode === "off" ? "off" : repeatMode === "one" ? "one" : "all"}`}
+        >
+          <Icon name={repeatMode === "one" ? "repeat-1" : "repeat"} size={14} className="text-current" />
+        </button>
+      </div>
 
       <section className="flex min-h-0 flex-1 flex-col">
         {isQueueTab ? (
