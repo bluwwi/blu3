@@ -32,7 +32,6 @@ interface Props {
   handleAdminPlayTrack: (track: Track) => void;
   removeFromQueue: (id: string) => void;
   addToQueue: (track: Track) => void;
-  clearQueue?: () => void;
   activeVideoId: string | null | undefined;
   roomTheme: RoomTheme;
   onThemeChange: (theme: RoomTheme) => void;
@@ -43,7 +42,6 @@ interface Props {
   onCycleRepeat?: () => void;
   onChatToggle?: () => void;
   unreadChatCount?: number;
-  onSearchClick?: () => void;
   user?: { sub: string; email: string; name: string; avatar?: string } | null;
   onLogout?: () => void;
 }
@@ -57,7 +55,6 @@ export function RightSidebar({
   handleAdminPlayTrack,
   removeFromQueue,
   addToQueue,
-  clearQueue,
   activeVideoId,
   playerState,
   shuffleEnabled = false,
@@ -66,7 +63,6 @@ export function RightSidebar({
   onCycleRepeat,
   onChatToggle,
   unreadChatCount = 0,
-  onSearchClick,
   user,
   onLogout,
 }: Props) {
@@ -75,7 +71,6 @@ export function RightSidebar({
   const [showDropdown, setShowDropdown] = useState(false);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showMembersPopup, setShowMembersPopup] = useState(false);
 
   useEffect(() => {
