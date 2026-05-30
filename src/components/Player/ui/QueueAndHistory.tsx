@@ -385,13 +385,13 @@ export function QueueAndHistory({
                       }
                     }}
                     style={{
-                      width: "clamp(3rem,3.5vw,199rem)",
+                      width: "clamp(3.5rem,3vw,199rem)",
                     }}
                     className={`relative group/img shrink-0 aspect-square  cursor-pointer rounded-lg`}
                   >
                     <Image
-                      width={200}
-                      height={200}
+                      width={300}
+                      height={300}
                       src={track.image}
                       alt=""
                       className="h-full w-full rounded-lg object-cover transition-all duration-200 group-hover/img:brightness-50"

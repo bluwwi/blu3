@@ -86,162 +86,128 @@ export function RightSidebar({
       style={getRoomThemeVars(roomTheme)}
     >
       <div className="max-md:px-0 md:px-3 max-md:pt-0 md:pt-3 pb-2 border-b border-white/10 shrink-0">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <button
-            onClick={() => setShowMembersPopup(true)}
-            className="flex flex-wrap -space-x-2 cursor-pointer"
-          >
-            {members.map((m, i) => (
-              <div
-                key={i}
-                className="flex items-center rounded-full border-2 border-white/40"
-              >
-                {m.avatar ? (
-                  <img
-                    src={m.avatar}
-                    alt=""
-                    className="h-5 w-5 aspect-square rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="h-4 w-4 rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
-                    {m.name[0]}
-                  </div>
-                )}
-              </div>
-            ))}
-          </button>
-
-          {showMembersPopup && (
-            <div
-              className="fixed inset-0 z-50 flex items-center justify-center"
-              style={{
-                background: "rgba(0,0,0,0.6)",
-                backdropFilter: "blur(4px)",
-              }}
-              onClick={() => setShowMembersPopup(false)}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center ">
+            <button
+              onClick={() => setShowMembersPopup(true)}
+              className="flex flex-wrap -space-x-2 cursor-pointer"
             >
-              <div
-                className="w-72 rounded-[24px] border border-white/[0.12] bg-neutral-900/95 p-5 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-white font-semibold text-[15px]">
-                    Members ({members.length})
-                  </h2>
-                  <button
-                    onClick={() => setShowMembersPopup(false)}
-                    className="text-white/40 hover:text-white transition-colors"
-                  >
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M18 6 6 18" />
-                      <path d="m6 6 12 12" />
-                    </svg>
-                  </button>
-                </div>
-                <div className="space-y-1  flex gap-2 overflow-y-auto room-scroll">
-                  {members.map((m, i) => {
-                    const isMe =
-                      user?.sub === m.userId || user?.email === m.userId;
-                    return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]"
-                      >
-                        <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
-                          {m.avatar ? (
-                            <img
-                              src={m.avatar}
-                              alt=""
-                              className="h-7 w-7 aspect-square rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="h-7 w-7 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
-                              {m.name[0]}
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-[12px] text-white/80 font-medium truncate flex-1">
-                          {m.name}
-                          {isMe && (
-                            <span className="text-[9px] text-white/40 ml-1.5">
-                              (you)
-                            </span>
-                          )}
-                        </span>
-                        {isMe && onLogout && (
-                          <button
-                            onClick={() => {
-                              setShowMembersPopup(false);
-                              onLogout();
-                            }}
-                            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50 hover:text-red-400 hover:bg-white/10 transition-all shrink-0"
-                          >
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                              <polyline points="16 17 21 12 16 7" />
-                              <line x1="21" y1="12" x2="9" y2="12" />
-                            </svg>
-                            Logout
-                          </button>
-                        )}
-                        {isMe && !onLogout && (
-                          <span className="text-[9px] text-white/30 italic">
-                            you
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {onChatToggle && (
-                    <button
-                      onClick={onChatToggle}
-                      className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/80 transition-colors hover:text-white/80 cursor-pointer"
-                      title="Toggle chat"
-                    >
-                      <Icon name="Chat" size={20} className="text-current" />
-                      {unreadChatCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
-                          {unreadChatCount > 9 ? "9+" : unreadChatCount}
-                        </span>
-                      )}
-                    </button>
+              {members.map((m, i) => (
+                <div
+                  key={i}
+                  className="flex items-center rounded-full border border-white/50  aspect-square"
+                >
+                  {m.avatar ? (
+                    <img
+                      src={m.avatar}
+                      alt=""
+                      className="h-5 w-5 aspect-square rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="h-4 w-4 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
+                      {m.name[0]}
+                    </div>
                   )}
                 </div>
+              ))}
+            </button>
+
+            {showMembersPopup && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center"
+                style={{
+                  background: "rgba(0,0,0,0.6)",
+                  backdropFilter: "blur(4px)",
+                }}
+                onClick={() => setShowMembersPopup(false)}
+              >
+                <div
+                  className="w-72 rounded-[24px] border border-white/[0.12] bg-neutral-900/95 p-5 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-white font-semibold text-[15px]">
+                      Members ({members.length})
+                    </h2>
+                    <button
+                      onClick={() => setShowMembersPopup(false)}
+                      className="text-white/40 hover:text-white transition-colors"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  <div className="max-h-60 overflow-y-auto room-scroll space-y-1">
+                    {members.map((m, i) => {
+                      const isMe =
+                        user?.sub === m.userId || user?.email === m.userId;
+                      return (
+                        <div
+                          key={i}
+                          className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]"
+                        >
+                          <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
+                            {m.avatar ? (
+                              <img
+                                src={m.avatar}
+                                alt=""
+                                className="h-7 w-7 aspect-square rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="h-7 w-7 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
+                                {m.name[0]}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[12px] text-white/80 font-medium truncate flex-1">
+                            {m.name}
+                            {isMe && (
+                              <span className="text-[9px] text-white/40 ml-1.5">
+                                (you)
+                              </span>
+                            )}
+                          </span>
+                          {isMe && onLogout && (
+                            <button
+                              onClick={() => {
+                                setShowMembersPopup(false);
+                                onLogout();
+                              }}
+                              className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50 hover:text-red-400 hover:bg-white/10 transition-all shrink-0"
+                            >
+                              <Icon name="logout" size={12} /> Logout
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-          <div className="flex gap-1 relative">
+            )}
+
+            {onChatToggle && (
+              <button
+                onClick={onChatToggle}
+                className="relative flex h-9 w-9  items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
+                title="Toggle chat"
+              >
+                <Icon name="Chat" size={20} className="text-current" />
+                {unreadChatCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
+                    {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                  </span>
+                )}
+              </button>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
             {roomCode && (
               <button
                 onClick={() => setShowLeavePopup(true)}
                 className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-[11px] font-semibold hover:bg-white/80 transition-all cursor-pointer"
                 title="Room options"
               >
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
+                <Icon name="lock" size={12} />
                 {roomCode}
               </button>
             )}
