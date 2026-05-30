@@ -83,7 +83,6 @@ export function SquarePlayer({
       </div>
 
       <div className="flex items-center justify-center gap-2 sm:gap-2 mb-3 flex-nowrap w-full select-none">
-        {/* Skip Back */}
         <button
           onClick={onSkipBack}
           disabled={!onSkipBack}
@@ -92,11 +91,10 @@ export function SquarePlayer({
         >
           <Icon name="skip-back" size={22} className="text-current" />
         </button>
-        {/* Play/Pause - Centerpiece */}
         <button
           onClick={onPlayPause}
           disabled={isLoading || !onPlayPause}
-          className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-black fill-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
+          className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isLoading ? (
@@ -108,11 +106,7 @@ export function SquarePlayer({
           ) : isPlaying ? (
             <Icon name="pause" size={18} className="text-black" />
           ) : (
-            <Icon
-              name="play"
-              size={18}
-              className="text-black translate-x-[1px]"
-            />
+            <Icon name="play" size={18} className="text-black " />
           )}
         </button>
         {/* Skip Forward */}

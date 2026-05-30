@@ -425,7 +425,6 @@ export function QueueAndHistory({
                     isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
                   }`}
                 >
-                  {/* Album art with play overlay */}
                   <div
                     role={canControlPlayback ? "button" : undefined}
                     tabIndex={canControlPlayback ? 0 : -1}

@@ -167,9 +167,8 @@ export function RightSidebar({
               />
             </div>
 
-            {/* Bottom Invite Friends button with blur fade */}
             {roomCode && (
-              <div className="shrink-0 relative flex justify-end px-3 py-2">
+              <div className="shrink-0 relative flex justify-end px-3 pb-2">
                 <div
                   className="pointer-events-none absolute bottom-0 left-0 right-0 h-24"
                   style={{
