@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 function hashStr(s: string): number {
   let h = 0;
   for (let i = 0; i < s.length; i++) {
-    h = ((h << 5) - h) + s.charCodeAt(i);
+    h = (h << 5) - h + s.charCodeAt(i);
     h |= 0;
   }
   return h;
@@ -19,10 +19,10 @@ interface TrackPersonality {
 
 function getPersonality(seed: number): TrackPersonality {
   return {
-    baseEnergy: 0.3 + ((seed >> 0) & 0xFF) / 255 * 0.7,
-    tempoFactor: 0.6 + ((seed >> 8) & 0xFF) / 255 * 1.4,
-    bassWeight: 0.2 + ((seed >> 16) & 0xFF) / 255 * 0.8,
-    dynamicRange: 0.2 + ((seed >> 24) & 0xFF) / 255 * 0.8,
+    baseEnergy: 0.3 + (((seed >> 0) & 0xff) / 255) * 0.7,
+    tempoFactor: 0.6 + (((seed >> 8) & 0xff) / 255) * 1.4,
+    bassWeight: 0.2 + (((seed >> 16) & 0xff) / 255) * 0.8,
+    dynamicRange: 0.2 + (((seed >> 24) & 0xff) / 255) * 0.8,
   };
 }
 
@@ -89,7 +89,11 @@ interface RoomBackgroundProps {
   trackId?: string;
 }
 
-export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroundProps) {
+export function RoomBackground({
+  isPlaying,
+  trackImage,
+  trackId,
+}: RoomBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -173,7 +177,9 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     ctx.clearRect(0, 0, W, H);
 
     // ── Frequency bands + energy (shaped by track personality) ────────
-    const bands: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
+    const bands: [number, number, number, number, number] = [
+      0.5, 0.5, 0.5, 0.5, 0.5,
+    ];
     let energy = 0.3;
     if (playing) {
       const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
@@ -182,18 +188,19 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
 
       // Energy envelope shaped by track personality
       const es = 0.35 * p.tempoFactor;
-      const raw = p.baseEnergy * (
-        0.4 +
-        0.3 * Math.sin(t * es + seed * 0.03) +
-        0.2 * Math.sin(t * es * 1.5 + seed * 0.05 + 1.3) +
-        0.1 * Math.sin(t * es * 2.5 + seed * 0.07 + 2.7)
-      );
-      totalEnergyRef.current += (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
+      const raw =
+        p.baseEnergy *
+        (0.4 +
+          0.3 * Math.sin(t * es + seed * 0.03) +
+          0.2 * Math.sin(t * es * 1.5 + seed * 0.05 + 1.3) +
+          0.1 * Math.sin(t * es * 2.5 + seed * 0.07 + 2.7));
+      totalEnergyRef.current +=
+        (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
       energy = totalEnergyRef.current;
 
       // Band oscillators with bassWeight shaping
       for (let i = 0; i < 5; i++) {
-        const weight = i < 2 ? p.bassWeight : (1 - p.bassWeight * 0.4);
+        const weight = i < 2 ? p.bassWeight : 1 - p.bassWeight * 0.4;
         const f1 = (2.2 + i * 1.4) * p.tempoFactor;
         const f2 = (5.3 + i * 2.7) * p.tempoFactor;
         const f3 = (11.7 + i * 4.1) * p.tempoFactor;
@@ -201,13 +208,15 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
         const secondary = Math.sin(t * f2 + seed * 0.07 + i * 1.7);
         const detail = Math.sin(t * f3 + seed * 0.05) * 0.4;
         const noise = Math.sin(t * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
-        const combined = primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
-        bands[i] = (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight * (0.6 + 0.4 * energy);
+        const combined =
+          primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
+        bands[i] =
+          (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight * (0.6 + 0.4 * energy);
       }
     }
 
     // ── WAVES ─────────────────────────────────────────────────────────────────
-    const midY = H * (window.innerWidth < 768 ? 0.33 : 0.5);
+    const midY = H * (window.innerWidth < 768 ? 0.25 : 0.5);
     const baseYs = Array.from(
       { length: NUM_LINES },
       (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
@@ -216,13 +225,13 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     WAVE_LINES.forEach((cfg) => {
       const idx = WAVE_LINES.indexOf(cfg);
       const baseY = baseYs[idx];
-      const band = bands[idx];
-      const scroll = tRef.current * cfg.scrollSpeed * (0.7 + 0.6 * energy) + cfg.scrollPhase;
+      const scroll =
+        tRef.current * cfg.scrollSpeed * (0.7 + 0.6 * energy) + cfg.scrollPhase;
       const freq = ((2 * Math.PI) / W) * 1.5;
       const breath =
         1 +
         0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-      const amp = H * cfg.amp * mt * breath * (0.5 + 0.5 * band);
+      const amp = H * cfg.amp * mt * breath;
 
       // fat glow
       ctx.strokeStyle = "rgba(255,255,255,0.07)";
@@ -231,7 +240,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       ctx.lineCap = "round";
       ctx.beginPath();
       for (let x = 0; x <= W; x += 6) {
-        const y = baseY + Math.sin(freq * x + scroll) * amp;
+        const y = baseY + Math.sin(freq * x - scroll) * amp;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -241,7 +250,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       ctx.lineWidth = 2.8;
       ctx.beginPath();
       for (let x = 0; x <= W; x += 2) {
-        const y = baseY + Math.sin(freq * x + scroll) * amp;
+        const y = baseY + Math.sin(freq * x - scroll) * amp;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -250,7 +259,10 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     // ── BUBBLES ───────────────────────────────────────────────────────────────
     if (playing && morphTRef.current > 0.25) {
       bubbleTimer.current += dt;
-      const interval = Math.max(0.05, 0.16 - morphTRef.current * 0.07 - 0.04 * bands[0] - 0.02 * energy);
+      const interval = Math.max(
+        0.05,
+        0.16 - morphTRef.current * 0.07 - 0.04 * bands[0] - 0.02 * energy,
+      );
       if (bubbleTimer.current > interval) {
         spawnBubble(0.5 + 0.5 * bands[0]);
         bubbleTimer.current = 0;
