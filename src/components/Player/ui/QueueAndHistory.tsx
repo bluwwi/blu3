@@ -174,7 +174,7 @@ export function QueueAndHistory({
 
             {showPlaylistDropdown && (
               <div
-                className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll"
+                className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
                 style={{
                   background: "var(--room-surface, #0D0D14)",
                   borderColor: "var(--room-border, rgba(255,255,255,0.08))",
@@ -183,49 +183,57 @@ export function QueueAndHistory({
                 <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
                   Queue Playlist
                 </div>
-                {loadingPlaylists ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">
-                    Loading...
-                  </div>
-                ) : playlists.length === 0 ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">
-                    No playlists found
-                  </div>
-                ) : (
-                  <div>
-                    {playlists.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => handleQueuePlaylist(p.id)}
-                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-                      >
-                        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                          {p.coverImage ? (
-                            <img
-                              src={p.coverImage}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/30">
-                              <Icon
-                                name="list-music"
-                                size={12}
-                                className="text-current"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-white/90">{p.name}</p>
-                          <p className="text-[9px] text-white/40">
-                            {p.trackCount ?? 0} tracks
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <div className="max-h-48 overflow-y-auto room-scroll">
+                  {loadingPlaylists ? (
+                    <div className="px-3 py-3 text-[10px] text-white/40">
+                      Loading...
+                    </div>
+                  ) : playlists.length === 0 ? (
+                    <div className="px-3 py-3 text-[10px] text-white/40">
+                      No playlists found
+                    </div>
+                  ) : (
+                    <div>
+                      {playlists.map((p) => (
+                        <button
+                          key={p.id}
+                          onClick={() => handleQueuePlaylist(p.id)}
+                          className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                            {p.coverImage ? (
+                              <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-white/30">
+                                <Icon name="list-music" size={12} className="text-current" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-white/90">{p.name}</p>
+                            <p className="text-[9px] text-white/40">{p.trackCount ?? 0} tracks</p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="border-t border-white/[0.06] pt-1">
+                  <button
+                    onClick={() => { window.location.href = "/playlists"; }}
+                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Import playlist</span>
+                  </button>
+                  <button
+                    onClick={() => { window.location.href = "/playlists"; }}
+                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span>Manage playlist</span>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -426,10 +434,26 @@ export function QueueAndHistory({
                           </span>
                         ) : (
                           <Icon name="play" size={12} className="text-white" />
-                        )}
-                      </div>
-                    )}
-                  </div>
+                )}
+                <div className="border-t border-white/[0.06] mt-1 pt-1">
+                  <button
+                    onClick={() => { window.location.href = "/playlists"; }}
+                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>Import playlist</span>
+                  </button>
+                  <button
+                    onClick={() => { window.location.href = "/playlists"; }}
+                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span>Manage playlist</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
                   <div className="min-w-0 flex-1">
                     <p

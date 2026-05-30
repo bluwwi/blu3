@@ -48,7 +48,6 @@ export function ChatPanel({
 
   return (
     <div className="flex flex-col h-full bg-transparent rounded-[20px] overflow-hidden text-white w-full">
-      {/* Mini Player Header */}
       {track && (
         <div className="flex items-center justify-between max-md:p-0 md:p-3 border-b border-white/10 bg-transparent">
           <div className="flex items-center gap-3 overflow-hidden">
