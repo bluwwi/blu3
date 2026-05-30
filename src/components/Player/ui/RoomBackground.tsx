@@ -10,6 +10,22 @@ function hashStr(s: string): number {
   return h;
 }
 
+interface TrackPersonality {
+  baseEnergy: number;
+  tempoFactor: number;
+  bassWeight: number;
+  dynamicRange: number;
+}
+
+function getPersonality(seed: number): TrackPersonality {
+  return {
+    baseEnergy: 0.3 + ((seed >> 0) & 0xFF) / 255 * 0.7,
+    tempoFactor: 0.6 + ((seed >> 8) & 0xFF) / 255 * 1.4,
+    bassWeight: 0.2 + ((seed >> 16) & 0xFF) / 255 * 0.8,
+    dynamicRange: 0.2 + ((seed >> 24) & 0xFF) / 255 * 0.8,
+  };
+}
+
 const NUM_LINES = 5;
 const GAP = 28;
 const SPEED = 0.45;
@@ -156,33 +172,37 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     const mt = ease(morphTRef.current);
     ctx.clearRect(0, 0, W, H);
 
-    // ── Frequency bands + smooth energy (simulated by track seed) ─────
+    // ── Frequency bands + energy (shaped by track personality) ────────
     const bands: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
     let energy = 0.3;
     if (playing) {
       const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
       const t = tRef.current;
+      const p = getPersonality(seed);
 
-      // Smooth energy derived from slow oscillators — flows on musical timescales
-      const raw = 0.5 + 0.5 * (
-        Math.sin(t * 0.35 + seed * 0.03) * 0.5 +
-        Math.sin(t * 0.55 + seed * 0.05 + 1.3) * 0.3 +
-        Math.sin(t * 0.85 + seed * 0.07 + 2.7) * 0.2
+      // Energy envelope shaped by track personality
+      const es = 0.35 * p.tempoFactor;
+      const raw = p.baseEnergy * (
+        0.4 +
+        0.3 * Math.sin(t * es + seed * 0.03) +
+        0.2 * Math.sin(t * es * 1.5 + seed * 0.05 + 1.3) +
+        0.1 * Math.sin(t * es * 2.5 + seed * 0.07 + 2.7)
       );
       totalEnergyRef.current += (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
       energy = totalEnergyRef.current;
 
-      // 5 bands, each with 3 oscillators + noise
+      // Band oscillators with bassWeight shaping
       for (let i = 0; i < 5; i++) {
-        const f1 = 2.2 + i * 1.4;
-        const f2 = 5.3 + i * 2.7;
-        const f3 = 11.7 + i * 4.1;
+        const weight = i < 2 ? p.bassWeight : (1 - p.bassWeight * 0.4);
+        const f1 = (2.2 + i * 1.4) * p.tempoFactor;
+        const f2 = (5.3 + i * 2.7) * p.tempoFactor;
+        const f3 = (11.7 + i * 4.1) * p.tempoFactor;
         const primary = Math.sin(t * f1 + seed * 0.11 + i * 0.9);
         const secondary = Math.sin(t * f2 + seed * 0.07 + i * 1.7);
         const detail = Math.sin(t * f3 + seed * 0.05) * 0.4;
         const noise = Math.sin(t * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
         const combined = primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
-        bands[i] = (0.2 + 0.8 * (0.5 + 0.5 * combined)) * (0.6 + 0.4 * energy);
+        bands[i] = (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight * (0.6 + 0.4 * energy);
       }
     }
 
