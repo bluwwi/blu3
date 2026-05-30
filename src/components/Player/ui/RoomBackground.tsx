@@ -87,12 +87,16 @@ interface RoomBackgroundProps {
   isPlaying: boolean;
   trackImage?: string;
   trackId?: string;
+  liveBandsRef?: { readonly current: readonly number[] };
+  isLiveAudio?: boolean;
 }
 
 export function RoomBackground({
   isPlaying,
   trackImage,
   trackId,
+  liveBandsRef,
+  isLiveAudio,
 }: RoomBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -104,6 +108,7 @@ export function RoomBackground({
   const bubbleTimer = useRef(0);
   const isPlayingRef = useRef(isPlaying);
   const trackIdRef = useRef(trackId);
+  const isLiveAudioRef = useRef(isLiveAudio);
   const totalEnergyRef = useRef(0.3);
 
   useEffect(() => {
@@ -113,6 +118,10 @@ export function RoomBackground({
   useEffect(() => {
     trackIdRef.current = trackId;
   }, [trackId]);
+
+  useEffect(() => {
+    isLiveAudioRef.current = isLiveAudio;
+  }, [isLiveAudio]);
 
   const syncSize = () => {
     const canvas = canvasRef.current;
@@ -176,42 +185,50 @@ export function RoomBackground({
     const mt = ease(morphTRef.current);
     ctx.clearRect(0, 0, W, H);
 
-    // ── Frequency bands + energy (shaped by track personality) ────────
+    // ── Frequency bands + energy ─────────────────────────────────────
     const bands: [number, number, number, number, number] = [
       0.5, 0.5, 0.5, 0.5, 0.5,
     ];
     let energy = 0.3;
     if (playing) {
-      const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
-      const t = tRef.current;
-      const p = getPersonality(seed);
+      const live = isLiveAudioRef.current && liveBandsRef?.current;
+      if (live) {
+        for (let i = 0; i < 5; i++) {
+          bands[i] = 0.15 + 0.85 * Math.max(0, Math.min(1, liveBandsRef.current[i]));
+        }
+        const avg = (bands[0] + bands[1] + bands[2] + bands[3] + bands[4]) / 5;
+        totalEnergyRef.current += (avg - totalEnergyRef.current) * Math.min(1, dt * 3);
+        energy = totalEnergyRef.current;
+      } else {
+        const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
+        const t = tRef.current;
+        const p = getPersonality(seed);
 
-      // Energy envelope shaped by track personality
-      const es = 0.35 * p.tempoFactor;
-      const raw =
-        p.baseEnergy *
-        (0.4 +
-          0.3 * Math.sin(t * es + seed * 0.03) +
-          0.2 * Math.sin(t * es * 1.5 + seed * 0.05 + 1.3) +
-          0.1 * Math.sin(t * es * 2.5 + seed * 0.07 + 2.7));
-      totalEnergyRef.current +=
-        (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
-      energy = totalEnergyRef.current;
+        const es = 0.35 * p.tempoFactor;
+        const raw =
+          p.baseEnergy *
+          (0.4 +
+            0.3 * Math.sin(t * es + seed * 0.03) +
+            0.2 * Math.sin(t * es * 1.5 + seed * 0.05 + 1.3) +
+            0.1 * Math.sin(t * es * 2.5 + seed * 0.07 + 2.7));
+        totalEnergyRef.current +=
+          (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
+        energy = totalEnergyRef.current;
 
-      // Band oscillators with bassWeight shaping
-      for (let i = 0; i < 5; i++) {
-        const weight = i < 2 ? p.bassWeight : 1 - p.bassWeight * 0.4;
-        const f1 = (2.2 + i * 1.4) * p.tempoFactor;
-        const f2 = (5.3 + i * 2.7) * p.tempoFactor;
-        const f3 = (11.7 + i * 4.1) * p.tempoFactor;
-        const primary = Math.sin(t * f1 + seed * 0.11 + i * 0.9);
-        const secondary = Math.sin(t * f2 + seed * 0.07 + i * 1.7);
-        const detail = Math.sin(t * f3 + seed * 0.05) * 0.4;
-        const noise = Math.sin(t * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
-        const combined =
-          primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
-        bands[i] =
-          (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight * (0.6 + 0.4 * energy);
+        for (let i = 0; i < 5; i++) {
+          const weight = i < 2 ? p.bassWeight : 1 - p.bassWeight * 0.4;
+          const f1 = (2.2 + i * 1.4) * p.tempoFactor;
+          const f2 = (5.3 + i * 2.7) * p.tempoFactor;
+          const f3 = (11.7 + i * 4.1) * p.tempoFactor;
+          const primary = Math.sin(t * f1 + seed * 0.11 + i * 0.9);
+          const secondary = Math.sin(t * f2 + seed * 0.07 + i * 1.7);
+          const detail = Math.sin(t * f3 + seed * 0.05) * 0.4;
+          const noise = Math.sin(t * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
+          const combined =
+            primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
+          bands[i] =
+            (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight * (0.6 + 0.4 * energy);
+        }
       }
     }
 

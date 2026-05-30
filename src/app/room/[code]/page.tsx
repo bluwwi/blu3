@@ -10,6 +10,7 @@ import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
+import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
