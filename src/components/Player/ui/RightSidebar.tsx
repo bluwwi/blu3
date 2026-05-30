@@ -259,7 +259,7 @@ export function RightSidebar({
               </button>
             )}
 
-            {clearQueue && canControlPlayback && tab === "queue" && queue.length > 0 && (
+            {clearQueue && canControlPlayback && queue.length > 0 && (
               <button
                 onClick={() => setShowClearConfirm(true)}
                 className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
@@ -331,35 +331,9 @@ export function RightSidebar({
         </div>
       )}
 
-      <div className="flex border-b border-white/10 flex-shrink-0">
-        <button
-          className={tabBtn("queue", tab === "queue")}
-          onClick={() => setTab("queue")}
-        >
-          <Icon name="list-music" size={11} className="text-current" />
-          <span className="text-[9px] bg-white/10 text-white/80 px-1.5 py-0.5 rounded-full ml-0.5">
-            {queue.length}
-          </span>
-          {tab === "queue" && (
-            <div className="absolute bottom-[-1px] left-4 right-4 h-[2px] bg-gradient-to-r from-violet-400 to-purple-400 rounded-full" />
-          )}
-        </button>
-        <button
-          className={tabBtn("history", tab === "history")}
-          onClick={() => setTab("history")}
-        >
-          <Icon name="clock-3" size={11} className="text-current" />
-          {tab === "history" && (
-            <div className="absolute bottom-[-1px] left-4 right-4 h-[2px] bg-gradient-to-r from-violet-400 to-purple-400 rounded-full" />
-          )}
-        </button>
-      </div>
-
       {/* Panel body */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
-        {/* Queue and history share the same panel component */}
-        {(tab === "queue" || tab === "history") && (
-          <div className="flex-1 min-h-0">
+        <div className="flex-1 min-h-0">
             <QueueAndHistory
               queue={queue}
               recentTracks={recentTracks}
@@ -369,12 +343,14 @@ export function RightSidebar({
               addToQueue={addToQueue}
               clearQueue={clearQueue}
               activeVideoId={activeVideoId}
-              defaultTab={tab}
               playerState={playerState}
+              shuffleEnabled={shuffleEnabled}
+              repeatMode={repeatMode}
+              onToggleShuffle={onToggleShuffle}
+              onCycleRepeat={onCycleRepeat}
             />
           </div>
-        )}
-      </div>
+        </div>
     </div>
   );
 }
