@@ -1180,6 +1180,7 @@ export default function RoomPage() {
         <RoomBackground
           isPlaying={player.playerState === "playing"}
           trackImage={footerTrack?.image}
+          trackId={footerTrack?.videoId}
         />
       </div>
 

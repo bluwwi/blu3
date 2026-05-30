@@ -1,6 +1,15 @@
 "use client";
 import { useEffect, useRef } from "react";
 
+function hashStr(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h) + s.charCodeAt(i);
+    h |= 0;
+  }
+  return h;
+}
+
 const NUM_LINES = 5;
 const GAP = 28;
 const SPEED = 0.45;
@@ -61,9 +70,10 @@ function ease(x: number) {
 interface RoomBackgroundProps {
   isPlaying: boolean;
   trackImage?: string;
+  trackId?: string;
 }
 
-export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
+export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
@@ -73,10 +83,15 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
   const bubblesRef = useRef<Bubble[]>([]);
   const bubbleTimer = useRef(0);
   const isPlayingRef = useRef(isPlaying);
+  const trackIdRef = useRef(trackId);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  useEffect(() => {
+    trackIdRef.current = trackId;
+  }, [trackId]);
 
   const syncSize = () => {
     const canvas = canvasRef.current;
@@ -92,7 +107,7 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
     }
   };
 
-  const spawnBubble = () => {
+  const spawnBubble = (speedFactor: number = 1) => {
     const canvas = canvasRef.current;
     if (!canvas || bubblesRef.current.length >= 35) return;
     const W = canvas.width,
@@ -103,7 +118,7 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
       y: H + r,
       r,
       vx: (Math.random() - 0.5) * 0.45,
-      vy: -(0.4 + Math.random() * 0.65),
+      vy: -(0.4 + Math.random() * 0.65) * speedFactor,
       alpha: 0.15 + Math.random() * 0.25,
       wobble: Math.random() * Math.PI * 2,
       wobbleSpeed: 0.008 + Math.random() * 0.014,
@@ -140,23 +155,35 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
     const mt = ease(morphTRef.current);
     ctx.clearRect(0, 0, W, H);
 
+    // ── Frequency bands (simulated by track seed) ─────────────────────────
+    const bands: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
+    if (playing) {
+      const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
+      const t = tRef.current;
+      for (let i = 0; i < 5; i++) {
+        bands[i] = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(t * (3 + i * 1.8) + seed * (0.1 + i * 0.03) + i * 1.5));
+      }
+    }
+
     // ── WAVES ─────────────────────────────────────────────────────────────────
-    const midY = H * 0.5;
+    const midY = H * (window.innerWidth < 768 ? 0.33 : 0.5);
     const baseYs = Array.from(
       { length: NUM_LINES },
       (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
     );
 
     WAVE_LINES.forEach((cfg) => {
-      const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
+      const idx = WAVE_LINES.indexOf(cfg);
+      const baseY = baseYs[idx];
+      const band = bands[idx];
       const wlMod =
-        1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed + cfg.wlPhase);
-      const scroll = tRef.current * cfg.scrollSpeed + cfg.scrollPhase;
+        1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed * (1 + 0.3 * band) + cfg.wlPhase);
+      const scroll = tRef.current * cfg.scrollSpeed * (0.8 + 0.4 * band) + cfg.scrollPhase;
       const freq = (((2 * Math.PI) / W) * 1.5) / wlMod;
       const breath =
         1 +
         0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-      const amp = H * cfg.amp * mt * breath;
+      const amp = H * cfg.amp * mt * breath * (0.5 + 0.5 * band);
 
       // fat glow
       ctx.strokeStyle = "rgba(255,255,255,0.07)";
@@ -184,9 +211,9 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
     // ── BUBBLES ───────────────────────────────────────────────────────────────
     if (playing && morphTRef.current > 0.25) {
       bubbleTimer.current += dt;
-      const interval = 0.16 - morphTRef.current * 0.07;
+      const interval = Math.max(0.04, 0.16 - morphTRef.current * 0.07 - 0.05 * bands[0]);
       if (bubbleTimer.current > interval) {
-        spawnBubble();
+        spawnBubble(0.6 + 0.4 * bands[0]);
         bubbleTimer.current = 0;
       }
     }
