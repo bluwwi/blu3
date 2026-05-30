@@ -1286,7 +1286,6 @@ export default function RoomPage() {
                   handleAdminPlayTrack={handleAdminPlayTrack}
                   removeFromQueue={removeFromQueue}
                   addToQueue={addToQueue}
-                  clearQueue={clearQueue}
                   activeVideoId={
                     player.activeVideoId ?? playback?.videoId ?? null
                   }
@@ -1302,7 +1301,6 @@ export default function RoomPage() {
                     canControlPlayback ? handleCycleRepeat : undefined
                   }
                   onChatToggle={() => setChatOpen(!chatOpen)}
-                  onSearchClick={openSearchOverlay}
                   user={user}
                   onLogout={() => {
                     logout();
