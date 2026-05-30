@@ -84,6 +84,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
   const bubbleTimer = useRef(0);
   const isPlayingRef = useRef(isPlaying);
   const trackIdRef = useRef(trackId);
+  const totalEnergyRef = useRef(0.3);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -155,13 +156,33 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     const mt = ease(morphTRef.current);
     ctx.clearRect(0, 0, W, H);
 
-    // ── Frequency bands (simulated by track seed) ─────────────────────────
+    // ── Frequency bands + smooth energy (simulated by track seed) ─────
     const bands: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
+    let energy = 0.3;
     if (playing) {
       const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
       const t = tRef.current;
+
+      // Smooth energy derived from slow oscillators — flows on musical timescales
+      const raw = 0.5 + 0.5 * (
+        Math.sin(t * 0.35 + seed * 0.03) * 0.5 +
+        Math.sin(t * 0.55 + seed * 0.05 + 1.3) * 0.3 +
+        Math.sin(t * 0.85 + seed * 0.07 + 2.7) * 0.2
+      );
+      totalEnergyRef.current += (raw - totalEnergyRef.current) * Math.min(1, dt * 2);
+      energy = totalEnergyRef.current;
+
+      // 5 bands, each with 3 oscillators + noise
       for (let i = 0; i < 5; i++) {
-        bands[i] = 0.25 + 0.75 * (0.5 + 0.5 * Math.sin(t * (3 + i * 1.8) + seed * (0.1 + i * 0.03) + i * 1.5));
+        const f1 = 2.2 + i * 1.4;
+        const f2 = 5.3 + i * 2.7;
+        const f3 = 11.7 + i * 4.1;
+        const primary = Math.sin(t * f1 + seed * 0.11 + i * 0.9);
+        const secondary = Math.sin(t * f2 + seed * 0.07 + i * 1.7);
+        const detail = Math.sin(t * f3 + seed * 0.05) * 0.4;
+        const noise = Math.sin(t * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
+        const combined = primary * 0.5 + secondary * 0.3 + detail * 0.15 + noise;
+        bands[i] = (0.2 + 0.8 * (0.5 + 0.5 * combined)) * (0.6 + 0.4 * energy);
       }
     }
 
@@ -178,7 +199,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       const band = bands[idx];
       const wlMod =
         1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed + cfg.wlPhase);
-      const scroll = tRef.current * cfg.scrollSpeed + cfg.scrollPhase;
+      const scroll = tRef.current * cfg.scrollSpeed * (0.7 + 0.6 * energy) + cfg.scrollPhase;
       const freq = (((2 * Math.PI) / W) * 1.5) / wlMod;
       const breath =
         1 +
@@ -211,9 +232,9 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
     // ── BUBBLES ───────────────────────────────────────────────────────────────
     if (playing && morphTRef.current > 0.25) {
       bubbleTimer.current += dt;
-      const interval = Math.max(0.04, 0.16 - morphTRef.current * 0.07 - 0.05 * bands[0]);
+      const interval = Math.max(0.05, 0.16 - morphTRef.current * 0.07 - 0.04 * bands[0] - 0.02 * energy);
       if (bubbleTimer.current > interval) {
-        spawnBubble(0.6 + 0.4 * bands[0]);
+        spawnBubble(0.5 + 0.5 * bands[0]);
         bubbleTimer.current = 0;
       }
     }
