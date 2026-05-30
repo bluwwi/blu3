@@ -96,10 +96,7 @@ export function ChatPanel({
         </div>
       )}
 
-      {/* Chat Header */}
-      {/* Chat Header */}
       <div className="flex items-center justify-between max-md:px-2 md:px-4 max-md:py-2 md:py-3 border-b border-white/10 bg-transparent">
-        {/* Left: Title */}
         <h2 className="text-lg font-bold w-20">Chat</h2>
 
         {/* Center: Avatar */}
