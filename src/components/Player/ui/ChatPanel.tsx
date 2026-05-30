@@ -65,7 +65,7 @@ export function ChatPanel({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1.5 flex-shrink-0 pl-2">
+          <div className="flex items-center gap-1.5 shrink-0 pl-2">
             <button
               onClick={onSkipBack}
               disabled={!canControlPlayback}
@@ -76,12 +76,12 @@ export function ChatPanel({
             <button
               onClick={onPlayPause}
               disabled={!canControlPlayback}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-violet-400 transition-colors disabled:opacity-50 text-black"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-white/80 transition-colors disabled:opacity-50 text-black"
             >
               {isPlaying ? (
-                <Icon name="Pause" size={16} className="ml-0.5" />
+                <Icon name="Pause" size={16} className="" />
               ) : (
-                <Icon name="Play" size={16} className="ml-1" />
+                <Icon name="Play" size={16} className="" />
               )}
             </button>
             <button

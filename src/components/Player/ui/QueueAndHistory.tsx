@@ -156,13 +156,14 @@ export function QueueAndHistory({
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-1">
       <div className="flex items-center gap-2 px-2">
-        <span className="text-lg  text-white">
+        <span className="text-lg text-white">
           Queue {"("}
           {queue.length}
           {")"}
         </span>
 
         <div className="ml-auto flex gap-1 relative">
+          {/* Plus / Queue Playlist */}
           <div className="relative" ref={playlistRef}>
             <button
               onClick={handlePlusClick}
@@ -202,16 +203,26 @@ export function QueueAndHistory({
                         >
                           <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
                             {p.coverImage ? (
-                              <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                              <img
+                                src={p.coverImage}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-white/30">
-                                <Icon name="list-music" size={12} className="text-current" />
+                                <Icon
+                                  name="list-music"
+                                  size={12}
+                                  className="text-current"
+                                />
                               </div>
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-white/90">{p.name}</p>
-                            <p className="text-[9px] text-white/40">{p.trackCount ?? 0} tracks</p>
+                            <p className="text-[9px] text-white/40">
+                              {p.trackCount ?? 0} tracks
+                            </p>
                           </div>
                         </button>
                       ))}
@@ -220,17 +231,50 @@ export function QueueAndHistory({
                 </div>
                 <div className="border-t border-white/[0.06] pt-1">
                   <button
-                    onClick={() => { window.location.href = "/playlists"; }}
+                    onClick={() => {
+                      window.location.href = "/playlists";
+                    }}
                     className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
                     <span>Import playlist</span>
                   </button>
                   <button
-                    onClick={() => { window.location.href = "/playlists"; }}
+                    onClick={() => {
+                      window.location.href = "/playlists";
+                    }}
                     className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="8" y1="6" x2="21" y2="6" />
+                      <line x1="8" y1="12" x2="21" y2="12" />
+                      <line x1="8" y1="18" x2="21" y2="18" />
+                      <line x1="3" y1="6" x2="3.01" y2="6" />
+                      <line x1="3" y1="12" x2="3.01" y2="12" />
+                      <line x1="3" y1="18" x2="3.01" y2="18" />
+                    </svg>
                     <span>Manage playlist</span>
                   </button>
                 </div>
@@ -238,6 +282,7 @@ export function QueueAndHistory({
             )}
           </div>
 
+          {/* Search */}
           <button
             onClick={() => onSearchClick?.()}
             className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 hover:text-black cursor-pointer transition-all"
@@ -245,13 +290,15 @@ export function QueueAndHistory({
           >
             <Icon name="search" size={20} className="text-current" />
           </button>
+
+          {/* More options menu */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
               className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-lg border border-white/[0.08] transition-all ${
                 showMenu
                   ? "bg-white text-black"
-                  : "bg-white text-black hover:bg-white/80 "
+                  : "bg-white text-black hover:bg-white/80"
               }`}
               title="More options"
             >
@@ -378,6 +425,7 @@ export function QueueAndHistory({
                     isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
                   }`}
                 >
+                  {/* Album art with play overlay */}
                   <div
                     role={canControlPlayback ? "button" : undefined}
                     tabIndex={canControlPlayback ? 0 : -1}
@@ -395,7 +443,7 @@ export function QueueAndHistory({
                     style={{
                       width: "clamp(3.5rem,3vw,199rem)",
                     }}
-                    className={`relative group/img shrink-0 aspect-square  cursor-pointer rounded-lg`}
+                    className="relative group/img shrink-0 aspect-square cursor-pointer rounded-lg"
                   >
                     <Image
                       width={300}
@@ -434,26 +482,10 @@ export function QueueAndHistory({
                           </span>
                         ) : (
                           <Icon name="play" size={12} className="text-white" />
-                )}
-                <div className="border-t border-white/[0.06] mt-1 pt-1">
-                  <button
-                    onClick={() => { window.location.href = "/playlists"; }}
-                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    <span>Import playlist</span>
-                  </button>
-                  <button
-                    onClick={() => { window.location.href = "/playlists"; }}
-                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                    <span>Manage playlist</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   <div className="min-w-0 flex-1">
                     <p
@@ -558,7 +590,7 @@ export function QueueAndHistory({
                       style={{
                         width: "clamp(3rem,3.5vw,199rem)",
                       }}
-                      className={`relative group/img shrink-0 aspect-square  cursor-pointer rounded-lg`}
+                      className="relative group/img shrink-0 aspect-square cursor-pointer rounded-lg"
                     >
                       <Image
                         width={200}
