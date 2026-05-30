@@ -1187,7 +1187,7 @@ export default function RoomPage() {
     <div className="w-full h-full bg-blue-500 relative">
       <YouTubeIframe />
 
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
         <RoomBackground
           isPlaying={player.playerState === "playing"}
           trackImage={footerTrack?.image}
