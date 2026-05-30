@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
