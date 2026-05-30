@@ -167,9 +167,22 @@ export function RightSidebar({
               />
             </div>
 
-            {/* Bottom Invite Friends button */}
+            {/* Bottom Invite Friends button with blur fade */}
             {roomCode && (
-              <div className="shrink-0 px-3 py-3 border-t border-white/[0.08] flex justify-end">
+              <div className="shrink-0 relative flex justify-end px-3 py-2">
+                <div
+                  className="pointer-events-none absolute bottom-0 left-0 right-0 h-24"
+                  style={{
+                    background:
+                      "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    maskImage:
+                      "linear-gradient(to top, transparent 0%, transparent 100%)",
+                    WebkitMaskImage:
+                      "linear-gradient(to top, transparent 0%, transparent 100%)",
+                  }}
+                />
                 <button
                   onClick={() => {
                     if (navigator.share) {
@@ -181,7 +194,7 @@ export function RightSidebar({
                       navigator.clipboard.writeText(window.location.href);
                     }
                   }}
-                  className="flex items-center gap-1.5 rounded-xl bg-white text-black px-3.5 py-2 text-[13px] font-semibold hover:bg-white/80 transition-all cursor-pointer"
+                  className="relative z-10 flex items-center gap-1.5 rounded-lg bg-white text-black px-3.5 py-2 text-xs  hover:bg-white/80 transition-all cursor-pointer"
                 >
                   <svg
                     width="14"
