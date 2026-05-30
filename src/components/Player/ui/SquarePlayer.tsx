@@ -58,14 +58,20 @@ export function SquarePlayer({
 
   return (
     <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
-      <Image
-        width={400}
-        height={400}
-        src={"/logo/logo.svg"}
-        alt={title}
-        priority
-        className="w-10 h-10 aspect-square absolute top-3 left-3 "
-      />
+      <div className="p-0.5 border-2 absolute top-3 left-3 rounded-full border-white">
+        <Image
+          width={400}
+          height={400}
+          src={"/logo/logo.png"}
+          alt={title}
+          priority
+          className={
+            "w-10 h-10 " +
+            (isPlaying ? "rotating-logo" : "") +
+            " aspect-square  "
+          }
+        />
+      </div>
 
       <div className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
         <Image
