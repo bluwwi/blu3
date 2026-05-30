@@ -75,8 +75,8 @@ export function QueueAndHistory({
   }, [showMenu]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 p-1">
-      <div className="flex items-center gap-2 px-3">
+    <div className="flex h-full min-h-0 flex-col gap-2 p-1">
+      <div className="flex items-center gap-2 px-2">
         <span className="text-lg  text-white">
           Queue {"("}
           {queue.length}
@@ -86,21 +86,21 @@ export function QueueAndHistory({
         <div className="ml-auto flex gap-1 relative" ref={menuRef}>
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-10 w-10  items-center justify-center rounded-xl bg-white text-black hover:bg-white/80 hover:text-white transition-all"
+            className="flex h-10 w-10  items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 hover:text-black cursor-pointer transition-all"
             title="Search songs"
           >
-            <Icon name="search" size={12} className="text-current" />
+            <Icon name="search" size={20} className="text-current" />
           </button>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-xl border border-white/[0.08] transition-all ${
+            className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-lg border border-white/[0.08] transition-all ${
               showMenu
                 ? "bg-white text-black"
                 : "bg-white text-black hover:bg-white/80 "
             }`}
             title="More options"
           >
-            <MoreVertical size={14} />
+            <MoreVertical size={20} />
           </button>
 
           {showMenu && (
