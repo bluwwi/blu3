@@ -177,8 +177,8 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       const baseY = baseYs[idx];
       const band = bands[idx];
       const wlMod =
-        1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed * (1 + 0.3 * band) + cfg.wlPhase);
-      const scroll = tRef.current * cfg.scrollSpeed * (0.8 + 0.4 * band) + cfg.scrollPhase;
+        1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed + cfg.wlPhase);
+      const scroll = tRef.current * cfg.scrollSpeed + cfg.scrollPhase;
       const freq = (((2 * Math.PI) / W) * 1.5) / wlMod;
       const breath =
         1 +
