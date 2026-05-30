@@ -69,7 +69,7 @@ const ICON_MAP: Record<string, string> = {
   "repeat-1": "Refresh.svg",
   refresh: "Refresh.svg",
   "refresh-2": "Refresh_2.svg",
-
+  playmusic: "playmusic.svg",
   // Misc
   speed: "Speed_alt.svg",
   desktop: "desktop.svg",

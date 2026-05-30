@@ -480,7 +480,11 @@ export function QueueAndHistory({
                             ||
                           </span>
                         ) : (
-                          <Icon name="play" size={12} className="text-white" />
+                          <Icon
+                            name="playmusic"
+                            size={12}
+                            className="text-white"
+                          />
                         )}
                       </div>
                     )}
