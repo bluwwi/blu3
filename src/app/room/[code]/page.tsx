@@ -950,8 +950,19 @@ export default function RoomPage() {
 
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
-    sendPlaybackMode({ shuffle: !playbackMode.shuffle });
-  }, [canControlPlayback, playbackMode.shuffle, sendPlaybackMode]);
+    const newShuffle = !playbackMode.shuffle;
+    sendPlaybackMode({ shuffle: newShuffle });
+    if (newShuffle) {
+      setQueue((prev) => {
+        const arr = [...prev];
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      });
+    }
+  }, [canControlPlayback, playbackMode.shuffle, sendPlaybackMode, setQueue]);
 
   const handleCycleRepeat = useCallback(() => {
     if (!canControlPlayback) return;
@@ -1277,6 +1288,14 @@ export default function RoomPage() {
                   roomTheme={roomTheme}
                   onThemeChange={setRoomTheme}
                   playerState={footerPlayerState}
+                  shuffleEnabled={playbackMode.shuffle}
+                  repeatMode={playbackMode.repeatMode}
+                  onToggleShuffle={
+                    canControlPlayback ? handleToggleShuffle : undefined
+                  }
+                  onCycleRepeat={
+                    canControlPlayback ? handleCycleRepeat : undefined
+                  }
                   onChatToggle={() => setChatOpen(!chatOpen)}
                   onSearchClick={openSearchOverlay}
                   user={user}
