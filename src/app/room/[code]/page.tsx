@@ -1247,18 +1247,10 @@ export default function RoomPage() {
                     duration={displayDuration}
                     volume={player.volume}
                     isMuted={player.isMuted}
-                    shuffleEnabled={playbackMode.shuffle}
-                    repeatMode={playbackMode.repeatMode}
                     onPlayPause={onPlayPauseAction}
                     onMute={player.toggleMute}
                     onVolume={player.handleVolume}
                     onSeek={canControlPlayback ? handleSeekAction : undefined}
-                    onToggleShuffle={
-                      canControlPlayback ? handleToggleShuffle : undefined
-                    }
-                    onCycleRepeat={
-                      canControlPlayback ? handleCycleRepeat : undefined
-                    }
                     onSkipBack={canControlPlayback ? handleSkipBack : undefined}
                     onSkipForward={
                       canControlPlayback ? handleSkipForward : undefined
