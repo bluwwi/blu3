@@ -256,7 +256,7 @@ export default function BrowsePage() {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-7 py-24 md:py-0 w-full h-full">
+              <div className="flex flex-wrap items-start justify-center gap-6 py-24 md:py-0 w-full h-full">
                 {loading
                   ? Array.from({ length: 9 }).map((_, i) => (
                       <SkeletonCard key={i} />
@@ -266,7 +266,7 @@ export default function BrowsePage() {
                       return (
                         <div
                           key={room.id}
-                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-42"
+                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
                           onClick={() => router.push(`/room/${room.code}`)}
                         >
                           <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
@@ -311,7 +311,7 @@ export default function BrowsePage() {
 
                 {!loading && (
                   <div
-                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-42 cursor-pointer"
+                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
                     onClick={() => setShowCreateModal(true)}
                   >
                     <div className="aspect-square text-neutral-700 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
