@@ -231,15 +231,50 @@ export function RoomBackground({
       ctx.stroke();
     });
 
+    // ── Audio-reactive bands (for bubbles only) ─────────────────────
+    const live = isLiveAudioRef.current && liveBandsRef?.current;
+    const react: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
+    let reactAvg = 0.3;
+    if (playing) {
+      if (live) {
+        for (let i = 0; i < 5; i++) {
+          react[i] = 0.15 + 0.85 * Math.max(0, Math.min(1, liveBandsRef.current[i]));
+        }
+        reactAvg = (react[0] + react[1] + react[2] + react[3] + react[4]) / 5;
+      } else {
+        const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
+        const p = getPersonality(seed);
+        const es = 0.35 * p.tempoFactor;
+        const raw = p.baseEnergy * (
+          0.4 + 0.3 * Math.sin(tRef.current * es + seed * 0.03) +
+          0.2 * Math.sin(tRef.current * es * 1.5 + seed * 0.05 + 1.3) +
+          0.1 * Math.sin(tRef.current * es * 2.5 + seed * 0.07 + 2.7)
+        );
+        for (let i = 0; i < 5; i++) {
+          const weight = i < 2 ? p.bassWeight : 1 - p.bassWeight * 0.4;
+          const f1 = (2.2 + i * 1.4) * p.tempoFactor;
+          const f2 = (5.3 + i * 2.7) * p.tempoFactor;
+          const f3 = (11.7 + i * 4.1) * p.tempoFactor;
+          const combined =
+            Math.sin(tRef.current * f1 + seed * 0.11 + i * 0.9) * 0.5 +
+            Math.sin(tRef.current * f2 + seed * 0.07 + i * 1.7) * 0.3 +
+            Math.sin(tRef.current * f3 + seed * 0.05) * 0.15 * 0.4 +
+            Math.sin(tRef.current * 19.3 + seed * (0.03 + i * 0.01)) * 0.06;
+          react[i] = (0.2 + 0.8 * (0.5 + 0.5 * combined)) * weight;
+        }
+        reactAvg = raw;
+      }
+    }
+
     // ── BUBBLES ───────────────────────────────────────────────────────────────
     if (playing && morphTRef.current > 0.25) {
       bubbleTimer.current += dt;
       const interval = Math.max(
         0.05,
-        0.16 - morphTRef.current * 0.07 - 0.04 * bands[0] - 0.02 * energy,
+        0.16 - morphTRef.current * 0.07 - 0.04 * react[0] - 0.02 * reactAvg,
       );
       if (bubbleTimer.current > interval) {
-        spawnBubble(0.5 + 0.5 * bands[0]);
+        spawnBubble(0.5 + 0.5 * react[0]);
         bubbleTimer.current = 0;
       }
     }
