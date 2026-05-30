@@ -5,8 +5,6 @@ import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 
-type RepeatMode = "off" | "all" | "one";
-
 interface Props {
   track: Track | null;
   activeVideoId: string | null;
@@ -16,14 +14,10 @@ interface Props {
   duration: number;
   volume: number;
   isMuted: boolean;
-  shuffleEnabled?: boolean;
-  repeatMode?: RepeatMode;
   onPlayPause?: () => void;
   onMute: () => void;
   onVolume: (val: number) => void;
   onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
-  onToggleShuffle?: () => void;
-  onCycleRepeat?: () => void;
   onSkipBack?: () => void;
   onSkipForward?: () => void;
   isLiked?: boolean;
@@ -39,14 +33,10 @@ export function SquarePlayer({
   duration,
   volume,
   isMuted,
-  shuffleEnabled = false,
-  repeatMode = "off",
   onPlayPause,
   onMute,
   onVolume,
   onSeek,
-  onToggleShuffle,
-  onCycleRepeat,
   onSkipBack,
   onSkipForward,
   isLiked = false,
@@ -66,32 +56,6 @@ export function SquarePlayer({
       ? `https://i.ytimg.com/vi/${activeVideoId}/maxresdefault.jpg`
       : `https://picsum.photos/seed/nowplaying/400/400`);
 
-  const getRepeatButtonProps = () => {
-    if (repeatMode === "one") {
-      return {
-        iconName: "repeat-1",
-        label: "Repeat one",
-        title: "Repeat: one",
-        active: true,
-      };
-    }
-    if (repeatMode === "all") {
-      return {
-        iconName: "repeat",
-        label: "Repeat all",
-        title: "Repeat: all",
-        active: true,
-      };
-    }
-    return {
-      iconName: "repeat",
-      label: "Repeat off",
-      title: "Repeat: off",
-      active: false,
-    };
-  };
-  const repeatBtn = getRepeatButtonProps();
-
   return (
     <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
       <div className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
@@ -108,7 +72,7 @@ export function SquarePlayer({
       <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
         <div className="text-center w-fit flex-1">
           <p className="text-white text-lg  sm:text-base truncate tracking-wide">
-            {title}
+            {displayTitle}
           </p>
           {subtitle && (
             <p className="text-white/70 text-[10px] sm:text-xs truncate">
@@ -119,33 +83,6 @@ export function SquarePlayer({
       </div>
 
       <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 flex-nowrap w-full select-none">
-        <button
-          onClick={onToggleShuffle}
-          disabled={!onToggleShuffle}
-          className={`p-1.5 rounded-full transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
-            shuffleEnabled
-              ? "text-violet-400 hover:text-violet-300 bg-violet-400/10"
-              : "text-white/50 hover:text-white hover:bg-white/10"
-          }`}
-          aria-label="Shuffle"
-          title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
-        >
-          <Icon name="shuffle" size={16} className="text-current" />
-        </button>{" "}
-        {onToggleLike && (
-          <button
-            onClick={onToggleLike}
-            className={`p-2 w-10 h-10  rounded-full transition-all cursor-pointer aspect-square `}
-            aria-label={isLiked ? "Unlike track" : "Like track"}
-            title={isLiked ? "Unlike track" : "Like track"}
-          >
-            <Icon
-              name={isLiked ? "heart" : "heart"}
-              size={30}
-              className={isLiked ? "text-rose-500" : "text-current"}
-            />
-          </button>
-        )}
         {/* Skip Back */}
         <button
           onClick={onSkipBack}
@@ -187,23 +124,7 @@ export function SquarePlayer({
         >
           <Icon name="skip-forward" size={18} className="text-current" />
         </button>
-        {/* Repeat - Single button, cycles modes */}
-        <button
-          onClick={onCycleRepeat}
-          disabled={!onCycleRepeat}
-          className={`p-1.5 rounded-full transition-all hover:scale-110 disabled:opacity-30 cursor-pointer ${
-            repeatBtn.active
-              ? "text-violet-400 hover:text-violet-300 bg-violet-400/10"
-              : "text-white/50 hover:text-white hover:bg-white/10"
-          }`}
-          aria-label={repeatBtn.label}
-          title={repeatBtn.title}
-        >
-          <Icon name={repeatBtn.iconName} size={16} className="text-current" />
-        </button>
-        {/* Divider */}
         <div className="w-px h-6 bg-white/10 mx-1" />
-        {/* Volume + Mute */}
         <button
           onClick={onMute}
           className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer flex-shrink-0"

@@ -5,8 +5,6 @@ import { Track } from "@/utils/types";
 import { RoomTheme } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
 
-type SideTab = "queue" | "history";
-
 interface Member {
   userId: string;
   name: string;
@@ -39,6 +37,10 @@ interface Props {
   roomTheme: RoomTheme;
   onThemeChange: (theme: RoomTheme) => void;
   playerState?: string;
+  shuffleEnabled?: boolean;
+  repeatMode?: "off" | "all" | "one";
+  onToggleShuffle?: () => void;
+  onCycleRepeat?: () => void;
   onChatToggle?: () => void;
   unreadChatCount?: number;
   onSearchClick?: () => void;
@@ -58,14 +60,16 @@ export function RightSidebar({
   clearQueue,
   activeVideoId,
   playerState,
+  shuffleEnabled = false,
+  repeatMode = "off",
+  onToggleShuffle,
+  onCycleRepeat,
   onChatToggle,
   unreadChatCount = 0,
   onSearchClick,
   user,
   onLogout,
 }: Props) {
-  const [tab, setTab] = useState<SideTab>("queue");
-
   // Playlist selection states for room queueing
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
