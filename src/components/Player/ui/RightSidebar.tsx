@@ -4,7 +4,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 
 interface Member {
   userId: string;
@@ -47,6 +47,8 @@ interface Props {
   clearQueue?: () => void;
   user?: { sub: string; email: string; name: string; avatar?: string } | null;
   onLogout?: () => void;
+  onLeave?: () => void;
+  roomCode?: string;
 }
 
 export function RightSidebar({
@@ -72,87 +74,11 @@ export function RightSidebar({
   clearQueue,
   user,
   onLogout,
+  onLeave,
+  roomCode,
 }: Props) {
-  // Playlist selection states for room queueing
-  const [playlists, setPlaylists] = useState<any[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [showMembersPopup, setShowMembersPopup] = useState(false);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    };
-    if (showDropdown) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    }
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [showDropdown]);
-
-  const handlePlusClick = async () => {
-    if (showDropdown) {
-      setShowDropdown(false);
-      return;
-    }
-    setShowDropdown(true);
-    setLoadingPlaylists(true);
-    const token = localStorage.getItem("blu3_token");
-    if (!token) {
-      setLoadingPlaylists(false);
-      return;
-    }
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_URL}/api/playlists`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.playlists) {
-        setPlaylists(data.playlists);
-      }
-    } catch (err) {
-      console.error("Failed to fetch playlists:", err);
-    } finally {
-      setLoadingPlaylists(false);
-    }
-  };
-
-  const handleQueuePlaylist = async (playlistId: string) => {
-    const token = localStorage.getItem("blu3_token");
-    if (!token) return;
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.tracks && data.tracks.length > 0) {
-        data.tracks.forEach((t: any) => {
-          addToQueue({
-            id: t.id,
-            videoId: t.videoId,
-            name: t.trackName,
-            artists: [{ name: t.artistName }],
-            album: { name: "" },
-            image: t.image || "",
-            duration_ms: t.durationMs || 0,
-            explicit: false,
-          });
-        });
-      }
-      setShowDropdown(false);
-    } catch (err) {
-      console.error("Failed to queue playlist:", err);
-    }
-  };
+  const [showLeavePopup, setShowLeavePopup] = useState(false);
 
   return (
     <div
@@ -284,14 +210,19 @@ export function RightSidebar({
               </div>
             </div>
           )}
-          <div className="flex gap-1 relative" ref={dropdownRef}>
-            <button
-              onClick={handlePlusClick}
-              className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
-              title="Add playlist to queue"
-            >
-              <Icon name="plus" size={25} className="text-current" />
-            </button>
+          <div className="flex gap-1 relative">
+            {roomCode && (
+              <button
+                onClick={() => setShowLeavePopup(true)}
+                className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-[11px] font-semibold hover:bg-white/80 transition-all cursor-pointer"
+                title="Room options"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                {roomCode}
+              </button>
+            )}
 
             {onChatToggle && (
               <button
@@ -300,7 +231,6 @@ export function RightSidebar({
                 title="Toggle chat"
               >
                 <MessageCircle
-                  name="message-square"
                   size={20}
                   className="text-current"
                 />
@@ -311,60 +241,54 @@ export function RightSidebar({
                 )}
               </button>
             )}
-
-            {showDropdown && (
-              <div className="absolute right-0 mt-12 w-64 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll">
-                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
-                  Queue Playlist
-                </div>
-                {loadingPlaylists ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">
-                    Loading...
-                  </div>
-                ) : playlists.length === 0 ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">
-                    No playlists found
-                  </div>
-                ) : (
-                  <div>
-                    {playlists.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => handleQueuePlaylist(p.id)}
-                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-                      >
-                        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                          {p.coverImage ? (
-                            <img
-                              src={p.coverImage}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-white/30">
-                              <Icon
-                                name="list-music"
-                                size={12}
-                                className="text-current"
-                              />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-white/90">{p.name}</p>
-                          <p className="text-[9px] text-white/40">
-                            {p.trackCount ?? 0} tracks
-                          </p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
       </div>
+
+      {showLeavePopup && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowLeavePopup(false)}
+        >
+          <div
+            className="w-72 rounded-[24px] border border-white/20 bg-slate-900/90 p-6 backdrop-blur-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-white font-semibold text-[15px]">
+                Leave room?
+              </h2>
+              <button
+                onClick={() => setShowLeavePopup(false)}
+                className="text-white/40 hover:text-white transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-white/50 text-[12px] mb-5">
+              You'll be taken back to browse. Others can still listen.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowLeavePopup(false)}
+                className="flex-1 rounded-full border border-white/20 bg-white/8 py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/15 hover:text-white"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowLeavePopup(false);
+                  onLeave?.();
+                }}
+                className="flex-1 rounded-full bg-red-500/80 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-red-500"
+              >
+                Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Panel body */}
       <div className="flex-1 min-h-0 flex flex-col overflow-hidden">

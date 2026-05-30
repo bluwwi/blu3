@@ -1308,6 +1308,8 @@ export default function RoomPage() {
                     logout();
                     router.push("/");
                   }}
+                  onLeave={handleLeave}
+                  roomCode={code}
                 />
               </aside>
             </div>

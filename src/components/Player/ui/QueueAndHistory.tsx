@@ -4,7 +4,7 @@ import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
-import { Shuffle, Repeat, MoreVertical, Trash2 } from "lucide-react";
+import { Shuffle, Repeat, MoreVertical, Trash2, Plus } from "lucide-react";
 
 interface Props {
   queue: Track[];
@@ -74,6 +74,80 @@ export function QueueAndHistory({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showMenu]);
 
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
+  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
+  const playlistRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (playlistRef.current && !playlistRef.current.contains(e.target as Node)) {
+        setShowPlaylistDropdown(false);
+      }
+    };
+    if (showPlaylistDropdown) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [showPlaylistDropdown]);
+
+  const handlePlusClick = async () => {
+    if (showPlaylistDropdown) {
+      setShowPlaylistDropdown(false);
+      return;
+    }
+    setShowPlaylistDropdown(true);
+    setLoadingPlaylists(true);
+    const token = localStorage.getItem("blu3_token");
+    if (!token) {
+      setLoadingPlaylists(false);
+      return;
+    }
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/playlists`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.playlists) {
+        setPlaylists(data.playlists);
+      }
+    } catch (err) {
+      console.error("Failed to fetch playlists:", err);
+    } finally {
+      setLoadingPlaylists(false);
+    }
+  };
+
+  const handleQueuePlaylist = async (playlistId: string) => {
+    const token = localStorage.getItem("blu3_token");
+    if (!token) return;
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.tracks && data.tracks.length > 0) {
+        data.tracks.forEach((t: any) => {
+          addToQueue({
+            id: t.id,
+            videoId: t.videoId,
+            name: t.trackName,
+            artists: [{ name: t.artistName }],
+            album: { name: "" },
+            image: t.image || "",
+            duration_ms: t.durationMs || 0,
+            explicit: false,
+          });
+        });
+      }
+      setShowPlaylistDropdown(false);
+    } catch (err) {
+      console.error("Failed to queue playlist:", err);
+    }
+  };
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-2 p-1">
       <div className="flex items-center gap-2 px-2">
@@ -83,25 +157,78 @@ export function QueueAndHistory({
           {")"}
         </span>
 
-        <div className="ml-auto flex gap-1 relative" ref={menuRef}>
+        <div className="ml-auto flex gap-1 relative">
+          <div className="relative" ref={playlistRef}>
+            <button
+              onClick={handlePlusClick}
+              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 cursor-pointer transition-all"
+              title="Add playlist to queue"
+            >
+              <Plus size={20} />
+            </button>
+
+            {showPlaylistDropdown && (
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll"
+                style={{
+                  background: "var(--room-surface, #0D0D14)",
+                  borderColor: "var(--room-border, rgba(255,255,255,0.08))",
+                }}
+              >
+                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
+                  Queue Playlist
+                </div>
+                {loadingPlaylists ? (
+                  <div className="px-3 py-3 text-[10px] text-white/40">Loading...</div>
+                ) : playlists.length === 0 ? (
+                  <div className="px-3 py-3 text-[10px] text-white/40">No playlists found</div>
+                ) : (
+                  <div>
+                    {playlists.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => handleQueuePlaylist(p.id)}
+                        className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                      >
+                        <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                          {p.coverImage ? (
+                            <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-white/30">
+                              <Icon name="list-music" size={12} className="text-current" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-white/90">{p.name}</p>
+                          <p className="text-[9px] text-white/40">{p.trackCount ?? 0} tracks</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-10 w-10  items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 hover:text-black cursor-pointer transition-all"
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 hover:text-black cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="text-current" />
           </button>
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-lg border border-white/[0.08] transition-all ${
-              showMenu
-                ? "bg-white text-black"
-                : "bg-white text-black hover:bg-white/80 "
-            }`}
-            title="More options"
-          >
-            <MoreVertical size={20} />
-          </button>
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-lg border border-white/[0.08] transition-all ${
+                showMenu
+                  ? "bg-white text-black"
+                  : "bg-white text-black hover:bg-white/80 "
+              }`}
+              title="More options"
+            >
+              <MoreVertical size={20} />
+            </button>
 
           {showMenu && (
             <div
@@ -204,6 +331,7 @@ export function QueueAndHistory({
               )}
             </div>
           )}
+          </div>
         </div>
       </div>
 
