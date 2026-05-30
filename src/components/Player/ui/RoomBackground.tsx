@@ -110,6 +110,7 @@ export function RoomBackground({
   const trackIdRef = useRef(trackId);
   const isLiveAudioRef = useRef(isLiveAudio);
   const totalEnergyRef = useRef(0.3);
+  const scrollOffsetRef = useRef(0);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
@@ -185,53 +186,7 @@ export function RoomBackground({
     const mt = ease(morphTRef.current);
     ctx.clearRect(0, 0, W, H);
 
-    // ── Track speed (fixed per track, never oscillates) ──────────────
-    let trackSpeed = 1;
-    if (playing) {
-      const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
-      trackSpeed = getPersonality(seed).tempoFactor;
-    }
-
-    // ── WAVES ─────────────────────────────────────────────────────────────────
-    const midY = H * (window.innerWidth < 768 ? 0.25 : 0.5);
-    const baseYs = Array.from(
-      { length: NUM_LINES },
-      (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
-    );
-
-    WAVE_LINES.forEach((cfg) => {
-      const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
-      const scroll = tRef.current * cfg.scrollSpeed * trackSpeed + cfg.scrollPhase;
-      const freq = ((2 * Math.PI) / W) * 1.5;
-      const breath =
-        1 +
-        0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-      const amp = H * cfg.amp * mt * breath;
-
-      // fat glow
-      ctx.strokeStyle = "rgba(255,255,255,0.07)";
-      ctx.lineWidth = 11;
-      ctx.lineJoin = "round";
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 6) {
-        const y = baseY + Math.sin(freq * x - scroll) * amp;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      // crisp line
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.lineWidth = 2.8;
-      ctx.beginPath();
-      for (let x = 0; x <= W; x += 2) {
-        const y = baseY + Math.sin(freq * x - scroll) * amp;
-        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-    });
-
-    // ── Audio-reactive bands (for bubbles only) ─────────────────────
+    // ── Audio-reactive bands ────────────────────────────────────────
     const live = isLiveAudioRef.current && liveBandsRef?.current;
     const react: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
     let reactAvg = 0.3;
@@ -265,6 +220,51 @@ export function RoomBackground({
         reactAvg = raw;
       }
     }
+
+    // ── Wave scroll speed from audio (additive, never reverses) ─────
+    if (playing) {
+      const speedFactor = live ? (0.3 + 1.7 * reactAvg) : getPersonality(trackIdRef.current ? hashStr(trackIdRef.current) : 0).tempoFactor;
+      scrollOffsetRef.current += dt * speedFactor;
+    }
+
+    // ── WAVES ─────────────────────────────────────────────────────────────────
+    const midY = H * (window.innerWidth < 768 ? 0.25 : 0.5);
+    const baseYs = Array.from(
+      { length: NUM_LINES },
+      (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
+    );
+
+    WAVE_LINES.forEach((cfg) => {
+      const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
+      const scroll = scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
+      const freq = ((2 * Math.PI) / W) * 1.5;
+      const breath =
+        1 +
+        0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
+      const amp = H * cfg.amp * mt * breath;
+
+      // fat glow
+      ctx.strokeStyle = "rgba(255,255,255,0.07)";
+      ctx.lineWidth = 11;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 6) {
+        const y = baseY + Math.sin(freq * x - scroll) * amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // crisp line
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      for (let x = 0; x <= W; x += 2) {
+        const y = baseY + Math.sin(freq * x - scroll) * amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
 
     // ── BUBBLES ───────────────────────────────────────────────────────────────
     if (playing && morphTRef.current > 0.25) {
