@@ -49,7 +49,7 @@ export function ChatPanel({
     <div className="flex flex-col h-full bg-transparent rounded-[20px] overflow-hidden text-white w-full">
       {/* Mini Player Header */}
       {track && (
-        <div className="flex items-center justify-between p-3 border-b border-white/10 bg-transparent">
+        <div className="flex items-center justify-between max-md:p-0 md:p-3 border-b border-white/10 bg-transparent">
           <div className="flex items-center gap-3 overflow-hidden">
             <img
               src={track.image || "https://via.placeholder.com/150"}
@@ -97,7 +97,7 @@ export function ChatPanel({
 
       {/* Chat Header */}
       {/* Chat Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-transparent">
+      <div className="flex items-center justify-between max-md:px-2 md:px-4 max-md:py-2 md:py-3 border-b border-white/10 bg-transparent">
         {/* Left: Title */}
         <h2 className="text-lg font-bold w-20">Chat</h2>
 
@@ -128,7 +128,7 @@ export function ChatPanel({
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3 room-scroll">
+      <div className="flex-1 overflow-y-auto max-md:px-2 md:px-4 max-md:py-2 md:py-3 flex flex-col gap-3 room-scroll">
         {messages.length === 0 && (
           <p className="text-[11px] text-white/35 text-center mt-8">
             no messages yet
@@ -161,7 +161,7 @@ export function ChatPanel({
       </div>
 
       {/* Chat Input */}
-      <div className="p-3 border-t border-white/10 bg-transparent">
+      <div className="max-md:p-2 md:p-3 border-t border-white/10 bg-transparent">
         <div className="relative flex items-center">
           <div className="absolute left-3 text-white/40 flex items-center gap-2">
             <div className="w-6 h-5 border border-white/40 rounded flex items-center justify-center text-[8px] font-bold">

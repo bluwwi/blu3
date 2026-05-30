@@ -92,7 +92,7 @@ export function SquarePlayer({
   const repeatBtn = getRepeatButtonProps();
 
   return (
-    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center rounded-[28px] p-4 sm:p-5 h-full overflow-hidden w-full">
+    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full overflow-hidden w-full">
       <div className="h-[60%] sm:h-[50%] aspect-square rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)]">
         <Image
           width={400}

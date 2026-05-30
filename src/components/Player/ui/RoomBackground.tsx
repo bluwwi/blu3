@@ -286,7 +286,7 @@ export function RoomBackground({ isPlaying, trackImage }: RoomBackgroundProps) {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.50) 55%, rgba(0,0,0,0.82) 100%)",
+            "linear-gradient(to bottom, rgba(0,0,0,0.50) 0%, rgba(0,0,0,0.65) 55%, rgba(0,0,0,0.90) 100%)",
         }}
       />
 

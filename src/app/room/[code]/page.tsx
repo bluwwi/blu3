@@ -1185,14 +1185,14 @@ export default function RoomPage() {
 
       <div className="relative z-10 h-screen w-full overflow-hidden">
         <div
-          className="mx-auto flex h-full flex-col pb-6 lg:pb-20 px-3
+          className="mx-auto flex h-full flex-col pb-0 md:pb-6 lg:pb-20 px-0 md:px-3
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               overflow-y-auto lg:overflow-hidden"
         >
-          <div className="flex h-full mt-2 md:mt-10 gap-2 pt-2 min-h-0">
-            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-4 pb-12 lg:pb-0">
+          <div className="flex h-full mt-0 md:mt-10 gap-0 md:gap-2 pt-0 md:pt-2 min-h-0">
+            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-4 pb-0 md:pb-12 lg:pb-0">
               {/* Left panel — player or chat */}
-              <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+              <aside className="w-full lg:w-[55%] h-fit lg:h-full shrink-0 min-h-[420px] lg:min-h-0 max-md:rounded-none md:rounded-[24px] max-md:border-0 md:border md:border-white/[0.08] max-md:bg-transparent md:bg-white/[0.05] max-md:backdrop-blur-none md:backdrop-blur-2xl max-md:shadow-none md:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent">
                 {chatOpen ? (
                   <div className="absolute inset-0 animate-in fade-in duration-300">
                     <ChatPanel
@@ -1252,7 +1252,7 @@ export default function RoomPage() {
               </aside>
 
               {/* Right panel — sidebar */}
-              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent flex flex-col">
+              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0 max-md:rounded-none md:rounded-[24px] max-md:border-0 md:border md:border-white/[0.08] max-md:bg-transparent md:bg-white/[0.05] max-md:backdrop-blur-none md:backdrop-blur-2xl max-md:shadow-none md:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent flex flex-col">
                 <RightSidebar
                   members={members}
                   messages={messages}
