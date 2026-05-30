@@ -40,7 +40,7 @@ interface PlaylistTrack {
 
 export default function PlaylistsPage() {
   const router = useRouter();
-  const { user, loading: authLoading, logout } = useAuth();
+  const { user, loading: authLoading, login, logout } = useAuth();
   const [playlists, setPlaylists] = useState<PlaylistInfo[]>([]);
   const [loadingPlaylists, setLoadingPlaylists] = useState(true);
 
@@ -358,15 +358,20 @@ export default function PlaylistsPage() {
     handleModalSearch("trending");
   };
 
-  return (
-    <div className="h-screen bg-black relative overflow-hidden">
-      {/* Ambient gradient background */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.08),transparent_60%),radial-gradient(ellipse_at_bottom,rgba(59,130,246,0.05),transparent_60%)] pointer-events-none" />
+  const SkeletonCard = () => (
+    <div className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40">
+      <div className="aspect-square rounded-md bg-white/5 animate-pulse" />
+      <div className="h-2.5 w-3/4 bg-white/5 rounded animate-pulse mt-1" />
+      <div className="h-2 w-1/2 bg-white/5 rounded animate-pulse" />
+    </div>
+  );
 
-      <div className="relative z-10 h-full w-full overflow-hidden">
-        <div className="mx-auto flex h-full flex-col pb-8 px-3 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]">
-          {/* ── Nav Bar ── */}
-          <div className="flex items-center border border-white/[0.08] mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/[0.05] backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] relative overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+  return (
+    <div className="h-full min-h-screen relative overflow-hidden">
+      <div className="min-h-screen flex justify-center items-center z-10 h-full w-full overflow-hidden">
+        <div className="flex flex-col justify-center items-center h-full min-h-screen w-full">
+          {/* ── NAV BAR — identical to browse page ── */}
+          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
             <Link
               href="/browse"
               className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
@@ -394,24 +399,29 @@ export default function PlaylistsPage() {
             <div className="relative z-10">
               {user ? (
                 <div className="relative">
-                  {user.avatar && (
-                    <button
-                      onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    >
+                  <button
+                    onClick={() => setShowProfileMenu(!showProfileMenu)}
+                    className="focus:outline-none"
+                    aria-label="Open profile menu"
+                  >
+                    {user.avatar ? (
                       <img
                         src={user.avatar}
                         alt=""
                         className="w-7 h-7 rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer"
                       />
-                    </button>
-                  )}
+                    ) : (
+                      <div className="w-7 h-7 rounded-full bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] font-bold text-white uppercase">
+                        {user.name?.[0] || "U"}
+                      </div>
+                    )}
+                  </button>
                   {showProfileMenu && (
                     <div className="absolute right-0 mt-2 w-32 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
                       <button
                         onClick={() => {
                           setShowProfileMenu(false);
                           logout();
-                          router.push("/");
                         }}
                         className="w-full text-left px-4 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
                       >
@@ -422,7 +432,7 @@ export default function PlaylistsPage() {
                 </div>
               ) : (
                 <button
-                  onClick={() => router.push("/")}
+                  onClick={login}
                   className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase"
                 >
                   sign in
@@ -431,135 +441,122 @@ export default function PlaylistsPage() {
             </div>
           </div>
 
-          {/* ── Main Content ── */}
-          <div className="flex-1 flex flex-col px-2 pt-6 overflow-y-auto [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/[0.08] [&::-webkit-scrollbar-thumb]:rounded-full">
+          {/* ── MAIN CONTENT — mirrors browse's full-screen card grid ── */}
+          <div className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen overflow-y-auto room-scroll">
             {!user && !authLoading ? (
-              <div className="text-center my-auto border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl p-8 rounded-[24px] max-w-xs mx-auto shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                <p className="text-2xl font-black mb-6 text-white">blu3</p>
-                <p className="text-sm text-zinc-500 mb-5 leading-relaxed">
-                  Sign in to manage your playlists.
+              <div className="text-center">
+                <p className="text-4xl font-black tracking-tight mb-2 text-white">
+                  blu3
+                </p>
+                <p className="text-[11px] text-zinc-600 tracking-widest mb-10">
+                  listen together
+                </p>
+                <p className="text-zinc-600 text-sm mb-5 tracking-wide">
+                  sign in to manage playlists
                 </p>
                 <button
-                  onClick={() => router.push("/")}
-                  className="w-full py-2.5 bg-white text-black text-[10px] rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors"
+                  onClick={login}
+                  className="px-5 py-2.5 bg-white text-black text-xs rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors"
                 >
-                  sign in
+                  sign in with google
                 </button>
               </div>
             ) : (
-              <div className="w-full max-w-4xl mx-auto">
-                {/* Header */}
-                <div className="flex justify-between items-center mb-7">
-                  <div>
-                    <h1 className="text-2xl font-black tracking-tight text-white">
-                      playlists
-                    </h1>
-                    <p className="text-[9px] text-zinc-500 tracking-widest uppercase mt-1 font-semibold">
-                      your collection
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setShowImportModal(true)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg border border-white/[0.08] text-[9px] tracking-widest uppercase font-bold text-zinc-400 hover:text-white hover:border-white/20 transition-all cursor-pointer bg-white/[0.05] backdrop-blur-2xl"
-                    >
-                      <Link2 size={10} /> import
-                    </button>
-                    <button
-                      onClick={() => setShowCreateModal(true)}
-                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-white text-black font-black text-[9px] tracking-widest uppercase hover:bg-zinc-200 transition-colors cursor-pointer active:scale-95"
-                    >
-                      <Plus size={10} /> create
-                    </button>
-                  </div>
-                </div>
-
-                {/* Grid */}
+              <div className="flex flex-wrap justify-center gap-6 py-24 md:py-0 w-full h-full">
                 {loadingPlaylists ? (
-                  <div className="flex flex-wrap gap-5">
-                    {Array.from({ length: 6 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-48"
-                      >
-                        <div className="aspect-square rounded-[24px] bg-white/5 animate-pulse" />
-                        <div className="h-2 w-3/4 bg-white/5 rounded animate-pulse" />
-                        <div className="h-2 w-1/2 bg-white/5 rounded animate-pulse" />
-                      </div>
-                    ))}
-                  </div>
+                  Array.from({ length: 9 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
                 ) : playlists.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 rounded-[24px] border border-white/[0.08] bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                    <FolderHeart size={32} className="text-zinc-600 mb-3" />
-                    <p className="text-sm font-bold text-zinc-400 mb-1">
-                      No playlists yet
+                  <div className="text-center my-auto">
+                    <p className="text-zinc-600 text-sm mb-2 tracking-wide">
+                      no playlists yet
                     </p>
-                    <p className="text-[11px] text-zinc-600 text-center max-w-xs leading-relaxed">
-                      Create a playlist or import from Spotify / YouTube / Apple
-                      Music.
+                    <p className="text-[11px] text-zinc-700 tracking-widest">
+                      create one or import from spotify · youtube · apple music
                     </p>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap gap-5">
-                    {playlists.map((playlist) => {
-                      const hasCover =
-                        playlist.coverImage &&
-                        playlist.coverImage.trim().length > 0;
-                      return (
-                        <div
-                          key={playlist.id}
-                          onClick={() => handleViewPlaylist(playlist)}
-                          className="group/card flex flex-col gap-2 relative w-28 sm:w-32 md:w-36 lg:w-48 cursor-pointer select-none transition-transform duration-200 hover:-translate-y-[3px]"
-                        >
-                          <div className="relative aspect-square rounded-[24px] overflow-hidden bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-                            {hasCover ? (
-                              <Image
-                                width={200}
-                                height={200}
-                                src={playlist.coverImage!}
-                                className="w-full h-full object-cover"
-                                alt={playlist.name}
-                                loading="lazy"
+                  playlists.map((playlist) => {
+                    const hasCover =
+                      playlist.coverImage &&
+                      playlist.coverImage.trim().length > 0;
+                    return (
+                      <div
+                        key={playlist.id}
+                        className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
+                        onClick={() => handleViewPlaylist(playlist)}
+                      >
+                        <div className="relative aspect-square overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:pointer-events-none before:to-transparent">
+                          {hasCover ? (
+                            <Image
+                              width={400}
+                              height={400}
+                              src={playlist.coverImage!}
+                              alt={playlist.name}
+                              className="room-card-img rounded-md w-full h-full object-cover"
+                            />
+                          ) : playlist.isLiked ? (
+                            <div className="w-full h-full rounded-md bg-white/5 border border-white/[0.08] flex items-center justify-center">
+                              <Heart
+                                size={24}
+                                className="text-white/20 fill-white/20"
                               />
-                            ) : playlist.isLiked ? (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Heart
-                                  size={24}
-                                  className="text-white/30 fill-white/30"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Music2 size={20} className="text-white/15" />
-                              </div>
-                            )}
-                            {!playlist.isLiked && (
-                              <button
-                                onClick={(e) =>
-                                  handleDeletePlaylist(
-                                    e,
-                                    playlist.id,
-                                    playlist.name,
-                                  )
-                                }
-                                className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/80 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-20"
-                              >
-                                <Trash2 className="w-2.5 h-2.5" />
-                              </button>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-[11px] text-zinc-300 group-hover/card:text-white truncate font-bold transition-colors">
-                              {playlist.name}
-                            </p>
-                            <p className="text-[9px] text-zinc-600 truncate tracking-widest uppercase mt-0.5">
-                              {playlist.trackCount || 0} track
-                              {playlist.trackCount !== 1 && "s"}
-                            </p>
-                          </div>
+                            </div>
+                          ) : (
+                            <div className="w-full h-full rounded-md bg-white/5 border border-white/[0.08] flex items-center justify-center">
+                              <Music2 size={20} className="text-white/15" />
+                            </div>
+                          )}
+
+                          <div className="room-play-overlay hover:border-2 border-white rounded-md cursor-pointer absolute inset-0 flex items-center justify-center" />
+
+                          {!playlist.isLiked && (
+                            <button
+                              onClick={(e) =>
+                                handleDeletePlaylist(
+                                  e,
+                                  playlist.id,
+                                  playlist.name,
+                                )
+                              }
+                              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
+                              title="Delete playlist"
+                            >
+                              <Trash2 className="w-3 h-3 text-white/80" />
+                            </button>
+                          )}
                         </div>
-                      );
-                    })}
+                        <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
+                          <p className="text-xs text-center uppercase md:text-[14px] w-full text-white truncate leading-tight">
+                            {playlist.name}
+                            {playlist.trackCount !== undefined && (
+                              <span className="text-zinc-500"> </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+
+                {/* Create card — identical pattern to browse's "+ Create Room" */}
+                {!loadingPlaylists && (
+                  <div
+                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
+                    onClick={() => setShowCreateModal(true)}
+                  >
+                    <div className="aspect-square text-neutral-700 hover:text-neutral-400 border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                      <Plus
+                        className="create-plus w-30 h-30 transition-all"
+                        strokeWidth={2.25}
+                      />
+                    </div>
+                    <div className="px-0.5">
+                      <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
+                        New Playlist
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -568,10 +565,29 @@ export default function PlaylistsPage() {
         </div>
       </div>
 
-      {/* ─── CREATE MODAL ─── */}
+      {/* ── BOTTOM BAR — mirrors browse's join room bar ── */}
+      {user && !authLoading && (
+        <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
+          <div className="flex items-center gap-3 pointer-events-auto">
+            <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+              <span className="text-sm text-zinc-600 w-52 tracking-wide select-none">
+                import a playlist
+              </span>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
+              >
+                Import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── CREATE MODAL — identical to browse's create room modal ── */}
       {showCreateModal && (
         <div
-          className="animate-[fadeIn_0.18s_ease_forwards] fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setShowCreateModal(false);
@@ -579,29 +595,27 @@ export default function PlaylistsPage() {
             }
           }}
         >
-          <div className="animate-[modalIn_0.2s_cubic-bezier(0.34,1.1,0.64,1)_forwards] w-full max-w-xs mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <div className="flex items-center justify-between mb-5 relative z-10">
-              <p className="text-sm font-black tracking-tight text-white">
-                new playlist
-              </p>
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewPlaylistName("");
-                }}
-                className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-              >
-                <X size={11} />
-              </button>
-            </div>
+          <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
+              new playlist
+            </p>
+            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
+              give it a name
+            </p>
             <input
               autoFocus
               value={newPlaylistName}
               onChange={(e) => setNewPlaylistName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleCreate();
+                if (e.key === "Escape") {
+                  setShowCreateModal(false);
+                  setNewPlaylistName("");
+                }
+              }}
               placeholder="playlist name..."
               maxLength={40}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 mb-5 focus:outline-none focus:border-white/25 transition-colors relative z-10"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
             />
             <div className="flex gap-2 relative z-10">
               <button
@@ -609,26 +623,26 @@ export default function PlaylistsPage() {
                   setShowCreateModal(false);
                   setNewPlaylistName("");
                 }}
-                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[9px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-300 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
               >
                 cancel
               </button>
               <button
                 onClick={handleCreate}
                 disabled={!newPlaylistName.trim() || creating}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[9px] font-black tracking-widest uppercase disabled:opacity-25 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
-                {creating ? "..." : "create"}
+                {creating ? "creating..." : "create"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ─── IMPORT MODAL ─── */}
+      {/* ── IMPORT MODAL ── */}
       {showImportModal && (
         <div
-          className="animate-[fadeIn_0.18s_ease_forwards] fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
             if (e.target === e.currentTarget && !importing) {
               setShowImportModal(false);
@@ -637,26 +651,12 @@ export default function PlaylistsPage() {
             }
           }}
         >
-          <div className="animate-[modalIn_0.2s_cubic-bezier(0.34,1.1,0.64,1)_forwards] w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <div className="flex items-center justify-between mb-1.5 relative z-10">
-              <p className="text-sm font-black tracking-tight text-white">
-                import playlist
-              </p>
-              {!importing && (
-                <button
-                  onClick={() => {
-                    setShowImportModal(false);
-                    setImportUrl("");
-                    setImportError("");
-                  }}
-                  className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-                >
-                  <X size={11} />
-                </button>
-              )}
-            </div>
-            <p className="text-[9px] text-zinc-500 uppercase tracking-widest mb-4 relative z-10">
-              spotify · youtube music · apple music
+          <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
+            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
+              import playlist
+            </p>
+            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
+              spotify · youtube · apple music
             </p>
             <input
               autoFocus
@@ -665,7 +665,7 @@ export default function PlaylistsPage() {
               disabled={importing}
               onKeyDown={(e) => e.key === "Enter" && handleImport()}
               placeholder="paste playlist link..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-zinc-600 mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10"
             />
             {importError && (
               <p className="text-[10px] text-red-400 bg-red-950/20 border border-red-900/20 rounded-lg px-3 py-2 mb-4 leading-relaxed relative z-10">
@@ -691,37 +691,37 @@ export default function PlaylistsPage() {
                   setImportError("");
                 }}
                 disabled={importing}
-                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[9px] font-bold tracking-widest uppercase hover:border-white/20 hover:text-zinc-300 transition-colors disabled:opacity-25 cursor-pointer"
+                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all disabled:opacity-30 cursor-pointer"
               >
                 cancel
               </button>
               <button
                 onClick={handleImport}
                 disabled={!importUrl.trim() || importing}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[9px] font-black tracking-widest uppercase disabled:opacity-25 disabled:cursor-not-allowed hover:bg-zinc-200 transition-colors cursor-pointer"
+                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
-                {importing ? "..." : "import"}
+                {importing ? "importing..." : "import"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ─── PLAYLIST DETAIL MODAL ─── */}
+      {/* ── PLAYLIST DETAIL MODAL ── */}
       {activePlaylist && (
         <div
-          className="animate-[fadeIn_0.18s_ease_forwards] fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="modal-backdrop fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) handleCloseDetailsModal();
           }}
         >
           <div
-            className="animate-[modalIn_0.2s_cubic-bezier(0.34,1.1,0.64,1)_forwards] w-full max-w-2xl mx-auto rounded-[24px] flex flex-col bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden"
+            className="modal-box w-full max-w-2xl mx-auto rounded-[24px] flex flex-col bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden relative before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent"
             style={{ height: "85vh" }}
           >
-            {/* Modal Header */}
-            <div className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.06] shrink-0 relative before:absolute before:inset-0 before:rounded-t-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] shrink-0 relative z-10">
+            {/* Header */}
+            <div className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.06] shrink-0 relative z-10">
+              <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] shrink-0">
                 {activePlaylist.coverImage ? (
                   <img
                     src={activePlaylist.coverImage}
@@ -738,7 +738,7 @@ export default function PlaylistsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex-1 min-w-0 relative z-10">
+              <div className="flex-1 min-w-0">
                 <h2 className="text-base font-black text-white truncate tracking-tight">
                   {activePlaylist.name}
                 </h2>
@@ -746,7 +746,7 @@ export default function PlaylistsPage() {
                   {activeTracks.length} song{activeTracks.length !== 1 && "s"}
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0 relative z-10">
+              <div className="flex items-center gap-2 shrink-0">
                 {!activePlaylist.isLiked && (
                   <button
                     onClick={openAddSearch}
@@ -775,7 +775,7 @@ export default function PlaylistsPage() {
             </div>
 
             {/* Track list */}
-            <div className="flex-1 overflow-y-auto min-h-0 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/[0.08] [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="flex-1 overflow-y-auto min-h-0 room-scroll relative z-10">
               {loadingTracks ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="animate-spin text-zinc-500" size={20} />
@@ -802,16 +802,14 @@ export default function PlaylistsPage() {
                       onDragOver={(e) => handleDragOver(e, idx)}
                       onDragEnd={handleDragEnd}
                       onDrop={(e) => handleDrop(e, idx)}
-                      className={[
-                        "group/track flex items-center gap-3 px-3 py-2 rounded-xl border transition-colors",
-                        !activePlaylist.isLiked
-                          ? "cursor-grab active:cursor-grabbing"
-                          : "",
-                        draggedIdx === idx ? "opacity-20" : "",
-                        dragOverIdx === idx && draggedIdx !== idx
-                          ? "bg-white/[0.08] border-white/10"
-                          : "border-transparent hover:bg-white/[0.06]",
-                      ].join(" ")}
+                      className={`group/track flex items-center gap-3 px-3 py-2 rounded-xl transition-colors
+                        ${!activePlaylist.isLiked ? "cursor-grab active:cursor-grabbing" : ""}
+                        ${draggedIdx === idx ? "opacity-20" : ""}
+                        ${
+                          dragOverIdx === idx && draggedIdx !== idx
+                            ? "bg-white/[0.08] border border-white/10"
+                            : "border border-transparent hover:bg-white/[0.04]"
+                        }`}
                     >
                       {!activePlaylist.isLiked && (
                         <GripVertical
@@ -822,7 +820,7 @@ export default function PlaylistsPage() {
                       <span className="text-[10px] text-zinc-600 w-4 text-right font-bold shrink-0">
                         {idx + 1}
                       </span>
-                      <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
                         {track.image ? (
                           <img
                             src={track.image}
@@ -836,7 +834,7 @@ export default function PlaylistsPage() {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[14px] font-bold text-white truncate leading-snug">
+                        <p className="text-[13px] font-bold text-white truncate leading-snug">
                           {track.trackName}
                         </p>
                         <p className="text-[11px] text-zinc-500 truncate mt-0.5">
@@ -849,7 +847,7 @@ export default function PlaylistsPage() {
                             e.stopPropagation();
                             handleDeleteTrack(track.id);
                           }}
-                          className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center text-zinc-600 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 transition-all cursor-pointer opacity-0 group-hover/track:opacity-100"
+                          className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center text-zinc-600 opacity-0 group-hover/track:opacity-100 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 transition-all cursor-pointer"
                         >
                           <X size={10} />
                         </button>
@@ -862,8 +860,8 @@ export default function PlaylistsPage() {
 
             {/* Add track search panel */}
             {!activePlaylist.isLiked && showAddSearch && (
-              <div className="shrink-0 border-t border-white/[0.06] animate-[searchUp_0.22s_cubic-bezier(0.34,1.1,0.64,1)_forwards]">
-                <div className="flex flex-col max-h-[280px]">
+              <div className="shrink-0 border-t border-white/[0.06] relative z-10">
+                <div className="flex flex-col" style={{ maxHeight: "280px" }}>
                   <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
                     <Search size={12} className="text-zinc-500 shrink-0" />
                     <input
@@ -894,7 +892,7 @@ export default function PlaylistsPage() {
                       </button>
                     )}
                   </div>
-                  <div className="overflow-y-auto flex flex-col px-2 py-1.5 [&::-webkit-scrollbar]:w-[3px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/[0.08] [&::-webkit-scrollbar-thumb]:rounded-full">
+                  <div className="overflow-y-auto room-scroll flex flex-col px-2 py-1.5">
                     {modalSearchResults.length === 0 && !isSearchingModal && (
                       <div className="flex items-center justify-center py-6">
                         <p className="text-[9px] text-zinc-700 uppercase tracking-widest">
@@ -909,7 +907,7 @@ export default function PlaylistsPage() {
                       return (
                         <div
                           key={track.id}
-                          className="group/result flex items-center gap-3 px-3 py-2 rounded-lg border border-transparent hover:bg-white/[0.06] transition-colors"
+                          className="flex items-center gap-3 px-3 py-2 rounded-xl border border-transparent hover:bg-white/[0.04] transition-colors"
                         >
                           <img
                             src={
@@ -933,12 +931,12 @@ export default function PlaylistsPage() {
                             disabled={
                               addingTrackId === track.id || alreadyAdded
                             }
-                            className={[
-                              "shrink-0 px-3 py-1.5 rounded-lg text-[9px] font-bold tracking-widest uppercase transition-all cursor-pointer",
-                              alreadyAdded
-                                ? "border border-white/[0.08] text-zinc-600 cursor-default"
-                                : "bg-white text-black hover:bg-zinc-200 disabled:opacity-30",
-                            ].join(" ")}
+                            className={`shrink-0 px-3 py-1.5 rounded-lg text-[9px] font-bold tracking-widest uppercase transition-all cursor-pointer
+                              ${
+                                alreadyAdded
+                                  ? "border border-white/[0.08] text-zinc-600 cursor-default"
+                                  : "bg-white text-black hover:bg-zinc-200 disabled:opacity-30"
+                              }`}
                           >
                             {alreadyAdded
                               ? "added"
