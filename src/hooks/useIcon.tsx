@@ -75,7 +75,7 @@ const ICON_MAP: Record<string, string> = {
   desktop: "desktop.svg",
   "log-out": "Share.svg",
 
-  menu: "Menu.svg",
+  menu: "menuu.svg",
 };
 
 export type IconName = keyof typeof ICON_MAP;
