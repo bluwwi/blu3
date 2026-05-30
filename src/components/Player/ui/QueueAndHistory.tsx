@@ -81,24 +81,24 @@ export function QueueAndHistory({
       <div className="flex items-center gap-2 px-1">
         <button
           onClick={() => onSearchClick?.()}
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white/70 hover:bg-white/30 transition-all"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white transition-all"
           title="Search songs"
         >
           <Icon name="search" size={12} className="text-current" />
         </button>
         <span className="text-[13px] font-semibold text-white/80">Queue</span>
         {queue.length > 0 && (
-          <span className="text-[11px] bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
+          <span className="text-[11px] bg-white/[0.07] text-white/70 px-2 py-0.5 rounded-full border border-white/[0.06]">
             {queue.length}
           </span>
         )}
         <div className="ml-auto relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
+            className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] transition-all ${
               showMenu
-                ? "bg-violet-400 text-white"
-                : "bg-white/20 text-white/70 hover:bg-white/30"
+                ? "bg-white/[0.12] text-white"
+                : "bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white"
             }`}
             title="More options"
           >
@@ -107,7 +107,8 @@ export function QueueAndHistory({
 
           {showMenu && (
             <div
-              className="absolute right-0 mt-2 w-52 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+              className="absolute right-0 mt-2 w-52 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+              style={{ background: "var(--room-surface, #0D0D14)", borderColor: "var(--room-border, rgba(255,255,255,0.08))" }}
             >
               <button
                 onClick={() => { onToggleShuffle?.(); }}

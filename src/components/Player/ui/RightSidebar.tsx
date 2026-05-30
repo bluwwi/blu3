@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
-import { RoomTheme } from "@/utils/roomHelpers";
+import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
 
 interface Member {
@@ -59,6 +59,8 @@ export function RightSidebar({
   addToQueue,
   activeVideoId,
   playerState,
+  roomTheme = "purple",
+  onThemeChange,
   shuffleEnabled = false,
   repeatMode = "off",
   onToggleShuffle,
@@ -152,7 +154,7 @@ export function RightSidebar({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
+    <div className="flex h-full min-h-0 flex-col text-white overflow-hidden" style={getRoomThemeVars(roomTheme)}>
       {/* Members strip (always visible) */}
       <div className="max-md:px-0 md:px-4 max-md:pt-0 md:pt-3 pb-2 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 mb-2">
