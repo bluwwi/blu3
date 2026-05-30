@@ -23,7 +23,7 @@ const ICON_MAP: Record<string, string> = {
   "volume-mute": "sound_mute.svg",
   "volume-x": "sound_mute.svg",
   "sound-fill": "Sound_fill.svg",
-
+  chat: "Chat.svg",
   // Likes / Favorites
   heart: "Heart.svg",
   favorite: "Favorite.svg",
@@ -45,8 +45,6 @@ const ICON_MAP: Record<string, string> = {
   basket: "Basket_alt.svg",
   link: "link_alt.svg",
 
-  // Chat / Messages
-  chat: "Chat.svg",
   comment: "comment.svg",
   "message-square": "comment.svg",
 
@@ -76,6 +74,8 @@ const ICON_MAP: Record<string, string> = {
   speed: "Speed_alt.svg",
   desktop: "desktop.svg",
   "log-out": "Share.svg",
+
+  menu: "Menu.svg",
 };
 
 export type IconName = keyof typeof ICON_MAP;

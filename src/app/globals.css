@@ -1,5 +1,6 @@
-@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
 
+@import "tailwindcss";
 * {
     /*border: 1px solid black;*/
 }
@@ -34,6 +35,19 @@
     font-style: normal;
     font-weight: 900;
     font-display: swap;
+}
+
+@font-face {
+    font-family: "SuisseIntl-Regular";
+    src: url("/fonts/SuisseIntl-Regular.ttf") format("truetype");
+    font-style: normal;
+}
+
+.milano {
+    font-family: "SuisseIntl-Regular", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-weight: 600;
 }
 
 :root {
@@ -71,11 +85,11 @@ button,
 input,
 textarea,
 select {
-    font-family: "Marmelat", sans-serif;
+    font-family: "Manrope", sans-serif;
 }
 
 * {
-    font-family: "Marmelat", sans-serif;
+    font-family: "Manrope", sans-serif;
 }
 
 html,

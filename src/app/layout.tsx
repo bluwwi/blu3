@@ -13,11 +13,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`marmelat  text-black h-full antialiased`}>
+    <html lang="en" className={`milano  text-black h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <PlaylistsProvider>
-          {children}
-        </PlaylistsProvider>
+        <PlaylistsProvider>{children}</PlaylistsProvider>
       </body>
     </html>
   );

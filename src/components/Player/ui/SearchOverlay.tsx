@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { Search, X, Plus, Play, Loader2, Music2, Clock, Heart } from "lucide-react";
+import {
+  Search,
+  X,
+  Plus,
+  Play,
+  Loader2,
+  Music2,
+  Clock,
+  Heart,
+} from "lucide-react";
 import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
 
@@ -149,7 +158,7 @@ export function SearchOverlay({
               onChange={(e) => onSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, artist or album..."
-              className="w-full bg-transparent text-sm marmelat text-white outline-none placeholder:text-white/40"
+              className="w-full bg-transparent text-sm milano text-white outline-none placeholder:text-white/40"
             />
             {isSearching ? (
               <Loader2
@@ -163,7 +172,7 @@ export function SearchOverlay({
                   onSearchInput("");
                   onSearch("");
                 }}
-                className="rounded-full p-1 text-white/50 marmelat transition-colors hover:bg-white/10 hover:text-white"
+                className="rounded-full p-1 text-white/50 milano transition-colors hover:bg-white/10 hover:text-white"
               >
                 <X size={13} />
               </button>
@@ -314,14 +323,25 @@ export function SearchOverlay({
                             e.stopPropagation();
                             toggleLike(track);
                           }}
-                          title={likedTrackIds.has(track.videoId) ? "Unlike track" : "Like track"}
+                          title={
+                            likedTrackIds.has(track.videoId)
+                              ? "Unlike track"
+                              : "Like track"
+                          }
                           className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                             likedTrackIds.has(track.videoId)
                               ? "text-rose-500 fill-rose-500 hover:text-rose-400"
                               : "text-white/50 hover:bg-white/10 hover:text-white"
                           }`}
                         >
-                          <Heart size={13} className={likedTrackIds.has(track.videoId) ? "fill-current" : ""} />
+                          <Heart
+                            size={13}
+                            className={
+                              likedTrackIds.has(track.videoId)
+                                ? "fill-current"
+                                : ""
+                            }
+                          />
                         </button>
                         {onAddToQueue && (
                           <button

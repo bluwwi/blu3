@@ -160,5 +160,5 @@ export const T = {
   text: "var(--room-text)",
   text2: "var(--room-text-2)",
   text3: "var(--room-text-3)",
-  font: "'Marmelat', sans-serif",
+  font: "'Manrope', sans-serif",
 };

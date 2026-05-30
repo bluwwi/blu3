@@ -81,7 +81,10 @@ export function QueueAndHistory({
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (playlistRef.current && !playlistRef.current.contains(e.target as Node)) {
+      if (
+        playlistRef.current &&
+        !playlistRef.current.contains(e.target as Node)
+      ) {
         setShowPlaylistDropdown(false);
       }
     };
@@ -104,7 +107,8 @@ export function QueueAndHistory({
       return;
     }
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${API_URL}/api/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -123,7 +127,8 @@ export function QueueAndHistory({
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const API_URL =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${API_URL}/api/playlists/${playlistId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -168,7 +173,8 @@ export function QueueAndHistory({
             </button>
 
             {showPlaylistDropdown && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll"
+              <div
+                className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll"
                 style={{
                   background: "var(--room-surface, #0D0D14)",
                   borderColor: "var(--room-border, rgba(255,255,255,0.08))",
@@ -178,9 +184,13 @@ export function QueueAndHistory({
                   Queue Playlist
                 </div>
                 {loadingPlaylists ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">Loading...</div>
+                  <div className="px-3 py-3 text-[10px] text-white/40">
+                    Loading...
+                  </div>
                 ) : playlists.length === 0 ? (
-                  <div className="px-3 py-3 text-[10px] text-white/40">No playlists found</div>
+                  <div className="px-3 py-3 text-[10px] text-white/40">
+                    No playlists found
+                  </div>
                 ) : (
                   <div>
                     {playlists.map((p) => (
@@ -191,16 +201,26 @@ export function QueueAndHistory({
                       >
                         <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
                           {p.coverImage ? (
-                            <img src={p.coverImage} alt="" className="w-full h-full object-cover" />
+                            <img
+                              src={p.coverImage}
+                              alt=""
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-white/30">
-                              <Icon name="list-music" size={12} className="text-current" />
+                              <Icon
+                                name="list-music"
+                                size={12}
+                                className="text-current"
+                              />
                             </div>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-white/90">{p.name}</p>
-                          <p className="text-[9px] text-white/40">{p.trackCount ?? 0} tracks</p>
+                          <p className="text-[9px] text-white/40">
+                            {p.trackCount ?? 0} tracks
+                          </p>
                         </div>
                       </button>
                     ))}
@@ -227,110 +247,110 @@ export function QueueAndHistory({
               }`}
               title="More options"
             >
-              <MoreVertical size={20} />
+              <Icon name="menu" size={20} className="text-current" />
             </button>
 
-          {showMenu && (
-            <div
-              className="absolute right-0 mt-2 w-52 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
-              style={{
-                background: "var(--room-surface, #0D0D14)",
-                borderColor: "var(--room-border, rgba(255,255,255,0.08))",
-              }}
-            >
-              <button
-                onClick={() => {
-                  onToggleShuffle?.();
+            {showMenu && (
+              <div
+                className="absolute right-0 mt-2 w-52 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+                style={{
+                  background: "var(--room-surface, #0D0D14)",
+                  borderColor: "var(--room-border, rgba(255,255,255,0.08))",
                 }}
-                disabled={!onToggleShuffle}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
-                  shuffleEnabled
-                    ? "text-violet-300"
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
               >
-                <div
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                    shuffleEnabled
-                      ? "bg-violet-400 border-violet-400"
-                      : "border-white/30"
-                  }`}
-                >
-                  {shuffleEnabled && (
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </div>
-                <Shuffle size={14} />
-                <span className="flex-1 text-left">Shuffle</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  onCycleRepeat?.();
-                }}
-                disabled={!onCycleRepeat}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
-                  repeatMode !== "off"
-                    ? "text-violet-300"
-                    : "text-white/70 hover:text-white hover:bg-white/10"
-                }`}
-              >
-                <div
-                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                    repeatMode !== "off"
-                      ? "bg-violet-400 border-violet-400"
-                      : "border-white/30"
-                  }`}
-                >
-                  {repeatMode !== "off" && (
-                    <svg
-                      width="10"
-                      height="10"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </div>
-                <Repeat size={14} />
-                <span className="flex-1 text-left">
-                  Repeat{" "}
-                  {repeatMode !== "off"
-                    ? `(${repeatMode === "one" ? "1" : "all"})`
-                    : ""}
-                </span>
-              </button>
-
-              {clearQueue && canControlPlayback && queue.length > 0 && (
                 <button
                   onClick={() => {
-                    clearQueue?.();
-                    setShowMenu(false);
+                    onToggleShuffle?.();
                   }}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-[11px] text-white/70 hover:text-red-400 hover:bg-white/10 transition-all"
+                  disabled={!onToggleShuffle}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                    shuffleEnabled
+                      ? "text-violet-300"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
                 >
-                  <Trash2 size={14} />
-                  <span>Delete all queue</span>
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                      shuffleEnabled
+                        ? "bg-violet-400 border-violet-400"
+                        : "border-white/30"
+                    }`}
+                  >
+                    {shuffleEnabled && (
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <Shuffle size={14} />
+                  <span className="flex-1 text-left">Shuffle</span>
                 </button>
-              )}
-            </div>
-          )}
+
+                <button
+                  onClick={() => {
+                    onCycleRepeat?.();
+                  }}
+                  disabled={!onCycleRepeat}
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                    repeatMode !== "off"
+                      ? "text-violet-300"
+                      : "text-white/70 hover:text-white hover:bg-white/10"
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                      repeatMode !== "off"
+                        ? "bg-violet-400 border-violet-400"
+                        : "border-white/30"
+                    }`}
+                  >
+                    {repeatMode !== "off" && (
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </div>
+                  <Repeat size={14} />
+                  <span className="flex-1 text-left">
+                    Repeat{" "}
+                    {repeatMode !== "off"
+                      ? `(${repeatMode === "one" ? "1" : "all"})`
+                      : ""}
+                  </span>
+                </button>
+
+                {clearQueue && canControlPlayback && queue.length > 0 && (
+                  <button
+                    onClick={() => {
+                      clearQueue?.();
+                      setShowMenu(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2 text-[11px] text-white/70 hover:text-red-400 hover:bg-white/10 transition-all"
+                  >
+                    <Trash2 size={14} />
+                    <span>Delete all queue</span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -145,7 +145,7 @@ export function RightSidebar({
                     </svg>
                   </button>
                 </div>
-                <div className="space-y-1 max-h-64 overflow-y-auto room-scroll">
+                <div className="space-y-1  flex gap-2 overflow-y-auto room-scroll">
                   {members.map((m, i) => {
                     const isMe =
                       user?.sub === m.userId || user?.email === m.userId;
@@ -206,6 +206,20 @@ export function RightSidebar({
                       </div>
                     );
                   })}
+                  {onChatToggle && (
+                    <button
+                      onClick={onChatToggle}
+                      className="relative flex h-10 w-10 items-center justify-center rounded-lg text-white/80 transition-colors hover:text-white/80 cursor-pointer"
+                      title="Toggle chat"
+                    >
+                      <Icon name="Chat" size={20} className="text-current" />
+                      {unreadChatCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
+                          {unreadChatCount > 9 ? "9+" : unreadChatCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -217,28 +231,18 @@ export function RightSidebar({
                 className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-[11px] font-semibold hover:bg-white/80 transition-all cursor-pointer"
                 title="Room options"
               >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
                 {roomCode}
-              </button>
-            )}
-
-            {onChatToggle && (
-              <button
-                onClick={onChatToggle}
-                className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black transition-colors hover:bg-white/80 cursor-pointer"
-                title="Toggle chat"
-              >
-                <MessageCircle
-                  size={20}
-                  className="text-current"
-                />
-                {unreadChatCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] flex items-center justify-center rounded-full bg-violet-500 text-[8px] font-bold text-white px-0.5">
-                    {unreadChatCount > 9 ? "9+" : unreadChatCount}
-                  </span>
-                )}
               </button>
             )}
           </div>
