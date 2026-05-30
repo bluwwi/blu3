@@ -20,8 +20,11 @@ interface Props {
   addToQueue: (track: Track) => void;
   clearQueue?: () => void;
   activeVideoId: string | null | undefined;
-  defaultTab?: "queue" | "history";
   playerState?: string;
+  shuffleEnabled?: boolean;
+  repeatMode?: "off" | "all" | "one";
+  onToggleShuffle?: () => void;
+  onCycleRepeat?: () => void;
 }
 
 export function QueueAndHistory({
