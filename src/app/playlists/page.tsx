@@ -45,10 +45,10 @@ export default function PlaylistsPage() {
   const [loadingPlaylists, setLoadingPlaylists] = useState(true);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [modalTab, setModalTab] = useState<"create" | "import">("create");
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const [showImportModal, setShowImportModal] = useState(false);
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
@@ -121,6 +121,7 @@ export default function PlaylistsPage() {
         setPlaylists((p) => [...p, data.playlist]);
         setShowCreateModal(false);
         setNewPlaylistName("");
+        setModalTab("create");
       }
     } catch (err) {
       console.error(err);
@@ -146,8 +147,9 @@ export default function PlaylistsPage() {
       const data = await res.json();
       if (res.ok && data.playlist) {
         setPlaylists((p) => [...p, data.playlist]);
-        setShowImportModal(false);
+        setShowCreateModal(false);
         setImportUrl("");
+        setModalTab("create");
       } else
         setImportError(
           data.error || "Failed to import. Check the URL and try again.",
@@ -528,10 +530,13 @@ export default function PlaylistsPage() {
                           )}
                         </div>
                         <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
-                          <p className="text-xs text-center uppercase md:text-[14px] w-full text-white truncate leading-tight">
+                          <p className="text-xs md:text-[14px] text-white truncate leading-tight">
                             {playlist.name}
                             {playlist.trackCount !== undefined && (
-                              <span className="text-zinc-500"> </span>
+                              <span className="text-zinc-500">
+                                {" "}
+                                • {playlist.trackCount}
+                              </span>
                             )}
                           </p>
                         </div>
@@ -565,144 +570,149 @@ export default function PlaylistsPage() {
         </div>
       </div>
 
-      {/* ── BOTTOM BAR — mirrors browse's join room bar ── */}
-      {user && !authLoading && (
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
-          <div className="flex items-center gap-3 pointer-events-auto">
-            <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-              <span className="text-sm text-zinc-600 w-52 tracking-wide select-none">
-                import a playlist
-              </span>
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
-              >
-                Import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── CREATE MODAL — identical to browse's create room modal ── */}
+      {/* ── UNIFIED CREATE / IMPORT MODAL ── */}
       {showCreateModal && (
         <div
           className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
           onClick={(e) => {
-            if (e.target === e.currentTarget) {
+            if (e.target === e.currentTarget && !importing && !creating) {
               setShowCreateModal(false);
               setNewPlaylistName("");
-            }
-          }}
-        >
-          <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
-              new playlist
-            </p>
-            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
-              give it a name
-            </p>
-            <input
-              autoFocus
-              value={newPlaylistName}
-              onChange={(e) => setNewPlaylistName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreate();
-                if (e.key === "Escape") {
-                  setShowCreateModal(false);
-                  setNewPlaylistName("");
-                }
-              }}
-              placeholder="playlist name..."
-              maxLength={40}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
-            />
-            <div className="flex gap-2 relative z-10">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewPlaylistName("");
-                }}
-                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
-              >
-                cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={!newPlaylistName.trim() || creating}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {creating ? "creating..." : "create"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── IMPORT MODAL ── */}
-      {showImportModal && (
-        <div
-          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !importing) {
-              setShowImportModal(false);
               setImportUrl("");
               setImportError("");
+              setModalTab("create");
             }
           }}
         >
           <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
-              import playlist
-            </p>
-            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
-              spotify · youtube · apple music
-            </p>
-            <input
-              autoFocus
-              value={importUrl}
-              onChange={(e) => setImportUrl(e.target.value)}
-              disabled={importing}
-              onKeyDown={(e) => e.key === "Enter" && handleImport()}
-              placeholder="paste playlist link..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10"
-            />
-            {importError && (
-              <p className="text-[10px] text-red-400 bg-red-950/20 border border-red-900/20 rounded-lg px-3 py-2 mb-4 leading-relaxed relative z-10">
-                {importError}
-              </p>
-            )}
-            {importing && (
-              <div className="flex items-center gap-2 mb-4 px-1 relative z-10">
-                <Loader2
-                  size={13}
-                  className="animate-spin text-zinc-500 shrink-0"
-                />
-                <p className="text-[9px] text-zinc-500 uppercase tracking-widest">
-                  importing tracks...
-                </p>
-              </div>
-            )}
-            <div className="flex gap-2 relative z-10">
+            {/* Tab switcher */}
+            <div className="flex items-center gap-1 mb-5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] relative z-10">
               <button
                 onClick={() => {
-                  setShowImportModal(false);
-                  setImportUrl("");
+                  setModalTab("create");
                   setImportError("");
                 }}
-                disabled={importing}
-                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all disabled:opacity-30 cursor-pointer"
+                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all cursor-pointer ${
+                  modalTab === "create"
+                    ? "bg-white text-black"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
               >
-                cancel
+                create
               </button>
               <button
-                onClick={handleImport}
-                disabled={!importUrl.trim() || importing}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                onClick={() => {
+                  setModalTab("import");
+                  setNewPlaylistName("");
+                }}
+                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all cursor-pointer ${
+                  modalTab === "import"
+                    ? "bg-white text-black"
+                    : "text-zinc-500 hover:text-zinc-300"
+                }`}
               >
-                {importing ? "importing..." : "import"}
+                import
               </button>
             </div>
+
+            {/* CREATE tab */}
+            {modalTab === "create" && (
+              <>
+                <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
+                  give it a name
+                </p>
+                <input
+                  autoFocus
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleCreate();
+                    if (e.key === "Escape") {
+                      setShowCreateModal(false);
+                      setNewPlaylistName("");
+                      setModalTab("create");
+                    }
+                  }}
+                  placeholder="playlist name..."
+                  maxLength={40}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
+                />
+                <div className="flex gap-2 relative z-10">
+                  <button
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setNewPlaylistName("");
+                      setModalTab("create");
+                    }}
+                    className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
+                  >
+                    cancel
+                  </button>
+                  <button
+                    onClick={handleCreate}
+                    disabled={!newPlaylistName.trim() || creating}
+                    className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {creating ? "creating..." : "create"}
+                  </button>
+                </div>
+              </>
+            )}
+
+            {/* IMPORT tab */}
+            {modalTab === "import" && (
+              <>
+                <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
+                  spotify · youtube · apple music
+                </p>
+                <input
+                  autoFocus
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  disabled={importing}
+                  onKeyDown={(e) => e.key === "Enter" && handleImport()}
+                  placeholder="paste playlist link..."
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10"
+                />
+                {importError && (
+                  <p className="text-[10px] text-red-400 bg-red-950/20 border border-red-900/20 rounded-lg px-3 py-2 mb-4 leading-relaxed relative z-10">
+                    {importError}
+                  </p>
+                )}
+                {importing && (
+                  <div className="flex items-center gap-2 mb-4 px-1 relative z-10">
+                    <Loader2
+                      size={13}
+                      className="animate-spin text-zinc-500 shrink-0"
+                    />
+                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest">
+                      importing tracks...
+                    </p>
+                  </div>
+                )}
+                <div className="flex gap-2 relative z-10">
+                  <button
+                    onClick={() => {
+                      setShowCreateModal(false);
+                      setImportUrl("");
+                      setImportError("");
+                      setModalTab("create");
+                    }}
+                    disabled={importing}
+                    className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all disabled:opacity-30 cursor-pointer"
+                  >
+                    cancel
+                  </button>
+                  <button
+                    onClick={handleImport}
+                    disabled={!importUrl.trim() || importing}
+                    className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    {importing ? "importing..." : "import"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
