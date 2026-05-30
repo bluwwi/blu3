@@ -166,55 +166,6 @@ export function RightSidebar({
                 clearQueue={clearQueue}
               />
             </div>
-
-            {roomCode && (
-              <div className="shrink-0 relative flex justify-end px-3 pb-2">
-                <div
-                  className="pointer-events-none absolute bottom-0 left-0 right-0 h-24"
-                  style={{
-                    background:
-                      "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)",
-                    maskImage:
-                      "linear-gradient(to top, transparent 0%, transparent 100%)",
-                    WebkitMaskImage:
-                      "linear-gradient(to top, transparent 0%, transparent 100%)",
-                  }}
-                />
-                <button
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: "Join my room",
-                        url: window.location.href,
-                      });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}
-                  className="relative z-10 flex items-center gap-1.5 rounded-lg bg-white text-black px-3.5 py-2 text-xs  hover:bg-white/80 transition-all cursor-pointer"
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                  </svg>
-                  Invite Friends
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -454,11 +454,11 @@ export function QueueAndHistory({
 
                     {isActive && (
                       <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/45">
-                        <div className="flex items-end gap-[2px] h-3.5">
+                        <div className="flex items-end gap-1 h-3.5">
                           {[1, 2, 3].map((b) => (
                             <div
                               key={b}
-                              className={`w-[2.5px] rounded-full bg-violet-300 ${
+                              className={`w-[3px] rounded-full bg-white ${
                                 playerState === "playing"
                                   ? "animate-bounce"
                                   : ""
