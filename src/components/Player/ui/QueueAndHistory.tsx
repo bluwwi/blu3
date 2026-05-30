@@ -21,10 +21,6 @@ interface Props {
   clearQueue?: () => void;
   activeVideoId: string | null | undefined;
   playerState?: string;
-  shuffleEnabled?: boolean;
-  repeatMode?: "off" | "all" | "one";
-  onToggleShuffle?: () => void;
-  onCycleRepeat?: () => void;
 }
 
 export function QueueAndHistory({
@@ -36,10 +32,6 @@ export function QueueAndHistory({
   addToQueue,
   activeVideoId,
   playerState,
-  shuffleEnabled = false,
-  repeatMode = "off",
-  onToggleShuffle,
-  onCycleRepeat,
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
 
