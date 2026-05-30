@@ -152,13 +152,6 @@ export function RightSidebar({
     }
   };
 
-  const tabBtn = (t: SideTab, active: boolean) =>
-    `flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2 text-[10px] uppercase tracking-[0.15em] border-none bg-transparent cursor-pointer relative transition-all ${
-      active
-        ? "text-white"
-        : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]"
-    }`;
-
   return (
     <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
       {/* Members strip (always visible) */}
