@@ -217,10 +217,8 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       const idx = WAVE_LINES.indexOf(cfg);
       const baseY = baseYs[idx];
       const band = bands[idx];
-      const wlMod =
-        1 + 0.5 * Math.sin(tRef.current * cfg.wlSpeed + cfg.wlPhase);
       const scroll = tRef.current * cfg.scrollSpeed * (0.7 + 0.6 * energy) + cfg.scrollPhase;
-      const freq = (((2 * Math.PI) / W) * 1.5) / wlMod;
+      const freq = ((2 * Math.PI) / W) * 1.5;
       const breath =
         1 +
         0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
@@ -233,7 +231,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       ctx.lineCap = "round";
       ctx.beginPath();
       for (let x = 0; x <= W; x += 6) {
-        const y = baseY + Math.sin(freq * x - scroll) * amp;
+        const y = baseY + Math.sin(freq * x + scroll) * amp;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
@@ -243,7 +241,7 @@ export function RoomBackground({ isPlaying, trackImage, trackId }: RoomBackgroun
       ctx.lineWidth = 2.8;
       ctx.beginPath();
       for (let x = 0; x <= W; x += 2) {
-        const y = baseY + Math.sin(freq * x - scroll) * amp;
+        const y = baseY + Math.sin(freq * x + scroll) * amp;
         x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
       ctx.stroke();
