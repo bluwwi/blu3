@@ -82,15 +82,15 @@ export function SquarePlayer({
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 sm:gap-2 mb-3 flex-nowrap w-full select-none">
+      <div className="flex items-center justify-center gap-2 sm:gap-2 mb-3 flex-nowrap w-full select-none">
         {/* Skip Back */}
         <button
           onClick={onSkipBack}
           disabled={!onSkipBack}
-          className="p-1.5 text-white/60 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+          className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Previous"
         >
-          <Icon name="skip-back" size={18} className="text-current" />
+          <Icon name="skip-back" size={22} className="text-current" />
         </button>
         {/* Play/Pause - Centerpiece */}
         <button
@@ -119,21 +119,20 @@ export function SquarePlayer({
         <button
           onClick={onSkipForward}
           disabled={!onSkipForward}
-          className="p-1.5 text-white/60 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+          className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
           aria-label="Next"
         >
-          <Icon name="skip-forward" size={18} className="text-current" />
+          <Icon name="skip-forward" size={22} className="text-current" />
         </button>
-        <div className="w-px h-6 bg-white/10 mx-1" />
         <button
           onClick={onMute}
-          className="p-1.5 text-white/50 hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer flex-shrink-0"
+          className="s ml-2 text-white hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer shrink-0"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted ? (
-            <Icon name="volume-x" size={16} className="text-current" />
+            <Icon name="volume-x" size={20} className="text-current" />
           ) : (
-            <Icon name="volume-up" size={16} className="text-current" />
+            <Icon name="volume-up" size={20} className="text-current" />
           )}
         </button>
         <input
@@ -143,13 +142,30 @@ export function SquarePlayer({
           step={1}
           value={isMuted ? 0 : volume}
           onChange={(e) => onVolume(Number(e.target.value))}
-          className="accent-white h-1.5 w-12 sm:w-16 cursor-pointer bg-white/10 rounded-lg outline-none flex-shrink-0"
+          className="accent-white h-1.25 w-16 sm:w-22 cursor-pointer bg-white/20 rounded-lg outline-none ring-0 border-0 shrink-0"
           aria-label="Volume"
         />
-        {/* Like Button */}
+
+        {onToggleLike && (
+          <button
+            onClick={onToggleLike}
+            className={`rounded-full ml-2 transition-all cursor-pointer shrink-0 ${
+              isLiked
+                ? "text-rose-500 "
+                : "text-white/50 hover:text-white hover:bg-white/10 hover:scale-105 "
+            }`}
+            aria-label={isLiked ? "Unlike track" : "Like track"}
+            title={isLiked ? "Unlike track" : "Like track"}
+          >
+            <Icon
+              name={isLiked ? "favorite" : "heart"}
+              size={25}
+              className={isLiked ? "text-rose-500" : "text-current"}
+            />
+          </button>
+        )}
       </div>
 
-      {/* Progress Bar + Timestamps */}
       <div className="w-[90%] px-2 mb-2 shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
