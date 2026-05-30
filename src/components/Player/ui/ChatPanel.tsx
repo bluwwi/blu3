@@ -1,6 +1,7 @@
 import { useRef, useEffect } from "react";
 import { Track } from "@/utils/types";
 import { Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
+import Icon from "@/hooks/useIcon";
 
 interface Message {
   id: string;
@@ -76,12 +77,12 @@ export function ChatPanel({
             <button
               onClick={onPlayPause}
               disabled={!canControlPlayback}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-violet-500 hover:bg-violet-400 transition-colors disabled:opacity-50 text-white"
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-white hover:bg-violet-400 transition-colors disabled:opacity-50 text-black"
             >
               {isPlaying ? (
-                <Pause size={16} fill="currentColor" className="ml-0.5" />
+                <Icon name="Pause" size={16} className="ml-0.5" />
               ) : (
-                <Play size={16} fill="currentColor" className="ml-1" />
+                <Icon name="Play" size={16} className="ml-1" />
               )}
             </button>
             <button

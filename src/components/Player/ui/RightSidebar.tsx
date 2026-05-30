@@ -86,7 +86,7 @@ export function RightSidebar({
       style={getRoomThemeVars(roomTheme)}
     >
       <div className="max-md:px-0 md:px-3 max-md:pt-0 md:pt-3 pb-2 border-b border-white/10 shrink-0">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 px-2">
           <div className="flex items-center ">
             <button
               onClick={() => setShowMembersPopup(true)}

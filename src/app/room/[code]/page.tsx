@@ -1216,15 +1216,32 @@ export default function RoomPage() {
         />
       </div>
 
-      <div className="relative z-10 md:h-screen h-full w-full overflow-hidden">
+      <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
         <div
-          className="mx-auto flex h-full flex-col pb-0 md:pb-6 lg:pb-20 px-0 md:px-3
+          className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 rounded-3xl
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
-              overflow-y-auto lg:overflow-hidden"
+              filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
+              md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
         >
-          <div className="flex h-full mt-0 md:mt-10 gap-0 md:gap-2 pt-0 md:pt-2 min-h-0">
-            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-4 pb-0 md:pb-12 lg:pb-0">
-              <aside className="w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-[420px] lg:min-h-0 max-md:rounded-none md:rounded-[24px] max-md:border-0 md:border md:border-white/[0.08] max-md:bg-transparent md:bg-white/[0.05] max-md:backdrop-blur-none md:backdrop-blur-2xl max-md:shadow-none md:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden transition-all duration-300 max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent">
+          <div className="flex h-full mt-0  gap-0 md:gap-2 pt-0  min-h-0">
+            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-4 pb-0  lg:pb-0">
+              <aside
+                className="
+                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-105 lg:min-h-0
+                  max-md:rounded-none md:rounded-3xl
+                  max-md:border-0 md:border md:border-white/8
+                  max-md:bg-transparent md:bg-white/5
+                  max-md:backdrop-blur-none md:backdrop-blur-2xl
+
+                  filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
+                  md:filter md:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
+
+                  overflow-visible
+
+                  relative transition-all duration-300
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
+                "
+              >
                 {chatOpen ? (
                   <div className="absolute inset-0 animate-in fade-in duration-300">
                     <ChatPanel
@@ -1275,8 +1292,24 @@ export default function RoomPage() {
                 )}
               </aside>
 
-              {/* Right panel — sidebar */}
-              <aside className="flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0 max-md:rounded-none md:rounded-[24px] max-md:border-0 md:border md:border-white/[0.08] max-md:bg-transparent md:bg-white/[0.05] max-md:backdrop-blur-none md:backdrop-blur-2xl max-md:shadow-none md:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden transition-all duration-300 max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent flex flex-col">
+              <aside
+                className="
+                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0
+                  max-md:rounded-none md:rounded-3xl
+                  max-md:border-0 md:border md:border-white/8
+                  max-md:bg-transparent md:bg-white/5
+                  max-md:backdrop-blur-none md:backdrop-blur-2xl
+
+                  filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
+                  md:filter md:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
+
+                  overflow-visible
+
+                  transition-all duration-300
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
+                  flex flex-col
+                "
+              >
                 <RightSidebar
                   members={members}
                   messages={messages}
