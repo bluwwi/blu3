@@ -1131,6 +1131,16 @@ export default function RoomPage() {
     "EDM",
   ];
 
+  const audioAnalyzer = useAudioAnalyzer();
+
+  useEffect(() => {
+    if (player.playerState === "playing") {
+      audioAnalyzer.start();
+    } else {
+      audioAnalyzer.stop();
+    }
+  }, [player.playerState, audioAnalyzer]);
+
   /* ─── Background Video Looper ──────────────────────── */
   useEffect(() => {
     if (!joined) return;
@@ -1182,6 +1192,8 @@ export default function RoomPage() {
           isPlaying={player.playerState === "playing"}
           trackImage={footerTrack?.image}
           trackId={footerTrack?.videoId}
+          liveBandsRef={audioAnalyzer.bandsRef}
+          isLiveAudio={audioAnalyzer.isActive}
         />
       </div>
 
