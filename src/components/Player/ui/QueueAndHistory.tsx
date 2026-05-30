@@ -55,9 +55,7 @@ export function QueueAndHistory({
 
   const recentToShow = useMemo(() => {
     if (!showRecent) return [];
-    const filtered = recentTracks.filter(
-      (t) => t.videoId !== activeVideoId,
-    );
+    const filtered = recentTracks.filter((t) => t.videoId !== activeVideoId);
     return filtered.slice(0, 10);
   }, [showRecent, recentTracks, activeVideoId]);
 
@@ -78,27 +76,27 @@ export function QueueAndHistory({
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 p-1">
-      <div className="flex items-center gap-2 px-1">
-        <button
-          onClick={() => onSearchClick?.()}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white transition-all"
-          title="Search songs"
-        >
-          <Icon name="search" size={12} className="text-current" />
-        </button>
-        <span className="text-[13px] font-semibold text-white/80">Queue</span>
-        {queue.length > 0 && (
-          <span className="text-[11px] bg-white/[0.07] text-white/70 px-2 py-0.5 rounded-full border border-white/[0.06]">
-            {queue.length}
-          </span>
-        )}
-        <div className="ml-auto relative" ref={menuRef}>
+      <div className="flex items-center gap-2 px-3">
+        <span className="text-lg  text-white">
+          Queue {"("}
+          {queue.length}
+          {")"}
+        </span>
+
+        <div className="ml-auto flex gap-1 relative" ref={menuRef}>
+          <button
+            onClick={() => onSearchClick?.()}
+            className="flex h-10 w-10  items-center justify-center rounded-xl bg-white text-black hover:bg-white/80 hover:text-white transition-all"
+            title="Search songs"
+          >
+            <Icon name="search" size={12} className="text-current" />
+          </button>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/[0.08] transition-all ${
+            className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-xl border border-white/[0.08] transition-all ${
               showMenu
-                ? "bg-white/[0.12] text-white"
-                : "bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white"
+                ? "bg-white text-black"
+                : "bg-white text-black hover:bg-white/80 "
             }`}
             title="More options"
           >
@@ -108,10 +106,15 @@ export function QueueAndHistory({
           {showMenu && (
             <div
               className="absolute right-0 mt-2 w-52 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
-              style={{ background: "var(--room-surface, #0D0D14)", borderColor: "var(--room-border, rgba(255,255,255,0.08))" }}
+              style={{
+                background: "var(--room-surface, #0D0D14)",
+                borderColor: "var(--room-border, rgba(255,255,255,0.08))",
+              }}
             >
               <button
-                onClick={() => { onToggleShuffle?.(); }}
+                onClick={() => {
+                  onToggleShuffle?.();
+                }}
                 disabled={!onToggleShuffle}
                 className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
                   shuffleEnabled
@@ -119,13 +122,26 @@ export function QueueAndHistory({
                     : "text-white/70 hover:text-white hover:bg-white/10"
                 }`}
               >
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                  shuffleEnabled
-                    ? "bg-violet-400 border-violet-400"
-                    : "border-white/30"
-                }`}>
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    shuffleEnabled
+                      ? "bg-violet-400 border-violet-400"
+                      : "border-white/30"
+                  }`}
+                >
                   {shuffleEnabled && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   )}
                 </div>
                 <Shuffle size={14} />
@@ -133,7 +149,9 @@ export function QueueAndHistory({
               </button>
 
               <button
-                onClick={() => { onCycleRepeat?.(); }}
+                onClick={() => {
+                  onCycleRepeat?.();
+                }}
                 disabled={!onCycleRepeat}
                 className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
                   repeatMode !== "off"
@@ -141,22 +159,43 @@ export function QueueAndHistory({
                     : "text-white/70 hover:text-white hover:bg-white/10"
                 }`}
               >
-                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                  repeatMode !== "off"
-                    ? "bg-violet-400 border-violet-400"
-                    : "border-white/30"
-                }`}>
+                <div
+                  className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    repeatMode !== "off"
+                      ? "bg-violet-400 border-violet-400"
+                      : "border-white/30"
+                  }`}
+                >
                   {repeatMode !== "off" && (
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg
+                      width="10"
+                      height="10"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="white"
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
                   )}
                 </div>
                 <Repeat size={14} />
-                <span className="flex-1 text-left">Repeat {repeatMode !== "off" ? `(${repeatMode === "one" ? "1" : "all"})` : ""}</span>
+                <span className="flex-1 text-left">
+                  Repeat{" "}
+                  {repeatMode !== "off"
+                    ? `(${repeatMode === "one" ? "1" : "all"})`
+                    : ""}
+                </span>
               </button>
 
               {clearQueue && canControlPlayback && queue.length > 0 && (
                 <button
-                  onClick={() => { clearQueue?.(); setShowMenu(false); }}
+                  onClick={() => {
+                    clearQueue?.();
+                    setShowMenu(false);
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2 text-[11px] text-white/70 hover:text-red-400 hover:bg-white/10 transition-all"
                 >
                   <Trash2 size={14} />
@@ -276,7 +315,11 @@ export function QueueAndHistory({
                       }
                     >
                       <Icon
-                        name={likedTrackIds.has(track.videoId) ? "favorite" : "heart"}
+                        name={
+                          likedTrackIds.has(track.videoId)
+                            ? "favorite"
+                            : "heart"
+                        }
                         size={12}
                         className="text-current"
                       />
@@ -288,7 +331,11 @@ export function QueueAndHistory({
                         className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
                         aria-label="Remove from queue"
                       >
-                        <Icon name="trash-2" size={12} className="text-current" />
+                        <Icon
+                          name="trash-2"
+                          size={12}
+                          className="text-current"
+                        />
                       </button>
                     )}
                   </div>
@@ -377,7 +424,11 @@ export function QueueAndHistory({
                               ||
                             </span>
                           ) : (
-                            <Icon name="play" size={12} className="text-white" />
+                            <Icon
+                              name="play"
+                              size={12}
+                              className="text-white"
+                            />
                           )}
                         </div>
                       )}
