@@ -1301,6 +1301,8 @@ export default function RoomPage() {
                     canControlPlayback ? handleCycleRepeat : undefined
                   }
                   onChatToggle={() => setChatOpen(!chatOpen)}
+                  onSearchClick={openSearchOverlay}
+                  clearQueue={clearQueue}
                   user={user}
                   onLogout={() => {
                     logout();

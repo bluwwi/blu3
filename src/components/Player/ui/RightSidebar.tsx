@@ -42,6 +42,8 @@ interface Props {
   onCycleRepeat?: () => void;
   onChatToggle?: () => void;
   unreadChatCount?: number;
+  onSearchClick?: () => void;
+  clearQueue?: () => void;
   user?: { sub: string; email: string; name: string; avatar?: string } | null;
   onLogout?: () => void;
 }
@@ -63,6 +65,8 @@ export function RightSidebar({
   onCycleRepeat,
   onChatToggle,
   unreadChatCount = 0,
+  onSearchClick,
+  clearQueue,
   user,
   onLogout,
 }: Props) {
@@ -246,31 +250,6 @@ export function RightSidebar({
               </button>
             )}
 
-            <button
-              onClick={onToggleShuffle}
-              disabled={!onToggleShuffle}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all disabled:opacity-30 ${
-                shuffleEnabled
-                  ? "bg-violet-400 text-white"
-                  : "bg-white text-black"
-              }`}
-              title={shuffleEnabled ? "Shuffle on" : "Shuffle off"}
-            >
-              <Icon name="shuffle" size={14} className="text-current" />
-            </button>
-            <button
-              onClick={onCycleRepeat}
-              disabled={!onCycleRepeat}
-              className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all disabled:opacity-30 ${
-                repeatMode !== "off"
-                  ? "bg-violet-400 text-white"
-                  : "bg-white text-black"
-              }`}
-              title={`Repeat: ${repeatMode === "off" ? "off" : repeatMode === "one" ? "one" : "all"}`}
-            >
-              <Icon name={repeatMode === "one" ? "repeat-1" : "repeat"} size={14} className="text-current" />
-            </button>
-
             {showDropdown && (
               <div className="absolute right-0 mt-12 w-64 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5 max-h-64 overflow-y-auto room-scroll">
                 <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
@@ -325,13 +304,14 @@ export function RightSidebar({
               handleAdminPlayTrack={handleAdminPlayTrack}
               removeFromQueue={removeFromQueue}
               addToQueue={addToQueue}
-              clearQueue={clearQueue}
               activeVideoId={activeVideoId}
               playerState={playerState}
               shuffleEnabled={shuffleEnabled}
               repeatMode={repeatMode}
               onToggleShuffle={onToggleShuffle}
               onCycleRepeat={onCycleRepeat}
+              onSearchClick={onSearchClick}
+              clearQueue={clearQueue}
             />
           </div>
         </div>

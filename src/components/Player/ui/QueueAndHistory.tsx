@@ -1,9 +1,10 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
+import { Shuffle, Repeat, MoreVertical, Trash2 } from "lucide-react";
 
 interface Props {
   queue: Track[];
@@ -21,6 +22,11 @@ interface Props {
   clearQueue?: () => void;
   activeVideoId: string | null | undefined;
   playerState?: string;
+  shuffleEnabled?: boolean;
+  repeatMode?: "off" | "all" | "one";
+  onToggleShuffle?: () => void;
+  onCycleRepeat?: () => void;
+  onSearchClick?: () => void;
 }
 
 export function QueueAndHistory({
@@ -32,6 +38,12 @@ export function QueueAndHistory({
   addToQueue,
   activeVideoId,
   playerState,
+  shuffleEnabled = false,
+  repeatMode = "off",
+  onToggleShuffle,
+  onCycleRepeat,
+  onSearchClick,
+  clearQueue,
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
 
@@ -49,15 +61,110 @@ export function QueueAndHistory({
     return filtered.slice(0, 10);
   }, [showRecent, recentTracks, activeVideoId]);
 
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener("mousedown", handleOutsideClick);
+    }
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [showMenu]);
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 p-1">
       <div className="flex items-center gap-2 px-1">
+        <button
+          onClick={() => onSearchClick?.()}
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20 text-white/70 hover:bg-white/30 transition-all"
+          title="Search songs"
+        >
+          <Icon name="search" size={12} className="text-current" />
+        </button>
         <span className="text-[13px] font-semibold text-white/80">Queue</span>
         {queue.length > 0 && (
           <span className="text-[11px] bg-white/10 text-white/70 px-2 py-0.5 rounded-full">
             {queue.length}
           </span>
         )}
+        <div className="ml-auto relative" ref={menuRef}>
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all ${
+              showMenu
+                ? "bg-violet-400 text-white"
+                : "bg-white/20 text-white/70 hover:bg-white/30"
+            }`}
+            title="More options"
+          >
+            <MoreVertical size={14} />
+          </button>
+
+          {showMenu && (
+            <div
+              className="absolute right-0 mt-2 w-52 rounded-2xl bg-neutral-900/95 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+            >
+              <button
+                onClick={() => { onToggleShuffle?.(); }}
+                disabled={!onToggleShuffle}
+                className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                  shuffleEnabled
+                    ? "text-violet-300"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                  shuffleEnabled
+                    ? "bg-violet-400 border-violet-400"
+                    : "border-white/30"
+                }`}>
+                  {shuffleEnabled && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </div>
+                <Shuffle size={14} />
+                <span className="flex-1 text-left">Shuffle</span>
+              </button>
+
+              <button
+                onClick={() => { onCycleRepeat?.(); }}
+                disabled={!onCycleRepeat}
+                className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                  repeatMode !== "off"
+                    ? "text-violet-300"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                  repeatMode !== "off"
+                    ? "bg-violet-400 border-violet-400"
+                    : "border-white/30"
+                }`}>
+                  {repeatMode !== "off" && (
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                </div>
+                <Repeat size={14} />
+                <span className="flex-1 text-left">Repeat {repeatMode !== "off" ? `(${repeatMode === "one" ? "1" : "all"})` : ""}</span>
+              </button>
+
+              {clearQueue && canControlPlayback && queue.length > 0 && (
+                <button
+                  onClick={() => { clearQueue?.(); setShowMenu(false); }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-[11px] text-white/70 hover:text-red-400 hover:bg-white/10 transition-all"
+                >
+                  <Trash2 size={14} />
+                  <span>Delete all queue</span>
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <section className="flex min-h-0 flex-1 flex-col">
