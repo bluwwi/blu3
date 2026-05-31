@@ -176,14 +176,15 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
 
   const togglePlayPause = useCallback(() => {
     const player = playerRef.current;
-    if (!player) return;
 
     if (playerState === "playing") {
       desiredPlayStateRef.current = "paused";
-      player.pauseVideo();
+      callbacksRef.current?.onPauseIntent?.();
+      player?.pauseVideo();
     } else {
       desiredPlayStateRef.current = "playing";
-      player.playVideo();
+      callbacksRef.current?.onPlayIntent?.();
+      player?.playVideo();
     }
   }, [playerState]);
 

@@ -43,8 +43,22 @@ export default function RoomPage() {
 
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
-  const player = usePlayerState();
-  const audioStream = useAudioStream();
+  const audioStreamRef = useRef<ReturnType<typeof useAudioStream> | null>(null);
+  const player = usePlayerState({
+    onPlayIntent: () => audioStreamRef.current?.play(),
+    onPauseIntent: () => audioStreamRef.current?.pause(),
+  });
+  const audioStream = useAudioStream({
+    onPlaying: () => player.setPlayerState("playing"),
+    onPause: () => player.setPlayerState("paused"),
+    onEnded: () => player.setPlayerState("ended"),
+    onWaiting: () => player.setPlayerState("loading"),
+    onError: () => {
+      player.setPlayerState("error");
+      player.setError("Stream failed to load");
+    },
+  });
+  useEffect(() => { audioStreamRef.current = audioStream; }, [audioStream]);
   const progress = useProgressTracking(player.playerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
