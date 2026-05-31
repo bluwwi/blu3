@@ -18,6 +18,7 @@ export function YouTubeIframe() {
   const onReady: YouTubeProps["onReady"] = useCallback((event: { target: YouTubePlayer }) => {
     const player = event.target;
     playerRef.current = player;
+    console.log("[YT] Player ready");
     onReadyRef.current?.(player);
   }, []);
 
@@ -27,9 +28,11 @@ export function YouTubeIframe() {
     );
   }, []);
 
-  const onError: YouTubeProps["onError"] = useCallback(() => {
-    const ytEvent = new CustomEvent("yt-error", { detail: {} });
-    window.dispatchEvent(ytEvent);
+  const onError: YouTubeProps["onError"] = useCallback((event: { data: number }) => {
+    console.error("[YT] Player error:", event.data);
+    window.dispatchEvent(
+      new CustomEvent("yt-error", { detail: { data: event.data } }),
+    );
   }, []);
 
   useEffect(() => {
@@ -54,15 +57,16 @@ export function YouTubeIframe() {
   };
 
   return (
+    /* Off-screen but fully rendered — Chrome needs the iframe visible for autoplay */
     <div
       style={{
         position: "fixed",
-        top: 0,
-        left: 0,
+        bottom: "-200px",
+        right: "-200px",
         width: "200px",
         height: "200px",
-        opacity: 0.001,
-        zIndex: -9999,
+        opacity: 1,
+        zIndex: 1,
         pointerEvents: "none",
       }}
       aria-hidden="true"
