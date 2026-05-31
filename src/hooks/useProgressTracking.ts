@@ -52,8 +52,18 @@ export function useProgressTracking(
       const audio = audioRef?.current;
       const player = playerRef.current;
 
+      setCurrentTime(time);
+
       if (audio) {
-        audio.currentTime = time;
+        if (audio.readyState === HTMLMediaElement.HAVE_NOTHING && audio.src) {
+          const onLoaded = () => {
+            audio.currentTime = time;
+            audio.removeEventListener("loadedmetadata", onLoaded);
+          };
+          audio.addEventListener("loadedmetadata", onLoaded);
+        } else {
+          audio.currentTime = time;
+        }
       }
       if (player && typeof player.seekTo === "function") {
         try {
@@ -62,7 +72,6 @@ export function useProgressTracking(
           return;
         }
       }
-      setCurrentTime(time);
       const tot =
         audio && Number.isFinite(audio.duration) && audio.duration > 0
           ? audio.duration
