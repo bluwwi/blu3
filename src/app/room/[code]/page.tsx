@@ -1012,6 +1012,32 @@ export default function RoomPage() {
     sendPlay,
   ]);
 
+  /* Keep Media Session handler ref in sync */
+  mediaSessionHandlersRef.current = {
+    play: () => {
+      if (canControlPlayback) handlePlayPauseAction();
+      else if (listenerMuted || (playback?.isPlaying && player.playerState !== "playing"))
+        handleListenerPlay();
+    },
+    pause: () => {
+      if (canControlPlayback) handlePlayPauseAction();
+    },
+    seekbackward: (offset: number) => {
+      if (!canControlPlayback || !progress.duration) return;
+      const t = Math.max(0, progress.currentTime - offset);
+      progress.seekTo(t);
+      sendSeek(t);
+    },
+    seekforward: (offset: number) => {
+      if (!canControlPlayback || !progress.duration) return;
+      const t = Math.min(progress.duration, progress.currentTime + offset);
+      progress.seekTo(t);
+      sendSeek(t);
+    },
+    nexttrack: () => handleSkipForward(),
+    previoustrack: () => handleSkipBack(),
+  };
+
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     const newShuffle = !playbackMode.shuffle;
