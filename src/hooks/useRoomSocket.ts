@@ -432,6 +432,10 @@ export function useRoomSocket({
     [safeSend],
   );
 
+  const sendProgress = useCallback((currentTime: number) => {
+    safeSend(JSON.stringify({ type: "progress", currentTime }));
+  }, [safeSend]);
+
   const sendTrackEnded = useCallback((currentTime: number) => {
     safeSend(JSON.stringify({ type: "playback:ended", currentTime }));
   }, [safeSend]);
@@ -470,6 +474,7 @@ export function useRoomSocket({
     requestSync,
     sendPlaybackMode,
     sendPlaybackState,
+    sendProgress,
     sendTrackEnded,
     getSyncedTime,
     addToQueue,

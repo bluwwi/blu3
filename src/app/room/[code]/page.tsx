@@ -1164,6 +1164,7 @@ export default function RoomPage() {
       const liveCurrentTime =
         player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
       sendPlaybackState("playing", liveCurrentTime);
+      sendProgress(liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
   }, [
@@ -1172,6 +1173,7 @@ export default function RoomPage() {
     player.playerRef,
     player.playerState,
     sendPlaybackState,
+    sendProgress,
   ]);
 
   const openSearchOverlay = useCallback(() => {
