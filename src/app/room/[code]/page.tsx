@@ -45,7 +45,10 @@ export default function RoomPage() {
   const { room, joinRoom, leaveRoom } = useRoom();
   const audioStreamRef = useRef<ReturnType<typeof useAudioStream> | null>(null);
   const player = usePlayerState({
-    onPlayIntent: () => audioStreamRef.current?.play(),
+    onPlayIntent: (videoId) => {
+      audioStreamRef.current?.loadStream(videoId);
+      audioStreamRef.current?.play();
+    },
     onPauseIntent: () => audioStreamRef.current?.pause(),
   });
   const audioStream = useAudioStream({
@@ -53,13 +56,10 @@ export default function RoomPage() {
     onPause: () => player.setPlayerState("paused"),
     onEnded: () => player.setPlayerState("ended"),
     onWaiting: () => player.setPlayerState("loading"),
-    onError: () => {
-      player.setPlayerState("error");
-      player.setError("Stream failed to load");
-    },
+    onError: () => player.setPlayerState("error"),
   });
-  useEffect(() => { audioStreamRef.current = audioStream; }, [audioStream]);
-  const progress = useProgressTracking(player.playerRef, player.playerState);
+  audioStreamRef.current = audioStream;
+  const progress = useProgressTracking(player.playerRef, player.playerState, audioStream.audioRef);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -163,6 +163,7 @@ export default function RoomPage() {
         if (state.isPlaying) p.play?.();
         else p.pause?.();
         progressRef_fix.current.seekTo(actualCurrentTime);
+        audioStreamRef.current?.seek(actualCurrentTime);
       } else {
         p.playTrack(
           {
@@ -178,6 +179,7 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
+        audioStreamRef.current?.seek(actualCurrentTime);
       }
     },
     onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
@@ -399,16 +401,20 @@ export default function RoomPage() {
         if (p.nowPlaying?.videoId === state.videoId) {
           pr.seekTo(initialSeekTo);
           p.play?.();
+          audioStreamRef.current?.seek(initialSeekTo);
         } else {
           p.playTrack(track, initialSeekTo, true);
+          audioStreamRef.current?.seek(initialSeekTo);
         }
         return;
       }
       if (p.nowPlaying?.videoId === state.videoId) {
         p.pause?.();
         pr.seekTo(initialSeekTo);
+        audioStreamRef.current?.seek(initialSeekTo);
       } else {
         p.playTrack(track, initialSeekTo, false);
+        audioStreamRef.current?.seek(initialSeekTo);
       }
       scheduleSyncedAction(
         scheduledPlayTimeoutRef,
@@ -419,6 +425,7 @@ export default function RoomPage() {
             Math.max(syncedTime() - state.targetTime, 0) / 1000;
           const liveSeekTo = state.seekTo + liveLateBySec;
           pr.seekTo(liveSeekTo);
+          audioStreamRef.current?.seek(liveSeekTo);
           p.play?.();
         },
       );
@@ -491,6 +498,8 @@ export default function RoomPage() {
 
     // Non-host listener joining a live room: start playing at volume 0
     // so the progress bar ticks in sync. User clicks Play to unmute+sync.
+    const seekAudio = (time: number) => audioStreamRef.current?.seek(time);
+
     if (!canControlPlayback && playback.isPlaying) {
       if (!player.isMuted) player.toggleMute();
       p.playTrack(
@@ -505,8 +514,9 @@ export default function RoomPage() {
           image: playback.image,
         },
         actualCurrentTime,
-        true, // start playing so progress bar moves
+        true,
       );
+      seekAudio(actualCurrentTime);
       setListenerMuted(true);
       return;
     }
@@ -542,6 +552,7 @@ export default function RoomPage() {
       actualCurrentTime,
       playback.isPlaying,
     );
+    seekAudio(actualCurrentTime);
   }, [
     getSyncedTime,
     joined,
@@ -830,15 +841,6 @@ export default function RoomPage() {
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
   /* ─── Audio Stream (background playback) ──────────── */
-  const previousVideoIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    const videoId = player.nowPlaying?.videoId;
-    if (!videoId || videoId === previousVideoIdRef.current) return;
-    previousVideoIdRef.current = videoId;
-    audioStream.loadStream(videoId);
-  }, [player.nowPlaying?.videoId, audioStream]);
-
   useEffect(() => {
     audioStream.setVolume(player.volume / 100);
   }, [player.volume, audioStream]);
@@ -890,6 +892,7 @@ export default function RoomPage() {
     const seekToTime =
       ((e.clientX - rect.left) / rect.width) * progress.duration;
     progress.seekTo(seekToTime);
+    audioStreamRef.current?.seek(seekToTime);
     sendSeek(seekToTime);
   };
 
@@ -948,6 +951,7 @@ export default function RoomPage() {
     }
     if (player.isMuted) player.toggleMute();
     progress.seekTo(actualCurrentTime);
+    audioStreamRef.current?.seek(actualCurrentTime);
     player.play?.();
     setListenerMuted(false);
   }, [playback, getSyncedTime, progress, player]);
@@ -1129,17 +1133,29 @@ export default function RoomPage() {
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (
-        document.visibilityState === "visible" &&
-        joined &&
-        !canControlPlayback
-      )
-        requestSync();
+      if (document.visibilityState === "visible") {
+        if (joined && !canControlPlayback) requestSync();
+        // On return to foreground, resume audio element if YT iframe went silent
+        if (
+          player.playerState === "playing" &&
+          player.nowPlaying?.videoId
+        ) {
+          audioStreamRef.current?.play();
+        }
+      } else if (document.visibilityState === "hidden") {
+        // Going to background: ensure audio element is playing for PWA
+        if (
+          player.playerState === "playing" &&
+          player.nowPlaying?.videoId
+        ) {
+          audioStreamRef.current?.play();
+        }
+      }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [canControlPlayback, joined, requestSync]);
+  }, [canControlPlayback, joined, requestSync, player.playerState, player.nowPlaying?.videoId]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;

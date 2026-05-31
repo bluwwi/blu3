@@ -6,7 +6,7 @@ import { CONFIG } from "@/components/Player/constants";
 import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 
 interface UsePlayerStateOptions {
-  onPlayIntent?: () => void;
+  onPlayIntent?: (videoId: string) => void;
   onPauseIntent?: () => void;
 }
 
@@ -50,6 +50,8 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const readyRef = useRef(false);
   const callbacksRef = useRef(options);
   callbacksRef.current = options;
+  const nowPlayingRef = useRef(nowPlaying);
+  nowPlayingRef.current = nowPlaying;
 
   useEffect(() => {
     setYouTubeOnReady((player) => {
@@ -135,7 +137,7 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
 
       desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
 
-      if (shouldPlay) callbacksRef.current?.onPlayIntent?.();
+      if (shouldPlay && track.videoId) callbacksRef.current?.onPlayIntent?.(track.videoId);
       else callbacksRef.current?.onPauseIntent?.();
 
       const player = playerRef.current;
@@ -164,7 +166,8 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
 
   const play = useCallback(() => {
     desiredPlayStateRef.current = "playing";
-    callbacksRef.current?.onPlayIntent?.();
+    const id = nowPlayingRef.current?.videoId;
+    if (id) callbacksRef.current?.onPlayIntent?.(id);
     playerRef.current?.playVideo();
   }, []);
 
@@ -183,7 +186,8 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
       player?.pauseVideo();
     } else {
       desiredPlayStateRef.current = "playing";
-      callbacksRef.current?.onPlayIntent?.();
+      const id = nowPlayingRef.current?.videoId;
+      if (id) callbacksRef.current?.onPlayIntent?.(id);
       player?.playVideo();
     }
   }, [playerState]);
