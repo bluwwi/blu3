@@ -990,13 +990,9 @@ export default function RoomPage() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         if (joined && !canControlPlayback) requestSync();
-        if (player.playerState === "playing" && player.nowPlaying?.videoId) {
-          audioStreamRef.current?.seek(progress.currentTime);
-        }
+        /* OLD: audio seek on visibility change — YT iframe handles its own position */
       } else if (document.visibilityState === "hidden") {
-        if (player.playerState === "playing" && player.nowPlaying?.videoId) {
-          audioStreamRef.current?.seek(progress.currentTime);
-        }
+        /* OLD: audio seek on visibility change — YT iframe handles its own position */
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
