@@ -1015,9 +1015,7 @@ export default function RoomPage() {
         }
       } else if (document.visibilityState === "hidden") {
         if (player.playerState === "playing" && player.nowPlaying?.videoId) {
-          audioStreamRef.current?.loadStream(player.nowPlaying.videoId);
           audioStreamRef.current?.seek(progress.currentTime);
-          audioStreamRef.current?.play();
         }
       }
     };

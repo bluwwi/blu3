@@ -41,13 +41,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const [error, setError] = useState("");
 
   const playerRef = useRef<YT.Player | null>(null);
-  const desiredPlayStateRef = useRef<"playing" | "paused" | null>(null);
-  const pendingTrackRef = useRef<{
-    track: Track;
-    startTime?: number;
-    shouldPlay: boolean;
-  } | null>(null);
-  const readyRef = useRef(false);
   const callbacksRef = useRef(options);
   callbacksRef.current = options;
   const nowPlayingRef = useRef(nowPlaying);
@@ -56,18 +49,8 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   useEffect(() => {
     setYouTubeOnReady((player) => {
       playerRef.current = player;
-      player.setVolume(volume);
-      readyRef.current = true;
-
-      const pending = pendingTrackRef.current;
-      if (pending) {
-        const { track, startTime, shouldPlay } = pending;
-        pendingTrackRef.current = null;
-        player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
-        if (shouldPlay) player.playVideo();
-        else player.pauseVideo();
-        if (desiredPlayStateRef.current === "playing") player.playVideo();
-      }
+      player.mute();
+      player.setVolume(0);
     });
 
     const onStateChange = (e: Event) => {
@@ -94,7 +77,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
     };
 
     const onError = () => {
-      setPlayerState("error");
       setError("YouTube couldn't play this. Try another.");
     };
 
@@ -104,20 +86,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
       window.removeEventListener("yt-state-change", onStateChange);
       window.removeEventListener("yt-error", onError);
     };
-  }, [volume]);
-
-  const isPlayerReady = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return false;
-    if (typeof player.loadVideoById !== "function") return false;
-    if (typeof player.seekTo !== "function") return false;
-    try {
-      const iframe = player.getIframe?.();
-      if (!iframe || !document.contains(iframe)) return false;
-    } catch {
-      return false;
-    }
-    return true;
   }, []);
 
   const playTrack = useCallback(
@@ -135,95 +103,66 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
         return;
       }
 
-      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
-
-      if (shouldPlay && track.videoId && document.hidden) {
+      if (shouldPlay) {
         callbacksRef.current?.onPlayIntent?.(track.videoId);
-      } else if (!shouldPlay) {
-        callbacksRef.current?.onPauseIntent?.();
+        if (startTime && startTime > 0) {
+          setTimeout(() => callbacksRef.current?.onPauseIntent?.(), 0);
+        }
+      } else {
+        callbacksRef.current?.onPlayIntent?.(track.videoId);
       }
 
       const player = playerRef.current;
-      if (player && isPlayerReady()) {
+      if (player) {
         try {
-          player.loadVideoById({
-            videoId: track.videoId,
-            startSeconds: startTime || 0,
-          });
-          if (shouldPlay) player.playVideo();
-          else player.pauseVideo();
-          setLoadingId(null);
-          return;
-        } catch (e) {
-          console.warn("Failed to reuse player:", e);
+          player.cueVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+        } catch {
+          /* YT iframe is muted and only used for background visuals */
         }
       }
 
-      if (!readyRef.current) {
-        pendingTrackRef.current = { track, startTime, shouldPlay };
-      }
       setLoadingId(null);
     },
-    [isPlayerReady],
+    [],
   );
 
   const play = useCallback(() => {
-    desiredPlayStateRef.current = "playing";
     const id = nowPlayingRef.current?.videoId;
-    if (id && document.hidden) callbacksRef.current?.onPlayIntent?.(id);
+    if (id) callbacksRef.current?.onPlayIntent?.(id);
     playerRef.current?.playVideo();
   }, []);
 
   const pause = useCallback(() => {
-    desiredPlayStateRef.current = "paused";
     callbacksRef.current?.onPauseIntent?.();
     playerRef.current?.pauseVideo();
   }, []);
 
   const togglePlayPause = useCallback(() => {
-    const player = playerRef.current;
-
     if (playerState === "playing") {
-      desiredPlayStateRef.current = "paused";
       callbacksRef.current?.onPauseIntent?.();
-      player?.pauseVideo();
+      playerRef.current?.pauseVideo();
     } else {
-      desiredPlayStateRef.current = "playing";
       const id = nowPlayingRef.current?.videoId;
       if (id) callbacksRef.current?.onPlayIntent?.(id);
-      player?.playVideo();
+      playerRef.current?.playVideo();
     }
   }, [playerState]);
 
   const handleVolume = useCallback(
     (val: number) => {
       setVolume(val);
-      playerRef.current?.setVolume(val);
-
       if (val === 0) {
         setIsMuted(true);
-        playerRef.current?.mute();
       } else if (isMuted) {
         setIsMuted(false);
-        playerRef.current?.unMute();
       }
     },
     [isMuted],
   );
 
   const toggleMute = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return;
-
-    if (isMuted) {
-      player.unMute();
-      player.setVolume(volume || CONFIG.DEFAULT_VOLUME);
-      setIsMuted(false);
-    } else {
-      player.mute();
-      setIsMuted(true);
-    }
-  }, [isMuted, volume]);
+    setIsMuted((m) => !m);
+  }, []);
 
   return {
     playerRef,
