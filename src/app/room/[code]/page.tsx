@@ -43,7 +43,11 @@ export default function RoomPage() {
 
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
+  const setPlayerStateRef = useRef<((s: string) => void) | null>(null);
   const audioStream = useAudioStream({
+    onPlaying: () => setPlayerStateRef.current?.("playing"),
+    onPause: () => setPlayerStateRef.current?.("paused"),
+    onWaiting: () => setPlayerStateRef.current?.("loading"),
     onEnded: () => maybeAdvanceQueue(),
   });
 
@@ -62,6 +66,7 @@ export default function RoomPage() {
       audioStreamRef.current.loadStream(videoId);
     },
   });
+  setPlayerStateRef.current = player.setPlayerState;
   const progress = useProgressTracking(player.playerRef, player.playerState, audioStream.audioRef);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
