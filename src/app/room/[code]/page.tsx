@@ -161,7 +161,11 @@ export default function RoomPage() {
         );
         return;
       }
-      const actualCurrentTime = state.currentTime ?? 0;
+      let actualCurrentTime = state.currentTime ?? 0;
+      if (state.updatedAt) {
+        const elapsed = (syncedTime() - state.updatedAt) / 1000;
+        if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+      }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
         if (state.isPlaying) p.play?.();
@@ -420,7 +424,11 @@ export default function RoomPage() {
 
     if (!canControlPlayback && playback.isPlaying) {
       const p = playerRef_fix.current;
-      const time = playback.currentTime ?? 0;
+      let time = playback.currentTime ?? 0;
+      if (playback.updatedAt) {
+        const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+        if (elapsed > 0 && elapsed < 3600) time += elapsed;
+      }
       if (!player.isMuted) player.toggleMute();
       p.playTrack(
         {
