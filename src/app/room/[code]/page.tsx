@@ -6,7 +6,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
-/* OLD: import { useAudioStream } from "@/hooks/useAudioStream"; — replaced by YT iframe */
+import { useAudioStream } from "@/hooks/useAudioStream";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -43,15 +43,26 @@ export default function RoomPage() {
 
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
-  const player = usePlayerState({
-    /* WS sync only — actual playback is via YT iframe in usePlayerState */
-    onPlayIntent: (_videoId) => {},
-    onPauseIntent: () => {},
-    onLoadIntent: (_videoId) => {},
+  const audioStream = useAudioStream({
+    onEnded: () => maybeAdvanceQueue(),
   });
-  /* OLD: const audioStream = useAudioStream({...}) — replaced by YT iframe */
-  /* OLD: audioStreamRef.current = audioStream */
-  const progress = useProgressTracking(player.playerRef, player.playerState);
+
+  const audioStreamRef = useRef(audioStream);
+  audioStreamRef.current = audioStream;
+
+  const player = usePlayerState({
+    onPlayIntent: (videoId) => {
+      audioStreamRef.current.loadStream(videoId);
+      audioStreamRef.current.play();
+    },
+    onPauseIntent: () => {
+      audioStreamRef.current.pause();
+    },
+    onLoadIntent: (videoId) => {
+      audioStreamRef.current.loadStream(videoId);
+    },
+  });
+  const progress = useProgressTracking(player.playerRef, player.playerState, audioStream.audioRef);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -698,7 +709,10 @@ export default function RoomPage() {
     return () => releaseWakeLock();
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
-  /* OLD: Audio Stream (background playback via <audio> element) — replaced by YT iframe volume control in usePlayerState.handleVolume */
+  /* Sync volume state to audio element */
+  useEffect(() => {
+    audioStream.setVolume(player.isMuted ? 0 : player.volume / 100);
+  }, [player.volume, player.isMuted, audioStream]);
 
   /* --- Media Session API ------------------------------ */
   useEffect(() => {
@@ -854,6 +868,20 @@ export default function RoomPage() {
     queue,
     sendPlay,
   ]);
+
+  const handleVolumeWrapped = useCallback(
+    (val: number) => {
+      player.handleVolume(val);
+      audioStream.setVolume(val / 100);
+    },
+    [player, audioStream],
+  );
+
+  const toggleMuteWrapped = useCallback(() => {
+    const nextMuted = !player.isMuted;
+    player.toggleMute();
+    audioStream.setVolume(nextMuted ? 0 : player.volume / 100);
+  }, [player, audioStream]);
 
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
@@ -1246,8 +1274,8 @@ export default function RoomPage() {
                     volume={player.volume}
                     isMuted={player.isMuted}
                     onPlayPause={onPlayPauseAction}
-                    onMute={player.toggleMute}
-                    onVolume={player.handleVolume}
+                    onMute={toggleMuteWrapped}
+                    onVolume={handleVolumeWrapped}
                     onSeek={canControlPlayback ? handleSeekAction : undefined}
                     onSkipBack={canControlPlayback ? handleSkipBack : undefined}
                     onSkipForward={
