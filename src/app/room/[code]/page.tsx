@@ -50,6 +50,9 @@ export default function RoomPage() {
       audioStreamRef.current?.play();
     },
     onPauseIntent: () => audioStreamRef.current?.pause(),
+    onLoadIntent: (videoId) => {
+      audioStreamRef.current?.loadStream(videoId);
+    },
   });
   const audioStream = useAudioStream({
     onPlaying: () => player.setPlayerState("playing"),
@@ -647,16 +650,6 @@ export default function RoomPage() {
         src.start(0);
         silentSourceRef.current = src;
         audioStartedRef.current = true;
-      }
-
-      const cp = playbackRef.current;
-      if (cp?.isPlaying && player.playerRef.current) {
-        try {
-          const st = player.playerRef.current.getPlayerState?.();
-          if (st !== 1) player.playerRef.current.playVideo?.();
-        } catch (e) {
-          /* ignore */
-        }
       }
     } catch (err) {
       console.error("Failed to start background tab keeper:", err);
