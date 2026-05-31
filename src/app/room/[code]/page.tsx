@@ -840,14 +840,6 @@ export default function RoomPage() {
   }, [player.nowPlaying?.videoId, audioStream]);
 
   useEffect(() => {
-    if (player.playerState === "playing") {
-      audioStream.play();
-    } else {
-      audioStream.pause();
-    }
-  }, [player.playerState, audioStream]);
-
-  useEffect(() => {
     audioStream.setVolume(player.volume / 100);
   }, [player.volume, audioStream]);
 
