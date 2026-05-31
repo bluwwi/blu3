@@ -70,13 +70,12 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
         return;
       }
 
-      if (shouldPlay) {
+      if (startTime && startTime > 0) {
+        callbacksRef.current?.onLoadIntent?.(track.videoId);
+      } else if (shouldPlay) {
         callbacksRef.current?.onPlayIntent?.(track.videoId);
-        if (startTime && startTime > 0) {
-          setTimeout(() => callbacksRef.current?.onPauseIntent?.(), 0);
-        }
       } else {
-        callbacksRef.current?.onPlayIntent?.(track.videoId);
+        callbacksRef.current?.onLoadIntent?.(track.videoId);
       }
 
       const player = playerRef.current;
