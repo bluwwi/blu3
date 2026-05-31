@@ -87,6 +87,22 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
     return () => window.removeEventListener("yt-state-change", handler);
   }, []);
 
+  /* Listen for YT iframe errors */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const code = detail?.data;
+      console.error("[YT] Error event:", code);
+      setError(`YouTube player error (${code})`);
+      /* 2 = invalid param, 100 = video not found, 101/150 = embedding not allowed */
+      if (code === 100 || code === 101 || code === 150) {
+        setPlayerState("error");
+      }
+    };
+    window.addEventListener("yt-error", handler);
+    return () => window.removeEventListener("yt-error", handler);
+  }, []);
+
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");

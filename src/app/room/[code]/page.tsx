@@ -10,8 +10,8 @@ import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
-import { useYouTubeAPI } from "@/hooks/useYouTubeAPI";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
+/* OLD: useYouTubeAPI removed — react-youtube handles loading the IFrame API internally */
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
@@ -55,7 +55,7 @@ export default function RoomPage() {
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
-  useYouTubeAPI();
+  /* OLD: useYouTubeAPI() — react-youtube handles loading the IFrame API internally */
 
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);

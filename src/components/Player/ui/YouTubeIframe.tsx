@@ -1,83 +1,123 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
-import YouTube, { type YouTubeProps, type YouTubePlayer } from "react-youtube";
-import { CONFIG } from "@/components/Player/constants";
+import { useEffect, useRef } from "react";
 
-let externalOnReady: ((player: YouTubePlayer) => void) | null = null;
+/* @types/youtube uses export = YT which clashes with module files.
+   We reference window.YT at runtime and cast for the type. */
+type YTPlayer = {
+  new (element: HTMLElement, options: YTPlayerOptions): YT.Player;
+};
+type YTPlayerOptions = {
+  height: string;
+  width: string;
+  playerVars: Record<string, string | number | undefined>;
+  events: {
+    onReady: (e: { target: YT.Player }) => void;
+    onStateChange: (e: { data: number }) => void;
+    onError: (e: { data: number }) => void;
+  };
+};
 
-export function setYouTubeOnReady(cb: (player: YouTubePlayer) => void) {
+let externalOnReady: ((player: YT.Player) => void) | null = null;
+let playerInstance: YT.Player | null = null;
+
+export function setYouTubeOnReady(cb: (player: YT.Player) => void) {
   externalOnReady = cb;
+  if (playerInstance) cb(playerInstance);
+}
+
+function loadYTAPI(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") return;
+    if (window.YT?.Player) { resolve(); return; }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      prev?.();
+      resolve();
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    document.head.appendChild(tag);
+  });
+}
+
+function createPlayer(container: HTMLElement): Promise<YT.Player> {
+  return new Promise((resolve) => {
+    const Player = (window as any).YT.Player as YTPlayer;
+    new Player(container, {
+      height: "200",
+      width: "200",
+      playerVars: {
+        autoplay: 0,
+        controls: 0,
+        disablekb: 1,
+        enablejsapi: 1,
+        fs: 0,
+        iv_load_policy: 3,
+        modestbranding: 1,
+        rel: 0,
+        origin: window.location.origin,
+      },
+      events: {
+        onReady: (e) => resolve(e.target),
+        onStateChange: (e) => {
+          window.dispatchEvent(
+            new CustomEvent("yt-state-change", { detail: { data: e.data } }),
+          );
+        },
+        onError: (e) => {
+          console.error("[YT] Error:", e.data);
+          window.dispatchEvent(
+            new CustomEvent("yt-error", { detail: { data: e.data } }),
+          );
+        },
+      },
+    });
+  });
 }
 
 export function YouTubeIframe() {
-  const playerRef = useRef<YouTubePlayer | null>(null);
-  const onReadyRef = useRef(externalOnReady);
-  onReadyRef.current = externalOnReady;
-
-  const onReady: YouTubeProps["onReady"] = useCallback((event: { target: YouTubePlayer }) => {
-    const player = event.target;
-    playerRef.current = player;
-    console.log("[YT] Player ready");
-    onReadyRef.current?.(player);
-  }, []);
-
-  const onStateChange: YouTubeProps["onStateChange"] = useCallback((event: { data: number }) => {
-    window.dispatchEvent(
-      new CustomEvent("yt-state-change", { detail: { data: event.data } }),
-    );
-  }, []);
-
-  const onError: YouTubeProps["onError"] = useCallback((event: { data: number }) => {
-    console.error("[YT] Player error:", event.data);
-    window.dispatchEvent(
-      new CustomEvent("yt-error", { detail: { data: event.data } }),
-    );
-  }, []);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let cancelled = false;
+
+    (async () => {
+      await loadYTAPI();
+      if (cancelled) return;
+      const player = await createPlayer(container);
+      if (cancelled) { player.destroy(); return; }
+      playerInstance = player;
+      externalOnReady?.(player);
+    })();
+
     return () => {
+      cancelled = true;
       externalOnReady = null;
+      if (playerInstance) {
+        playerInstance.destroy();
+        playerInstance = null;
+      }
     };
   }, []);
 
-  const opts: YouTubeProps["opts"] = {
-    height: "200",
-    width: "200",
-    playerVars: {
-      ...CONFIG.YT_PLAYER_PARAMS,
-      autoplay: 1,
-      controls: 0,
-      disablekb: 1,
-      modestbranding: 1,
-      rel: 0,
-      iv_load_policy: 3,
-      origin: typeof window !== "undefined" ? window.location.origin : "",
-    },
-  };
-
   return (
-    /* Off-screen but fully rendered — Chrome needs the iframe visible for autoplay */
     <div
+      ref={containerRef}
       style={{
-        position: "fixed",
-        bottom: "-200px",
-        right: "-200px",
+        position: "absolute",
+        top: "-9999px",
+        left: "-9999px",
         width: "200px",
         height: "200px",
         opacity: 1,
         zIndex: 1,
-        pointerEvents: "none",
       }}
       aria-hidden="true"
-    >
-      <YouTube
-        videoId=""
-        opts={opts}
-        onReady={onReady}
-        onStateChange={onStateChange}
-        onError={onError}
-      />
-    </div>
+    />
   );
 }
