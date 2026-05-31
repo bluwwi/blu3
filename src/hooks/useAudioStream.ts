@@ -3,15 +3,34 @@
 import { useRef, useCallback, useEffect } from "react";
 import { getStreamUrl } from "@/utils/stream";
 
-export function useAudioStream() {
+export interface AudioStreamCallbacks {
+  onPlaying?: () => void;
+  onPause?: () => void;
+  onEnded?: () => void;
+  onWaiting?: () => void;
+  onCanPlay?: () => void;
+  onError?: () => void;
+}
+
+export function useAudioStream(callbacks?: AudioStreamCallbacks) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentSrcRef = useRef<string>("");
+  const callbacksRef = useRef(callbacks);
+  callbacksRef.current = callbacks;
 
   useEffect(() => {
     if (!audioRef.current) {
       const el = new Audio();
       el.preload = "none";
       el.volume = 1;
+
+      el.addEventListener("playing", () => callbacksRef.current?.onPlaying?.());
+      el.addEventListener("pause", () => callbacksRef.current?.onPause?.());
+      el.addEventListener("ended", () => callbacksRef.current?.onEnded?.());
+      el.addEventListener("waiting", () => callbacksRef.current?.onWaiting?.());
+      el.addEventListener("canplay", () => callbacksRef.current?.onCanPlay?.());
+      el.addEventListener("error", () => callbacksRef.current?.onError?.());
+
       audioRef.current = el;
     }
     return () => {

@@ -5,6 +5,11 @@ import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
 import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 
+interface UsePlayerStateOptions {
+  onPlayIntent?: () => void;
+  onPauseIntent?: () => void;
+}
+
 interface UsePlayerStateReturn {
   playerRef: React.MutableRefObject<YT.Player | null>;
   playerState: PlayerStateType;
@@ -26,7 +31,7 @@ interface UsePlayerStateReturn {
   pause: () => void;
 }
 
-export function usePlayerState(): UsePlayerStateReturn {
+export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateReturn {
   const [playerState, setPlayerState] = useState<PlayerStateType>("idle");
   const [volume, setVolume] = useState(CONFIG.DEFAULT_VOLUME);
   const [isMuted, setIsMuted] = useState(false);
@@ -43,6 +48,8 @@ export function usePlayerState(): UsePlayerStateReturn {
     shouldPlay: boolean;
   } | null>(null);
   const readyRef = useRef(false);
+  const callbacksRef = useRef(options);
+  callbacksRef.current = options;
 
   useEffect(() => {
     setYouTubeOnReady((player) => {
@@ -128,6 +135,9 @@ export function usePlayerState(): UsePlayerStateReturn {
 
       desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
 
+      if (shouldPlay) callbacksRef.current?.onPlayIntent?.();
+      else callbacksRef.current?.onPauseIntent?.();
+
       const player = playerRef.current;
       if (player && isPlayerReady()) {
         try {
@@ -154,11 +164,13 @@ export function usePlayerState(): UsePlayerStateReturn {
 
   const play = useCallback(() => {
     desiredPlayStateRef.current = "playing";
+    callbacksRef.current?.onPlayIntent?.();
     playerRef.current?.playVideo();
   }, []);
 
   const pause = useCallback(() => {
     desiredPlayStateRef.current = "paused";
+    callbacksRef.current?.onPauseIntent?.();
     playerRef.current?.pauseVideo();
   }, []);
 

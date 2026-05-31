@@ -13,6 +13,7 @@ export const CONFIG = {
     fs: 0,
     iv_load_policy: 3,
     modestbranding: 1,
+    mute: 1,
     rel: 0,
     vq: "small" as const,
   },
