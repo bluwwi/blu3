@@ -182,7 +182,7 @@ export function SquarePlayer({
           </span>
           <div className="flex-1">
             <ProgressBar
-              progress={progress * 100}
+              progress={progress}
               currentTime={currentTime}
               duration={duration}
               onSeek={onSeek}

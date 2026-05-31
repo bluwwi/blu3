@@ -17,18 +17,18 @@ export function useProgressTracking(
     const player = playerRef.current;
     const audio = audioRef?.current;
 
-    if (player && typeof player.getCurrentTime === "function") {
+    if (audio) {
+      const cur = audio.currentTime ?? 0;
+      const tot = audio.duration ?? 0;
+      setCurrentTime(cur);
+      setDuration(tot);
+      setProgress(tot > 0 ? (cur / tot) * 100 : 0);
+    } else if (player && typeof player.getCurrentTime === "function") {
       const cur = player.getCurrentTime() ?? 0;
       const tot =
         typeof player.getDuration === "function"
           ? player.getDuration() ?? 0
           : 0;
-      setCurrentTime(cur);
-      setDuration(tot);
-      setProgress(tot > 0 ? (cur / tot) * 100 : 0);
-    } else if (audio) {
-      const cur = audio.currentTime ?? 0;
-      const tot = audio.duration ?? 0;
       setCurrentTime(cur);
       setDuration(tot);
       setProgress(tot > 0 ? (cur / tot) * 100 : 0);
@@ -52,7 +52,11 @@ export function useProgressTracking(
       const player = playerRef.current;
       const audio = audioRef?.current;
 
-      if (player && typeof player.seekTo === "function") {
+      if (audio) {
+        audio.currentTime = time;
+        setCurrentTime(time);
+        if (audio.duration > 0) setProgress((time / audio.duration) * 100);
+      } else if (player && typeof player.seekTo === "function") {
         try {
           player.seekTo(time, true);
         } catch {
@@ -64,10 +68,6 @@ export function useProgressTracking(
             ? player.getDuration() ?? 0
             : 0;
         if (tot > 0) setProgress((time / tot) * 100);
-      } else if (audio) {
-        audio.currentTime = time;
-        setCurrentTime(time);
-        if (audio.duration > 0) setProgress((time / audio.duration) * 100);
       }
     },
     [playerRef, audioRef],
@@ -79,10 +79,10 @@ export function useProgressTracking(
       const audio = audioRef?.current;
       let dur = 0;
 
-      if (player && typeof player.getDuration === "function") {
-        dur = player.getDuration() ?? 0;
-      } else if (audio) {
+      if (audio) {
         dur = audio.duration ?? 0;
+      } else if (player && typeof player.getDuration === "function") {
+        dur = player.getDuration() ?? 0;
       }
 
       if (!dur) return;
