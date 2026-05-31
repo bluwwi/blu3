@@ -5,6 +5,24 @@
     /*border: 1px solid black;*/
 }
 
+::-webkit-scrollbar {
+    width: 1px;
+    height: 1px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 9999px;
+}
+
+* {
+    scrollbar-width: 1px;
+    scrollbar-color: #888 transparent;
+}
 @font-face {
     font-family: "Marmelat-other";
     src: url("/fonts/Marmelat Book.otf") format("opentype");

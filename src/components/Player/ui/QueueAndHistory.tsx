@@ -75,7 +75,7 @@ export function QueueAndHistory({
   }, [showMenu]);
 
   const [playlists, setPlaylists] = useState<any[]>([]);
-  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(false);
+  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(true);
   const [loadingPlaylists, setLoadingPlaylists] = useState(false);
   const playlistRef = useRef<HTMLDivElement>(null);
 
@@ -162,28 +162,16 @@ export function QueueAndHistory({
           {")"}
         </span>
 
-        <div className="ml-auto flex gap-1 relative">
-          {/* Plus / Queue Playlist */}
-          <div className="relative" ref={playlistRef}>
-            <button
-              onClick={handlePlusClick}
-              className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 cursor-pointer transition-all"
-              title="Add playlist to queue"
-            >
-              <Plus size={20} />
-            </button>
-
+        <div className="ml-auto relative flex gap-1 ">
+          <div className="" ref={playlistRef}>
             {showPlaylistDropdown && (
               <div
-                className="absolute right-0 mt-2 w-64 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+                className="absolute right-0 top-0  w-64 h-fit rounded-lg backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-999 py-1.5"
                 style={{
                   background: "var(--room-surface, #0D0D14)",
                   borderColor: "var(--room-border, rgba(255,255,255,0.08))",
                 }}
               >
-                <div className="px-3 py-1.5 border-b border-white/[0.06] text-[9px] uppercase tracking-wider text-white/50 font-bold">
-                  Queue Playlist
-                </div>
                 <div className="max-h-48 overflow-y-auto room-scroll">
                   {loadingPlaylists ? (
                     <div className="px-3 py-3 text-[10px] text-white/40">
@@ -199,9 +187,9 @@ export function QueueAndHistory({
                         <button
                           key={p.id}
                           onClick={() => handleQueuePlaylist(p.id)}
-                          className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+                          className="w-full flex items-center gap-2.5 text-left px-2 py-1 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
                         >
-                          <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
                             {p.coverImage ? (
                               <img
                                 src={p.coverImage}
@@ -229,53 +217,41 @@ export function QueueAndHistory({
                     </div>
                   )}
                 </div>
+
                 <div className="border-t border-white/[0.06] pt-1">
                   <button
                     onClick={() => {
                       window.location.href = "/playlists";
                     }}
-                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-2.5 text-left px-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <span>Import playlist</span>
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-white/50">
+                      <div className="w-full h-full flex items-center justify-center text-white">
+                        <Icon name="plus" size={20} className="text-current" />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-white">Import Playlist</p>
+                    </div>
                   </button>
                   <button
                     onClick={() => {
                       window.location.href = "/playlists";
                     }}
-                    className="w-full flex items-center gap-2.5 text-left px-3 py-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                    className="w-full flex items-center gap-2.5 text-left px-2 py-1 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="8" y1="6" x2="21" y2="6" />
-                      <line x1="8" y1="12" x2="21" y2="12" />
-                      <line x1="8" y1="18" x2="21" y2="18" />
-                      <line x1="3" y1="6" x2="3.01" y2="6" />
-                      <line x1="3" y1="12" x2="3.01" y2="12" />
-                      <line x1="3" y1="18" x2="3.01" y2="18" />
-                    </svg>
-                    <span>Manage playlist</span>
+                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-white/50">
+                      <div className="w-full h-full flex items-center justify-center text-white">
+                        <Icon
+                          name="setting"
+                          size={20}
+                          className="text-current"
+                        />
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-white">Manage Playlist</p>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -289,6 +265,13 @@ export function QueueAndHistory({
             title="Search songs"
           >
             <Icon name="search" size={20} className="text-current" />
+          </button>
+          <button
+            onClick={handlePlusClick}
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 cursor-pointer transition-all"
+            title="Add playlist to queue"
+          >
+            <Plus size={20} />
           </button>
 
           {/* More options menu */}
