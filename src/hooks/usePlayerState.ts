@@ -8,6 +8,7 @@ import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 interface UsePlayerStateOptions {
   onPlayIntent?: (videoId: string) => void;
   onPauseIntent?: () => void;
+  onLoadIntent?: (videoId: string) => void;
 }
 
 interface UsePlayerStateReturn {
@@ -52,40 +53,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
       player.mute();
       player.setVolume(0);
     });
-
-    const onStateChange = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      const S = (window as any).YT?.PlayerState;
-      if (!S) return;
-      switch (detail.data) {
-        case S.PLAYING:
-          setPlayerState("playing");
-          break;
-        case S.PAUSED:
-          setPlayerState("paused");
-          break;
-        case S.ENDED:
-          setPlayerState("ended");
-          break;
-        case S.BUFFERING:
-          setPlayerState("loading");
-          break;
-        case S.UNSTARTED:
-          setPlayerState("idle");
-          break;
-      }
-    };
-
-    const onError = () => {
-      setError("YouTube couldn't play this. Try another.");
-    };
-
-    window.addEventListener("yt-state-change", onStateChange);
-    window.addEventListener("yt-error", onError);
-    return () => {
-      window.removeEventListener("yt-state-change", onStateChange);
-      window.removeEventListener("yt-error", onError);
-    };
   }, []);
 
   const playTrack = useCallback(
@@ -129,22 +96,18 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const play = useCallback(() => {
     const id = nowPlayingRef.current?.videoId;
     if (id) callbacksRef.current?.onPlayIntent?.(id);
-    playerRef.current?.playVideo();
   }, []);
 
   const pause = useCallback(() => {
     callbacksRef.current?.onPauseIntent?.();
-    playerRef.current?.pauseVideo();
   }, []);
 
   const togglePlayPause = useCallback(() => {
     if (playerState === "playing") {
       callbacksRef.current?.onPauseIntent?.();
-      playerRef.current?.pauseVideo();
     } else {
       const id = nowPlayingRef.current?.videoId;
       if (id) callbacksRef.current?.onPlayIntent?.(id);
-      playerRef.current?.playVideo();
     }
   }, [playerState]);
 
