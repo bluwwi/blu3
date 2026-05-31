@@ -68,6 +68,8 @@ export default function RoomPage() {
       audioStreamRef.current.pause();
     },
     onLoadIntent: (videoId) => {
+      const el = audioStreamRef.current.audioRef.current;
+      if (el?.src?.includes(`/stream/${videoId}`)) return;
       audioStreamRef.current.loadStream(videoId);
     },
   });
@@ -429,6 +431,8 @@ export default function RoomPage() {
       return;
 
     if (!canControlPlayback && playback.isPlaying) {
+      const audioEl = audioStreamRef.current.audioRef.current;
+      if (audioEl?.src?.includes(`/stream/${playback.videoId}`) && player.nowPlaying?.videoId === playback.videoId) return;
       const p = playerRef_fix.current;
       let time = playback.currentTime ?? 0;
       if (playback.updatedAt) {
