@@ -6,7 +6,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
-import { useAudioStream } from "@/hooks/useAudioStream";
+/* OLD: import { useAudioStream } from "@/hooks/useAudioStream"; — replaced by YT iframe */
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -43,26 +43,15 @@ export default function RoomPage() {
 
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
-  const audioStreamRef = useRef<ReturnType<typeof useAudioStream> | null>(null);
   const player = usePlayerState({
-    onPlayIntent: (videoId) => {
-      audioStreamRef.current?.loadStream(videoId);
-      audioStreamRef.current?.play();
-    },
-    onPauseIntent: () => audioStreamRef.current?.pause(),
-    onLoadIntent: (videoId) => {
-      audioStreamRef.current?.loadStream(videoId);
-    },
+    /* WS sync only — actual playback is via YT iframe in usePlayerState */
+    onPlayIntent: (_videoId) => {},
+    onPauseIntent: () => {},
+    onLoadIntent: (_videoId) => {},
   });
-  const audioStream = useAudioStream({
-    onPlaying: () => player.setPlayerState("playing"),
-    onPause: () => player.setPlayerState("paused"),
-    onEnded: () => player.setPlayerState("ended"),
-    onWaiting: () => player.setPlayerState("loading"),
-    onError: () => player.setPlayerState("error"),
-  });
-  audioStreamRef.current = audioStream;
-  const progress = useProgressTracking(player.playerRef, player.playerState, audioStream.audioRef);
+  /* OLD: const audioStream = useAudioStream({...}) — replaced by YT iframe */
+  /* OLD: audioStreamRef.current = audioStream */
+  const progress = useProgressTracking(player.playerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -162,7 +151,7 @@ export default function RoomPage() {
         if (state.isPlaying) p.play?.();
         else p.pause?.();
         progressRef_fix.current.seekTo(actualCurrentTime);
-        audioStreamRef.current?.seek(actualCurrentTime);
+        /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek */
       } else {
         p.playTrack(
           {
@@ -178,7 +167,7 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
-        audioStreamRef.current?.seek(actualCurrentTime);
+        /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek */
         if (state.isPlaying) p.play?.();
       }
     },
@@ -431,7 +420,7 @@ export default function RoomPage() {
         time,
         true,
       );
-      audioStreamRef.current?.seek(time);
+      /* OLD: audioStreamRef.current?.seek(time) — YT iframe handles seek */
       setListenerMuted(true);
     }
   }, [
@@ -709,10 +698,7 @@ export default function RoomPage() {
     return () => releaseWakeLock();
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
-  /* --- Audio Stream (background playback) ------------ */
-  useEffect(() => {
-    audioStream.setVolume(player.volume / 100);
-  }, [player.volume, audioStream]);
+  /* OLD: Audio Stream (background playback via <audio> element) — replaced by YT iframe volume control in usePlayerState.handleVolume */
 
   /* --- Media Session API ------------------------------ */
   useEffect(() => {
@@ -761,7 +747,7 @@ export default function RoomPage() {
     const seekToTime =
       ((e.clientX - rect.left) / rect.width) * progress.duration;
     progress.seekTo(seekToTime);
-    audioStreamRef.current?.seek(seekToTime);
+    /* OLD: audioStreamRef.current?.seek(seekToTime) — YT iframe handles seek via progress.seekTo */
     sendSeek(seekToTime);
   };
 
@@ -820,7 +806,7 @@ export default function RoomPage() {
     }
     if (player.isMuted) player.toggleMute();
     progress.seekTo(actualCurrentTime);
-    audioStreamRef.current?.seek(actualCurrentTime);
+    /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek via progress.seekTo */
     player.play?.();
     setListenerMuted(false);
   }, [playback, getSyncedTime, progress, player]);

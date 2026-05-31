@@ -22,12 +22,9 @@ export function YouTubeIframe() {
   }, []);
 
   const onStateChange: YouTubeProps["onStateChange"] = useCallback((event: { data: number }) => {
-    const S = (window as any).YT?.PlayerState;
-    if (!S) return;
-    const ytEvent = new CustomEvent("yt-state-change", {
-      detail: { data: event.data },
-    });
-    window.dispatchEvent(ytEvent);
+    window.dispatchEvent(
+      new CustomEvent("yt-state-change", { detail: { data: event.data } }),
+    );
   }, []);
 
   const onError: YouTubeProps["onError"] = useCallback(() => {

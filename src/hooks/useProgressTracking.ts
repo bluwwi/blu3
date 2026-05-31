@@ -3,10 +3,14 @@
 import { CONFIG } from "@/components/Player/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/*
+ * OLD: Supported both YT playerRef + audioRef (HTMLAudioElement).
+ * Now only YT playerRef is used — all audio comes from YT iframe.
+ */
 export function useProgressTracking(
   playerRef: React.MutableRefObject<YT.Player | null>,
   playerState: string,
-  audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
+  /* OLD: audioRef?: React.MutableRefObject<HTMLAudioElement | null> */
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -15,15 +19,8 @@ export function useProgressTracking(
 
   const tick = useCallback(() => {
     const player = playerRef.current;
-    const audio = audioRef?.current;
-
-    if (audio) {
-      const cur = audio.currentTime ?? 0;
-      const tot = audio.duration ?? 0;
-      setCurrentTime(cur);
-      setDuration(tot);
-      setProgress(tot > 0 ? (cur / tot) * 100 : 0);
-    } else if (player && typeof player.getCurrentTime === "function") {
+    /* OLD: checked audioRef first, fell back to playerRef */
+    if (player && typeof player.getCurrentTime === "function") {
       const cur = player.getCurrentTime() ?? 0;
       const tot =
         typeof player.getDuration === "function"
@@ -33,7 +30,7 @@ export function useProgressTracking(
       setDuration(tot);
       setProgress(tot > 0 ? (cur / tot) * 100 : 0);
     }
-  }, [playerRef, audioRef]);
+  }, [playerRef]);
 
   const startTracking = useCallback(() => {
     if (progressInt.current) clearInterval(progressInt.current);
@@ -50,13 +47,8 @@ export function useProgressTracking(
   const seekTo = useCallback(
     (time: number) => {
       const player = playerRef.current;
-      const audio = audioRef?.current;
-
-      if (audio) {
-        audio.currentTime = time;
-        setCurrentTime(time);
-        if (audio.duration > 0) setProgress((time / audio.duration) * 100);
-      } else if (player && typeof player.seekTo === "function") {
+      /* OLD: also handled audioRef.currentTime */
+      if (player && typeof player.seekTo === "function") {
         try {
           player.seekTo(time, true);
         } catch {
@@ -70,18 +62,16 @@ export function useProgressTracking(
         if (tot > 0) setProgress((time / tot) * 100);
       }
     },
-    [playerRef, audioRef],
+    [playerRef],
   );
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const player = playerRef.current;
-      const audio = audioRef?.current;
       let dur = 0;
 
-      if (audio) {
-        dur = audio.duration ?? 0;
-      } else if (player && typeof player.getDuration === "function") {
+      /* OLD: also checked audioRef */
+      if (player && typeof player.getDuration === "function") {
         dur = player.getDuration() ?? 0;
       }
 
@@ -90,7 +80,7 @@ export function useProgressTracking(
       const seekToTime = ((e.clientX - rect.left) / rect.width) * dur;
       seekTo(seekToTime);
     },
-    [playerRef, audioRef, seekTo],
+    [playerRef, seekTo],
   );
 
   useEffect(() => {

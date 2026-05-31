@@ -5,6 +5,8 @@ import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
 import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 
+/* OLD: onPlayIntent/onPauseIntent were the sole playback path via audio stream.
+   Now they remain only for WS sync — actual playback goes through YT player. */
 interface UsePlayerStateOptions {
   onPlayIntent?: (videoId: string) => void;
   onPauseIntent?: () => void;
@@ -32,6 +34,24 @@ interface UsePlayerStateReturn {
   pause: () => void;
 }
 
+const YT = {
+  UNSTARTED: -1,
+  ENDED: 0,
+  PLAYING: 1,
+  PAUSED: 2,
+  BUFFERING: 3,
+  CUED: 5,
+};
+
+function mapYTState(ytState: number): PlayerStateType {
+  switch (ytState) {
+    case 1: return "playing";
+    case 2: return "paused";
+    case 0: return "ended";
+    default: return "loading";
+  }
+}
+
 export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateReturn {
   const [playerState, setPlayerState] = useState<PlayerStateType>("idle");
   const [volume, setVolume] = useState(CONFIG.DEFAULT_VOLUME);
@@ -47,12 +67,24 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
 
+  /* YT player ready — now unmuted with real volume */
   useEffect(() => {
     setYouTubeOnReady((player) => {
       playerRef.current = player;
-      player.mute();
-      player.setVolume(0);
+      player.setVolume(CONFIG.DEFAULT_VOLUME);
     });
+  }, []);
+
+  /* Listen for YT iframe state changes */
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && typeof detail.data === "number") {
+        setPlayerState(mapYTState(detail.data));
+      }
+    };
+    window.addEventListener("yt-state-change", handler);
+    return () => window.removeEventListener("yt-state-change", handler);
   }, []);
 
   const playTrack = useCallback(
@@ -70,6 +102,7 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
         return;
       }
 
+      /* WS sync: notify server */
       if (startTime && startTime > 0) {
         callbacksRef.current?.onLoadIntent?.(track.videoId);
       } else if (shouldPlay) {
@@ -78,12 +111,17 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
         callbacksRef.current?.onLoadIntent?.(track.videoId);
       }
 
+      /* OLD: player.cueVideoById — now loadVideoById + playVideo */
       const player = playerRef.current;
       if (player) {
         try {
-          player.cueVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+          if (shouldPlay) {
+            player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+          } else {
+            player.cueVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+          }
         } catch {
-          /* YT iframe is muted and only used for background visuals */
+          /* YT player not yet ready */
         }
       }
 
@@ -93,26 +131,48 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   );
 
   const play = useCallback(() => {
+    const player = playerRef.current;
+    if (player) {
+      try { player.playVideo(); } catch {}
+    }
     const id = nowPlayingRef.current?.videoId;
     if (id) callbacksRef.current?.onPlayIntent?.(id);
   }, []);
 
   const pause = useCallback(() => {
+    const player = playerRef.current;
+    if (player) {
+      try { player.pauseVideo(); } catch {}
+    }
     callbacksRef.current?.onPauseIntent?.();
   }, []);
 
   const togglePlayPause = useCallback(() => {
-    if (playerState === "playing") {
-      callbacksRef.current?.onPauseIntent?.();
+    const player = playerRef.current;
+    if (!player) return;
+    const state = player.getPlayerState ? player.getPlayerState() : -1;
+    if (state === YT.PLAYING) {
+      pause();
     } else {
       const id = nowPlayingRef.current?.videoId;
-      if (id) callbacksRef.current?.onPlayIntent?.(id);
+      if (id) {
+        /* If track was already loaded (cued/ended/paused), just toggle */
+        if (state === YT.PAUSED || state === YT.ENDED || state === YT.CUED) {
+          play();
+        } else {
+          play();
+        }
+      }
     }
-  }, [playerState]);
+  }, [play, pause]);
 
   const handleVolume = useCallback(
     (val: number) => {
       setVolume(val);
+      const player = playerRef.current;
+      if (player) {
+        try { player.setVolume(val); } catch {}
+      }
       if (val === 0) {
         setIsMuted(true);
       } else if (isMuted) {
@@ -123,7 +183,17 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   );
 
   const toggleMute = useCallback(() => {
-    setIsMuted((m) => !m);
+    const player = playerRef.current;
+    setIsMuted((m) => {
+      const next = !m;
+      if (player) {
+        try {
+          if (next) player.mute();
+          else player.unMute();
+        } catch {}
+      }
+      return next;
+    });
   }, []);
 
   return {

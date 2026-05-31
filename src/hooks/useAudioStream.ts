@@ -1,7 +1,14 @@
 "use client";
 
 import { useRef, useCallback, useEffect } from "react";
-import { getStreamUrl } from "@/utils/stream";
+
+/*
+ * OLD: useAudioStream — server-side audio proxy via <audio> element.
+ * Kept for reference. Replaced by YT iframe direct playback.
+ *
+ * The RoomPage and usePlayerState now control the YT iframe directly.
+ * This stub preserves the public API so imports don't break.
+ */
 
 export interface AudioStreamCallbacks {
   onPlaying?: () => void;
@@ -13,66 +20,38 @@ export interface AudioStreamCallbacks {
 
 export function useAudioStream(callbacks?: AudioStreamCallbacks) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const currentSrcRef = useRef<string>("");
 
+  /* Stub — all methods are no-ops; YT iframe handles playback */
   useEffect(() => {
-    if (!audioRef.current) {
-      const el = new Audio();
-      el.preload = "auto";
-      el.volume = 1;
-
-      el.addEventListener("playing", () => callbacksRef.current?.onPlaying?.());
-      el.addEventListener("pause", () => callbacksRef.current?.onPause?.());
-      el.addEventListener("ended", () => callbacksRef.current?.onEnded?.());
-      el.addEventListener("waiting", () => callbacksRef.current?.onWaiting?.());
-      el.addEventListener("error", () => callbacksRef.current?.onError?.());
-
-      audioRef.current = el;
-    }
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = "";
-        audioRef.current = null;
-      }
-    };
+    /* OLD: const el = new Audio(); ... */
   }, []);
 
-  const callbacksRef = useRef(callbacks);
-  callbacksRef.current = callbacks;
-
-  const loadStream = useCallback((videoId: string) => {
-    const el = audioRef.current;
-    if (!el) return;
-    const url = getStreamUrl(videoId);
-    if (url === currentSrcRef.current) return;
-    currentSrcRef.current = url;
-    el.src = url;
-    el.load();
+  const loadStream = useCallback((_videoId: string) => {
+    /* OLD: loaded via getStreamUrl(videoId) → /stream/:id endpoint */
   }, []);
 
   const play = useCallback(() => {
-    audioRef.current?.play().catch(() => {});
+    /* OLD: audioRef.current?.play().catch(() => {}) */
   }, []);
 
   const pause = useCallback(() => {
-    audioRef.current?.pause();
+    /* OLD: audioRef.current?.pause() */
   }, []);
 
-  const seek = useCallback((time: number) => {
-    if (audioRef.current) audioRef.current.currentTime = time;
+  const seek = useCallback((_time: number) => {
+    /* OLD: audioRef.current.currentTime = time */
   }, []);
 
-  const setVolume = useCallback((vol: number) => {
-    if (audioRef.current) audioRef.current.volume = vol;
+  const setVolume = useCallback((_vol: number) => {
+    /* OLD: audioRef.current.volume = vol */
   }, []);
 
   const getCurrentTime = useCallback(() => {
-    return audioRef.current?.currentTime ?? 0;
+    return 0;
   }, []);
 
   const getDuration = useCallback(() => {
-    return audioRef.current?.duration ?? 0;
+    return 0;
   }, []);
 
   return {
