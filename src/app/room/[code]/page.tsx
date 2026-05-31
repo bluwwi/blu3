@@ -815,8 +815,9 @@ export default function RoomPage() {
   /* ─── Media Session API ────────────────────────────── */
   useEffect(() => {
     if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
     const t = footerTrack;
-    navigator.mediaSession.metadata = new MediaMetadata({
+    ms.metadata = new MediaMetadata({
       title: t?.name || "Blu3",
       artist: t?.artists?.[0]?.name || "",
       album: "",
@@ -824,9 +825,33 @@ export default function RoomPage() {
         ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
         : [],
     });
-    navigator.mediaSession.playbackState =
+    ms.playbackState =
       player.playerState === "playing" ? "playing" : "paused";
   }, [footerTrack, player.playerState]);
+
+  /* Register Media Session action handlers once (reads from ref) */
+  useEffect(() => {
+    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
+    const ms = navigator.mediaSession;
+    ms.setActionHandler("play", () => mediaSessionHandlersRef.current.play());
+    ms.setActionHandler("pause", () => mediaSessionHandlersRef.current.pause());
+    ms.setActionHandler("seekbackward", (e) => {
+      mediaSessionHandlersRef.current.seekbackward(e.seekOffset ?? 10);
+    });
+    ms.setActionHandler("seekforward", (e) => {
+      mediaSessionHandlersRef.current.seekforward(e.seekOffset ?? 10);
+    });
+    ms.setActionHandler("nexttrack", () => mediaSessionHandlersRef.current.nexttrack());
+    ms.setActionHandler("previoustrack", () => mediaSessionHandlersRef.current.previoustrack());
+    return () => {
+      ms.setActionHandler("play", null);
+      ms.setActionHandler("pause", null);
+      ms.setActionHandler("seekbackward", null);
+      ms.setActionHandler("seekforward", null);
+      ms.setActionHandler("nexttrack", null);
+      ms.setActionHandler("previoustrack", null);
+    };
+  }, []);
 
   const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!canControlPlayback || !progress.duration) return;
