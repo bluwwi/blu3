@@ -104,6 +104,7 @@ export default function RoomPage() {
     requestSync,
     sendPlaybackMode,
     sendPlaybackState,
+    sendProgress,
     sendTrackEnded,
     getSyncedTime,
     addToQueue,

@@ -15,6 +15,7 @@ export interface Track {
   artists: { name: string }[];
   album: { name: string };
   image: string;
+  downloadUrl?: string;
 }
 
 export interface RecentTrack {
