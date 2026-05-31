@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import YouTube, { YouTubeProps, YouTubePlayer } from "react-youtube";
+import YouTube, { type YouTubeProps, type YouTubePlayer } from "react-youtube";
 import { CONFIG } from "@/components/Player/constants";
 
 let externalOnReady: ((player: YouTubePlayer) => void) | null = null;
@@ -15,18 +15,17 @@ export function YouTubeIframe() {
   const onReadyRef = useRef(externalOnReady);
   onReadyRef.current = externalOnReady;
 
-  const onReady: YouTubeProps["onReady"] = useCallback((event) => {
+  const onReady: YouTubeProps["onReady"] = useCallback((event: { target: YouTubePlayer }) => {
     const player = event.target;
     playerRef.current = player;
     onReadyRef.current?.(player);
   }, []);
 
-  const onStateChange: YouTubeProps["onStateChange"] = useCallback((event) => {
+  const onStateChange: YouTubeProps["onStateChange"] = useCallback((event: { data: number }) => {
     const S = (window as any).YT?.PlayerState;
     if (!S) return;
-    const data = event.data;
     const ytEvent = new CustomEvent("yt-state-change", {
-      detail: { data },
+      detail: { data: event.data },
     });
     window.dispatchEvent(ytEvent);
   }, []);
