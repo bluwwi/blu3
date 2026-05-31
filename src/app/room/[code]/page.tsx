@@ -46,8 +46,16 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const audioStream = useAudioStream({
     onPlaying: () => setPlayerStateRef.current?.("playing"),
-    onPause: () => setPlayerStateRef.current?.("paused"),
-    onWaiting: () => setPlayerStateRef.current?.("loading"),
+    onPause: () => {
+      if (document.visibilityState !== "hidden") {
+        setPlayerStateRef.current?.("paused");
+      }
+    },
+    onWaiting: () => {
+      if (document.visibilityState !== "hidden") {
+        setPlayerStateRef.current?.("loading");
+      }
+    },
     onEnded: () => maybeAdvanceQueue(),
   });
 
@@ -262,6 +270,8 @@ export default function RoomPage() {
   const canControlPlayback = isHost || !isHostPresent;
   const queueAdvanceLockRef = useRef<string | null>(null);
   const syncHandledRef = useRef(false);
+  const joinedRef = useRef(joined);
+  joinedRef.current = joined;
   const canControlPlaybackRef = useRef(canControlPlayback);
   const playerRef_fix = useRef(player);
   const progressRef_fix = useRef(progress);
@@ -1037,19 +1047,38 @@ export default function RoomPage() {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
 
+  const lastVisibilityChange = useRef(0);
+  const visibilityRequestSyncRef = useRef(requestSync);
+  visibilityRequestSyncRef.current = requestSync;
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        if (joined && !canControlPlayback) requestSync();
-        /* OLD: audio seek on visibility change — YT iframe handles its own position */
-      } else if (document.visibilityState === "hidden") {
-        /* OLD: audio seek on visibility change — YT iframe handles its own position */
+        const now = Date.now();
+        if (now - lastVisibilityChange.current < 600) return;
+        lastVisibilityChange.current = now;
+
+        if (joinedRef.current && !canControlPlaybackRef.current) {
+          visibilityRequestSyncRef.current();
+        }
+
+        const pb = playbackRef.current;
+        if (pb?.isPlaying && pb?.videoId) {
+          let time = pb.currentTime ?? 0;
+          if (pb.updatedAt) {
+            const elapsed = (getSyncedTime() - pb.updatedAt) / 1000;
+            if (elapsed > 0 && elapsed < 3600) time += elapsed;
+          }
+          audioStreamRef.current.loadStream(pb.videoId);
+          setPlayerStateRef.current?.("loading");
+          progressRef_fix.current.seekTo(time);
+          playerRef_fix.current.play?.();
+        }
       }
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [canControlPlayback, joined, requestSync, player.playerState, player.nowPlaying?.videoId, progress.currentTime]);
+  }, []);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId)
