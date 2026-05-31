@@ -1,0 +1,16 @@
+{
+  "name": "Blu3",
+  "short_name": "Blu3",
+  "description": "Music room app",
+  "start_url": "/browse",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/logo/logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/logo/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/logo/logo.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["music", "entertainment"]
+}
