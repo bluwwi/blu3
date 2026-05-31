@@ -69,9 +69,18 @@ export default function RoomPage() {
   );
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const scheduledPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
+  const mediaSessionHandlersRef = useRef({
+    play: () => {},
+    pause: () => {},
+    seekbackward: (_offset: number) => {},
+    seekforward: (_offset: number) => {},
+    nexttrack: () => {},
+    previoustrack: () => {},
+  });
   const scheduledSeekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -773,6 +782,35 @@ export default function RoomPage() {
       audioStartedRef.current = false;
     };
   }, [tryUnlockAudio]);
+
+  /* ─── Service Worker registration ──────────────────── */
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
+  /* ─── Screen Wake Lock ─────────────────────────────── */
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if (wakeLockRef.current) return;
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      wakeLockRef.current.addEventListener("release", () => {
+        wakeLockRef.current = null;
+      });
+    } catch {}
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (player.playerState === "playing") acquireWakeLock();
+    else releaseWakeLock();
+    return () => releaseWakeLock();
+  }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
   /* ─── Media Session API ────────────────────────────── */
   useEffect(() => {
