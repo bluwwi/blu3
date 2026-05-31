@@ -179,6 +179,7 @@ export default function RoomPage() {
           state.isPlaying,
         );
         audioStreamRef.current?.seek(actualCurrentTime);
+        if (state.isPlaying) p.play?.();
       }
     },
     onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
