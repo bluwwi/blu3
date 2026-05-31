@@ -18,7 +18,7 @@ export function useAudioStream(callbacks?: AudioStreamCallbacks) {
   useEffect(() => {
     if (!audioRef.current) {
       const el = new Audio();
-      el.preload = "none";
+      el.preload = "auto";
       el.volume = 1;
 
       el.addEventListener("playing", () => callbacksRef.current?.onPlaying?.());

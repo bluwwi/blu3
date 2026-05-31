@@ -137,8 +137,11 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
 
       desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
 
-      if (shouldPlay && track.videoId) callbacksRef.current?.onPlayIntent?.(track.videoId);
-      else callbacksRef.current?.onPauseIntent?.();
+      if (shouldPlay && track.videoId && document.hidden) {
+        callbacksRef.current?.onPlayIntent?.(track.videoId);
+      } else if (!shouldPlay) {
+        callbacksRef.current?.onPauseIntent?.();
+      }
 
       const player = playerRef.current;
       if (player && isPlayerReady()) {
@@ -167,7 +170,7 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const play = useCallback(() => {
     desiredPlayStateRef.current = "playing";
     const id = nowPlayingRef.current?.videoId;
-    if (id) callbacksRef.current?.onPlayIntent?.(id);
+    if (id && document.hidden) callbacksRef.current?.onPlayIntent?.(id);
     playerRef.current?.playVideo();
   }, []);
 

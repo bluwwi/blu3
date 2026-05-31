@@ -153,11 +153,7 @@ export default function RoomPage() {
         );
         return;
       }
-      let actualCurrentTime = state.currentTime ?? 0;
-      if (state.isPlaying && state.updatedAt) {
-        const elapsed = (syncedTime() - state.updatedAt) / 1000;
-        if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
-      }
+      const actualCurrentTime = state.currentTime ?? 0;
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
         if (state.isPlaying) p.play?.();
@@ -258,83 +254,29 @@ export default function RoomPage() {
     progressRef_fix.current = progress;
   }, [progress]);
 
+  /* --- Derived UI state --- */
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
   const footerTrack = player.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
-  const isLiked = footerTrack ? likedTrackIds.has(footerTrack.videoId) : false;
-  const handleToggleLike = () => {
-    if (footerTrack) toggleLike(footerTrack);
-  };
-
-  // listenerMuted=true → show pause button so user can click to unmute+sync
-  const footerPlayerState = listenerMuted
-    ? "paused"
-    : player.playerState === "idle" && playback?.videoId
+  const footerPlayerState =
+    player.playerState === "idle" && playback?.videoId
       ? playback.isPlaying
         ? "loading"
         : "paused"
       : player.playerState;
 
-  const carouselTracks = (
-    queue.length > 0 ? queue : footerTrack ? [footerTrack] : []
-  ).slice(0, 8);
+  const displayProgress = progress.progress;
+  const displayCurrentTime = progress.currentTime;
+  const displayDuration = progress.duration;
 
-  // Live-ticking currentTime for when listener is muted (player running silently).
-  // We can't rely on progress.currentTime (it may lag) or progress.duration (may be 0).
-  // Instead read directly from the YouTube player ref every 500ms.
-  const [listenerDisplayTime, setListenerDisplayTime] = useState(0);
-  const [listenerDisplayDuration, setListenerDisplayDuration] = useState(0);
+  const isLiked = player.nowPlaying?.videoId
+    ? likedTrackIds.has(player.nowPlaying.videoId)
+    : false;
+  const handleToggleLike = useCallback(() => {
+    if (player.nowPlaying) toggleLike(player.nowPlaying);
+  }, [player.nowPlaying, toggleLike]);
 
-  useEffect(() => {
-    if (!listenerMuted) {
-      setListenerDisplayTime(0);
-      setListenerDisplayDuration(0);
-      return;
-    }
-    // Seed immediately from playback state
-    const seedElapsed = (getSyncedTime() - (playback?.updatedAt ?? 0)) / 1000;
-    const seedTime =
-      (playback?.currentTime ?? 0) +
-      (seedElapsed > 0 && seedElapsed < 3600 ? seedElapsed : 0);
-    setListenerDisplayTime(seedTime);
-
-    const id = window.setInterval(() => {
-      const ref = player.playerRef.current;
-      if (ref) {
-        const ct = ref.getCurrentTime?.() ?? 0;
-        const dur = ref.getDuration?.() ?? 0;
-        if (ct > 0) setListenerDisplayTime(ct);
-        if (dur > 0) setListenerDisplayDuration(dur);
-      } else {
-        // Fallback: advance from playback state manually
-        const elapsed = (getSyncedTime() - (playback?.updatedAt ?? 0)) / 1000;
-        const t =
-          (playback?.currentTime ?? 0) +
-          (elapsed > 0 && elapsed < 3600 ? elapsed : 0);
-        setListenerDisplayTime(t);
-      }
-    }, 500);
-    return () => window.clearInterval(id);
-  }, [
-    listenerMuted,
-    playback?.currentTime,
-    playback?.updatedAt,
-    getSyncedTime,
-    player.playerRef,
-  ]);
-
-  const displayCurrentTime = listenerMuted
-    ? listenerDisplayTime
-    : progress.currentTime;
-  const displayDuration = listenerMuted
-    ? listenerDisplayDuration || progress.duration
-    : progress.duration;
-  const displayProgress =
-    displayDuration > 0
-      ? displayCurrentTime / displayDuration
-      : progress.progress;
-
-  /* ─── Scheduling helpers ─────────────────────── */
+  /* --- Scheduling helpers ------------------------------ */
   const clearScheduledTimeout = useCallback(
     (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
       if (ref.current) {
@@ -344,11 +286,13 @@ export default function RoomPage() {
     },
     [],
   );
+
   const clearScheduledPlaybackActions = useCallback(() => {
     clearScheduledTimeout(scheduledPlayTimeoutRef);
     clearScheduledTimeout(scheduledPauseTimeoutRef);
     clearScheduledTimeout(scheduledSeekTimeoutRef);
   }, [clearScheduledTimeout]);
+
   const scheduleSyncedAction = useCallback(
     (
       ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
@@ -367,21 +311,9 @@ export default function RoomPage() {
   );
 
   const scheduleRoomPlay = useCallback(
-    (
-      state: {
-        videoId: string;
-        seekTo: number;
-        targetTime: number;
-        id?: string;
-        trackName?: string;
-        artistName?: string;
-        image?: string;
-        duration_ms?: number;
-      },
-      syncedTime: () => number,
-    ) => {
+    (state: any, syncedTime: () => number) => {
       clearScheduledPlaybackActions();
-      const track: Track = {
+      const track = {
         id: state.id ?? `room-${state.videoId}`,
         videoId: state.videoId,
         name: state.trackName ?? "Playing from room",
@@ -391,30 +323,14 @@ export default function RoomPage() {
         album: { name: "" },
         image: state.image ?? "",
       };
-      const p = playerRef_fix.current;
-      const pr = progressRef_fix.current;
-      const canControl = canControlPlaybackRef.current;
       const initialLateBySec =
         Math.max(syncedTime() - state.targetTime, 0) / 1000;
       const initialSeekTo = state.seekTo + initialLateBySec;
-      if (canControl) {
-        if (p.nowPlaying?.videoId === state.videoId) {
-          pr.seekTo(initialSeekTo);
-          p.play?.();
-          audioStreamRef.current?.seek(initialSeekTo);
-        } else {
-          p.playTrack(track, initialSeekTo, true);
-          audioStreamRef.current?.seek(initialSeekTo);
-        }
-        return;
-      }
-      if (p.nowPlaying?.videoId === state.videoId) {
-        p.pause?.();
-        pr.seekTo(initialSeekTo);
-        audioStreamRef.current?.seek(initialSeekTo);
+      if (player.nowPlaying?.videoId === state.videoId) {
+        player.pause?.();
+        progress.seekTo(initialSeekTo);
       } else {
-        p.playTrack(track, initialSeekTo, false);
-        audioStreamRef.current?.seek(initialSeekTo);
+        player.playTrack(track, initialSeekTo, false);
       }
       scheduleSyncedAction(
         scheduledPlayTimeoutRef,
@@ -424,61 +340,66 @@ export default function RoomPage() {
           const liveLateBySec =
             Math.max(syncedTime() - state.targetTime, 0) / 1000;
           const liveSeekTo = state.seekTo + liveLateBySec;
-          pr.seekTo(liveSeekTo);
-          audioStreamRef.current?.seek(liveSeekTo);
-          p.play?.();
+          progress.seekTo(liveSeekTo);
+          player.play?.();
+          setTimeout(() => {
+            progress.seekTo(liveSeekTo);
+            player.play?.();
+          }, 150);
         },
       );
     },
-    [clearScheduledPlaybackActions, scheduleSyncedAction],
+    [
+      clearScheduledPlaybackActions,
+      player.nowPlaying?.videoId,
+      player.pause,
+      player.play,
+      player.playTrack,
+      progress,
+      scheduleSyncedAction,
+    ],
   );
 
   const scheduleRoomPause = useCallback(
-    (state: { targetTime: number }, syncedTime: () => number) => {
-      const p = playerRef_fix.current;
-      const canControl = canControlPlaybackRef.current;
-      if (canControl) {
-        p.pause?.();
-        return;
-      }
+    (state: any, syncedTime: () => number) => {
       clearScheduledTimeout(scheduledPauseTimeoutRef);
       scheduleSyncedAction(
         scheduledPauseTimeoutRef,
         state.targetTime,
         syncedTime,
         () => {
-          p.pause?.();
+          player.pause?.();
         },
       );
     },
-    [clearScheduledTimeout, scheduleSyncedAction],
+    [clearScheduledTimeout, player.pause, scheduleSyncedAction],
   );
 
   const scheduleRoomSeek = useCallback(
-    (
-      state: { seekTo: number; targetTime: number },
-      syncedTime: () => number,
-    ) => {
-      const pr = progressRef_fix.current;
-      const canControl = canControlPlaybackRef.current;
-      if (canControl) {
-        pr.seekTo(state.seekTo);
-        return;
-      }
+    (state: any, syncedTime: () => number) => {
       clearScheduledTimeout(scheduledSeekTimeoutRef);
       scheduleSyncedAction(
         scheduledSeekTimeoutRef,
         state.targetTime,
         syncedTime,
         () => {
-          pr.seekTo(state.seekTo);
+          progress.seekTo(state.seekTo);
         },
       );
     },
-    [clearScheduledTimeout, scheduleSyncedAction],
+    [clearScheduledTimeout, progress, scheduleSyncedAction],
   );
 
-  /* ─── Playback sync on join ────────────────────────── */
+  /* --- Reset syncHandledRef on socket (re)connect ----- */
+  const prevConnected = useRef(connected);
+  useEffect(() => {
+    if (connected && !prevConnected.current) {
+      syncHandledRef.current = false;
+    }
+    prevConnected.current = connected;
+  }, [connected]);
+
+  /* --- Listener mute on join -------------------------- */
   useEffect(() => {
     if (
       !joined ||
@@ -488,19 +409,9 @@ export default function RoomPage() {
     )
       return;
 
-    const p = playerRef_fix.current;
-
-    let actualCurrentTime = playback.currentTime ?? 0;
-    if (playback.isPlaying && playback.updatedAt) {
-      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
-      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
-    }
-
-    // Non-host listener joining a live room: start playing at volume 0
-    // so the progress bar ticks in sync. User clicks Play to unmute+sync.
-    const seekAudio = (time: number) => audioStreamRef.current?.seek(time);
-
     if (!canControlPlayback && playback.isPlaying) {
+      const p = playerRef_fix.current;
+      const time = playback.currentTime ?? 0;
       if (!player.isMuted) player.toggleMute();
       p.playTrack(
         {
@@ -513,56 +424,20 @@ export default function RoomPage() {
           album: { name: "" },
           image: playback.image,
         },
-        actualCurrentTime,
+        time,
         true,
       );
-      seekAudio(actualCurrentTime);
+      audioStreamRef.current?.seek(time);
       setListenerMuted(true);
-      return;
     }
-
-    if (playback.isPlaying && playback.updatedAt > getSyncedTime() + 150) {
-      scheduleRoomPlay(
-        {
-          videoId: playback.videoId,
-          seekTo: playback.currentTime ?? 0,
-          targetTime: playback.updatedAt,
-          id: `room-${playback.videoId}`,
-          trackName: playback.trackName,
-          artistName: playback.artistName,
-          image: playback.image,
-          duration_ms: 0,
-        },
-        getSyncedTime,
-      );
-      return;
-    }
-
-    p.playTrack(
-      {
-        id: `room-${playback.videoId}`,
-        videoId: playback.videoId,
-        name: playback.trackName,
-        duration_ms: 0,
-        explicit: false,
-        artists: [{ name: playback.artistName }],
-        album: { name: "" },
-        image: playback.image,
-      },
-      actualCurrentTime,
-      playback.isPlaying,
-    );
-    seekAudio(actualCurrentTime);
   }, [
-    getSyncedTime,
     joined,
     playback,
     player.nowPlaying?.videoId,
-    scheduleRoomPlay,
     canControlPlayback,
   ]);
 
-  /* ─── Queue advance ────────────────────────────────── */
+  /* --- Queue advance ---------------------------------- */
   const maybeAdvanceQueue = useCallback(() => {
     if (!canControlPlaybackRef.current || !joined) return;
     const p = playerRef_fix.current;
@@ -720,7 +595,7 @@ export default function RoomPage() {
     queue,
   ]);
 
-  /* ─── Admin play ────────────────────────────────────── */
+  /* --- Admin play -------------------------------------- */
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback) return;
@@ -744,7 +619,7 @@ export default function RoomPage() {
     [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
-  /* ─── Audio unlock / Autoplay keeper ────────────────── */
+  /* --- Audio unlock / Autoplay keeper ------------------ */
   const audioContextRef = useRef<AudioContext | null>(null);
   const silentSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const audioStartedRef = useRef(false);
@@ -811,14 +686,14 @@ export default function RoomPage() {
     };
   }, [tryUnlockAudio]);
 
-  /* ─── Service Worker registration ──────────────────── */
+  /* --- Service Worker registration -------------------- */
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
   }, []);
 
-  /* ─── Screen Wake Lock ─────────────────────────────── */
+  /* --- Screen Wake Lock ------------------------------- */
   const acquireWakeLock = useCallback(async () => {
     try {
       if (wakeLockRef.current) return;
@@ -840,12 +715,12 @@ export default function RoomPage() {
     return () => releaseWakeLock();
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
-  /* ─── Audio Stream (background playback) ──────────── */
+  /* --- Audio Stream (background playback) ------------ */
   useEffect(() => {
     audioStream.setVolume(player.volume / 100);
   }, [player.volume, audioStream]);
 
-  /* ─── Media Session API ────────────────────────────── */
+  /* --- Media Session API ------------------------------ */
   useEffect(() => {
     if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
     const ms = navigator.mediaSession;
@@ -1104,7 +979,7 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
-  /* ─── Lifecycle effects ────────────────────────────── */
+  /* --- Lifecycle effects ------------------------------ */
   useEffect(() => {
     return () => {
       clearScheduledPlaybackActions();
@@ -1135,19 +1010,13 @@ export default function RoomPage() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         if (joined && !canControlPlayback) requestSync();
-        // On return to foreground, resume audio element if YT iframe went silent
-        if (
-          player.playerState === "playing" &&
-          player.nowPlaying?.videoId
-        ) {
-          audioStreamRef.current?.play();
+        if (player.playerState === "playing" && player.nowPlaying?.videoId) {
+          audioStreamRef.current?.seek(progress.currentTime);
         }
       } else if (document.visibilityState === "hidden") {
-        // Going to background: ensure audio element is playing for PWA
-        if (
-          player.playerState === "playing" &&
-          player.nowPlaying?.videoId
-        ) {
+        if (player.playerState === "playing" && player.nowPlaying?.videoId) {
+          audioStreamRef.current?.loadStream(player.nowPlaying.videoId);
+          audioStreamRef.current?.seek(progress.currentTime);
           audioStreamRef.current?.play();
         }
       }
@@ -1155,44 +1024,28 @@ export default function RoomPage() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [canControlPlayback, joined, requestSync, player.playerState, player.nowPlaying?.videoId]);
+  }, [canControlPlayback, joined, requestSync, player.playerState, player.nowPlaying?.videoId, progress.currentTime]);
 
   useEffect(() => {
-    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
-    const playbackState =
-      player.playerState === "playing"
-        ? "playing"
-        : player.playerState === "paused"
-          ? "paused"
-          : player.playerState === "loading"
-            ? "buffering"
-            : null;
-    if (!playbackState) return;
-    const liveCurrentTime =
-      player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
-    sendPlaybackState(playbackState, liveCurrentTime);
-  }, [
-    canControlPlayback,
-    joined,
-    player.nowPlaying?.videoId,
-    player.playerRef,
-    player.playerState,
-    sendPlaybackState,
-  ]);
-
-  useEffect(() => {
-    if (!joined || !canControlPlayback || player.playerState !== "playing")
+    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId)
       return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
         player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
-      sendPlaybackState("playing", liveCurrentTime);
-      sendProgress(liveCurrentTime);
+      const state =
+        player.playerState === "playing"
+          ? "playing"
+          : player.playerState === "paused"
+            ? "paused"
+            : "buffering";
+      sendPlaybackState(state, liveCurrentTime);
+      if (state === "playing") sendProgress(liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
   }, [
     canControlPlayback,
     joined,
+    player.nowPlaying?.videoId,
     player.playerRef,
     player.playerState,
     sendPlaybackState,
@@ -1295,7 +1148,7 @@ export default function RoomPage() {
     }
   }, [player.playerState, audioAnalyzer]);
 
-  /* ─── Background Video Looper ──────────────────────── */
+  /* --- Background Video Looper ------------------------ */
   useEffect(() => {
     if (!joined) return;
     const video = videoRef.current;

@@ -5,9 +5,9 @@ import { RecentTrack, Track } from "@/utils/types";
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
   "ws://localhost:8000";
-const CLOCK_SYNC_INTERVAL_MS = 10_000;
-const CLOCK_SYNC_ALPHA = 0.3;
-const CLOCK_SYNC_DRIFT_MS = 300;
+const CLOCK_SYNC_INTERVAL_MS = 5_000;
+const CLOCK_SYNC_ALPHA = 0.4;
+const CLOCK_SYNC_DRIFT_MS = 200;
 
 export interface ChatMessage {
   id: string;
@@ -172,9 +172,9 @@ export function useRoomSocket({
   const getAdaptiveLeadMs = useCallback((kind: "play" | "control") => {
     const rtt = lastMeasuredRttRef.current;
     if (kind === "play") {
-      return Math.min(Math.max(Math.round(rtt * 0.75 + 180), 250), 700);
+      return Math.min(Math.max(Math.round(rtt * 0.5 + 100), 150), 500);
     }
-    return Math.min(Math.max(Math.round(rtt * 0.5 + 80), 120), 320);
+    return Math.min(Math.max(Math.round(rtt * 0.3 + 60), 80), 250);
   }, []);
 
   const applyClockOffset = useCallback((sampleOffset: number) => {
