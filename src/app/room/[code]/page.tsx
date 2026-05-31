@@ -15,7 +15,7 @@ import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
-import { Track } from "@/utils/types";
+import { Track, PlayerState } from "@/utils/types";
 import {
   asTrackFromPlayback,
   asTrackFromRecent,
@@ -43,7 +43,7 @@ export default function RoomPage() {
 
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
-  const setPlayerStateRef = useRef<((s: string) => void) | null>(null);
+  const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const audioStream = useAudioStream({
     onPlaying: () => setPlayerStateRef.current?.("playing"),
     onPause: () => setPlayerStateRef.current?.("paused"),
@@ -56,8 +56,13 @@ export default function RoomPage() {
 
   const player = usePlayerState({
     onPlayIntent: (videoId) => {
-      audioStreamRef.current.loadStream(videoId);
-      audioStreamRef.current.play();
+      const el = audioStreamRef.current.audioRef.current;
+      if (el && el.src && el.src.includes(`/stream/${videoId}`)) {
+        audioStreamRef.current.play();
+      } else {
+        audioStreamRef.current.loadStream(videoId);
+        audioStreamRef.current.play();
+      }
     },
     onPauseIntent: () => {
       audioStreamRef.current.pause();
