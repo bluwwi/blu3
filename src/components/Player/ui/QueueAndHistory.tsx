@@ -261,14 +261,14 @@ export function QueueAndHistory({
           {/* Search */}
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 hover:text-black cursor-pointer transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="text-current" />
           </button>
           <button
             onClick={handlePlusClick}
-            className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-black hover:bg-white/80 cursor-pointer transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Add playlist to queue"
           >
             <Plus size={20} />
@@ -278,10 +278,10 @@ export function QueueAndHistory({
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className={`flex h-10 w-10 items-center cursor-pointer justify-center rounded-lg border border-white/[0.08] transition-all ${
+              className={`flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all ${
                 showMenu
-                  ? "bg-white text-black"
-                  : "bg-white text-black hover:bg-white/80"
+                  ? "bg-white/40 text-black"
+                  : "bg-white/10 text-black hover:bg-white/40"
               }`}
               title="More options"
             >
