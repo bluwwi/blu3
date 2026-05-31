@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
+import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 
 interface UsePlayerStateReturn {
   playerRef: React.MutableRefObject<YT.Player | null>;
@@ -34,39 +35,73 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  const [ytReady, setYtReady] = useState(() => typeof window !== "undefined" && !!window.YT?.Player);
-  const [pendingTrack, setPendingTrack] = useState<{
+  const playerRef = useRef<YT.Player | null>(null);
+  const desiredPlayStateRef = useRef<"playing" | "paused" | null>(null);
+  const pendingTrackRef = useRef<{
     track: Track;
     startTime?: number;
     shouldPlay: boolean;
   } | null>(null);
-
-  const playerRef = useRef<YT.Player | null>(null);
-  const desiredPlayStateRef = useRef<"playing" | "paused" | null>(null);
+  const readyRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (window.YT?.Player) {
-      setYtReady(true);
-      return;
-    }
-    const checkYT = setInterval(() => {
-      if (window.YT?.Player) {
-        setYtReady(true);
-        clearInterval(checkYT);
-      }
-    }, 100);
-    return () => clearInterval(checkYT);
-  }, []);
+    setYouTubeOnReady((player) => {
+      playerRef.current = player;
+      player.setVolume(volume);
+      readyRef.current = true;
 
-  /** Check whether the existing YT.Player is still usable */
-  const isPlayerAlive = useCallback((): boolean => {
+      const pending = pendingTrackRef.current;
+      if (pending) {
+        const { track, startTime, shouldPlay } = pending;
+        pendingTrackRef.current = null;
+        player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+        if (shouldPlay) player.playVideo();
+        else player.pauseVideo();
+        if (desiredPlayStateRef.current === "playing") player.playVideo();
+      }
+    });
+
+    const onStateChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const S = (window as any).YT?.PlayerState;
+      if (!S) return;
+      switch (detail.data) {
+        case S.PLAYING:
+          setPlayerState("playing");
+          break;
+        case S.PAUSED:
+          setPlayerState("paused");
+          break;
+        case S.ENDED:
+          setPlayerState("ended");
+          break;
+        case S.BUFFERING:
+          setPlayerState("loading");
+          break;
+        case S.UNSTARTED:
+          setPlayerState("idle");
+          break;
+      }
+    };
+
+    const onError = () => {
+      setPlayerState("error");
+      setError("YouTube couldn't play this. Try another.");
+    };
+
+    window.addEventListener("yt-state-change", onStateChange);
+    window.addEventListener("yt-error", onError);
+    return () => {
+      window.removeEventListener("yt-state-change", onStateChange);
+      window.removeEventListener("yt-error", onError);
+    };
+  }, [volume]);
+
+  const isPlayerReady = useCallback(() => {
     const player = playerRef.current;
     if (!player) return false;
-    // Must have the critical API methods
     if (typeof player.loadVideoById !== "function") return false;
     if (typeof player.seekTo !== "function") return false;
-    // Its iframe must still be in the document
     try {
       const iframe = player.getIframe?.();
       if (!iframe || !document.contains(iframe)) return false;
@@ -76,80 +111,6 @@ export function usePlayerState(): UsePlayerStateReturn {
     return true;
   }, []);
 
-  const initPlayer = useCallback(
-    (videoId: string, onReady?: (player: YT.Player) => void) => {
-      if (!window.YT?.Player) return;
-
-      if (playerRef.current) {
-        if (isPlayerAlive()) {
-          try {
-            playerRef.current.loadVideoById({
-              videoId,
-              startSeconds: 0,
-            });
-            onReady?.(playerRef.current);
-            return;
-          } catch (err) {
-            console.warn("Failed to reuse existing player, recreating:", err);
-          }
-        }
-        // Player is stale or call failed — destroy and recreate
-        try {
-          playerRef.current.destroy();
-        } catch {}
-        playerRef.current = null;
-      }
-
-      const playerVars = {
-        ...CONFIG.YT_PLAYER_PARAMS,
-        origin: window.location.origin,
-        widget_referrer: window.location.origin,
-      };
-
-      playerRef.current = new window.YT.Player("yt-player", {
-        host: CONFIG.YT_HOST,
-        videoId,
-        playerVars,
-        events: {
-          onReady: (e: any) => {
-            e.target.setVolume(volume);
-            onReady?.(e.target);
-            if (desiredPlayStateRef.current === "playing") {
-              e.target.playVideo();
-            } else if (desiredPlayStateRef.current === "paused") {
-              e.target.pauseVideo();
-            }
-          },
-          onStateChange: (e: any) => {
-            const S = window.YT.PlayerState;
-            switch (e.data) {
-              case S.PLAYING:
-                setPlayerState("playing");
-                break;
-              case S.PAUSED:
-                setPlayerState("paused");
-                break;
-              case S.ENDED:
-                setPlayerState("ended");
-                break;
-              case S.BUFFERING:
-                setPlayerState("loading");
-                break;
-              case S.UNSTARTED:
-                setPlayerState("idle");
-                break;
-            }
-          },
-          onError: () => {
-            setPlayerState("error");
-            setError("YouTube couldn't play this. Try another.");
-          },
-        },
-      });
-    },
-    [volume, isPlayerAlive],
-  );
-
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
@@ -158,8 +119,6 @@ export function usePlayerState(): UsePlayerStateReturn {
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
-      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
-
       if (!track.videoId) {
         setPlayerState("error");
         setError("No video ID.");
@@ -167,60 +126,31 @@ export function usePlayerState(): UsePlayerStateReturn {
         return;
       }
 
-      if (isPlayerAlive()) {
+      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
+
+      const player = playerRef.current;
+      if (player && isPlayerReady()) {
         try {
-          playerRef.current!.loadVideoById({
+          player.loadVideoById({
             videoId: track.videoId,
             startSeconds: startTime || 0,
           });
-          if (shouldPlay) {
-            playerRef.current!.playVideo();
-          } else {
-            playerRef.current!.pauseVideo();
-          }
+          if (shouldPlay) player.playVideo();
+          else player.pauseVideo();
           setLoadingId(null);
           return;
         } catch (e) {
-          console.warn("Failed to reuse player, recreating:", e);
-          try {
-            playerRef.current!.destroy();
-          } catch {}
-          playerRef.current = null;
+          console.warn("Failed to reuse player:", e);
         }
-      } else if (playerRef.current) {
-        // Player ref exists but is stale — clean up
-        try { playerRef.current.destroy(); } catch {}
-        playerRef.current = null;
       }
 
-      if (!window.YT?.Player) {
-        setPendingTrack({ track, startTime, shouldPlay });
-        return;
+      if (!readyRef.current) {
+        pendingTrackRef.current = { track, startTime, shouldPlay };
       }
-
-      initPlayer(track.videoId, (player) => {
-        if (startTime) {
-          player.seekTo(startTime, true);
-        }
-      });
       setLoadingId(null);
     },
-    [initPlayer, isPlayerAlive],
+    [isPlayerReady],
   );
-
-  useEffect(() => {
-    if (ytReady && pendingTrack) {
-      const { track, startTime, shouldPlay } = pendingTrack;
-      desiredPlayStateRef.current = shouldPlay ? "playing" : "paused";
-      setPendingTrack(null);
-      initPlayer(track.videoId, (player) => {
-        if (startTime) {
-          player.seekTo(startTime, true);
-        }
-      });
-      setLoadingId(null);
-    }
-  }, [ytReady, pendingTrack, initPlayer]);
 
   const play = useCallback(() => {
     desiredPlayStateRef.current = "playing";
