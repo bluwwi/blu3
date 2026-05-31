@@ -194,6 +194,7 @@ export default function RoomPage() {
         );
         /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek */
         if (state.isPlaying) p.play?.();
+        progressRef_fix.current.seekTo(actualCurrentTime);
       }
     },
     onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
