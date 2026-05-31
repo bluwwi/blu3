@@ -6,6 +6,7 @@ import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
+import { useAudioStream } from "@/hooks/useAudioStream";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -43,6 +44,7 @@ export default function RoomPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const player = usePlayerState();
+  const audioStream = useAudioStream();
   const progress = useProgressTracking(player.playerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -811,6 +813,28 @@ export default function RoomPage() {
     else releaseWakeLock();
     return () => releaseWakeLock();
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
+
+  /* ─── Audio Stream (background playback) ──────────── */
+  const previousVideoIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const videoId = player.nowPlaying?.videoId;
+    if (!videoId || videoId === previousVideoIdRef.current) return;
+    previousVideoIdRef.current = videoId;
+    audioStream.loadStream(videoId);
+  }, [player.nowPlaying?.videoId, audioStream]);
+
+  useEffect(() => {
+    if (player.playerState === "playing") {
+      audioStream.play();
+    } else {
+      audioStream.pause();
+    }
+  }, [player.playerState, audioStream]);
+
+  useEffect(() => {
+    audioStream.setVolume(player.volume / 100);
+  }, [player.volume, audioStream]);
 
   /* ─── Media Session API ────────────────────────────── */
   useEffect(() => {
