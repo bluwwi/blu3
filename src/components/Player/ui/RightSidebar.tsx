@@ -80,6 +80,19 @@ export function RightSidebar({
 }: Props) {
   const [showMembersPopup, setShowMembersPopup] = useState(false);
   const [showLeavePopup, setShowLeavePopup] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    const url = window.location.origin + "/room/" + roomCode;
+    if (navigator.share) {
+      navigator.share({ url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }).catch(() => {});
+    }
+  };
 
   return (
     <>
@@ -134,13 +147,22 @@ export function RightSidebar({
 
               <div className="flex items-center gap-2">
                 {roomCode && (
-                  <button
-                    onClick={() => setShowLeavePopup(true)}
-                    className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
-                    title="Room options"
-                  >
-                    Rooms
-                  </button>
+                  <>
+                    <button
+                      onClick={handleShare}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
+                      title={copied ? "Copied!" : "Share invite link"}
+                    >
+                      <Icon name="share" size={20} className={copied ? "text-green-400" : "text-current"} />
+                    </button>
+                    <button
+                      onClick={() => setShowLeavePopup(true)}
+                      className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
+                      title="Room options"
+                    >
+                      Rooms
+                    </button>
+                  </>
                 )}
               </div>
             </div>

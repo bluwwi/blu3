@@ -853,7 +853,10 @@ export default function RoomPage() {
   }, [authLoading, user, code]);
 
   useEffect(() => {
-    if (!authLoading && !user) router.replace("/");
+    if (!authLoading && !user) {
+      sessionStorage.setItem("returnUrl", window.location.pathname + window.location.search);
+      router.replace("/");
+    }
   }, [authLoading, user]);
 
   /* --- Auto-resume player when tab returns to foreground (Android Chrome pauses YT iframes in background) --- */
