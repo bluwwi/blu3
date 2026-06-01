@@ -45,7 +45,7 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const progress = useProgressTracking(player.playerRef, player.playerState);
+  const progress = useProgressTracking(player.reactPlayerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
