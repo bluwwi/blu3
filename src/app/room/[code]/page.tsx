@@ -93,7 +93,6 @@ export default function RoomPage() {
     sendPause,
     sendSeek,
     sendPlaybackMode,
-    sendPlaybackState,
     sendProgress,
     sendTrackEnded,
     getSyncedTime,
