@@ -1015,7 +1015,18 @@ export default function RoomPage() {
 
   return (
     <div className="w-full h-full bg-blue-500 relative">
-      <YouTubeIframe />
+      <ReactPlayerWrapper
+        url={player.url}
+        playing={player.playing}
+        volume={player.isMuted ? 0 : player.volume / 100}
+        muted={player.isMuted}
+        onReady={player.handleReady}
+        onPlay={player.handlePlayEvent}
+        onPause={player.handlePauseEvent}
+        onEnded={player.handleEnded}
+        onError={player.handleError}
+        ref={player.reactPlayerRef}
+      />
 
       <div
         className="fixed inset-0 overflow-hidden pointer-events-none"
