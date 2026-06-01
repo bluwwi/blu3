@@ -275,52 +275,57 @@ export function RightSidebar({
           document.body,
         )}
 
-      {/* Leave room popup */}
       {showLeavePopup &&
         createPortal(
           <div
             className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(4px)",
-            }}
             onClick={() => setShowLeavePopup(false)}
           >
             <div
-              className="w-72 rounded-[24px] border border-white/20 bg-slate-900/90 p-6 backdrop-blur-xl"
+              className="w-80 p-4 text-center"
+              style={{
+                background: "rgba(0,0,0,0.35)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "24px",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-white font-semibold text-[15px]">
-                  Leave room?
-                </h2>
-                <button
-                  onClick={() => setShowLeavePopup(false)}
-                  className="text-white/40 hover:text-white transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <p className="text-white/50 text-[12px] mb-5">
-                You'll be taken back to browse. Others can still listen.
+              <p className="text-white text-xl font-semibold leading-snug py-6">
+                Are you sure you want to
+                <br />
+                leave this Room?
               </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setShowLeavePopup(false)}
-                  className="flex-1 rounded-full border border-white/20 bg-white/8 py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/15 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setShowLeavePopup(false);
-                    onLeave?.();
-                  }}
-                  className="flex-1 rounded-full bg-red-500/80 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-red-500"
-                >
-                  Leave
-                </button>
-              </div>
+
+              <button
+                onClick={() => {
+                  setShowLeavePopup(false);
+                  onLeave?.();
+                }}
+                className="block w-full cursor-pointer py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500"
+                style={{ background: "#c0392b", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#a93226")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#c0392b")
+                }
+              >
+                Yes, leave room
+              </button>
+
+              <button
+                onClick={() => setShowLeavePopup(false)}
+                className="block w-full py-1.5 cursor-pointer text-[#1a1a1a] text-[15px] font-medium transition-all duration-500"
+                style={{ background: "#ffffff", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#e8e8e8")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
+              >
+                Cancel
+              </button>
             </div>
           </div>,
           document.body,
