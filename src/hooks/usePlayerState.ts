@@ -3,15 +3,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
+import ReactPlayer from "react-player";
+
 interface UsePlayerStateReturn {
-  reactPlayerRef: React.MutableRefObject<any>;
+  reactPlayerRef: React.MutableRefObject<ReactPlayer | null>;
   playerState: PlayerStateType;
   volume: number;
   isMuted: boolean;
   nowPlaying: Track | null;
   activeVideoId: string | null;
   error: string;
-  url: string | null;
+  src: string | null;
   playing: boolean;
   playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
@@ -36,10 +38,10 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [url, setUrl] = useState<string | null>(null);
+  const [src, setSrc] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
 
-  const reactPlayerRef = useRef<any>(null);
+  const reactPlayerRef = useRef<ReactPlayer | null>(null);
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
   const playerStateRef = useRef(playerState);
@@ -64,8 +66,8 @@ export function usePlayerState(): UsePlayerStateReturn {
         reactPlayerRef.current?.seekTo(startTime ?? 0, "seconds");
         setPlaying(shouldPlay);
       } else {
-        const videoUrl = `https://www.youtube.com/watch?v=${track.videoId}&start=${Math.floor(startTime ?? 0)}`;
-        setUrl(videoUrl);
+        const videoSrc = `https://www.youtube.com/watch?v=${track.videoId}&start=${Math.floor(startTime ?? 0)}`;
+        setSrc(videoSrc);
         setPlaying(shouldPlay);
       }
     },
@@ -136,7 +138,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     nowPlaying,
     activeVideoId,
     error,
-    url,
+    src,
     playing,
     playTrack,
     togglePlayPause,
