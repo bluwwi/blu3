@@ -3,6 +3,7 @@
   "short_name": "Blu3",
   "description": "Music room app",
   "start_url": "/browse",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#3b82f6",

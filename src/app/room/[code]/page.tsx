@@ -567,8 +567,8 @@ export default function RoomPage() {
         ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
         : [],
     });
-    /* Vibe-style: let Chrome infer playback state from audio */
-  }, [footerTrack, player.playerState]);
+    ms.playbackState = player.playing ? "playing" : "paused";
+  }, [footerTrack, player.playing]);
 
   /* Register Media Session action handlers once (reads from ref) */
   useEffect(() => {
