@@ -136,21 +136,33 @@ export function useRoomSocket({
     chatOpenRef.current = chatOpen;
   }, [chatOpen]);
 
-  useEffect(() => {
-    if (!roomCode) return;
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const roomCodeRef = useRef(roomCode);
+  roomCodeRef.current = roomCode;
+
+  const connectWs = useCallback(() => {
+    const code = roomCodeRef.current;
+    if (!code) return;
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
 
-    const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${roomCode}`;
+    const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${code}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
       console.log("[WS] connected to", wsUrl);
       setConnected(true);
+      reconnectAttemptRef.current = 0;
     };
     ws.onclose = () => {
       setConnected(false);
+      const attempt = reconnectAttemptRef.current;
+      const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
+      reconnectAttemptRef.current = attempt + 1;
+      console.log(`[WS] disconnected, reconnecting in ${delay}ms (attempt ${attempt + 1})`);
+      reconnectTimerRef.current = setTimeout(connectWs, delay);
     };
     ws.onerror = (e) => {
       console.error("WS error:", e);
@@ -242,11 +254,15 @@ export function useRoomSocket({
           break;
       }
     };
+  }, []);
 
+  useEffect(() => {
+    connectWs();
     return () => {
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       wsRef.current?.close();
     };
-  }, [getSyncedTime, roomCode, safeSend]);
+  }, [connectWs, roomCode]);
 
   const sendChat = useCallback((text: string) => {
     if (!text.trim()) return;
