@@ -863,16 +863,13 @@ export default function RoomPage() {
   const handleVolumeWrapped = useCallback(
     (val: number) => {
       player.handleVolume(val);
-      audioStream.setVolume(val / 100);
     },
-    [player, audioStream],
+    [player],
   );
 
   const toggleMuteWrapped = useCallback(() => {
-    const nextMuted = !player.isMuted;
     player.toggleMute();
-    audioStream.setVolume(nextMuted ? 0 : player.volume / 100);
-  }, [player, audioStream]);
+  }, [player]);
 
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
@@ -1026,7 +1023,6 @@ export default function RoomPage() {
             const elapsed = (getSyncedTime() - pb.updatedAt) / 1000;
             if (elapsed > 0 && elapsed < 3600) time += elapsed;
           }
-          audioStreamRef.current.loadStream(pb.videoId);
           setPlayerStateRef.current?.("loading");
           progressRef_fix.current.seekTo(time);
           playerRef_fix.current.play?.();
