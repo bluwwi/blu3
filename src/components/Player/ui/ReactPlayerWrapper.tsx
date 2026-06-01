@@ -16,7 +16,6 @@ interface Props {
 }
 
 export function ReactPlayerWrapper({ url, playing, volume, muted, playerRef, onReady, onPlay, onPause, onEnded, onError }: Props) {
-  function ReactPlayerWrapper({ url, playing, volume, muted, onReady, onPlay, onPause, onEnded, onError }, ref) {
     return (
       <div
         style={{
