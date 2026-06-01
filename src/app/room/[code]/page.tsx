@@ -617,62 +617,7 @@ export default function RoomPage() {
     [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
-  /* --- Audio unlock / Autoplay keeper ------------------ */
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const silentSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const audioStartedRef = useRef(false);
-
-  const tryUnlockAudio = useCallback(() => {
-    const AC = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AC) return;
-    try {
-      if (!audioContextRef.current) audioContextRef.current = new AC();
-      const ctx = audioContextRef.current;
-      if (ctx.state === "suspended") ctx.resume();
-
-      if (!audioStartedRef.current) {
-        const buf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
-        const d = buf.getChannelData(0);
-        for (let i = 0; i < d.length; i++)
-          d[i] = (Math.random() - 0.5) * 0.00001;
-        const src = ctx.createBufferSource();
-        src.buffer = buf;
-        src.loop = true;
-        const g = ctx.createGain();
-        g.gain.value = 0.0001;
-        src.connect(g);
-        g.connect(ctx.destination);
-        src.start(0);
-        silentSourceRef.current = src;
-        audioStartedRef.current = true;
-      }
-    } catch (err) {
-      console.error("Failed to start background tab keeper:", err);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const events = ["click", "keydown", "touchstart", "mousedown"];
-    const interact = () => {
-      tryUnlockAudio();
-    };
-    events.forEach((evt) => window.addEventListener(evt, interact));
-    const onVisible = () => {
-      if (document.visibilityState === "visible") tryUnlockAudio();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => {
-      events.forEach((evt) => window.removeEventListener(evt, interact));
-      document.removeEventListener("visibilitychange", onVisible);
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-      silentSourceRef.current = null;
-      audioStartedRef.current = false;
-    };
-  }, [tryUnlockAudio]);
+  /* --- No autoplay keeper needed — YT iframe handles its own audio session --- */
 
   /* --- Service Worker registration -------------------- */
   useEffect(() => {
