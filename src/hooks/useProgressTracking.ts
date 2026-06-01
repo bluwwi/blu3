@@ -2,9 +2,10 @@
 
 import { CONFIG } from "@/components/Player/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type ReactPlayer from "react-player";
 
 export function useProgressTracking(
-  playerRef: React.MutableRefObject<YT.Player | null>,
+  playerRef: React.MutableRefObject<ReactPlayer | null>,
   playerState: string,
 ) {
   const [progress, setProgress] = useState(0);
@@ -14,12 +15,9 @@ export function useProgressTracking(
 
   const tick = useCallback(() => {
     const player = playerRef.current;
-    if (player && typeof player.getCurrentTime === "function") {
-      const cur = player.getCurrentTime() ?? 0;
-      const tot =
-        typeof player.getDuration === "function"
-          ? player.getDuration() ?? 0
-          : 0;
+    if (player) {
+      const cur = player.getCurrentTime?.() ?? 0;
+      const tot = player.getDuration?.() ?? 0;
       setCurrentTime(cur);
       setDuration(tot);
       setProgress(tot > 0 ? (cur / tot) * 100 : 0);
@@ -42,17 +40,14 @@ export function useProgressTracking(
     (time: number) => {
       const player = playerRef.current;
       setCurrentTime(time);
-      if (player && typeof player.seekTo === "function") {
+      if (player) {
         try {
-          player.seekTo(time, true);
+          player.seekTo(time, "seconds");
         } catch {
           return;
         }
       }
-      const tot =
-        typeof player?.getDuration === "function"
-          ? player.getDuration() ?? 0
-          : 0;
+      const tot = player?.getDuration?.() ?? 0;
       if (tot > 0) setProgress((time / tot) * 100);
     },
     [playerRef],
@@ -61,10 +56,7 @@ export function useProgressTracking(
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const player = playerRef.current;
-      const dur =
-        typeof player?.getDuration === "function"
-          ? player.getDuration() ?? 0
-          : 0;
+      const dur = player?.getDuration?.() ?? 0;
       if (!dur) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const seekToTime = ((e.clientX - rect.left) / rect.width) * dur;
