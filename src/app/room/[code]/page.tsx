@@ -43,45 +43,9 @@ export default function RoomPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
-  const audioStream = useAudioStream({
-    onPlaying: () => setPlayerStateRef.current?.("playing"),
-    onPause: () => {
-      if (document.visibilityState !== "hidden") {
-        setPlayerStateRef.current?.("paused");
-      }
-    },
-    onWaiting: () => {
-      if (document.visibilityState !== "hidden") {
-        setPlayerStateRef.current?.("loading");
-      }
-    },
-    onEnded: () => maybeAdvanceQueue(),
-  });
-
-  const audioStreamRef = useRef(audioStream);
-  audioStreamRef.current = audioStream;
-
-  const player = usePlayerState({
-    onPlayIntent: (videoId) => {
-      const el = audioStreamRef.current.audioRef.current;
-      if (el && el.src && el.src.includes(`/stream/${videoId}`)) {
-        audioStreamRef.current.play();
-      } else {
-        audioStreamRef.current.loadStream(videoId);
-        audioStreamRef.current.play();
-      }
-    },
-    onPauseIntent: () => {
-      audioStreamRef.current.pause();
-    },
-    onLoadIntent: (videoId) => {
-      const el = audioStreamRef.current.audioRef.current;
-      if (el?.src?.includes(`/stream/${videoId}`)) return;
-      audioStreamRef.current.loadStream(videoId);
-    },
-  });
+  const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const progress = useProgressTracking(player.playerRef, player.playerState, audioStream.audioRef);
+  const progress = useProgressTracking(player.playerRef, player.playerState);
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -440,8 +404,6 @@ export default function RoomPage() {
       return;
 
     if (!canControlPlayback && playback.isPlaying) {
-      const audioEl = audioStreamRef.current.audioRef.current;
-      if (audioEl?.src?.includes(`/stream/${playback.videoId}`) && player.nowPlaying?.videoId === playback.videoId) return;
       const p = playerRef_fix.current;
       let time = playback.currentTime ?? 0;
       if (playback.updatedAt) {
@@ -741,10 +703,7 @@ export default function RoomPage() {
     return () => releaseWakeLock();
   }, [player.playerState, acquireWakeLock, releaseWakeLock]);
 
-  /* Sync volume state to audio element */
-  useEffect(() => {
-    audioStream.setVolume(player.isMuted ? 0 : player.volume / 100);
-  }, [player.volume, player.isMuted, audioStream]);
+  /* Volume is synced to YT iframe internally by usePlayerState */
 
   /* --- Media Session API ------------------------------ */
   useEffect(() => {
