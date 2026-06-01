@@ -54,6 +54,7 @@ function createPlayer(container: HTMLElement): Promise<YT.Player> {
         disablekb: 1,
         enablejsapi: 1,
         fs: 0,
+        playsinline: 1,
         iv_load_policy: 3,
         modestbranding: 1,
         rel: 0,
