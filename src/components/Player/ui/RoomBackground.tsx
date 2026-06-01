@@ -188,23 +188,27 @@ export function RoomBackground({
 
     // ── Audio-reactive bands ────────────────────────────────────────
     const live = isLiveAudioRef.current && liveBandsRef?.current;
-    const react: [number, number, number, number, number] = [0.5, 0.5, 0.5, 0.5, 0.5];
+    const react: [number, number, number, number, number] = [
+      0.5, 0.5, 0.5, 0.5, 0.5,
+    ];
     let reactAvg = 0.3;
     if (playing) {
       if (live) {
         for (let i = 0; i < 5; i++) {
-          react[i] = 0.15 + 0.85 * Math.max(0, Math.min(1, liveBandsRef.current[i]));
+          react[i] =
+            0.15 + 0.85 * Math.max(0, Math.min(1, liveBandsRef.current[i]));
         }
         reactAvg = (react[0] + react[1] + react[2] + react[3] + react[4]) / 5;
       } else {
         const seed = trackIdRef.current ? hashStr(trackIdRef.current) : 0;
         const p = getPersonality(seed);
         const es = 0.35 * p.tempoFactor;
-        const raw = p.baseEnergy * (
-          0.4 + 0.3 * Math.sin(tRef.current * es + seed * 0.03) +
-          0.2 * Math.sin(tRef.current * es * 1.5 + seed * 0.05 + 1.3) +
-          0.1 * Math.sin(tRef.current * es * 2.5 + seed * 0.07 + 2.7)
-        );
+        const raw =
+          p.baseEnergy *
+          (0.4 +
+            0.3 * Math.sin(tRef.current * es + seed * 0.03) +
+            0.2 * Math.sin(tRef.current * es * 1.5 + seed * 0.05 + 1.3) +
+            0.1 * Math.sin(tRef.current * es * 2.5 + seed * 0.07 + 2.7));
         for (let i = 0; i < 5; i++) {
           const weight = i < 2 ? p.bassWeight : 1 - p.bassWeight * 0.4;
           const f1 = (2.2 + i * 1.4) * p.tempoFactor;
@@ -223,7 +227,10 @@ export function RoomBackground({
 
     // ── Wave scroll speed from audio (additive, never reverses) ─────
     if (playing) {
-      const speedFactor = live ? (0.3 + 1.7 * reactAvg) : getPersonality(trackIdRef.current ? hashStr(trackIdRef.current) : 0).tempoFactor;
+      const speedFactor = live
+        ? 0.3 + 1.7 * reactAvg
+        : getPersonality(trackIdRef.current ? hashStr(trackIdRef.current) : 0)
+            .tempoFactor;
       scrollOffsetRef.current += dt * speedFactor;
     }
 
@@ -236,7 +243,8 @@ export function RoomBackground({
 
     WAVE_LINES.forEach((cfg) => {
       const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
-      const scroll = scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
+      const scroll =
+        scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
       const freq = ((2 * Math.PI) / W) * 1.5;
       const breath =
         1 +
@@ -364,7 +372,7 @@ export function RoomBackground({
             height: "100%",
             objectFit: "cover",
             filter: "blur(50px) brightness(0.8) saturate(1.6)",
-            transform: "scale(1.5)",
+            transform: "scale(1.35)",
             transformOrigin: "center center",
           }}
         />

@@ -5,12 +5,6 @@ import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
 import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
 
-interface UsePlayerStateOptions {
-  onPlayIntent?: (videoId: string) => void;
-  onPauseIntent?: () => void;
-  onLoadIntent?: (videoId: string) => void;
-}
-
 interface UsePlayerStateReturn {
   playerRef: React.MutableRefObject<YT.Player | null>;
   playerState: PlayerStateType;
@@ -50,7 +44,7 @@ function mapYTState(ytState: number): PlayerStateType {
   }
 }
 
-export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateReturn {
+export function usePlayerState(): UsePlayerStateReturn {
   const [playerState, setPlayerState] = useState<PlayerStateType>("idle");
   const [volume, setVolume] = useState(CONFIG.DEFAULT_VOLUME);
   const [isMuted, setIsMuted] = useState(false);
@@ -60,19 +54,30 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
   const [error, setError] = useState("");
 
   const playerRef = useRef<YT.Player | null>(null);
-  const callbacksRef = useRef(options);
-  callbacksRef.current = options;
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
 
-  /* YT player ready — always muted (audio flows through <audio> element) */
+  /* YT player ready — audio comes directly from YT iframe */
   useEffect(() => {
     setYouTubeOnReady((player) => {
       playerRef.current = player;
-      player.mute();
-      player.setVolume(0);
+      player.setVolume(volume);
+      if (isMuted) player.mute();
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Sync volume/mute to YT iframe whenever they change */
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!player) return;
+    if (isMuted) {
+      player.mute();
+    } else {
+      player.unMute();
+      player.setVolume(volume);
+    }
+  }, [volume, isMuted]);
 
   /* Listen for YT iframe state changes */
   useEffect(() => {
@@ -116,14 +121,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
         return;
       }
 
-      if (startTime && startTime > 0) {
-        callbacksRef.current?.onLoadIntent?.(track.videoId);
-      } else if (shouldPlay) {
-        callbacksRef.current?.onPlayIntent?.(track.videoId);
-      } else {
-        callbacksRef.current?.onLoadIntent?.(track.videoId);
-      }
-
       const player = playerRef.current;
       if (player) {
         try {
@@ -147,8 +144,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
     if (player) {
       try { player.playVideo(); } catch {}
     }
-    const id = nowPlayingRef.current?.videoId;
-    if (id) callbacksRef.current?.onPlayIntent?.(id);
   }, []);
 
   const pause = useCallback(() => {
@@ -156,7 +151,6 @@ export function usePlayerState(options?: UsePlayerStateOptions): UsePlayerStateR
     if (player) {
       try { player.pauseVideo(); } catch {}
     }
-    callbacksRef.current?.onPauseIntent?.();
   }, []);
 
   const togglePlayPause = useCallback(() => {

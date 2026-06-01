@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export function useProgressTracking(
   playerRef: React.MutableRefObject<YT.Player | null>,
   playerState: string,
-  audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -14,16 +13,8 @@ export function useProgressTracking(
   const progressInt = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
-    const audio = audioRef?.current;
     const player = playerRef.current;
-
-    if (audio && Number.isFinite(audio.duration) && audio.duration > 0) {
-      const cur = audio.currentTime;
-      const tot = audio.duration;
-      setCurrentTime(cur);
-      setDuration(tot);
-      setProgress(tot > 0 ? (cur / tot) * 100 : 0);
-    } else if (player && typeof player.getCurrentTime === "function") {
+    if (player && typeof player.getCurrentTime === "function") {
       const cur = player.getCurrentTime() ?? 0;
       const tot =
         typeof player.getDuration === "function"
@@ -33,7 +24,7 @@ export function useProgressTracking(
       setDuration(tot);
       setProgress(tot > 0 ? (cur / tot) * 100 : 0);
     }
-  }, [playerRef, audioRef]);
+  }, [playerRef]);
 
   const startTracking = useCallback(() => {
     if (progressInt.current) clearInterval(progressInt.current);
