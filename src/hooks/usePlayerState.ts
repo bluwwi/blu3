@@ -126,6 +126,7 @@ export function usePlayerState(): UsePlayerStateReturn {
         try {
           if (shouldPlay) {
             player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
+            player.playVideo();
           } else {
             player.cueVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
           }

@@ -662,8 +662,11 @@ export default function RoomPage() {
         ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
         : [],
     });
-    ms.playbackState =
-      player.playerState === "playing" ? "playing" : "paused";
+    if (player.playerState === "playing" || player.playerState === "loading") {
+      ms.playbackState = "playing";
+    } else {
+      ms.playbackState = "paused";
+    }
   }, [footerTrack, player.playerState]);
 
   /* Register Media Session action handlers once (reads from ref) */
