@@ -1016,7 +1016,7 @@ export default function RoomPage() {
   return (
     <div className="w-full h-full bg-blue-500 relative">
       <ReactPlayerWrapper
-        url={player.url}
+        src={player.src}
         playing={player.playing}
         volume={player.isMuted ? 0 : player.volume / 100}
         muted={player.isMuted}
