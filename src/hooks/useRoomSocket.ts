@@ -5,9 +5,6 @@ import { RecentTrack, Track } from "@/utils/types";
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
   "ws://localhost:8000";
-const CLOCK_SYNC_INTERVAL_MS = 5_000;
-const CLOCK_SYNC_ALPHA = 0.4;
-const CLOCK_SYNC_DRIFT_MS = 200;
 
 export interface ChatMessage {
   id: string;
@@ -41,100 +38,57 @@ export interface PlaybackMode {
   repeatMode: RepeatMode;
 }
 
-export type WSMessage =
-  | { type: "clock_sync"; serverTime: number }
-  | { type: "ping"; clientTime: number }
-  | { type: "pong"; serverTime: number; rtt: number }
-  | { type: "schedule_play"; videoId: string; seekTo: number; targetTime: number }
-  | { type: "schedule_pause"; targetTime: number }
-  | { type: "schedule_seek"; seekTo: number; targetTime: number }
-  | {
-      type: "playback_state";
-      state: "playing" | "paused" | "buffering";
-      currentTime: number;
-    };
-
-type ScheduledPlayMessage = Extract<WSMessage, { type: "schedule_play" }> & {
+interface PlayMessage {
+  videoId: string;
+  seekTo: number;
+  serverTime: number;
   id?: string;
   trackName?: string;
   artistName?: string;
   image?: string;
   duration_ms?: number;
   recentTracks?: RecentTrack[];
-};
+}
 
-type ScheduledPauseMessage = Extract<WSMessage, { type: "schedule_pause" }>;
-type ScheduledSeekMessage = Extract<WSMessage, { type: "schedule_seek" }>;
-type BaseWSMessage = Exclude<WSMessage, Extract<WSMessage, { type: "schedule_play" }>>;
+interface SeekMessage {
+  seekTo: number;
+  serverTime: number;
+}
 
 type RoomSocketMessage =
-  | BaseWSMessage
-  | ScheduledPlayMessage
-  | {
-      type: "room:joined";
-      isHost: boolean;
-      members?: Member[];
-      playback?: PlaybackState | null;
-      playbackMode?: PlaybackMode;
-      recentTracks?: RecentTrack[];
-      queue?: Track[];
-    }
+  | { type: "clock_sync"; serverTime: number }
+  | { type: "play"; videoId: string; seekTo: number; serverTime: number }
+  | { type: "pause"; serverTime: number }
+  | { type: "seek"; seekTo: number; serverTime: number }
+  | { type: "room:joined"; isHost: boolean; members?: Member[]; playback?: PlaybackState | null; playbackMode?: PlaybackMode; recentTracks?: RecentTrack[]; queue?: Track[] }
   | { type: "room:member_joined"; members?: Member[]; user?: { userId: string; name: string; avatar?: string } }
   | { type: "room:member_left"; members?: Member[]; userId?: string }
   | { type: "chat:message"; message: ChatMessage }
-  | {
-      type: "playback:sync";
-      videoId: string | null;
-      trackName: string;
-      artistName: string;
-      image: string;
-      isPlaying: boolean;
-      currentTime: number;
-      updatedAt: number;
-      playbackMode?: PlaybackMode;
-      recentTracks?: RecentTrack[];
-      queue?: Track[];
-    }
+  | { type: "playback:sync"; videoId: string | null; trackName: string; artistName: string; image: string; isPlaying: boolean; currentTime: number; updatedAt: number; playbackMode?: PlaybackMode; recentTracks?: RecentTrack[]; queue?: Track[] }
   | { type: "room:playback_mode"; playbackMode: PlaybackMode }
   | { type: "room:queue_update"; queue?: Track[] };
 
 interface UseRoomSocketProps {
   roomCode: string | null;
-  onSchedulePlay?: (
-    state: ScheduledPlayMessage,
-    getSyncedTime: () => number,
-  ) => void;
-  onSchedulePause?: (
-    state: ScheduledPauseMessage,
-    getSyncedTime: () => number,
-  ) => void;
-  onScheduleSeek?: (
-    state: ScheduledSeekMessage,
-    getSyncedTime: () => number,
-  ) => void;
-  onPlaybackSync?: (
-    state: PlaybackState,
-    getSyncedTime: () => number,
-  ) => void;
+  onPlay?: (state: PlayMessage) => void;
+  onPause?: (state: { serverTime: number }) => void;
+  onSeek?: (state: SeekMessage) => void;
+  onPlaybackSync?: (state: PlaybackState, getSyncedTime: () => number) => void;
   onMemberJoined?: (user: { name: string; avatar?: string }) => void;
   chatOpen?: boolean;
 }
 
 export function useRoomSocket({
   roomCode,
-  onSchedulePlay,
-  onSchedulePause,
-  onScheduleSeek,
+  onPlay,
+  onPause,
+  onSeek,
   onPlaybackSync,
   onMemberJoined,
   chatOpen,
 }: UseRoomSocketProps) {
   const wsRef = useRef<WebSocket | null>(null);
   const clockOffsetRef = useRef(0);
-  const lastMeasuredRttRef = useRef(0);
-  const pingSentAtRef = useRef<number | null>(null);
-  const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const resyncTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [connected, setConnected] = useState(false);
   const [clockOffsetMs, setClockOffsetMs] = useState(0);
   const [isHost, setIsHost] = useState(false);
@@ -144,15 +98,14 @@ export function useRoomSocket({
     shuffle: false,
     repeatMode: "off",
   });
-  // Chat is in-memory only — clears on refresh/new session
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
   const [queue, setQueue] = useState<Track[]>([]);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
-  const onSchedulePlayRef = useRef(onSchedulePlay);
-  const onSchedulePauseRef = useRef(onSchedulePause);
-  const onScheduleSeekRef = useRef(onScheduleSeek);
+  const onPlayRef = useRef(onPlay);
+  const onPauseRef = useRef(onPause);
+  const onSeekRef = useRef(onSeek);
   const onPlaybackSyncRef = useRef(onPlaybackSync);
   const onMemberJoinedRef = useRef(onMemberJoined);
   const chatOpenRef = useRef(chatOpen);
@@ -169,53 +122,13 @@ export function useRoomSocket({
     }
   }, []);
 
-  const getAdaptiveLeadMs = useCallback((kind: "play" | "control") => {
-    const rtt = lastMeasuredRttRef.current;
-    if (kind === "play") {
-      return Math.min(Math.max(Math.round(rtt * 0.5 + 100), 150), 500);
-    }
-    return Math.min(Math.max(Math.round(rtt * 0.3 + 60), 80), 250);
-  }, []);
-
-  const applyClockOffset = useCallback((sampleOffset: number) => {
-    const prevOffset = clockOffsetRef.current;
-    const nextOffset =
-      prevOffset === 0
-        ? sampleOffset
-        : prevOffset + CLOCK_SYNC_ALPHA * (sampleOffset - prevOffset);
-    clockOffsetRef.current = nextOffset;
-    setClockOffsetMs(nextOffset);
-
-    if (
-      prevOffset !== 0 &&
-      Math.abs(sampleOffset - prevOffset) > CLOCK_SYNC_DRIFT_MS
-    ) {
-      if (resyncTimeoutRef.current) clearTimeout(resyncTimeoutRef.current);
-      resyncTimeoutRef.current = setTimeout(() => {
-        const ws = wsRef.current;
-        if (ws?.readyState !== WebSocket.OPEN) return;
-        const clientTime = Date.now();
-        pingSentAtRef.current = clientTime;
-        ws.send(JSON.stringify({ type: "ping", clientTime }));
-      }, 250);
-    }
-  }, []);
-
-  const sendPing = useCallback(() => {
-    const ws = wsRef.current;
-    if (ws?.readyState !== WebSocket.OPEN) return;
-    const clientTime = Date.now();
-    pingSentAtRef.current = clientTime;
-    ws.send(JSON.stringify({ type: "ping", clientTime }));
-  }, []);
-
   useEffect(() => {
-    onSchedulePlayRef.current = onSchedulePlay;
-    onSchedulePauseRef.current = onSchedulePause;
-    onScheduleSeekRef.current = onScheduleSeek;
+    onPlayRef.current = onPlay;
+    onPauseRef.current = onPause;
+    onSeekRef.current = onSeek;
     onPlaybackSyncRef.current = onPlaybackSync;
     onMemberJoinedRef.current = onMemberJoined;
-  }, [onSchedulePause, onSchedulePlay, onScheduleSeek, onPlaybackSync, onMemberJoined]);
+  }, [onPause, onPlay, onSeek, onPlaybackSync, onMemberJoined]);
 
   useEffect(() => {
     chatOpenRef.current = chatOpen;
@@ -232,14 +145,9 @@ export function useRoomSocket({
 
     ws.onopen = () => {
       setConnected(true);
-      sendPing();
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-      pingIntervalRef.current = setInterval(sendPing, CLOCK_SYNC_INTERVAL_MS);
     };
     ws.onclose = () => {
       setConnected(false);
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-      pingIntervalRef.current = null;
     };
     ws.onerror = (e) => {
       console.error("WS error:", e);
@@ -253,22 +161,10 @@ export function useRoomSocket({
       }
 
       switch (msg.type) {
-        case "clock_sync":
-          if (clockOffsetRef.current === 0) {
-            const roughOffset = msg.serverTime - Date.now();
-            clockOffsetRef.current = roughOffset;
-            setClockOffsetMs(roughOffset);
-          }
-          sendPing();
-          break;
-        case "pong": {
-          const sentAt = pingSentAtRef.current;
-          const measuredRtt = sentAt ? Date.now() - sentAt : msg.rtt;
-          lastMeasuredRttRef.current = measuredRtt;
-          const offsetSample =
-            (msg.serverTime - (sentAt ?? Date.now())) - measuredRtt / 2;
-          applyClockOffset(offsetSample);
-          pingSentAtRef.current = null;
+        case "clock_sync": {
+          const offset = msg.serverTime - Date.now();
+          clockOffsetRef.current = offset;
+          setClockOffsetMs(offset);
           break;
         }
         case "room:joined":
@@ -286,20 +182,16 @@ export function useRoomSocket({
           break;
         case "room:member_joined":
           setMembers(msg.members ?? []);
-          if (msg.user) {
-            onMemberJoinedRef.current?.(msg.user);
-          }
+          if (msg.user) onMemberJoinedRef.current?.(msg.user);
           break;
         case "room:member_left":
           setMembers(msg.members ?? []);
           break;
         case "chat:message":
           setMessages((prev) => [...prev.slice(-199), msg.message]);
-          if (!chatOpenRef.current) {
-            setUnreadChatCount((c) => c + 1);
-          }
+          if (!chatOpenRef.current) setUnreadChatCount((c) => c + 1);
           break;
-        case "schedule_play":
+        case "play":
           setPlayback({
             videoId: msg.videoId ?? null,
             trackName: msg.trackName ?? "",
@@ -307,34 +199,22 @@ export function useRoomSocket({
             image: msg.image ?? "",
             isPlaying: true,
             currentTime: msg.seekTo ?? 0,
-            updatedAt: msg.targetTime,
+            updatedAt: msg.serverTime,
           });
-          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
-          onSchedulePlayRef.current?.(msg, getSyncedTime);
+          if ((msg as any).recentTracks) setRecentTracks((msg as any).recentTracks);
+          onPlayRef.current?.(msg);
           break;
-        case "schedule_pause":
+        case "pause":
           setPlayback((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  isPlaying: false,
-                  updatedAt: msg.targetTime,
-                }
-              : prev,
+            prev ? { ...prev, isPlaying: false, updatedAt: msg.serverTime } : prev,
           );
-          onSchedulePauseRef.current?.(msg, getSyncedTime);
+          onPauseRef.current?.(msg);
           break;
-        case "schedule_seek":
+        case "seek":
           setPlayback((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  currentTime: msg.seekTo ?? prev.currentTime,
-                  updatedAt: msg.targetTime,
-                }
-              : prev,
+            prev ? { ...prev, currentTime: msg.seekTo ?? prev.currentTime, updatedAt: msg.serverTime } : prev,
           );
-          onScheduleSeekRef.current?.(msg, getSyncedTime);
+          onSeekRef.current?.(msg);
           break;
         case "playback:sync":
           setPlayback({
@@ -361,59 +241,28 @@ export function useRoomSocket({
     };
 
     return () => {
-      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
-      pingIntervalRef.current = null;
-      if (resyncTimeoutRef.current) clearTimeout(resyncTimeoutRef.current);
-      resyncTimeoutRef.current = null;
       wsRef.current?.close();
     };
-  }, [applyClockOffset, getSyncedTime, roomCode, sendPing]);
+  }, [getSyncedTime, roomCode, safeSend]);
 
   const sendChat = useCallback((text: string) => {
     if (!text.trim()) return;
     safeSend(JSON.stringify({ type: "chat:send", text }));
   }, [safeSend]);
 
-  const sendPlay = useCallback(
-    (track: {
-      id?: string;
-      videoId: string;
-      trackName: string;
-      artistName: string;
-      image: string;
-      currentTime?: number;
-      duration_ms?: number;
-    }) => {
-      safeSend(
-        JSON.stringify({
-          type: "playback:play",
-          leadMs: getAdaptiveLeadMs("play"),
-          ...track,
-        }),
-      );
-    },
-    [getAdaptiveLeadMs, safeSend],
-  );
+  const sendPlay = useCallback((track: {
+    id?: string; videoId: string; trackName: string; artistName: string; image: string; currentTime?: number; duration_ms?: number;
+  }) => {
+    safeSend(JSON.stringify({ type: "playback:play", ...track }));
+  }, [safeSend]);
 
   const sendPause = useCallback((currentTime: number) => {
-    safeSend(
-      JSON.stringify({
-        type: "playback:pause",
-        currentTime,
-        leadMs: getAdaptiveLeadMs("control"),
-      }),
-    );
-  }, [getAdaptiveLeadMs, safeSend]);
+    safeSend(JSON.stringify({ type: "playback:pause", currentTime }));
+  }, [safeSend]);
 
   const sendSeek = useCallback((currentTime: number) => {
-    safeSend(
-      JSON.stringify({
-        type: "playback:seek",
-        currentTime,
-        leadMs: getAdaptiveLeadMs("control"),
-      }),
-    );
-  }, [getAdaptiveLeadMs, safeSend]);
+    safeSend(JSON.stringify({ type: "playback:seek", currentTime }));
+  }, [safeSend]);
 
   const requestSync = useCallback(() => {
     safeSend(JSON.stringify({ type: "playback:sync_request" }));
@@ -422,15 +271,6 @@ export function useRoomSocket({
   const sendPlaybackMode = useCallback((mode: Partial<PlaybackMode>) => {
     safeSend(JSON.stringify({ type: "playback:mode", ...mode }));
   }, [safeSend]);
-
-  const sendPlaybackState = useCallback(
-    (state: "playing" | "paused" | "buffering", currentTime: number) => {
-      safeSend(
-        JSON.stringify({ type: "playback_state", state, currentTime }),
-      );
-    },
-    [safeSend],
-  );
 
   const sendProgress = useCallback((currentTime: number) => {
     safeSend(JSON.stringify({ type: "progress", currentTime }));
@@ -473,7 +313,6 @@ export function useRoomSocket({
     sendSeek,
     requestSync,
     sendPlaybackMode,
-    sendPlaybackState,
     sendProgress,
     sendTrackEnded,
     getSyncedTime,

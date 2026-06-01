@@ -66,15 +66,9 @@ export default function RoomPage() {
     trackCount: number;
   } | null>(null);
 
-  const scheduledPlayTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const scheduledPauseTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
   const mediaSessionHandlersRef = useRef({
     play: () => {},
     pause: () => {},
@@ -83,9 +77,6 @@ export default function RoomPage() {
     nexttrack: () => {},
     previoustrack: () => {},
   });
-  const scheduledSeekTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
 
   const {
     connected,
@@ -115,29 +106,12 @@ export default function RoomPage() {
   } = useRoomSocket({
     roomCode: joined ? code : null,
     chatOpen,
-    onSchedulePlay: (state, syncedTime) => scheduleRoomPlay(state, syncedTime),
-    onSchedulePause: (state, syncedTime) =>
-      scheduleRoomPause(state, syncedTime),
-    onScheduleSeek: (state, syncedTime) => scheduleRoomSeek(state, syncedTime),
+    onPlay: (state) => handlePlay(state),
+    onPause: () => handlePause(),
+    onSeek: (state) => handleSeek(state),
     onPlaybackSync: (state, syncedTime) => {
       if (!state.videoId) return;
       syncHandledRef.current = true;
-      if (state.isPlaying && state.updatedAt > syncedTime() + 150) {
-        scheduleRoomPlay(
-          {
-            videoId: state.videoId,
-            seekTo: state.currentTime ?? 0,
-            targetTime: state.updatedAt,
-            id: `room-${state.videoId}`,
-            trackName: state.trackName,
-            artistName: state.artistName,
-            image: state.image,
-            duration_ms: 0,
-          },
-          syncedTime,
-        );
-        return;
-      }
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.updatedAt) {
         const elapsed = (syncedTime() - state.updatedAt) / 1000;
@@ -148,7 +122,6 @@ export default function RoomPage() {
         if (state.isPlaying) p.play?.();
         else p.pause?.();
         progressRef_fix.current.seekTo(actualCurrentTime);
-        /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek */
       } else {
         p.playTrack(
           {
@@ -164,7 +137,6 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
-        /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek */
         if (state.isPlaying) p.play?.();
         progressRef_fix.current.seekTo(actualCurrentTime);
       }
@@ -269,43 +241,12 @@ export default function RoomPage() {
     if (player.nowPlaying) toggleLike(player.nowPlaying);
   }, [player.nowPlaying, toggleLike]);
 
-  /* --- Scheduling helpers ------------------------------ */
-  const clearScheduledTimeout = useCallback(
-    (ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>) => {
-      if (ref.current) {
-        clearTimeout(ref.current);
-        ref.current = null;
-      }
-    },
-    [],
-  );
+  /* --- Sync play handlers — immediate with latency-compensated seek --- */
+  const handlePlay = useCallback(
+    (state: { videoId: string; seekTo: number; serverTime: number; id?: string; trackName?: string; artistName?: string; image?: string; duration_ms?: number }) => {
+      const elapsed = Math.max(0, (getSyncedTime() - state.serverTime) / 1000);
+      const adjustedSeek = state.seekTo + elapsed;
 
-  const clearScheduledPlaybackActions = useCallback(() => {
-    clearScheduledTimeout(scheduledPlayTimeoutRef);
-    clearScheduledTimeout(scheduledPauseTimeoutRef);
-    clearScheduledTimeout(scheduledSeekTimeoutRef);
-  }, [clearScheduledTimeout]);
-
-  const scheduleSyncedAction = useCallback(
-    (
-      ref: React.MutableRefObject<ReturnType<typeof setTimeout> | null>,
-      targetTime: number,
-      syncedTime: () => number,
-      action: () => void,
-    ) => {
-      clearScheduledTimeout(ref);
-      const delay = Math.max(targetTime - syncedTime(), 0);
-      ref.current = setTimeout(() => {
-        ref.current = null;
-        action();
-      }, delay);
-    },
-    [clearScheduledTimeout],
-  );
-
-  const scheduleRoomPlay = useCallback(
-    (state: any, syncedTime: () => number) => {
-      clearScheduledPlaybackActions();
       const track = {
         id: state.id ?? `room-${state.videoId}`,
         videoId: state.videoId,
@@ -316,71 +257,26 @@ export default function RoomPage() {
         album: { name: "" },
         image: state.image ?? "",
       };
-      const initialLateBySec =
-        Math.max(syncedTime() - state.targetTime, 0) / 1000;
-      const initialSeekTo = state.seekTo + initialLateBySec;
+
       if (player.nowPlaying?.videoId === state.videoId) {
-        player.pause?.();
-        progress.seekTo(initialSeekTo);
+        progress.seekTo(adjustedSeek);
+        player.play?.();
       } else {
-        player.playTrack(track, initialSeekTo, false);
+        player.playTrack(track, adjustedSeek, true);
       }
-      scheduleSyncedAction(
-        scheduledPlayTimeoutRef,
-        state.targetTime,
-        syncedTime,
-        () => {
-          const liveLateBySec =
-            Math.max(syncedTime() - state.targetTime, 0) / 1000;
-          const liveSeekTo = state.seekTo + liveLateBySec;
-          progress.seekTo(liveSeekTo);
-          player.play?.();
-          setTimeout(() => {
-            progress.seekTo(liveSeekTo);
-            player.play?.();
-          }, 150);
-        },
-      );
     },
-    [
-      clearScheduledPlaybackActions,
-      player.nowPlaying?.videoId,
-      player.pause,
-      player.play,
-      player.playTrack,
-      progress,
-      scheduleSyncedAction,
-    ],
+    [getSyncedTime, player.nowPlaying?.videoId, player.play, player.playTrack, progress],
   );
 
-  const scheduleRoomPause = useCallback(
-    (state: any, syncedTime: () => number) => {
-      clearScheduledTimeout(scheduledPauseTimeoutRef);
-      scheduleSyncedAction(
-        scheduledPauseTimeoutRef,
-        state.targetTime,
-        syncedTime,
-        () => {
-          player.pause?.();
-        },
-      );
-    },
-    [clearScheduledTimeout, player.pause, scheduleSyncedAction],
-  );
+  const handlePause = useCallback(() => {
+    player.pause?.();
+  }, [player.pause]);
 
-  const scheduleRoomSeek = useCallback(
-    (state: any, syncedTime: () => number) => {
-      clearScheduledTimeout(scheduledSeekTimeoutRef);
-      scheduleSyncedAction(
-        scheduledSeekTimeoutRef,
-        state.targetTime,
-        syncedTime,
-        () => {
-          progress.seekTo(state.seekTo);
-        },
-      );
+  const handleSeek = useCallback(
+    (state: { seekTo: number; serverTime: number }) => {
+      progress.seekTo(state.seekTo);
     },
-    [clearScheduledTimeout, progress, scheduleSyncedAction],
+    [progress],
   );
 
   /* --- Reset syncHandledRef on socket (re)connect ----- */
@@ -921,10 +817,9 @@ export default function RoomPage() {
   /* --- Lifecycle effects ------------------------------ */
   useEffect(() => {
     return () => {
-      clearScheduledPlaybackActions();
       syncHandledRef.current = false;
     };
-  }, [clearScheduledPlaybackActions]);
+  }, []);
 
   useEffect(() => {
     if (authLoading || !user || !code) return;
