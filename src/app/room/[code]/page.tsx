@@ -1020,12 +1020,12 @@ export default function RoomPage() {
         playing={player.playing}
         volume={player.isMuted ? 0 : player.volume / 100}
         muted={player.isMuted}
+        playerRef={player.reactPlayerRef}
         onReady={player.handleReady}
         onPlay={player.handlePlayEvent}
         onPause={player.handlePauseEvent}
         onEnded={player.handleEnded}
         onError={player.handleError}
-        ref={player.reactPlayerRef}
       />
 
       <div
