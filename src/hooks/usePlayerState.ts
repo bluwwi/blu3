@@ -43,7 +43,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [url, setUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
 
-  const reactPlayerRef = useRef<ReactPlayer | null>(null);
+  const reactPlayerRef = useRef<ReactPlayerType | null>(null);
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
   const playerStateRef = useRef(playerState);
