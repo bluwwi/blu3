@@ -856,7 +856,19 @@ export default function RoomPage() {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
 
-  /* No visibilitychange handler — YT iframe naturally resumes on tab return */
+  /* --- Auto-resume player when tab returns to foreground (Android Chrome pauses YT iframes in background) --- */
+  const wasPlayingRef = useRef(false);
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        wasPlayingRef.current = player.playerState === "playing";
+      } else if (wasPlayingRef.current && player.playerState !== "playing") {
+        player.play?.();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [player.playerState, player.play]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
