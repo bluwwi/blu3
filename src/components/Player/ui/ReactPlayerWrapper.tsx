@@ -48,9 +48,9 @@ export function ReactPlayerWrapper({ url, playing, volume, muted, playerRef, onR
                 disablekb: 1,
                 modestbranding: 1,
                 rel: 0,
-              } as any,
+              },
             },
-          }}
+          } as any}
         />
       </div>
     );
