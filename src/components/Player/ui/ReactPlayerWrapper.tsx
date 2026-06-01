@@ -3,6 +3,8 @@
 import ReactPlayer from "react-player";
 import { forwardRef } from "react";
 
+type ReactPlayerType = typeof ReactPlayer;
+
 interface Props {
   url: string | null;
   playing: boolean;
@@ -15,7 +17,7 @@ interface Props {
   onError: (e: any) => void;
 }
 
-export const ReactPlayerWrapper = forwardRef<ReactPlayer, Props>(
+export const ReactPlayerWrapper = forwardRef<ReactPlayerType, Props>(
   function ReactPlayerWrapper({ url, playing, volume, muted, onReady, onPlay, onPause, onEnded, onError }, ref) {
     return (
       <div
@@ -49,7 +51,7 @@ export const ReactPlayerWrapper = forwardRef<ReactPlayer, Props>(
                 disablekb: 1,
                 modestbranding: 1,
                 rel: 0,
-              },
+              } as any,
             },
           }}
         />

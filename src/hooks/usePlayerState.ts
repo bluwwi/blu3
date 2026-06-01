@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
-import type ReactPlayer from "react-player";
+import ReactPlayer from "react-player";
+
+type ReactPlayerType = typeof ReactPlayer;
 
 interface UsePlayerStateReturn {
-  reactPlayerRef: React.MutableRefObject<ReactPlayer | null>;
+  reactPlayerRef: React.MutableRefObject<ReactPlayerType | null>;
   playerState: PlayerStateType;
   volume: number;
   isMuted: boolean;
