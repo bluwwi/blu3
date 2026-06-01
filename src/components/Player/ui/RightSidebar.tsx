@@ -87,10 +87,13 @@ export function RightSidebar({
     if (navigator.share) {
       navigator.share({ url }).catch(() => {});
     } else {
-      navigator.clipboard.writeText(url).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }).catch(() => {});
+      navigator.clipboard
+        .writeText(url)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch(() => {});
     }
   };
 
@@ -145,7 +148,7 @@ export function RightSidebar({
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0">
                 {roomCode && (
                   <>
                     <button
@@ -153,7 +156,11 @@ export function RightSidebar({
                       className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
                       title={copied ? "Copied!" : "Share invite link"}
                     >
-                      <Icon name="share" size={20} className={copied ? "text-green-400" : "text-current"} />
+                      <Icon
+                        name="share"
+                        size={20}
+                        className={copied ? "text-green-400" : "text-current"}
+                      />
                     </button>
                     <button
                       onClick={() => setShowLeavePopup(true)}
