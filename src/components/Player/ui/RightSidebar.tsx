@@ -282,7 +282,7 @@ export function RightSidebar({
             onClick={() => setShowLeavePopup(false)}
           >
             <div
-              className="w-80 p-4 text-center"
+              className="w-80 p-4 text-center border border-white/30"
               style={{
                 background: "rgba(0,0,0,0.35)",
                 backdropFilter: "blur(6px)",
