@@ -40,22 +40,8 @@ export function useProgressTracking(
 
   const seekTo = useCallback(
     (time: number) => {
-      const audio = audioRef?.current;
       const player = playerRef.current;
-
       setCurrentTime(time);
-
-      if (audio) {
-        if (audio.readyState === HTMLMediaElement.HAVE_NOTHING && audio.src) {
-          const onLoaded = () => {
-            audio.currentTime = time;
-            audio.removeEventListener("loadedmetadata", onLoaded);
-          };
-          audio.addEventListener("loadedmetadata", onLoaded);
-        } else {
-          audio.currentTime = time;
-        }
-      }
       if (player && typeof player.seekTo === "function") {
         try {
           player.seekTo(time, true);
@@ -64,34 +50,27 @@ export function useProgressTracking(
         }
       }
       const tot =
-        audio && Number.isFinite(audio.duration) && audio.duration > 0
-          ? audio.duration
-          : typeof player?.getDuration === "function"
-            ? player.getDuration() ?? 0
-            : 0;
+        typeof player?.getDuration === "function"
+          ? player.getDuration() ?? 0
+          : 0;
       if (tot > 0) setProgress((time / tot) * 100);
     },
-    [playerRef, audioRef],
+    [playerRef],
   );
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const audio = audioRef?.current;
       const player = playerRef.current;
-      let dur = 0;
-
-      if (audio && Number.isFinite(audio.duration) && audio.duration > 0) {
-        dur = audio.duration;
-      } else if (player && typeof player.getDuration === "function") {
-        dur = player.getDuration() ?? 0;
-      }
-
+      const dur =
+        typeof player?.getDuration === "function"
+          ? player.getDuration() ?? 0
+          : 0;
       if (!dur) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const seekToTime = ((e.clientX - rect.left) / rect.width) * dur;
       seekTo(seekToTime);
     },
-    [playerRef, audioRef, seekTo],
+    [playerRef, seekTo],
   );
 
   useEffect(() => {
