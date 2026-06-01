@@ -176,7 +176,7 @@ export function ChatPanel({
           <button
             onClick={handleSendChat}
             disabled={!chatInput.trim()}
-            className="absolute right-1.5 bg-[#8C52FF] hover:bg-violet-400 disabled:opacity-50 disabled:hover:bg-[#8C52FF] text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors"
+            className="absolute right-1.5 bg-white  hover:bg-white disabled:opacity-50 disabled:hover:bg-white text-black text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors"
           >
             Send
           </button>
