@@ -1,15 +1,13 @@
 "use client";
 
 import ReactPlayer from "react-player";
-import { forwardRef } from "react";
-
-type ReactPlayerType = typeof ReactPlayer;
 
 interface Props {
   url: string | null;
   playing: boolean;
   volume: number;
   muted: boolean;
+  playerRef: React.MutableRefObject<any>;
   onReady: () => void;
   onPlay: () => void;
   onPause: () => void;
@@ -17,7 +15,7 @@ interface Props {
   onError: (e: any) => void;
 }
 
-export const ReactPlayerWrapper = forwardRef<ReactPlayerType, Props>(
+export function ReactPlayerWrapper({ url, playing, volume, muted, playerRef, onReady, onPlay, onPause, onEnded, onError }: Props) {
   function ReactPlayerWrapper({ url, playing, volume, muted, onReady, onPlay, onPause, onEnded, onError }, ref) {
     return (
       <div
@@ -32,7 +30,7 @@ export const ReactPlayerWrapper = forwardRef<ReactPlayerType, Props>(
         aria-hidden="true"
       >
         <ReactPlayer
-          ref={ref}
+          ref={playerRef}
           url={url ?? undefined}
           playing={playing}
           volume={volume}
@@ -57,5 +55,4 @@ export const ReactPlayerWrapper = forwardRef<ReactPlayerType, Props>(
         />
       </div>
     );
-  },
-);
+}
