@@ -3,45 +3,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
-import { setYouTubeOnReady } from "@/components/Player/ui/YouTubeIframe";
+import type ReactPlayer from "react-player";
 
 interface UsePlayerStateReturn {
-  playerRef: React.MutableRefObject<YT.Player | null>;
+  reactPlayerRef: React.MutableRefObject<ReactPlayer | null>;
   playerState: PlayerStateType;
   volume: number;
   isMuted: boolean;
   nowPlaying: Track | null;
   activeVideoId: string | null;
-  loadingId: string | null;
   error: string;
+  url: string | null;
+  playing: boolean;
   playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
   handleVolume: (val: number) => void;
   toggleMute: () => void;
   setError: (msg: string) => void;
-  setLoadingId: (id: string | null) => void;
   setNowPlaying: (track: Track | null) => void;
   setPlayerState: (state: PlayerStateType) => void;
   play: () => void;
   pause: () => void;
-}
-
-const YT = {
-  UNSTARTED: -1,
-  ENDED: 0,
-  PLAYING: 1,
-  PAUSED: 2,
-  BUFFERING: 3,
-  CUED: 5,
-};
-
-function mapYTState(ytState: number): PlayerStateType {
-  switch (ytState) {
-    case 1: return "playing";
-    case 2: return "paused";
-    case 0: return "ended";
-    default: return "loading";
-  }
+  handleReady: () => void;
+  handlePlayEvent: () => void;
+  handlePauseEvent: () => void;
+  handleEnded: () => void;
+  handleError: (e: any) => void;
 }
 
 export function usePlayerState(): UsePlayerStateReturn {
@@ -50,134 +37,60 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [isMuted, setIsMuted] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [url, setUrl] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
 
-  const playerRef = useRef<YT.Player | null>(null);
+  const reactPlayerRef = useRef<ReactPlayer | null>(null);
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
-  const pendingPlayRef = useRef<(() => void) | null>(null);
-
-  /* YT player ready — audio comes directly from YT iframe */
-  useEffect(() => {
-    setYouTubeOnReady((player) => {
-      playerRef.current = player;
-      player.setVolume(200);
-      if (isMuted) player.mute();
-      pendingPlayRef.current?.();
-      pendingPlayRef.current = null;
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* Sync volume/mute to YT iframe whenever they change */
-  useEffect(() => {
-    const player = playerRef.current;
-    if (!player) return;
-    if (isMuted) {
-      player.mute();
-    } else {
-      player.unMute();
-      player.setVolume(volume);
-    }
-  }, [volume, isMuted]);
-
-  /* Listen for YT iframe state changes */
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail && typeof detail.data === "number") {
-        setPlayerState(mapYTState(detail.data));
-      }
-    };
-    window.addEventListener("yt-state-change", handler);
-    return () => window.removeEventListener("yt-state-change", handler);
-  }, []);
-
-  /* Listen for YT iframe errors */
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      const code = detail?.data;
-      console.error("[YT] Error event:", code);
-      setError(`YouTube player error (${code})`);
-      if (code === 100 || code === 101 || code === 150) {
-        setPlayerState("error");
-      }
-    };
-    window.addEventListener("yt-error", handler);
-    return () => window.removeEventListener("yt-error", handler);
-  }, []);
+  const playerStateRef = useRef(playerState);
+  playerStateRef.current = playerState;
+  const activeVideoIdRef = useRef(activeVideoId);
+  activeVideoIdRef.current = activeVideoId;
 
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
-      setLoadingId(track.id);
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
       if (!track.videoId) {
         setPlayerState("error");
         setError("No video ID.");
-        setLoadingId(null);
         return;
       }
 
-      const player = playerRef.current;
-      if (player) {
-        setPlayerState("loading");
-        try {
-          if (shouldPlay) {
-            player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
-            player.playVideo();
-          } else {
-            player.cueVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
-          }
-        } catch {
-          /* YT player not yet ready */
-        }
+      setPlayerState("loading");
+      if (track.videoId === activeVideoIdRef.current) {
+        reactPlayerRef.current?.seekTo(startTime ?? 0, "seconds");
+        setPlaying(shouldPlay);
       } else {
-        /* Player not ready — save for replay when YT iframe initializes */
-        setPlayerState("idle");
-        pendingPlayRef.current = () => playTrack(track, startTime, shouldPlay);
+        const videoUrl = `https://www.youtube.com/watch?v=${track.videoId}&start=${Math.floor(startTime ?? 0)}`;
+        setUrl(videoUrl);
+        setPlaying(shouldPlay);
       }
-
-      setLoadingId(null);
     },
     [],
   );
 
   const play = useCallback(() => {
-    const player = playerRef.current;
-    if (player) {
-      try { player.playVideo(); } catch {}
-    }
+    setPlaying(true);
   }, []);
 
   const pause = useCallback(() => {
-    const player = playerRef.current;
-    if (player) {
-      try { player.pauseVideo(); } catch {}
-    }
+    setPlaying(false);
   }, []);
 
   const togglePlayPause = useCallback(() => {
-    const player = playerRef.current;
-    if (!player) return;
-    const state = player.getPlayerState ? player.getPlayerState() : -1;
-    if (state === YT.PLAYING) {
-      pause();
+    const id = nowPlayingRef.current?.videoId;
+    if (!id) return;
+    if (playerStateRef.current === "playing") {
+      setPlaying(false);
     } else {
-      const id = nowPlayingRef.current?.videoId;
-      if (id) {
-        if (state === YT.PAUSED || state === YT.ENDED || state === YT.CUED) {
-          play();
-        } else {
-          play();
-        }
-      }
+      setPlaying(true);
     }
-  }, [play, pause]);
+  }, []);
 
   const handleVolume = useCallback(
     (val: number) => {
@@ -195,24 +108,51 @@ export function usePlayerState(): UsePlayerStateReturn {
     setIsMuted((m) => !m);
   }, []);
 
+  const handleReady = useCallback(() => {
+    /* ReactPlayer is ready — no special action needed */
+  }, []);
+
+  const handlePlayEvent = useCallback(() => {
+    setPlayerState("playing");
+  }, []);
+
+  const handlePauseEvent = useCallback(() => {
+    setPlayerState("paused");
+  }, []);
+
+  const handleEnded = useCallback(() => {
+    setPlayerState("ended");
+  }, []);
+
+  const handleError = useCallback((e: any) => {
+    console.error("[ReactPlayer] Error:", e);
+    setError(`Player error`);
+    setPlayerState("error");
+  }, []);
+
   return {
-    playerRef,
+    reactPlayerRef,
     playerState,
     volume,
     isMuted,
     nowPlaying,
     activeVideoId,
-    loadingId,
     error,
+    url,
+    playing,
     playTrack,
     togglePlayPause,
     handleVolume,
     toggleMute,
     setError,
-    setLoadingId,
     setNowPlaying,
     setPlayerState,
     play,
     pause,
+    handleReady,
+    handlePlayEvent,
+    handlePauseEvent,
+    handleEnded,
+    handleError,
   };
 }
