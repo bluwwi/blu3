@@ -82,6 +82,61 @@ export function usePlayerState(): UsePlayerStateReturn {
     setPlaying(false);
   }, []);
 
+  /* Sync volume/mute to ReactPlayer */
+  useEffect(() => {
+    const player = reactPlayerRef.current;
+    if (!player) return;
+    /* ReactPlayer handles volume via the `volume` and `muted` props — nothing else needed */
+  }, []);
+
+  /* Sync Media Session playbackState — tells Android Chrome to keep background audio alive */
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState =
+      playerState === "playing" ? "playing" : "paused";
+  }, [playerState]);
+
+  /* Sync Media Session metadata — shows track info on lock screen */
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !nowPlaying) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: nowPlaying.name || "Unknown",
+        artist: nowPlaying.artists?.[0]?.name || "Unknown",
+        album: nowPlaying.album?.name || "",
+        artwork: nowPlaying.image
+          ? [{ src: nowPlaying.image, sizes: "512x512", type: "image/png" }]
+          : [],
+      });
+    } catch {}
+  }, [nowPlaying]);
+
+  /* Set up Media Session action handlers (play, pause, next, prev, seek) */
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler("play", () => { setPlaying(true); });
+      navigator.mediaSession.setActionHandler("pause", () => { setPlaying(false); });
+      navigator.mediaSession.setActionHandler("seekbackward", () => {
+        const player = reactPlayerRef.current;
+        if (player) {
+          const cur = player.getCurrentTime() ?? 0;
+          player.seekTo(Math.max(0, cur - 10), "seconds");
+        }
+      });
+      navigator.mediaSession.setActionHandler("seekforward", () => {
+        const player = reactPlayerRef.current;
+        if (player) {
+          const cur = player.getCurrentTime() ?? 0;
+          const dur = player.getDuration() ?? 0;
+          player.seekTo(Math.min(dur, cur + 10), "seconds");
+        }
+      });
+      navigator.mediaSession.setActionHandler("previoustrack", () => {});
+      navigator.mediaSession.setActionHandler("nexttrack", () => {});
+    } catch {}
+  }, []);
+
   const togglePlayPause = useCallback(() => {
     const id = nowPlayingRef.current?.videoId;
     if (!id) return;
