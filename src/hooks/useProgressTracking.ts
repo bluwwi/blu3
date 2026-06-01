@@ -2,10 +2,12 @@
 
 import { CONFIG } from "@/components/Player/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type ReactPlayer from "react-player";
+import ReactPlayer from "react-player";
+
+type ReactPlayerType = typeof ReactPlayer;
 
 export function useProgressTracking(
-  playerRef: React.MutableRefObject<ReactPlayer | null>,
+  playerRef: React.MutableRefObject<ReactPlayerType | null>,
   playerState: string,
 ) {
   const [progress, setProgress] = useState(0);
