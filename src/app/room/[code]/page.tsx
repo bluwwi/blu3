@@ -861,7 +861,7 @@ export default function RoomPage() {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
-        wasPlayingRef.current = player.playerState === "playing";
+        wasPlayingRef.current = player.playing;
       } else if (wasPlayingRef.current && player.playerState !== "playing") {
         player.play?.();
       }
