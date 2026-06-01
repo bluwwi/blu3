@@ -5,7 +5,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
-import { MessageCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 
 interface Member {
   userId: string;
@@ -52,62 +52,6 @@ interface Props {
   roomCode?: string;
 }
 
-function AnimatedPortal({
-  show,
-  onClose,
-  children,
-}: {
-  show: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-}) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (show) {
-      setMounted(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
-      });
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 300);
-      return () => clearTimeout(t);
-    }
-  }, [show]);
-
-  if (!mounted) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{
-        background: visible ? "rgba(0,0,0,0.60)" : "rgba(0,0,0,0)",
-        backdropFilter: visible ? "blur(18px)" : "blur(0px)",
-        WebkitBackdropFilter: visible ? "blur(18px)" : "blur(0px)",
-        transition: "background 0.3s ease, backdrop-filter 0.3s ease",
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          opacity: visible ? 1 : 0,
-          transform: visible
-            ? "scale(1) translateY(0)"
-            : "scale(0.94) translateY(16px)",
-          transition:
-            "opacity 0.3s cubic-bezier(0.34,1.56,0.64,1), transform 0.3s cubic-bezier(0.34,1.56,0.64,1)",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 export function RightSidebar({
   members,
   messages,
@@ -135,8 +79,29 @@ export function RightSidebar({
   roomCode,
 }: Props) {
   const [showMembersPopup, setShowMembersPopup] = useState(false);
+  const [isMembersVisible, setIsMembersVisible] = useState(false);
+
   const [showLeavePopup, setShowLeavePopup] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isLeaveVisible, setIsLeaveVisible] = useState(false);
+
+  // Fade-in / Fade-out handlers
+  const openMembers = () => {
+    setShowMembersPopup(true);
+    requestAnimationFrame(() => setIsMembersVisible(true));
+  };
+  const closeMembers = () => {
+    setIsMembersVisible(false);
+    setTimeout(() => setShowMembersPopup(false), 200);
+  };
+
+  const openLeave = () => {
+    setShowLeavePopup(true);
+    requestAnimationFrame(() => setIsLeaveVisible(true));
+  };
+  const closeLeave = () => {
+    setIsLeaveVisible(false);
+    setTimeout(() => setShowLeavePopup(false), 200);
+  };
 
   const handleShare = () => {
     const url = window.location.origin + "/room/" + roomCode;
@@ -153,6 +118,8 @@ export function RightSidebar({
     }
   };
 
+  const [copied, setCopied] = useState(false);
+
   return (
     <>
       <div
@@ -165,7 +132,7 @@ export function RightSidebar({
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center">
                 <button
-                  onClick={() => setShowMembersPopup(true)}
+                  onClick={openMembers}
                   className="flex flex-wrap -space-x-2 cursor-pointer"
                 >
                   {members.map((m, i) => (
@@ -219,7 +186,7 @@ export function RightSidebar({
                       />
                     </button>
                     <button
-                      onClick={() => setShowLeavePopup(true)}
+                      onClick={openLeave}
                       className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
                       title="Room options"
                     >
@@ -256,170 +223,136 @@ export function RightSidebar({
       </div>
 
       {/* Members popup */}
-      <AnimatedPortal
-        show={showMembersPopup}
-        onClose={() => setShowMembersPopup(false)}
-      >
-        <div className="w-80 overflow-hidden" style={{ borderRadius: "24px" }}>
-          {/* Header band */}
+      {showMembersPopup &&
+        createPortal(
           <div
-            className="px-5 pt-5 pb-4"
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isMembersVisible ? "opacity-100" : "opacity-0"}`}
             style={{
-              background: "rgba(255,255,255,0.06)",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(4px)",
             }}
+            onClick={closeMembers}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-white font-semibold text-[15px] leading-none">
-                  In this room
+            <div
+              className="w-72 rounded-[24px] border border-white/[0.12] bg-neutral-900/95 p-5 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-white font-semibold text-[15px]">
+                  Members ({members.length})
                 </h2>
-                <p className="text-white/40 text-[11px] mt-1">
-                  {members.length}{" "}
-                  {members.length === 1 ? "listener" : "listeners"}
-                </p>
+                <button
+                  onClick={closeMembers}
+                  className="text-white/40 hover:text-white transition-colors"
+                >
+                  <X size={16} />
+                </button>
               </div>
+              <div className="max-h-60 overflow-y-auto room-scroll space-y-1">
+                {members.map((m, i) => {
+                  const isMe =
+                    user?.sub === m.userId || user?.email === m.userId;
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]"
+                    >
+                      <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
+                        {m.avatar ? (
+                          <img
+                            src={m.avatar}
+                            alt=""
+                            className="h-7 w-7 aspect-square rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-7 w-7 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
+                            {m.name[0]}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[12px] text-white/80 font-medium truncate flex-1">
+                        {m.name}
+                        {isMe && (
+                          <span className="text-[9px] text-white/40 ml-1.5">
+                            (you)
+                          </span>
+                        )}
+                      </span>
+                      {isMe && onLogout && (
+                        <button
+                          onClick={() => {
+                            closeMembers();
+                            setTimeout(onLogout, 200);
+                          }}
+                          className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50 hover:text-red-400 hover:bg-white/10 transition-all shrink-0"
+                        >
+                          <Icon name="logout" size={12} /> Logout
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {showLeavePopup &&
+        createPortal(
+          <div
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isLeaveVisible ? "opacity-100" : "opacity-0"}`}
+            onClick={closeLeave}
+          >
+            <div
+              className="w-80 p-4 text-center border border-white/30"
+              style={{
+                background: "rgba(0,0,0,0.35)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "24px",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-white text-xl font-semibold leading-snug py-6">
+                Are you sure you want to
+                <br />
+                leave this Room?
+              </p>
+
               <button
-                onClick={() => setShowMembersPopup(false)}
-                className="flex items-center justify-center h-7 w-7 rounded-full text-white/40 hover:text-white hover:bg-white/10 transition-all"
+                onClick={() => {
+                  closeLeave();
+                  setTimeout(() => onLeave?.(), 200);
+                }}
+                className="block w-full cursor-pointer py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500"
+                style={{ background: "#c0392b", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#a93226")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#c0392b")
+                }
               >
-                <X size={14} />
+                Yes, leave room
+              </button>
+
+              <button
+                onClick={closeLeave}
+                className="block w-full py-1.5 cursor-pointer text-[#1a1a1a] text-[15px] font-medium transition-all duration-500"
+                style={{ background: "#ffffff", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#e8e8e8")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
+              >
+                Cancel
               </button>
             </div>
-          </div>
-
-          {/* Member list */}
-          <div
-            className="px-3 py-3 max-h-64 overflow-y-auto room-scroll space-y-1"
-            style={{
-              background: "rgba(10,10,10,0.7)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-            }}
-          >
-            {members.map((m, i) => {
-              const isMe = user?.sub === m.userId || user?.email === m.userId;
-              return (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors hover:bg-white/[0.04]"
-                  style={{
-                    background: isMe ? "rgba(139,92,246,0.10)" : "transparent",
-                  }}
-                >
-                  {/* Avatar */}
-                  <div className="relative shrink-0">
-                    {m.avatar ? (
-                      <img
-                        src={m.avatar}
-                        alt=""
-                        className="h-8 w-8 rounded-full object-cover"
-                        style={{
-                          border: isMe
-                            ? "2px solid rgba(139,92,246,0.6)"
-                            : "2px solid rgba(255,255,255,0.15)",
-                        }}
-                      />
-                    ) : (
-                      <div
-                        className="h-8 w-8 rounded-full flex items-center justify-center text-[11px] font-bold"
-                        style={{
-                          background: isMe
-                            ? "rgba(139,92,246,0.3)"
-                            : "rgba(255,255,255,0.08)",
-                          border: isMe
-                            ? "2px solid rgba(139,92,246,0.5)"
-                            : "2px solid rgba(255,255,255,0.12)",
-                          color: isMe ? "#c4b5fd" : "rgba(255,255,255,0.6)",
-                        }}
-                      >
-                        {m.name[0].toUpperCase()}
-                      </div>
-                    )}
-                    {/* online dot */}
-                    <span
-                      className="absolute bottom-0 right-0 h-2 w-2 rounded-full"
-                      style={{
-                        background: "#22c55e",
-                        border: "1.5px solid #0a0a0a",
-                      }}
-                    />
-                  </div>
-
-                  {/* Name */}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium text-white/85 truncate leading-none">
-                      {m.name}
-                    </p>
-                    {isMe && (
-                      <p className="text-[10px] text-violet-400/70 mt-0.5">
-                        you
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Logout */}
-                  {isMe && onLogout && (
-                    <button
-                      onClick={() => {
-                        setShowMembersPopup(false);
-                        onLogout();
-                      }}
-                      className="shrink-0 flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/30 hover:text-red-400 hover:bg-white/8 transition-all"
-                    >
-                      <Icon name="logout" size={12} /> Logout
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </AnimatedPortal>
-
-      {/* Leave popup */}
-      <AnimatedPortal
-        show={showLeavePopup}
-        onClose={() => setShowLeavePopup(false)}
-      >
-        <div
-          className="w-80 p-8 text-center"
-          style={{
-            background: "rgba(0,0,0,0.35)",
-            borderRadius: "24px",
-            border: "1px solid rgba(255,255,255,0.10)",
-          }}
-        >
-          <p className="text-white text-xl font-semibold leading-snug py-4">
-            Are you sure you want to
-            <br />
-            leave this Room?
-          </p>
-
-          <button
-            onClick={() => {
-              setShowLeavePopup(false);
-              onLeave?.();
-            }}
-            className="block w-full cursor-pointer py-3.5 mb-2 text-white text-[15px] font-semibold transition-all duration-200 hover:opacity-85"
-            style={{ background: "#c0392b", borderRadius: "12px" }}
-          >
-            Yes, leave room
-          </button>
-
-          <button
-            onClick={() => setShowLeavePopup(false)}
-            className="block w-full py-3.5 cursor-pointer text-[15px] font-medium transition-all duration-200 hover:bg-white/90"
-            style={{
-              background: "#ffffff",
-              color: "#1a1a1a",
-              borderRadius: "12px",
-            }}
-          >
-            Cancel
-          </button>
-        </div>
-      </AnimatedPortal>
+          </div>,
+          document.body,
+        )}
     </>
   );
 }
