@@ -478,7 +478,7 @@ export default function RoomPage() {
       0,
     );
     const timeoutId = window.setTimeout(() => {
-      const ref = player.playerRef.current;
+      const ref = player.reactPlayerRef.current;
       const currentTime = ref?.getCurrentTime?.() ?? progress.currentTime;
       const duration = ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
@@ -491,7 +491,7 @@ export default function RoomPage() {
     joined,
     maybeAdvanceQueue,
     player.nowPlaying,
-    player.playerRef,
+    player.reactPlayerRef,
     player.playerState,
     progress.currentTime,
     queue,
@@ -862,7 +862,7 @@ export default function RoomPage() {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
-        player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
+        player.reactPlayerRef.current?.getCurrentTime?.() ?? progress.currentTime;
       if (player.playerState === "playing") sendProgress(liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
@@ -870,7 +870,7 @@ export default function RoomPage() {
     canControlPlayback,
     joined,
     player.nowPlaying?.videoId,
-    player.playerRef,
+    player.reactPlayerRef,
     player.playerState,
     sendProgress,
   ]);
