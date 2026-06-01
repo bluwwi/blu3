@@ -11,7 +11,7 @@ import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 /* OLD: useYouTubeAPI removed — react-youtube handles loading the IFrame API internally */
-import { YouTubeIframe } from "@/components/Player/ui/YouTubeIframe";
+import { ReactPlayerWrapper } from "@/components/Player/ui/ReactPlayerWrapper";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track, PlayerState } from "@/utils/types";
