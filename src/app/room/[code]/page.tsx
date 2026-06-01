@@ -847,14 +847,7 @@ export default function RoomPage() {
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
         player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;
-      const state =
-        player.playerState === "playing"
-          ? "playing"
-          : player.playerState === "paused"
-            ? "paused"
-            : "buffering";
-      sendPlaybackState(state, liveCurrentTime);
-      if (state === "playing") sendProgress(liveCurrentTime);
+      if (player.playerState === "playing") sendProgress(liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
   }, [
@@ -863,7 +856,6 @@ export default function RoomPage() {
     player.nowPlaying?.videoId,
     player.playerRef,
     player.playerState,
-    sendPlaybackState,
     sendProgress,
   ]);
 

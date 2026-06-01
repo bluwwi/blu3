@@ -57,7 +57,7 @@ interface SeekMessage {
 
 type RoomSocketMessage =
   | { type: "clock_sync"; serverTime: number }
-  | { type: "play"; videoId: string; seekTo: number; serverTime: number }
+  | { type: "play"; videoId: string; seekTo: number; serverTime: number; id?: string; trackName?: string; artistName?: string; image?: string; duration_ms?: number; recentTracks?: RecentTrack[] }
   | { type: "pause"; serverTime: number }
   | { type: "seek"; seekTo: number; serverTime: number }
   | { type: "room:joined"; isHost: boolean; members?: Member[]; playback?: PlaybackState | null; playbackMode?: PlaybackMode; recentTracks?: RecentTrack[]; queue?: Track[] }
@@ -201,7 +201,7 @@ export function useRoomSocket({
             currentTime: msg.seekTo ?? 0,
             updatedAt: msg.serverTime,
           });
-          if ((msg as any).recentTracks) setRecentTracks((msg as any).recentTracks);
+          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           onPlayRef.current?.(msg);
           break;
         case "pause":
