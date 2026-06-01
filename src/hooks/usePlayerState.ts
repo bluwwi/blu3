@@ -61,7 +61,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   useEffect(() => {
     setYouTubeOnReady((player) => {
       playerRef.current = player;
-      player.setVolume(volume);
+      player.setVolume(200);
       if (isMuted) player.mute();
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

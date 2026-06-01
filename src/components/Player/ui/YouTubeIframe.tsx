@@ -46,16 +46,13 @@ function createPlayer(container: HTMLElement): Promise<YT.Player> {
   return new Promise((resolve) => {
     const Player = (window as any).YT.Player as YTPlayer;
     new Player(container, {
-      height: "200",
-      width: "200",
+      height: "10",
+      width: "10",
       playerVars: {
         autoplay: 0,
         controls: 0,
         disablekb: 1,
         enablejsapi: 1,
-        fs: 0,
-        playsinline: 1,
-        iv_load_policy: 3,
         modestbranding: 1,
         rel: 0,
         origin: window.location.origin,
@@ -111,12 +108,8 @@ export function YouTubeIframe() {
       ref={containerRef}
       style={{
         position: "absolute",
-        top: "-9999px",
-        left: "-9999px",
-        width: "200px",
-        height: "200px",
-        opacity: 1,
-        zIndex: 1,
+        opacity: 0,
+        zIndex: -10,
       }}
       aria-hidden="true"
     />
