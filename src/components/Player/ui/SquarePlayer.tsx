@@ -108,17 +108,11 @@ export function SquarePlayer({
         </button>
         <button
           onClick={onPlayPause}
-          disabled={isLoading || !onPlayPause}
+          disabled={!onPlayPause}
           className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
-          {isLoading ? (
-            <Icon
-              name="refresh"
-              size={18}
-              className="animate-spin text-black"
-            />
-          ) : isPlaying ? (
+          {isPlaying ? (
             <Icon name="pause" size={18} className="text-black" />
           ) : (
             <Icon name="play" size={18} className="text-black " />

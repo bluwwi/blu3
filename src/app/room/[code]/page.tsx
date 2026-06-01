@@ -242,7 +242,16 @@ export default function RoomPage() {
 
   /* --- Sync play handlers — immediate with latency-compensated seek --- */
   const handlePlay = useCallback(
-    (state: { videoId: string; seekTo: number; serverTime: number; id?: string; trackName?: string; artistName?: string; image?: string; duration_ms?: number }) => {
+    (state: {
+      videoId: string;
+      seekTo: number;
+      serverTime: number;
+      id?: string;
+      trackName?: string;
+      artistName?: string;
+      image?: string;
+      duration_ms?: number;
+    }) => {
       const elapsed = Math.max(0, (getSyncedTime() - state.serverTime) / 1000);
       const adjustedSeek = state.seekTo + elapsed;
 
@@ -264,7 +273,13 @@ export default function RoomPage() {
         player.playTrack(track, adjustedSeek, true);
       }
     },
-    [getSyncedTime, player.nowPlaying?.videoId, player.play, player.playTrack, progress],
+    [
+      getSyncedTime,
+      player.nowPlaying?.videoId,
+      player.play,
+      player.playTrack,
+      progress,
+    ],
   );
 
   const handlePause = useCallback(() => {
@@ -322,12 +337,7 @@ export default function RoomPage() {
       /* OLD: audioStreamRef.current?.seek(time) — YT iframe handles seek */
       setListenerMuted(true);
     }
-  }, [
-    joined,
-    playback,
-    player.nowPlaying?.videoId,
-    canControlPlayback,
-  ]);
+  }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
 
   /* --- Queue advance ---------------------------------- */
   const maybeAdvanceQueue = useCallback(() => {
@@ -572,8 +582,12 @@ export default function RoomPage() {
     ms.setActionHandler("seekforward", (e) => {
       mediaSessionHandlersRef.current.seekforward(e.seekOffset ?? 10);
     });
-    ms.setActionHandler("nexttrack", () => mediaSessionHandlersRef.current.nexttrack());
-    ms.setActionHandler("previoustrack", () => mediaSessionHandlersRef.current.previoustrack());
+    ms.setActionHandler("nexttrack", () =>
+      mediaSessionHandlersRef.current.nexttrack(),
+    );
+    ms.setActionHandler("previoustrack", () =>
+      mediaSessionHandlersRef.current.previoustrack(),
+    );
     return () => {
       ms.setActionHandler("play", null);
       ms.setActionHandler("pause", null);
@@ -760,7 +774,10 @@ export default function RoomPage() {
   mediaSessionHandlersRef.current = {
     play: () => {
       if (canControlPlayback) handlePlayPauseAction();
-      else if (listenerMuted || (playback?.isPlaying && player.playerState !== "playing"))
+      else if (
+        listenerMuted ||
+        (playback?.isPlaying && player.playerState !== "playing")
+      )
         handleListenerPlay();
     },
     pause: () => {
@@ -842,8 +859,7 @@ export default function RoomPage() {
   /* No visibilitychange handler — YT iframe naturally resumes on tab return */
 
   useEffect(() => {
-    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId)
-      return;
+    if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
         player.playerRef.current?.getCurrentTime?.() ?? progress.currentTime;

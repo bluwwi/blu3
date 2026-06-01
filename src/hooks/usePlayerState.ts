@@ -56,6 +56,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   const playerRef = useRef<YT.Player | null>(null);
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
+  const pendingPlayRef = useRef<(() => void) | null>(null);
 
   /* YT player ready — audio comes directly from YT iframe */
   useEffect(() => {
@@ -63,6 +64,8 @@ export function usePlayerState(): UsePlayerStateReturn {
       playerRef.current = player;
       player.setVolume(200);
       if (isMuted) player.mute();
+      pendingPlayRef.current?.();
+      pendingPlayRef.current = null;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -110,7 +113,6 @@ export function usePlayerState(): UsePlayerStateReturn {
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
       setLoadingId(track.id);
-      setPlayerState("loading");
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
 
@@ -123,6 +125,7 @@ export function usePlayerState(): UsePlayerStateReturn {
 
       const player = playerRef.current;
       if (player) {
+        setPlayerState("loading");
         try {
           if (shouldPlay) {
             player.loadVideoById({ videoId: track.videoId, startSeconds: startTime || 0 });
@@ -133,6 +136,10 @@ export function usePlayerState(): UsePlayerStateReturn {
         } catch {
           /* YT player not yet ready */
         }
+      } else {
+        /* Player not ready — save for replay when YT iframe initializes */
+        setPlayerState("idle");
+        pendingPlayRef.current = () => playTrack(track, startTime, shouldPlay);
       }
 
       setLoadingId(null);

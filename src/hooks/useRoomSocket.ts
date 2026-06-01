@@ -119,6 +119,8 @@ export function useRoomSocket({
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(data);
+    } else {
+      console.log("[WS] safeSend skipped — ws not OPEN", ws?.readyState);
     }
   }, []);
 
@@ -144,6 +146,7 @@ export function useRoomSocket({
     wsRef.current = ws;
 
     ws.onopen = () => {
+      console.log("[WS] connected to", wsUrl);
       setConnected(true);
     };
     ws.onclose = () => {
@@ -253,7 +256,9 @@ export function useRoomSocket({
   const sendPlay = useCallback((track: {
     id?: string; videoId: string; trackName: string; artistName: string; image: string; currentTime?: number; duration_ms?: number;
   }) => {
-    safeSend(JSON.stringify({ type: "playback:play", ...track }));
+    const msg = JSON.stringify({ type: "playback:play", ...track });
+    console.log("[WS] sending play:", msg.slice(0, 200));
+    safeSend(msg);
   }, [safeSend]);
 
   const sendPause = useCallback((currentTime: number) => {
