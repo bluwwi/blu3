@@ -947,37 +947,7 @@ export default function RoomPage() {
     if (!authLoading && !user) router.replace("/");
   }, [authLoading, user]);
 
-  const lastVisibilityChange = useRef(0);
-  const visibilityRequestSyncRef = useRef(requestSync);
-  visibilityRequestSyncRef.current = requestSync;
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        const now = Date.now();
-        if (now - lastVisibilityChange.current < 600) return;
-        lastVisibilityChange.current = now;
-
-        if (joinedRef.current && !canControlPlaybackRef.current) {
-          visibilityRequestSyncRef.current();
-        }
-
-        const pb = playbackRef.current;
-        if (pb?.isPlaying && pb?.videoId) {
-          let time = pb.currentTime ?? 0;
-          if (pb.updatedAt) {
-            const elapsed = (getSyncedTime() - pb.updatedAt) / 1000;
-            if (elapsed > 0 && elapsed < 3600) time += elapsed;
-          }
-          setPlayerStateRef.current?.("loading");
-          progressRef_fix.current.seekTo(time);
-          playerRef_fix.current.play?.();
-        }
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, []);
+  /* No visibilitychange handler — YT iframe naturally resumes on tab return */
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId)
