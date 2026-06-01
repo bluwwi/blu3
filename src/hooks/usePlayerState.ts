@@ -82,88 +82,59 @@ export function usePlayerState(): UsePlayerStateReturn {
     setPlaying(false);
   }, []);
 
-  /* Web Audio API Oscillator Keep-Alive setup */
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
-
-  const startSilentOscillator = useCallback(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioCtx();
-      }
-
-      const ctx = audioContextRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-
-      if (oscillatorRef.current) {
-        try {
-          oscillatorRef.current.stop();
-          oscillatorRef.current.disconnect();
-        } catch {}
-        oscillatorRef.current = null;
-      }
-
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      gainNode.gain.setValueAtTime(0, ctx.currentTime); // Silent gain
-
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-
-      osc.start();
-      oscillatorRef.current = osc;
-    } catch (e) {
-      console.warn("[PlayerState] Failed to start silent oscillator:", e);
-    }
-  }, []);
-
-  const stopSilentOscillator = useCallback(() => {
-    try {
-      if (oscillatorRef.current) {
-        oscillatorRef.current.stop();
-        oscillatorRef.current.disconnect();
-        oscillatorRef.current = null;
-      }
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        audioContextRef.current.suspend();
-      }
-    } catch (e) {
-      console.warn("[PlayerState] Failed to stop silent oscillator:", e);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (playing) {
-      startSilentOscillator();
-    } else {
-      stopSilentOscillator();
-    }
-    return () => {
-      stopSilentOscillator();
-    };
-  }, [playing, startSilentOscillator, stopSilentOscillator]);
-
-  useEffect(() => {
-    return () => {
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
-        audioContextRef.current.close().catch(() => {});
-      }
-    };
-  }, []);
-
   /* Sync volume/mute to ReactPlayer */
   useEffect(() => {
     const player = reactPlayerRef.current;
     if (!player) return;
+    /* ReactPlayer handles volume via the `volume` and `muted` props — nothing else needed */
+  }, []);
+
+  /* Sync Media Session playbackState — tells Android Chrome to keep background audio alive */
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.playbackState =
+      playerState === "playing" ? "playing" : "paused";
+  }, [playerState]);
+
+  /* Sync Media Session metadata — shows track info on lock screen */
+  useEffect(() => {
+    if (!("mediaSession" in navigator) || !nowPlaying) return;
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: nowPlaying.name || "Unknown",
+        artist: nowPlaying.artists?.[0]?.name || "Unknown",
+        album: nowPlaying.album?.name || "",
+        artwork: nowPlaying.image
+          ? [{ src: nowPlaying.image, sizes: "512x512", type: "image/png" }]
+          : [],
+      });
+    } catch {}
+  }, [nowPlaying]);
+
+  /* Set up Media Session action handlers (play, pause, next, prev, seek) */
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler("play", () => { setPlaying(true); });
+      navigator.mediaSession.setActionHandler("pause", () => { setPlaying(false); });
+      navigator.mediaSession.setActionHandler("seekbackward", () => {
+        const player = reactPlayerRef.current;
+        if (player) {
+          const cur = player.getCurrentTime() ?? 0;
+          player.seekTo(Math.max(0, cur - 10), "seconds");
+        }
+      });
+      navigator.mediaSession.setActionHandler("seekforward", () => {
+        const player = reactPlayerRef.current;
+        if (player) {
+          const cur = player.getCurrentTime() ?? 0;
+          const dur = player.getDuration() ?? 0;
+          player.seekTo(Math.min(dur, cur + 10), "seconds");
+        }
+      });
+      navigator.mediaSession.setActionHandler("previoustrack", () => {});
+      navigator.mediaSession.setActionHandler("nexttrack", () => {});
+    } catch {}
   }, []);
 
   const togglePlayPause = useCallback(() => {

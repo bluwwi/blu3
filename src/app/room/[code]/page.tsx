@@ -567,8 +567,8 @@ export default function RoomPage() {
         ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
         : [],
     });
-    ms.playbackState = player.playing ? "playing" : "paused";
-  }, [footerTrack, player.playing]);
+    /* Vibe-style: let Chrome infer playback state from audio */
+  }, [footerTrack, player.playerState]);
 
   /* Register Media Session action handlers once (reads from ref) */
   useEffect(() => {
@@ -861,7 +861,7 @@ export default function RoomPage() {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
-        wasPlayingRef.current = player.playing;
+        wasPlayingRef.current = player.playerState === "playing";
       } else if (wasPlayingRef.current && player.playerState !== "playing") {
         player.play?.();
       }
