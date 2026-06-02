@@ -219,13 +219,13 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
           <div
             className={`overflow-hidden rounded-b-xl border-x border-b border-white/10 bg-black/40 shadow-2xl backdrop-blur-3xl transition-all duration-200 ${
               showResults || showEmpty
-                ? "max-h-[60vh] opacity-100"
+                ? "max-h-[65vh] opacity-100"
                 : "max-h-0 opacity-0"
             }`}
           >
             {/* results */}
             {showResults && (
-              <div className="flex flex-col" style={{ maxHeight: "60vh" }}>
+              <div className="flex flex-col" style={{ maxHeight: "65vh" }}>
                 <div className="flex-1 overflow-y-auto room-scroll">
                   {isSearching && results.length === 0 && (
                     <div className="flex items-center justify-center gap-2 py-8 text-sm text-white/40">
@@ -382,16 +382,10 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                 </div>
                 {selectedIds.size > 0 && (
                   <div className="border-t border-white/10">
-                    <div className="flex items-center justify-between px-4 pt-2">
+                    <div className="flex items-center px-4 pt-2">
                       <span className="text-xs text-white/60">
                         {selectedIds.size} selected
                       </span>
-                      <button
-                        onClick={clearSelection}
-                        className="text-xs text-white/50 hover:text-white transition-colors"
-                      >
-                        Clear
-                      </button>
                     </div>
                     <div className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1.5 room-scroll">
                       {results
@@ -425,7 +419,15 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                                 {track.name}
                               </span>
 
-                              {/*Cancel button*/}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSelect(track, i);
+                                }}
+                                className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+                              >
+                                <X size={10} />
+                              </button>
                             </div>
                           );
                         })}
