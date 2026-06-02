@@ -205,7 +205,7 @@ export function SearchOverlay({
           </div>
 
           <div
-            className={`overflow-hidden rounded-b-xl border-x border-b border-white/10 bg-black/40 shadow-2xl backdrop-blur-3xl transition-all duration-200 ${
+            className={`overflow-hidden rounded-b-xl border-x border-b border-white/10 bg-black/40 shadow-2xl backdrop-blur-3xl transition-all duration-500 ${
               showResults || showEmpty
                 ? "max-h-[65vh] opacity-100"
                 : "max-h-0 opacity-0"

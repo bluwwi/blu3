@@ -42,6 +42,7 @@ const KEYFRAMES = COLORS.map(
 export function RoomLoading() {
   return (
     <div
+      className="animate-fade-in"
       style={{
         minHeight: "100vh",
         background: T.bg,
@@ -76,6 +77,8 @@ export function RoomLoading() {
       <style>{`
 @keyframes colorWave{${KEYFRAMES}}
 .animate-colorWave{animation:colorWave 2s linear infinite}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.animate-fade-in{animation:fadeIn 0.5s ease-out}
 `}</style>
     </div>
   );
