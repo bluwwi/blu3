@@ -243,57 +243,8 @@ export function RoomBackground({
       ctx.stroke();
     });
 
-    // ── BUBBLES ───────────────────────────────────────────────────────────────
-    if (playing && morphTRef.current > 0.25) {
-      bubbleTimer.current += dt;
-      const interval = Math.max(
-        0.05,
-        0.16 - morphTRef.current * 0.07 - 0.04 * react[0] - 0.02 * reactAvg,
-      );
-      if (bubbleTimer.current > interval) {
-        spawnBubble(0.5 + 0.5 * react[0]);
-        bubbleTimer.current = 0;
-      }
-    }
-
-    bubblesRef.current = bubblesRef.current.filter(
-      (b) => b.alpha > 0.004 && b.y + b.r > -40,
-    );
-
-    bubblesRef.current.forEach((b) => {
-      b.wobble += b.wobbleSpeed;
-      b.x += b.vx + Math.sin(b.wobble) * 0.35;
-      b.y += b.vy;
-      b.alpha -= 0.0006 + (1 - morphTRef.current) * 0.003;
-
-      ctx.save();
-      // inner shimmer
-      const g = ctx.createRadialGradient(
-        b.x - b.r * 0.3,
-        b.y - b.r * 0.35,
-        b.r * 0.05,
-        b.x,
-        b.y,
-        b.r,
-
-
-      );
-      g.addColorStop(0, `rgba(255,255,255,${b.alpha * 0.55})`);
-      g.addColorStop(0.45, `rgba(255,255,255,${b.alpha * 0.1})`);
-      g.addColorStop(1, `rgba(255,255,255,0)`);
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-      ctx.fill();
-      // rim
-      ctx.strokeStyle = `rgba(255,255,255,${b.alpha * 0.6})`;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
-      ctx.restore();
-    });
-
-    const needsLoop =
-      playing || morphTRef.current > 0 || bubblesRef.current.length > 0;
+    // ── BUBBLES (removed) ────────────────────────────────────────────────────
+    const needsLoop = playing || morphTRef.current > 0;
 
     rafRef.current = needsLoop ? requestAnimationFrame(loop) : 0;
   };
@@ -320,7 +271,6 @@ export function RoomBackground({
   }, []);
 
   useEffect(() => {
-    if (!isPlaying) bubblesRef.current = [];
     syncSize();
     startLoop();
     return () => cancelAnimationFrame(rafRef.current);
