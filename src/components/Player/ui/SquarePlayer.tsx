@@ -54,7 +54,7 @@ export function SquarePlayer({
     track?.image ||
     (activeVideoId
       ? `https://i.ytimg.com/vi/${activeVideoId}/maxresdefault.jpg`
-      : `https://picsum.photos/seed/nowplaying/400/400`);
+      : `/queue/sunflower.jpg`);
 
   return (
     <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">

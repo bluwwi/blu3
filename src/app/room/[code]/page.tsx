@@ -1026,7 +1026,16 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="w-full h-full bg-orange-900 bg-pink-60 via-purple-500 to-blue-700 relative">
+    <div
+      className="w-full h-full
+
+      bg-[#081F5C]
+      bg-[#334EAC]
+
+
+
+      relative"
+    >
       <ReactPlayerWrapper
         src={player.src}
         playing={player.playing}
@@ -1231,7 +1240,9 @@ export default function RoomPage() {
       {joinErrorMessage && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
           <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-3xl border border-white/20 bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
-            <p className="text-white text-lg font-semibold text-center">{joinErrorMessage}</p>
+            <p className="text-white text-lg font-semibold text-center">
+              {joinErrorMessage}
+            </p>
             <p className="text-white/50 text-sm">Redirecting to browse...</p>
           </div>
         </div>
