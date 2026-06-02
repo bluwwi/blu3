@@ -4,7 +4,6 @@ import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Slider } from "@/components/ui/slider";
-import { WaveformProgress } from "./WaveformProgress";
 
 interface Props {
   track: Track | null;
@@ -141,11 +140,15 @@ export function SquarePlayer({
           )}
         </button>
         <div className="w-16 sm:w-22 shrink-0">
-          <WaveformProgress
-            isPlaying={isPlaying}
-            currentTime={currentTime}
-            duration={duration}
-            onSeek={onSeek}
+          <Slider
+            value={isMuted ? 0 : volume}
+            onValueChange={onVolume}
+            min={0}
+            max={100}
+            step={1}
+            trackClassName="h-2 bg-white/20"
+            rangeClassName="bg-violet-400"
+            thumbClassName="bg-violet-400 opacity-0 group-hover:opacity-100"
           />
         </div>
 
@@ -175,11 +178,15 @@ export function SquarePlayer({
             {fmtSec(currentTime)}
           </span>
           <div className="flex-1">
-            <WaveformProgress
-              isPlaying={isPlaying}
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={onSeek}
+            <Slider
+              value={currentTime}
+              onValueChange={(v) => onSeek?.(v)}
+              min={0}
+              max={Math.max(duration, 1)}
+              step={0.5}
+              trackClassName="bg-white/10"
+              rangeClassName="bg-gradient-to-r from-white/60 to-white"
+              thumbClassName="bg-white opacity-0 group-hover:opacity-100"
             />
           </div>
           <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
