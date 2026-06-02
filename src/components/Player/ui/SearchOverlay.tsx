@@ -407,7 +407,7 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                               key={getTrackKey(track, i)}
                               className="flex shrink-0 items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5"
                             >
-                              <div className="h-6 w-6 shrink-0 overflow-hidden rounded bg-white/10">
+                              <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-white/10">
                                 {thumbSrc ? (
                                   <img
                                     src={thumbSrc}
@@ -424,6 +424,8 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                               <span className="max-w-[100px] truncate text-xs text-white/80">
                                 {track.name}
                               </span>
+
+                              {/*Cancel button*/}
                             </div>
                           );
                         })}
