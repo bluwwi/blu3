@@ -257,7 +257,7 @@ export default function RoomPage() {
       duration_ms?: number;
     }) => {
       const elapsed = Math.max(0, (getSyncedTime() - state.serverTime) / 1000);
-      const adjustedSeek = state.seekTo + elapsed;
+      const adjustedSeek = state.seekTo > 0 ? state.seekTo + elapsed : 0;
 
       const track = {
         id: state.id ?? `room-${state.videoId}`,
@@ -725,18 +725,6 @@ export default function RoomPage() {
 
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
-    if (progress.currentTime > 3 && player.nowPlaying) {
-      sendPlay({
-        id: player.nowPlaying.id,
-        videoId: player.nowPlaying.videoId,
-        trackName: player.nowPlaying.name,
-        artistName: player.nowPlaying.artists?.[0]?.name ?? "",
-        image: player.nowPlaying.image ?? "",
-        currentTime: 0,
-        duration_ms: player.nowPlaying.duration_ms,
-      });
-      return;
-    }
     const currentIdx = queue.findIndex(
       (t) =>
         t.videoId === player.nowPlaying?.videoId ||
@@ -765,7 +753,6 @@ export default function RoomPage() {
     joined,
     playbackMode.repeatMode,
     player.nowPlaying,
-    progress.currentTime,
     queue,
     sendPlay,
   ]);

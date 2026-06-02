@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import {
   Search,
   X,
@@ -85,6 +85,29 @@ export function SearchOverlay({
   const inputRef = useRef<HTMLInputElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const { likedTrackIds, toggleLike } = usePlaylists();
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const toggleSelect = (track: Track) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      const key = track.videoId || track.id;
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleAddSelected = () => {
+    results.forEach((track) => {
+      const key = track.videoId || track.id;
+      if (selectedIds.has(key) && onAddToQueue) {
+        onAddToQueue(track);
+      }
+    });
+    clearSelection();
+  };
 
   // focus input when opened
   useEffect(() => {
@@ -205,7 +228,30 @@ export function SearchOverlay({
 
             {/* results */}
             {showResults && (
-              <div className="room-scroll max-h-[55vh] overflow-y-auto p-2">
+              <div>
+                {selectedIds.size > 0 && (
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-white/10">
+                    <span className="text-xs text-white/60">
+                      {selectedIds.size} selected
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={clearSelection}
+                        className="text-xs text-white/50 hover:text-white transition-colors"
+                      >
+                        Clear
+                      </button>
+                      <button
+                        onClick={handleAddSelected}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/80 text-white text-xs font-medium hover:bg-violet-500 transition-all cursor-pointer"
+                      >
+                        <Plus size={12} />
+                        Add to queue
+                      </button>
+                    </div>
+                  </div>
+                )}
+                <div className="room-scroll max-h-[55vh] overflow-y-auto p-2">
                 {isSearching && results.length === 0 && (
                   <div className="flex items-center justify-center gap-2 py-8 text-sm text-white/40">
                     <Loader2 size={15} className="animate-spin" />
@@ -229,6 +275,8 @@ export function SearchOverlay({
                   )}
 
                 {results.map((track, index) => {
+                  const key = track.videoId || track.id;
+                  const isSelected = selectedIds.has(key);
                   const isActive =
                     activeTrackId === track.id ||
                     activeTrackId === track.videoId;
@@ -246,15 +294,15 @@ export function SearchOverlay({
                       key={index}
                       role="button"
                       tabIndex={0}
-                      onClick={() => onTrackSelect?.(track)}
+                      onClick={() => toggleSelect(track)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          onTrackSelect?.(track);
+                          toggleSelect(track);
                         }
                       }}
                       className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors cursor-pointer select-none ${
-                        isActive ? "bg-white/20" : "hover:bg-white/10"
+                        isSelected ? "bg-violet-500/20" : isActive ? "bg-white/20" : "hover:bg-white/10"
                       }`}
                     >
                       {/* thumbnail */}
@@ -316,7 +364,7 @@ export function SearchOverlay({
                       </div>
 
                       {/* actions */}
-                      <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="flex shrink-0 items-center gap-1">
                         <button
                           type="button"
                           onClick={(e) => {
@@ -328,7 +376,7 @@ export function SearchOverlay({
                               ? "Unlike track"
                               : "Like track"
                           }
-                          className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                          className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors opacity-0 group-hover:opacity-100 ${
                             likedTrackIds.has(track.videoId)
                               ? "text-rose-500 fill-rose-500 hover:text-rose-400"
                               : "text-white/50 hover:bg-white/10 hover:text-white"
@@ -343,23 +391,25 @@ export function SearchOverlay({
                             }
                           />
                         </button>
-                        {onAddToQueue && (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              onAddToQueue(track);
-                            }}
-                            title="Add to queue"
-                            className="flex h-7 w-7 items-center justify-center rounded-full text-white/50 transition-colors hover:bg-white/10 hover:text-white"
-                          >
-                            <Plus size={14} />
-                          </button>
-                        )}
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                            isSelected
+                              ? "bg-violet-400 border-violet-400"
+                              : "border-white/40 hover:border-white/70"
+                          }`}
+                        >
+                          {isSelected && (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
+              </div>
               </div>
             )}
 

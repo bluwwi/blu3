@@ -680,11 +680,11 @@ export function QueueAndHistory({
           <div className="flex flex-1 items-center justify-center max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/[0.06] max-md:bg-transparent md:bg-white/[0.03] max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
             <div className="flex flex-col items-center gap-4">
               <div className="">
-                <p className="text-blue-200 text-4xl  font-bold">
+                <p className="text-blue-200 text-2xl md:text-4xl  font-bold">
                   {userName?.split(" ")[0]}
                   {","}
                 </p>
-                <p className="text-white/90 text-3xl  font-bold">
+                <p className="text-white/90 text-xl md:text-3xl  font-bold">
                   looks like your <br /> queue is empty
                 </p>
               </div>
@@ -710,12 +710,12 @@ export function QueueAndHistory({
                   </span>
                 ))}
               </div>
-              <div className="w-60 h-30 flex -z-10  items-center justify-center overflow-hidden">
+              <div className="w-50 h-25 lg:w-60 lg:h-30 flex -z-10  items-center justify-center overflow-hidden">
                 <Lottie
                   animationData={pandaBamboo}
                   loop
                   autoplay
-                  style={{ width: 260, height: 500 }}
+                  style={{ width: "clamp(30rem,30vw,199rem)", height: 500 }}
                 />
               </div>
             </div>
