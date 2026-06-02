@@ -382,11 +382,6 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                 </div>
                 {selectedIds.size > 0 && (
                   <div className="border-t border-white/10">
-                    <div className="flex items-center px-4 pt-2">
-                      <span className="text-xs text-white/60">
-                        {selectedIds.size} selected
-                      </span>
-                    </div>
                     <div className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1.5 room-scroll">
                       {results
                         .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
@@ -415,7 +410,7 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                                   />
                                 )}
                               </div>
-                              <span className="max-w-[100px] truncate text-xs text-white/80">
+                              <span className="max-w-25 truncate text-xs text-white/80">
                                 {track.name}
                               </span>
 
@@ -424,9 +419,9 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                                   e.stopPropagation();
                                   toggleSelect(track, i);
                                 }}
-                                className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white/40 hover:bg-white/10 hover:text-white transition-colors"
+                                className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white/80 hover:text-white  transition-colors cursor-pointer"
                               >
-                                <X size={10} />
+                                <X size={20} />
                               </button>
                             </div>
                           );
