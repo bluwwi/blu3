@@ -112,13 +112,18 @@ export function SearchOverlay({
           onAddToQueue(track);
         }
       });
+      useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+          if (e.target === overlayRef.current) onClose();
+        },
+        [onClose],
+      );
       clearSelection();
     } else {
       results.forEach((track) => onAddToQueue?.(track));
     }
   };
 
-  // focus input when opened
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 80);
@@ -176,7 +181,7 @@ export function SearchOverlay({
         }`}
       >
         <div
-          className={`w-full max-w-2xl transition-all duration-300 ${
+          className={`w-full max-w-xl transition-all duration-300 ${
             isOpen ? "translate-y-0 scale-100" : "-translate-y-4 scale-95"
           }`}
         >
@@ -184,7 +189,7 @@ export function SearchOverlay({
           <div
             className={`flex items-center gap-3  border border-white/10  px-6 py-4 shadow-2xl backdrop-blur-3xl
 ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
-              transition-all focus-within:border-white/20 bg-black/50 focus-within:bg-black/60`}
+              transition-all focus-within:border-white/20 bg-black/50 focus-within:bg-black/50`}
           >
             <Search size={20} className="shrink-0 text-white/80" />
             <input
@@ -354,20 +359,20 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                               e.stopPropagation();
                               toggleSelect(track, index);
                             }}
-                            className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                            className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                               isSelected
-                                ? "bg-violet-600 border-violet-600"
+                                ? "bg-blue-100 border-transparent"
                                 : "border-white/40 hover:border-white/70"
                             }`}
                           >
                             {isSelected && (
                               <svg
-                                width="10"
-                                height="10"
+                                width="16"
+                                height="16"
                                 viewBox="0 0 24 24"
                                 fill="none"
-                                stroke="white"
-                                strokeWidth="5"
+                                stroke="black"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                               >
@@ -433,7 +438,7 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                   <div className="border-t border-white/10 bg-black/60 p-2">
                     <button
                       onClick={handleAddSelected}
-                      className="flex w-full items-center justify-center cursor-pointer  gap-2 rounded-sm bg-white px-4 py-3 text-base font-medium text-black transition-all hover:bg-white/80"
+                      className="flex w-full items-center justify-center cursor-pointer  gap-2 rounded-lg bg-blue-100 px-4 py-3 text-base font-medium text-black transition-all hover:bg-blue-200"
                     >
                       Add{" "}
                       {selectedIds.size > 0
