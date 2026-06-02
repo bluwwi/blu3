@@ -1029,7 +1029,6 @@ export default function RoomPage() {
     <div
       className="w-full h-full
 
-      bg-[#081F5C]
       bg-[#334EAC]
 
 
@@ -1062,6 +1061,26 @@ export default function RoomPage() {
         />
       </div>
 
+      {queue.length === 0 && (
+        <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 5 }}>
+          {Array.from({ length: 500 }).map((_, i) => (
+            <span
+              key={i}
+              className="absolute rounded-full bg-white"
+              style={{
+                width: `${Math.random() * 2.5 + 1}px`,
+                height: `${Math.random() * 2.5 + 1}px`,
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                opacity: Math.random() * 0.6 + 0.2,
+                animation: `starTwinkle ${Math.random() * 4 + 2}s ease-in-out infinite`,
+                animationDelay: `${Math.random() * 4}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
         <div
           className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 rounded-3xl
@@ -1070,7 +1089,7 @@ export default function RoomPage() {
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
         >
           <div className="flex h-full mt-0  gap-0 md:gap-2 pt-0  min-h-0">
-            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-4 pb-0  lg:pb-0">
+            <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-3 pb-0  lg:pb-0">
               <aside
                 className="
                   w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-105 lg:min-h-0
