@@ -90,10 +90,10 @@ export function SearchOverlay({
   const getTrackKey = (track: Track, index?: number) =>
     track.videoId || track.id || `${track.name}-${track.artists?.[0]?.name ?? ""}-${index ?? 0}`;
 
-  const toggleSelect = (track: Track) => {
+  const toggleSelect = (track: Track, index?: number) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      const key = getTrackKey(track);
+      const key = getTrackKey(track, index);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
@@ -297,11 +297,11 @@ export function SearchOverlay({
                       key={index}
                       role="button"
                       tabIndex={0}
-                      onClick={() => toggleSelect(track)}
+                      onClick={() => toggleSelect(track, index)}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          toggleSelect(track);
+                          toggleSelect(track, index);
                         }
                       }}
                       className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors cursor-pointer select-none ${
@@ -397,7 +397,7 @@ export function SearchOverlay({
                         <div
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleSelect(track);
+                            toggleSelect(track, index);
                           }}
                           className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                             isSelected
