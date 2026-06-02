@@ -112,12 +112,6 @@ export function SearchOverlay({
           onAddToQueue(track);
         }
       });
-      useCallback(
-        (e: React.MouseEvent<HTMLDivElement>) => {
-          if (e.target === overlayRef.current) onClose();
-        },
-        [onClose],
-      );
       clearSelection();
     } else {
       results.forEach((track) => onAddToQueue?.(track));
