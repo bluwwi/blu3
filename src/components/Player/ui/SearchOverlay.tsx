@@ -412,10 +412,7 @@ export function SearchOverlay({
                     </div>
                     <div className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1.5 room-scroll">
                       {results
-                        .filter(
-                          (t, i) =>
-                            selectedIds.has(getTrackKey(t, i)),
-                        )
+                        .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
                         .map((track, i) => {
                           const thumbSrc =
                             track.image ||
@@ -435,7 +432,10 @@ export function SearchOverlay({
                                     className="h-full w-full object-cover"
                                   />
                                 ) : (
-                                  <Music2 size={10} className="m-auto text-white/30" />
+                                  <Music2
+                                    size={10}
+                                    className="m-auto text-white/30"
+                                  />
                                 )}
                               </div>
                               <span className="max-w-[100px] truncate text-xs text-white/80">
@@ -454,60 +454,12 @@ export function SearchOverlay({
                       className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500/80 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-violet-500"
                     >
                       <Plus size={14} />
-                      Add {selectedIds.size > 0 ? `selected (${selectedIds.size})` : "all results"} to queue
+                      Add{" "}
+                      {selectedIds.size > 0
+                        ? `selected (${selectedIds.size})`
+                        : "all results"}{" "}
+                      to queue
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* empty state: genre chips + recent */}
-            {showEmpty && (
-              <div className="p-4 space-y-4">
-                {recentTracks.length > 0 && (
-                  <div>
-                    <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-widest text-white/30">
-                      Recently played
-                    </p>
-                    <div className="space-y-0.5">
-                      {recentTracks.slice(0, 4).map((track) => {
-                        const thumbSrc =
-                          track.image ||
-                          (track.videoId
-                            ? `https://i.ytimg.com/vi/${track.videoId}/default.jpg`
-                            : undefined);
-                        return (
-                          <button
-                            key={track.id}
-                            type="button"
-                            onClick={() => onTrackSelect?.(track)}
-                            className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left transition-colors hover:bg-white/5"
-                          >
-                            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-white/10">
-                              {thumbSrc ? (
-                                <img
-                                  src={thumbSrc}
-                                  alt={track.name}
-                                  className="h-full w-full object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-full w-full items-center justify-center">
-                                  <Clock size={12} className="text-white/30" />
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm text-white/80">
-                                {track.name}
-                              </p>
-                              <p className="truncate text-xs text-white/40">
-                                {track.artists?.map((a) => a.name).join(", ")}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
                   </div>
                 )}
               </div>
