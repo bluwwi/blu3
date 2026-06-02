@@ -1,6 +1,5 @@
 "use client";
 import { Track } from "@/utils/types";
-import { ProgressBar } from "./ProgressBar";
 import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
@@ -18,7 +17,7 @@ interface Props {
   onPlayPause?: () => void;
   onMute: () => void;
   onVolume: (val: number) => void;
-  onSeek?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onSeek?: (time: number) => void;
   onSkipBack?: () => void;
   onSkipForward?: () => void;
   isLiked?: boolean;
@@ -147,9 +146,10 @@ export function SquarePlayer({
             min={0}
             max={100}
             step={1}
-            trackClassName="bg-white/20"
-            rangeClassName="bg-violet-400"
-            thumbClassName="bg-violet-400 opacity-0 group-hover:opacity-100"
+            className="cursor-pointer"
+            trackClassName="h-1.5 bg-white/20"
+            rangeClassName="bg-white"
+            thumbClassName="bg-transparent"
           />
         </div>
 
@@ -179,11 +179,16 @@ export function SquarePlayer({
             {fmtSec(currentTime)}
           </span>
           <div className="flex-1">
-            <ProgressBar
-              progress={progress}
-              currentTime={currentTime}
-              duration={duration}
-              onSeek={onSeek}
+            <Slider
+              value={currentTime}
+              onValueChange={(v) => onSeek?.(v)}
+              min={0}
+              max={Math.max(duration, 1)}
+              step={0.5}
+              className="cursor-pointer"
+              trackClassName="h-1.25 bg-white/10"
+              rangeClassName="bg-gradient-to-r from-white/70 to-white"
+              thumbClassName="bg-white opacity-0 "
             />
           </div>
           <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">

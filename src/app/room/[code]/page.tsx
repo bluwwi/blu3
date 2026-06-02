@@ -598,13 +598,9 @@ export default function RoomPage() {
     };
   }, []);
 
-  const handleSeekAction = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleSeekAction = (seekToTime: number) => {
     if (!canControlPlayback || !progress.duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const seekToTime =
-      ((e.clientX - rect.left) / rect.width) * progress.duration;
     progress.seekTo(seekToTime);
-    /* OLD: audioStreamRef.current?.seek(seekToTime) — YT iframe handles seek via progress.seekTo */
     sendSeek(seekToTime);
   };
 
