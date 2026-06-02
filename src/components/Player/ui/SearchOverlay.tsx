@@ -183,7 +183,7 @@ export function SearchOverlay({
           {/* search bar */}
           <div
             className={`flex items-center gap-3  border border-white/10  px-6 py-4 shadow-2xl backdrop-blur-3xl
-${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
+              ${searchQuery ? "rounded-t-2xl" : "rounded-2xl py-5"}
               transition-all focus-within:border-white/20 bg-black/50 focus-within:bg-black/50`}
           >
             <Search size={20} className="shrink-0 text-white/80" />
