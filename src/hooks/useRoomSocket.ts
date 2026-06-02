@@ -125,6 +125,7 @@ export function useRoomSocket({
   const wsRef = useRef<WebSocket | null>(null);
   const clockOffsetRef = useRef(0);
   const [connected, setConnected] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [clockOffsetMs, setClockOffsetMs] = useState(0);
   const [isHost, setIsHost] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
@@ -226,6 +227,7 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
+          setInitialDataLoaded(true);
           if (msg.playback?.videoId) {
             window.setTimeout(() => {
               safeSend(JSON.stringify({ type: "playback:sync_request" }));
@@ -400,6 +402,7 @@ export function useRoomSocket({
 
   return {
     connected,
+    initialDataLoaded,
     clockOffsetMs,
     isHost,
     members,
