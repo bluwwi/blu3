@@ -68,17 +68,6 @@ const WAVE_LINES = [
   },
 ];
 
-interface Bubble {
-  x: number;
-  y: number;
-  r: number;
-  vx: number;
-  vy: number;
-  alpha: number;
-  wobble: number;
-  wobbleSpeed: number;
-}
-
 function ease(x: number) {
   return x < 0.5 ? 4 * x * x * x : (x - 1) * (2 * x - 2) * (2 * x - 2) + 1;
 }
@@ -104,8 +93,6 @@ export function RoomBackground({
   const tRef = useRef(0);
   const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
-  const bubblesRef = useRef<Bubble[]>([]);
-  const bubbleTimer = useRef(0);
   const isPlayingRef = useRef(isPlaying);
   const trackIdRef = useRef(trackId);
   const isLiveAudioRef = useRef(isLiveAudio);
@@ -136,24 +123,6 @@ export function RoomBackground({
       canvas.width = Math.floor(width) || window.innerWidth;
       canvas.height = Math.floor(height) || window.innerHeight;
     }
-  };
-
-  const spawnBubble = (speedFactor: number = 1) => {
-    const canvas = canvasRef.current;
-    if (!canvas || bubblesRef.current.length >= 35) return;
-    const W = canvas.width,
-      H = canvas.height;
-    const r = 3 + Math.random() * 11;
-    bubblesRef.current.push({
-      x: Math.random() * W,
-      y: H + r,
-      r,
-      vx: (Math.random() - 0.5) * 0.45,
-      vy: -(0.4 + Math.random() * 0.65) * speedFactor,
-      alpha: 0.15 + Math.random() * 0.25,
-      wobble: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.008 + Math.random() * 0.014,
-    });
   };
 
   const loop = (ts: number) => {
