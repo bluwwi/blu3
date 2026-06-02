@@ -710,7 +710,7 @@ export function QueueAndHistory({
                   </span>
                 ))}
               </div>
-              <div className="w-60 h-30 flex -z-10 items-center justify-center overflow-hidden">
+              <div className="w-60 h-30 flex -z-10  items-center justify-center overflow-hidden">
                 <Lottie
                   animationData={pandaBamboo}
                   loop
