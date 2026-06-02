@@ -1021,20 +1021,23 @@ export default function RoomPage() {
     };
   }, [joined]);
 
-  if (authLoading || !joined) {
-    return <RoomLoading />;
-  }
-
   return (
-    <div
-      className="w-full h-full
-
-      bg-[#334EAC]
-
-
-
-      relative"
-    >
+    <div className="relative min-h-screen">
+      <div
+        className={`absolute inset-0 z-50 transition-opacity duration-500 ${
+          authLoading || !joined ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <RoomLoading />
+      </div>
+      <div
+        className={`transition-opacity duration-500 ${
+          authLoading || !joined ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+        }`}
+      >
+        <div
+          className="w-full h-full bg-[#334EAC] relative"
+        >
       <ReactPlayerWrapper
         src={player.src}
         playing={player.playing}
@@ -1315,6 +1318,8 @@ export default function RoomPage() {
         avatarLabel={user?.name || user?.email || "U"}
         popularGenres={popularGenres}
       />
+    </div>
+      </div>
     </div>
   );
 }

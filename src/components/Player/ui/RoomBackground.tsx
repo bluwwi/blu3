@@ -282,22 +282,20 @@ export function RoomBackground({
       className="absolute inset-0 overflow-hidden"
       style={{ zIndex: 0 }}
     >
-      {trackImage && (
-        <img
-          src={trackImage}
-          alt=""
-          style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            filter: "blur(50px) brightness(0.8) saturate(1.6)",
-            transform: "scale(1.35)",
-            transformOrigin: "center center",
-          }}
-        />
-      )}
+      <img
+        src={trackImage ? trackImage : "/queue/sunflower.jpg"}
+        alt=""
+        style={{
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          filter: "blur(50px) brightness(0.7) saturate(2.75)",
+          transform: "scale(1.35)",
+          transformOrigin: "center center",
+        }}
+      />
 
       <div className="absolute inset-0 bg-linear-to-b from-black/35 via-black/90 to-black/35" />
 
