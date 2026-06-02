@@ -206,7 +206,6 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                 type="button"
                 onClick={() => {
                   onSearchInput("");
-                  onSearch("");
                 }}
                 className="rounded-full p-1 text-white/50 milano transition-colors hover:bg-white/10 hover:text-white"
               >
