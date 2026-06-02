@@ -194,27 +194,16 @@ export function SearchOverlay({
               onChange={(e) => onSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, artist or album..."
-              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/80"
+              className="w-full bg-transparent text-sm text-white/90 outline-none placeholder:text-white/80"
             />
-            {isSearching ? (
+            {isSearching && (
               <Loader2
-                size={15}
+                size={20}
                 className="shrink-0 animate-spin text-white/60"
               />
-            ) : searchQuery ? (
-              <button
-                type="button"
-                onClick={() => {
-                  onSearchInput("");
-                }}
-                className="rounded-full p-1 text-white/50 milano transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <X size={20} />
-              </button>
-            ) : null}
+            )}
           </div>
 
-          {/* dropdown results panel */}
           <div
             className={`overflow-hidden rounded-b-xl border-x border-b border-white/10 bg-black/40 shadow-2xl backdrop-blur-3xl transition-all duration-200 ${
               showResults || showEmpty
@@ -222,31 +211,14 @@ export function SearchOverlay({
                 : "max-h-0 opacity-0"
             }`}
           >
-            {/* results */}
             {showResults && (
               <div className="flex flex-col" style={{ maxHeight: "65vh" }}>
                 <div className="flex-1 overflow-y-auto room-scroll">
-                  {isSearching && results.length === 0 && (
-                    <div className="flex items-center justify-center gap-2 py-8 text-sm text-white/40">
-                      <Loader2 size={15} className="animate-spin" />
-                      Searching...
-                    </div>
-                  )}
-
                   {!isSearching && searchError && (
                     <div className="py-8 text-center text-sm text-red-400/70">
                       {searchError}
                     </div>
                   )}
-
-                  {!isSearching &&
-                    !searchError &&
-                    results.length === 0 &&
-                    searchQuery && (
-                      <div className="py-8 text-center text-sm text-white/35">
-                        No results for &ldquo;{searchQuery}&rdquo;
-                      </div>
-                    )}
 
                   {results.map((track, index) => {
                     const key = getTrackKey(track, index);
@@ -381,7 +353,7 @@ export function SearchOverlay({
                 </div>
                 {selectedIds.size > 0 && (
                   <div className="border-t border-white/10">
-                    <div className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1.5 room-scroll">
+                    <div className="flex gap-2 overflow-x-auto px-2 pb-2 pt-1.5 room-scroll">
                       {results
                         .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
                         .map((track, i) => {
@@ -393,7 +365,7 @@ export function SearchOverlay({
                           return (
                             <div
                               key={getTrackKey(track, i)}
-                              className="flex shrink-0 items-center gap-2 rounded-lg bg-white/10 px-2.5 py-1.5"
+                              className="flex shrink-0 items-center gap-2 rounded-md bg-white/15 px-2.5 py-1.5"
                             >
                               <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-white/10">
                                 {thumbSrc ? (
