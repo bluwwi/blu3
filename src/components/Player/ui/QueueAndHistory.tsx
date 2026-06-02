@@ -680,20 +680,19 @@ export function QueueAndHistory({
           <div className="flex flex-1 items-center justify-center max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/[0.06] max-md:bg-transparent md:bg-white/[0.03] max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
             <div className="flex flex-col items-center gap-4">
               <div className="">
-                <p className="text-white text-3xl  font-bold">
+                <p className="text-blue-200 text-4xl  font-bold">
                   {userName?.split(" ")[0]}
                   {","}
                 </p>
-                <p className="text-white text-3xl  font-bold">
+                <p className="text-white/90 text-3xl  font-bold">
                   looks like your <br /> queue is empty
                 </p>
               </div>
               <button
                 onClick={onSearchClick}
-                className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-all cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg bg-white text-black text-sm  hover:bg-white/85 transition-all duration-300 "
               >
-                <Icon name="search" size={16} className="text-current" />
-                Add songs
+                Add Songs
               </button>
               <div className="flex items-center -mb-5 gap-3">
                 {[
@@ -711,7 +710,7 @@ export function QueueAndHistory({
                   </span>
                 ))}
               </div>
-              <div className="w-60 h-30 flex items-center justify-center overflow-hidden">
+              <div className="w-60 h-30 flex -z-10 items-center justify-center overflow-hidden">
                 <Lottie
                   animationData={pandaBamboo}
                   loop
