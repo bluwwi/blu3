@@ -677,20 +677,37 @@ export function QueueAndHistory({
             </div>
           </div>
         ) : (
-          <div className="flex flex-1 items-center justify-center max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/[0.06] max-md:bg-transparent md:bg-white/[0.03] max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
-            <div className="flex flex-col items-center gap-4">
+          <div className="relative flex flex-1 items-center justify-center overflow-hidden max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/6 max-md:bg-transparent md:bg-white/3 max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
+            <div className="absolute inset-0">
+              {Array.from({ length: 60 }).map((_, i) => (
+                <span
+                  key={i}
+                  className="absolute rounded-full bg-white"
+                  style={{
+                    width: `${Math.random() * 3 + 1}px`,
+                    height: `${Math.random() * 3 + 1}px`,
+                    left: `${Math.random() * 100}%`,
+                    top: `${Math.random() * 100}%`,
+                    opacity: Math.random() * 0.7 + 0.3,
+                    animation: `starTwinkle ${Math.random() * 3 + 2}s ease-in-out infinite`,
+                    animationDelay: `${Math.random() * 3}s`,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="relative z-10 flex flex-col items-center gap-4">
               <div className="">
-                <p className="text-blue-200 text-2xl md:text-4xl  font-bold">
+                <p className="text-blue-200 text-2xl md:text-4xl font-bold">
                   {userName?.split(" ")[0]}
                   {","}
                 </p>
-                <p className="text-white/90 text-xl md:text-3xl  font-bold">
+                <p className="text-white/90 text-xl md:text-3xl font-bold">
                   looks like your <br /> queue is empty
                 </p>
               </div>
               <button
                 onClick={onSearchClick}
-                className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg bg-white text-black text-sm  hover:bg-white/85 transition-all duration-300 "
+                className="flex items-center gap-2 cursor-pointer px-3 py-1.5 rounded-lg bg-white text-black text-sm hover:bg-white/85 transition-all duration-300"
               >
                 Add Songs
               </button>
@@ -703,14 +720,14 @@ export function QueueAndHistory({
                 ].map((z) => (
                   <span
                     key={z.delay}
-                    className={`text-white text-3xl  font-bold dot-glow ${z.offset}`}
+                    className={`text-white text-3xl font-bold dot-glow ${z.offset}`}
                     style={{ animationDelay: `${z.delay}s` }}
                   >
                     z
                   </span>
                 ))}
               </div>
-              <div className="w-50 h-25 lg:w-60 lg:h-30 flex -z-10  items-center justify-center overflow-hidden">
+              <div className="w-50 h-25 lg:w-60 lg:h-30 flex items-center justify-center overflow-hidden">
                 <Lottie
                   animationData={pandaBamboo}
                   loop
