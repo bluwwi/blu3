@@ -186,7 +186,7 @@ export function SearchOverlay({
 ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
               transition-all focus-within:border-white/20 bg-black/50 focus-within:bg-black/60`}
           >
-            <Search size={20} className="shrink-0 text-white/60" />
+            <Search size={20} className="shrink-0 text-white/80" />
             <input
               ref={inputRef}
               type="text"
@@ -431,16 +431,15 @@ ${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
                   </div>
                 )}
                 {searchQuery && (
-                  <div className="border-t border-white/10 bg-black/60 p-3">
+                  <div className="border-t border-white/10 bg-black/60 p-2">
                     <button
                       onClick={handleAddSelected}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl bg-violet-500/80 px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-violet-500"
+                      className="flex w-full items-center justify-center cursor-pointer  gap-2 rounded-sm bg-white px-4 py-3 text-base font-medium text-black transition-all hover:bg-white/80"
                     >
-                      <Plus size={14} />
                       Add{" "}
                       {selectedIds.size > 0
                         ? `selected (${selectedIds.size})`
-                        : "all results"}{" "}
+                        : ""}{" "}
                       to queue
                     </button>
                   </div>
