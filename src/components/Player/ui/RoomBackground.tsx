@@ -306,6 +306,8 @@ export function RoomBackground({
         b.x,
         b.y,
         b.r,
+
+
       );
       g.addColorStop(0, `rgba(255,255,255,${b.alpha * 0.55})`);
       g.addColorStop(0.45, `rgba(255,255,255,${b.alpha * 0.1})`);
