@@ -87,10 +87,13 @@ export function SearchOverlay({
   const { likedTrackIds, toggleLike } = usePlaylists();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  const getTrackKey = (track: Track, index?: number) =>
+    track.videoId || track.id || `${track.name}-${track.artists?.[0]?.name ?? ""}-${index ?? 0}`;
+
   const toggleSelect = (track: Track) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
-      const key = track.videoId || track.id;
+      const key = getTrackKey(track);
       if (next.has(key)) next.delete(key);
       else next.add(key);
       return next;
@@ -100,8 +103,8 @@ export function SearchOverlay({
   const clearSelection = () => setSelectedIds(new Set());
 
   const handleAddSelected = () => {
-    results.forEach((track) => {
-      const key = track.videoId || track.id;
+    results.forEach((track, i) => {
+      const key = getTrackKey(track, i);
       if (selectedIds.has(key) && onAddToQueue) {
         onAddToQueue(track);
       }
@@ -275,7 +278,7 @@ export function SearchOverlay({
                   )}
 
                 {results.map((track, index) => {
-                  const key = track.videoId || track.id;
+                  const key = getTrackKey(track, index);
                   const isSelected = selectedIds.has(key);
                   const isActive =
                     activeTrackId === track.id ||
@@ -392,7 +395,10 @@ export function SearchOverlay({
                           />
                         </button>
                         <div
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelect(track);
+                          }}
                           className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                             isSelected
                               ? "bg-violet-400 border-violet-400"
