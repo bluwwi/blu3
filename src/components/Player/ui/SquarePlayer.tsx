@@ -146,9 +146,10 @@ export function SquarePlayer({
             min={0}
             max={100}
             step={1}
-            trackClassName="h-2 bg-white/20"
-            rangeClassName="bg-violet-400"
-            thumbClassName="bg-violet-400 opacity-0 group-hover:opacity-100"
+            className="cursor-pointer"
+            trackClassName="h-1.25 bg-white/20"
+            rangeClassName="bg-white"
+            thumbClassName="hidden"
           />
         </div>
 
@@ -172,8 +173,8 @@ export function SquarePlayer({
         )}
       </div>
 
-      <div className="w-[90%] px-2 mb-2 shrink-0">
-        <div className="flex items-center gap-2">
+      <div className="w-[80%] px-2 my-2 shrink-0">
+        <div className="flex  items-center gap-2">
           <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
             {fmtSec(currentTime)}
           </span>
@@ -184,9 +185,10 @@ export function SquarePlayer({
               min={0}
               max={Math.max(duration, 1)}
               step={0.5}
-              trackClassName="bg-white/10"
+              className="cursor-pointer"
+              trackClassName="h-1.25  bg-white/10"
               rangeClassName="bg-gradient-to-r from-white/60 to-white"
-              thumbClassName="bg-white opacity-0 group-hover:opacity-100"
+              thumbClassName="hidden"
             />
           </div>
           <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
