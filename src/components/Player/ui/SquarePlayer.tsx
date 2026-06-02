@@ -57,8 +57,10 @@ export function SquarePlayer({
       : `/queue/sunflower.jpg`);
 
   return (
-    <div className="flex flex-col mt-5 md:mt-0 text-white items-center justify-center max-md:rounded-none md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
-      <div className="p-0.5 border-2 absolute top-3 left-3 rounded-full border-white">
+    <div className="flex flex-col text-white items-center justify-center  md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
+    <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
+
+      <div className="p-0.5 w-fit border-2 rounded-full border-white">
         <Image
           width={400}
           height={400}
@@ -72,8 +74,10 @@ export function SquarePlayer({
           }
         />
       </div>
+    </div>
 
-      <div className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-[22px] overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
+
+      <div className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-lg overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
         <Image
           width={400}
           height={400}

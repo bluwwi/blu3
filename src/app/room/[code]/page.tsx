@@ -1083,7 +1083,7 @@ export default function RoomPage() {
 
       <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
         <div
-          className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 rounded-3xl
+          className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
