@@ -45,7 +45,10 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const progress = useProgressTracking(player.reactPlayerRef, player.playerState);
+  const progress = useProgressTracking(
+    player.reactPlayerRef,
+    player.playerState,
+  );
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -850,7 +853,10 @@ export default function RoomPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      sessionStorage.setItem("returnUrl", window.location.pathname + window.location.search);
+      sessionStorage.setItem(
+        "returnUrl",
+        window.location.pathname + window.location.search,
+      );
       router.replace("/");
     }
   }, [authLoading, user]);
@@ -866,14 +872,16 @@ export default function RoomPage() {
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibility);
   }, [player.playerState, player.play]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
-        player.reactPlayerRef.current?.getCurrentTime?.() ?? progress.currentTime;
+        player.reactPlayerRef.current?.getCurrentTime?.() ??
+        progress.currentTime;
       if (player.playerState === "playing") sendProgress(liveCurrentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
@@ -1025,7 +1033,7 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="w-full h-full bg-blue-500 relative">
+    <div className="w-full h-full bg-blend-hue bg-amber-950 via-purple-500 to-blue-700 relative">
       <ReactPlayerWrapper
         src={player.src}
         playing={player.playing}

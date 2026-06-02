@@ -261,7 +261,7 @@ export function QueueAndHistory({
           {/* Search */}
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/4@0 cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="text-current" />
