@@ -18,6 +18,7 @@ export interface ChatMessage {
 export interface Member {
   userId: string;
   name: string;
+  email?: string;
   avatar?: string;
 }
 

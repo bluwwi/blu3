@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 interface Member {
   userId: string;
   name: string;
+  email?: string;
   avatar?: string;
 }
 interface Message {
@@ -222,73 +223,70 @@ export function RightSidebar({
         </div>
       </div>
 
-      {/* Members popup */}
       {showMembersPopup &&
         createPortal(
           <div
             className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isMembersVisible ? "opacity-100" : "opacity-0"}`}
-            style={{
-              background: "rgba(0,0,0,0.6)",
-              backdropFilter: "blur(4px)",
-            }}
             onClick={closeMembers}
           >
             <div
-              className="w-72 rounded-[24px] border border-white/[0.12] bg-neutral-900/95 p-5 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+              className="w-72 md:w-96 rounded-3xl border border-white/30 py-3 px-4 backdrop-blur-3xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+              style={{
+                background: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(4px)",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-white font-semibold text-[15px]">
-                  Members ({members.length})
+                <h2 className="text-white font-semibold text-lg">
+                  Members({members.length})
                 </h2>
-                <button
-                  onClick={closeMembers}
-                  className="text-white/40 hover:text-white transition-colors"
-                >
-                  <X size={16} />
-                </button>
               </div>
-              <div className="max-h-60 overflow-y-auto room-scroll space-y-1">
+              <div className="max-h-60 overflow-y-auto room-scroll space-y-2">
                 {members.map((m, i) => {
                   const isMe =
                     user?.sub === m.userId || user?.email === m.userId;
                   return (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/[0.04]"
-                    >
+                    <div key={i} className="flex items-center gap-3 rounded-xl">
                       <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
                         {m.avatar ? (
                           <img
                             src={m.avatar}
                             alt=""
-                            className="h-7 w-7 aspect-square rounded-full object-cover"
+                            className="h-9 w-9 aspect-square rounded-full object-cover"
                           />
                         ) : (
-                          <div className="h-7 w-7 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
+                          <div className="h-9 w-9 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
                             {m.name[0]}
                           </div>
                         )}
                       </div>
-                      <span className="text-[12px] text-white/80 font-medium truncate flex-1">
-                        {m.name}
-                        {isMe && (
-                          <span className="text-[9px] text-white/40 ml-1.5">
-                            (you)
-                          </span>
-                        )}
-                      </span>
-                      {isMe && onLogout && (
+                      <div className="flex flex-col">
+                        <span className="text-sm text-white/95 font-medium truncate flex-1">
+                          {m.name}
+                          {isMe && (
+                            <span className="text-xs text-white ml-1">
+                              (you)
+                            </span>
+                          )}
+                        </span>
+
+                        <span className="text-sm text-white/95 font-medium truncate flex-1">
+                          {m.email}
+                        </span>
+                      </div>
+
+                      {/*{isMe && onLogout && (
                         <button
                           onClick={() => {
                             closeMembers();
                             setTimeout(onLogout, 200);
                           }}
-                          className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white/50 hover:text-red-400 hover:bg-white/10 transition-all shrink-0"
+                          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white bg-red-600 transition-all shrink-0"
                         >
-                          <Icon name="logout" size={12} /> Logout
+                          Logout
                         </button>
-                      )}
+                      )}*/}
                     </div>
                   );
                 })}
