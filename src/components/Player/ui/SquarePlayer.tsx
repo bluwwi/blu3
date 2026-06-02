@@ -4,6 +4,7 @@ import { ProgressBar } from "./ProgressBar";
 import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
+import { Slider } from "@/components/ui/slider";
 
 interface Props {
   track: Track | null;
@@ -118,7 +119,6 @@ export function SquarePlayer({
             <Icon name="play" size={18} className="text-black " />
           )}
         </button>
-        {/* Skip Forward */}
         <button
           onClick={onSkipForward}
           disabled={!onSkipForward}
@@ -129,27 +129,29 @@ export function SquarePlayer({
         </button>
         <button
           onClick={onMute}
-          className="s ml-2 text-white hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer shrink-0"
+          className="s ml-2 text-white hover:text-white rounded-full transition-all cursor-pointer shrink-0"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
           {isMuted || volume === 0 ? (
-            <Icon name="vol-none" size={20} className="text-current" />
+            <Icon name="vol-none" size={20} className="text-white/80" />
           ) : volume < 50 ? (
-            <Icon name="vol-mid" size={20} className="text-current" />
+            <Icon name="vol-mid" size={20} className="text-white/80" />
           ) : (
-            <Icon name="vol-full" size={20} className="text-current" />
+            <Icon name="vol-full" size={20} className="text-white/80" />
           )}
         </button>
-        <input
-          type="range"
-          min={0}
-          max={100}
-          step={1}
-          value={isMuted ? 0 : volume}
-          onChange={(e) => onVolume(Number(e.target.value))}
-          className="accent-white h-1.25 w-16 sm:w-22 cursor-pointer bg-white/20 rounded-lg outline-none ring-0 border-0 shrink-0"
-          aria-label="Volume"
-        />
+        <div className="w-16 sm:w-22 shrink-0">
+          <Slider
+            value={isMuted ? 0 : volume}
+            onValueChange={onVolume}
+            min={0}
+            max={100}
+            step={1}
+            trackClassName="bg-white/20"
+            rangeClassName="bg-violet-400"
+            thumbClassName="bg-violet-400 opacity-0 group-hover:opacity-100"
+          />
+        </div>
 
         {onToggleLike && (
           <button
