@@ -116,6 +116,7 @@ export function SearchOverlay({
     } else {
       results.forEach((track) => onAddToQueue?.(track));
     }
+    onClose();
   };
 
   useEffect(() => {
