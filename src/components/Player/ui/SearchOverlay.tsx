@@ -176,13 +176,17 @@ export function SearchOverlay({
         }`}
       >
         <div
-          className={`w-full max-w-xl transition-all duration-300 ${
+          className={`w-full max-w-2xl transition-all duration-300 ${
             isOpen ? "translate-y-0 scale-100" : "-translate-y-4 scale-95"
           }`}
         >
           {/* search bar */}
-          <div className="flex items-center gap-3 rounded-t-xl border border-white/10 bg-black/40 px-4 py-3 shadow-2xl backdrop-blur-3xl transition-all focus-within:border-white/20 focus-within:bg-black/50">
-            <Search size={16} className="shrink-0 text-white/60" />
+          <div
+            className={`flex items-center gap-3  border border-white/10  px-6 py-4 shadow-2xl backdrop-blur-3xl
+${searchQuery ? "rounded-t-2xl" : "rounded-2xl"}
+              transition-all focus-within:border-white/20 bg-black/50 focus-within:bg-black/60`}
+          >
+            <Search size={20} className="shrink-0 text-white/60" />
             <input
               ref={inputRef}
               type="text"
@@ -190,7 +194,7 @@ export function SearchOverlay({
               onChange={(e) => onSearchInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, artist or album..."
-              className="w-full bg-transparent text-sm milano text-white outline-none placeholder:text-white/40"
+              className="w-full bg-transparent text-sm text-white outline-none placeholder:text-white/80"
             />
             {isSearching ? (
               <Loader2
@@ -206,7 +210,7 @@ export function SearchOverlay({
                 }}
                 className="rounded-full p-1 text-white/50 milano transition-colors hover:bg-white/10 hover:text-white"
               >
-                <X size={13} />
+                <X size={20} />
               </button>
             ) : null}
           </div>
@@ -221,8 +225,8 @@ export function SearchOverlay({
           >
             {/* results */}
             {showResults && (
-              <div className="flex flex-col" style={{ maxHeight: "55vh" }}>
-                <div className="flex-1 overflow-y-auto p-2 room-scroll">
+              <div className="flex flex-col" style={{ maxHeight: "60vh" }}>
+                <div className="flex-1 overflow-y-auto room-scroll">
                   {isSearching && results.length === 0 && (
                     <div className="flex items-center justify-center gap-2 py-8 text-sm text-white/40">
                       <Loader2 size={15} className="animate-spin" />
@@ -272,16 +276,21 @@ export function SearchOverlay({
                             toggleSelect(track, index);
                           }
                         }}
-                        className={`group flex items-center gap-3 rounded-xl px-3 py-2 transition-colors cursor-pointer select-none ${
+                        className={`group flex border-b border-white/20 duration-150 items-center gap-3 px-3 py-3 transition-colors cursor-pointer select-none ${
                           isSelected
-                            ? "bg-violet-500/20"
+                            ? ""
                             : isActive
                               ? "bg-white/10"
-                              : "hover:bg-white/5"
+                              : "hover:bg-white/5 transition-all duration-300"
                         }`}
                       >
                         {/* thumbnail */}
-                        <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white/10">
+                        <div
+                          className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-white/10"
+                          style={{
+                            width: "clamp(3.25rem,2vw,199rem)",
+                          }}
+                        >
                           {thumbSrc ? (
                             <img
                               src={thumbSrc}
@@ -340,32 +349,6 @@ export function SearchOverlay({
 
                         {/* actions */}
                         <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleLike(track);
-                            }}
-                            title={
-                              likedTrackIds.has(track.videoId)
-                                ? "Unlike track"
-                                : "Like track"
-                            }
-                            className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors opacity-0 group-hover:opacity-100 ${
-                              likedTrackIds.has(track.videoId)
-                                ? "text-rose-500 fill-rose-500 hover:text-rose-400"
-                                : "text-white/50 hover:bg-white/10 hover:text-white"
-                            }`}
-                          >
-                            <Heart
-                              size={13}
-                              className={
-                                likedTrackIds.has(track.videoId)
-                                  ? "fill-current"
-                                  : ""
-                              }
-                            />
-                          </button>
                           <div
                             onClick={(e) => {
                               e.stopPropagation();
@@ -373,7 +356,7 @@ export function SearchOverlay({
                             }}
                             className={`flex h-5 w-5 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                               isSelected
-                                ? "bg-violet-400 border-violet-400"
+                                ? "bg-violet-600 border-violet-600"
                                 : "border-white/40 hover:border-white/70"
                             }`}
                           >
@@ -384,7 +367,7 @@ export function SearchOverlay({
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="white"
-                                strokeWidth="3"
+                                strokeWidth="5"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                               >
