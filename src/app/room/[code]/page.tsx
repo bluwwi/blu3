@@ -10,7 +10,6 @@ import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
-/* OLD: useYouTubeAPI removed — react-youtube handles loading the IFrame API internally */
 import { ReactPlayerWrapper } from "@/components/Player/ui/ReactPlayerWrapper";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
@@ -1063,7 +1062,10 @@ export default function RoomPage() {
       </div>
 
       {queue.length === 0 && (
-        <div className="fixed inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 5 }}>
+        <div
+          className="fixed inset-0 overflow-hidden pointer-events-none"
+          style={{ zIndex: 5 }}
+        >
           {Array.from({ length: 500 }).map((_, i) => (
             <span
               key={i}
