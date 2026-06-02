@@ -1309,8 +1309,6 @@ export default function RoomPage() {
         }}
         onTrackSelect={handleSearchTrackSelect}
         onAddToQueue={(track) => {
-          const existing = queue.find((t) => t.videoId === track.videoId);
-          if (existing) removeFromQueue(existing.id || existing.videoId);
           addToQueue(track);
         }}
         avatarUrl={user?.avatar}
