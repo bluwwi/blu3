@@ -2,6 +2,7 @@
 
 import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -36,15 +37,7 @@ function CallbackHandler() {
 
 export default function AuthCallback() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-          <p className="text-zinc-500 text-sm tracking-widest animate-pulse">
-            loading...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<RoomLoading />}>
       <CallbackHandler />
     </Suspense>
   );
