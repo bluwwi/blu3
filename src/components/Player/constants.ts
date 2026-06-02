@@ -3,7 +3,7 @@ export const CONFIG = {
   DEBOUNCE_SUGGEST_MS: 200,
   PROGRESS_INTERVAL_MS: 500,
   HEARTBEAT_INTERVAL_MS: 15000,
-  DEFAULT_VOLUME: 80,
+  DEFAULT_VOLUME: 100,
   YT_HOST: "https://www.youtube-nocookie.com",
   YT_PLAYER_PARAMS: {
     autoplay: 1,

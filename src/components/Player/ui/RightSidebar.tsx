@@ -10,7 +10,6 @@ import { X } from "lucide-react";
 interface Member {
   userId: string;
   name: string;
-  email?: string;
   avatar?: string;
 }
 interface Message {
@@ -269,10 +268,6 @@ export function RightSidebar({
                               (you)
                             </span>
                           )}
-                        </span>
-
-                        <span className="text-sm text-white/95 font-medium truncate flex-1">
-                          {m.email}
                         </span>
                       </div>
 

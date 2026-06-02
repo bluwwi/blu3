@@ -132,10 +132,12 @@ export function SquarePlayer({
           className="s ml-2 text-white hover:text-white hover:bg-white/10 rounded-full transition-all cursor-pointer shrink-0"
           aria-label={isMuted ? "Unmute" : "Mute"}
         >
-          {isMuted ? (
-            <Icon name="volume-x" size={20} className="text-current" />
+          {isMuted || volume === 0 ? (
+            <Icon name="vol-none" size={20} className="text-current" />
+          ) : volume < 50 ? (
+            <Icon name="vol-mid" size={20} className="text-current" />
           ) : (
-            <Icon name="volume-up" size={20} className="text-current" />
+            <Icon name="vol-full" size={20} className="text-current" />
           )}
         </button>
         <input

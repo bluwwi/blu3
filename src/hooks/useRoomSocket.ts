@@ -18,7 +18,6 @@ export interface ChatMessage {
 export interface Member {
   userId: string;
   name: string;
-  email?: string;
   avatar?: string;
 }
 
@@ -58,14 +57,49 @@ interface SeekMessage {
 
 type RoomSocketMessage =
   | { type: "clock_sync"; serverTime: number }
-  | { type: "play"; videoId: string; seekTo: number; serverTime: number; id?: string; trackName?: string; artistName?: string; image?: string; duration_ms?: number; recentTracks?: RecentTrack[] }
+  | {
+      type: "play";
+      videoId: string;
+      seekTo: number;
+      serverTime: number;
+      id?: string;
+      trackName?: string;
+      artistName?: string;
+      image?: string;
+      duration_ms?: number;
+      recentTracks?: RecentTrack[];
+    }
   | { type: "pause"; serverTime: number }
   | { type: "seek"; seekTo: number; serverTime: number }
-  | { type: "room:joined"; isHost: boolean; members?: Member[]; playback?: PlaybackState | null; playbackMode?: PlaybackMode; recentTracks?: RecentTrack[]; queue?: Track[] }
-  | { type: "room:member_joined"; members?: Member[]; user?: { userId: string; name: string; avatar?: string } }
+  | {
+      type: "room:joined";
+      isHost: boolean;
+      members?: Member[];
+      playback?: PlaybackState | null;
+      playbackMode?: PlaybackMode;
+      recentTracks?: RecentTrack[];
+      queue?: Track[];
+    }
+  | {
+      type: "room:member_joined";
+      members?: Member[];
+      user?: { userId: string; name: string; avatar?: string };
+    }
   | { type: "room:member_left"; members?: Member[]; userId?: string }
   | { type: "chat:message"; message: ChatMessage }
-  | { type: "playback:sync"; videoId: string | null; trackName: string; artistName: string; image: string; isPlaying: boolean; currentTime: number; updatedAt: number; playbackMode?: PlaybackMode; recentTracks?: RecentTrack[]; queue?: Track[] }
+  | {
+      type: "playback:sync";
+      videoId: string | null;
+      trackName: string;
+      artistName: string;
+      image: string;
+      isPlaying: boolean;
+      currentTime: number;
+      updatedAt: number;
+      playbackMode?: PlaybackMode;
+      recentTracks?: RecentTrack[];
+      queue?: Track[];
+    }
   | { type: "room:playback_mode"; playbackMode: PlaybackMode }
   | { type: "room:queue_update"; queue?: Track[] };
 
@@ -162,7 +196,9 @@ export function useRoomSocket({
       const attempt = reconnectAttemptRef.current;
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
       reconnectAttemptRef.current = attempt + 1;
-      console.log(`[WS] disconnected, reconnecting in ${delay}ms (attempt ${attempt + 1})`);
+      console.log(
+        `[WS] disconnected, reconnecting in ${delay}ms (attempt ${attempt + 1})`,
+      );
       reconnectTimerRef.current = setTimeout(connectWs, delay);
     };
     ws.onerror = (e) => {
@@ -222,13 +258,21 @@ export function useRoomSocket({
           break;
         case "pause":
           setPlayback((prev) =>
-            prev ? { ...prev, isPlaying: false, updatedAt: msg.serverTime } : prev,
+            prev
+              ? { ...prev, isPlaying: false, updatedAt: msg.serverTime }
+              : prev,
           );
           onPauseRef.current?.(msg);
           break;
         case "seek":
           setPlayback((prev) =>
-            prev ? { ...prev, currentTime: msg.seekTo ?? prev.currentTime, updatedAt: msg.serverTime } : prev,
+            prev
+              ? {
+                  ...prev,
+                  currentTime: msg.seekTo ?? prev.currentTime,
+                  updatedAt: msg.serverTime,
+                }
+              : prev,
           );
           onSeekRef.current?.(msg);
           break;
@@ -265,54 +309,90 @@ export function useRoomSocket({
     };
   }, [connectWs, roomCode]);
 
-  const sendChat = useCallback((text: string) => {
-    if (!text.trim()) return;
-    safeSend(JSON.stringify({ type: "chat:send", text }));
-  }, [safeSend]);
+  const sendChat = useCallback(
+    (text: string) => {
+      if (!text.trim()) return;
+      safeSend(JSON.stringify({ type: "chat:send", text }));
+    },
+    [safeSend],
+  );
 
-  const sendPlay = useCallback((track: {
-    id?: string; videoId: string; trackName: string; artistName: string; image: string; currentTime?: number; duration_ms?: number;
-  }) => {
-    const msg = JSON.stringify({ type: "playback:play", ...track });
-    console.log("[WS] sending play:", msg.slice(0, 200));
-    safeSend(msg);
-  }, [safeSend]);
+  const sendPlay = useCallback(
+    (track: {
+      id?: string;
+      videoId: string;
+      trackName: string;
+      artistName: string;
+      image: string;
+      currentTime?: number;
+      duration_ms?: number;
+    }) => {
+      const msg = JSON.stringify({ type: "playback:play", ...track });
+      console.log("[WS] sending play:", msg.slice(0, 200));
+      safeSend(msg);
+    },
+    [safeSend],
+  );
 
-  const sendPause = useCallback((currentTime: number) => {
-    safeSend(JSON.stringify({ type: "playback:pause", currentTime }));
-  }, [safeSend]);
+  const sendPause = useCallback(
+    (currentTime: number) => {
+      safeSend(JSON.stringify({ type: "playback:pause", currentTime }));
+    },
+    [safeSend],
+  );
 
-  const sendSeek = useCallback((currentTime: number) => {
-    safeSend(JSON.stringify({ type: "playback:seek", currentTime }));
-  }, [safeSend]);
+  const sendSeek = useCallback(
+    (currentTime: number) => {
+      safeSend(JSON.stringify({ type: "playback:seek", currentTime }));
+    },
+    [safeSend],
+  );
 
   const requestSync = useCallback(() => {
     safeSend(JSON.stringify({ type: "playback:sync_request" }));
   }, [safeSend]);
 
-  const sendPlaybackMode = useCallback((mode: Partial<PlaybackMode>) => {
-    safeSend(JSON.stringify({ type: "playback:mode", ...mode }));
-  }, [safeSend]);
+  const sendPlaybackMode = useCallback(
+    (mode: Partial<PlaybackMode>) => {
+      safeSend(JSON.stringify({ type: "playback:mode", ...mode }));
+    },
+    [safeSend],
+  );
 
-  const sendProgress = useCallback((currentTime: number) => {
-    safeSend(JSON.stringify({ type: "progress", currentTime }));
-  }, [safeSend]);
+  const sendProgress = useCallback(
+    (currentTime: number) => {
+      safeSend(JSON.stringify({ type: "progress", currentTime }));
+    },
+    [safeSend],
+  );
 
-  const sendTrackEnded = useCallback((currentTime: number) => {
-    safeSend(JSON.stringify({ type: "playback:ended", currentTime }));
-  }, [safeSend]);
+  const sendTrackEnded = useCallback(
+    (currentTime: number) => {
+      safeSend(JSON.stringify({ type: "playback:ended", currentTime }));
+    },
+    [safeSend],
+  );
 
-  const addToQueue = useCallback((track: Track) => {
-    safeSend(JSON.stringify({ type: "queue:add", track }));
-  }, [safeSend]);
+  const addToQueue = useCallback(
+    (track: Track) => {
+      safeSend(JSON.stringify({ type: "queue:add", track }));
+    },
+    [safeSend],
+  );
 
-  const removeFromQueue = useCallback((trackId: string) => {
-    safeSend(JSON.stringify({ type: "queue:remove", trackId }));
-  }, [safeSend]);
+  const removeFromQueue = useCallback(
+    (trackId: string) => {
+      safeSend(JSON.stringify({ type: "queue:remove", trackId }));
+    },
+    [safeSend],
+  );
 
-  const cycleQueueCurrent = useCallback((trackId: string) => {
-    safeSend(JSON.stringify({ type: "queue:cycle_current", trackId }));
-  }, [safeSend]);
+  const cycleQueueCurrent = useCallback(
+    (trackId: string) => {
+      safeSend(JSON.stringify({ type: "queue:cycle_current", trackId }));
+    },
+    [safeSend],
+  );
 
   const clearQueue = useCallback(() => {
     safeSend(JSON.stringify({ type: "queue:clear" }));

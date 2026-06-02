@@ -22,6 +22,9 @@ const ICON_MAP: Record<string, string> = {
   "volume-2": "VolumeUp.svg",
   "volume-mute": "sound_mute.svg",
   "volume-x": "sound_mute.svg",
+  "vol-none": "vol-none.svg",
+  "vol-mid": "vol-mid.svg",
+  "vol-full": "vol-full.svg",
   "sound-fill": "Sound_fill.svg",
   chat: "Chat.svg",
   // Likes / Favorites
