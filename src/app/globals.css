@@ -124,6 +124,21 @@ body {
     transition: opacity 0.15s ease;
 }
 
+/* Sequential Z glow animation */
+.dot-glow {
+    opacity: 0;
+    animation: dot-glow 2s ease-in-out infinite;
+}
 
-
-
+@keyframes dot-glow {
+    0%,
+    100% {
+        opacity: 0;
+        text-shadow: 0 0 0px rgba(255, 255, 255, 0);
+    }
+    20%,
+    40% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+    }
+}

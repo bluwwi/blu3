@@ -695,8 +695,29 @@ export function QueueAndHistory({
                 <Icon name="search" size={16} className="text-current" />
                 Add songs
               </button>
-              <div className="w-60 h-30">
-                <Lottie animationData={pandaBamboo} loop autoplay />
+              <div className="flex items-center -mb-5 gap-3">
+                {[
+                  { delay: 0, offset: "-mt-2" },
+                  { delay: 0.4, offset: "mt-1" },
+                  { delay: 0.8, offset: "-mt-3" },
+                  { delay: 1.2, offset: "mt-2" },
+                ].map((z) => (
+                  <span
+                    key={z.delay}
+                    className={`text-white text-3xl  font-bold dot-glow ${z.offset}`}
+                    style={{ animationDelay: `${z.delay}s` }}
+                  >
+                    z
+                  </span>
+                ))}
+              </div>
+              <div className="w-60 h-30 flex items-center justify-center overflow-hidden">
+                <Lottie
+                  animationData={pandaBamboo}
+                  loop
+                  autoplay
+                  style={{ width: 260, height: 500 }}
+                />
               </div>
             </div>
           </div>
