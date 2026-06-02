@@ -5,6 +5,8 @@ import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Shuffle, Repeat, MoreVertical, Trash2, Plus } from "lucide-react";
+import Lottie from "lottie-react";
+import pandaBamboo from "@/assets/lolite/pandabamboo.json";
 
 interface Props {
   queue: Track[];
@@ -27,6 +29,7 @@ interface Props {
   onToggleShuffle?: () => void;
   onCycleRepeat?: () => void;
   onSearchClick?: () => void;
+  userName?: string;
 }
 
 export function QueueAndHistory({
@@ -44,6 +47,7 @@ export function QueueAndHistory({
   onCycleRepeat,
   onSearchClick,
   clearQueue,
+  userName,
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
 
@@ -674,11 +678,20 @@ export function QueueAndHistory({
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/[0.06] max-md:bg-transparent md:bg-white/[0.03] max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
-            <div>
-              <div className="mx-auto mb-2.5 flex justify-center">
-                <Icon name="list-music" size={24} className="text-white/55" />
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-48 h-48">
+                <Lottie animationData={pandaBamboo} loop autoplay />
               </div>
-              <p className="text-[13px]">Queue is empty</p>
+              <p className="text-white text-sm font-medium">
+                {userName}, looks like your queue is empty
+              </p>
+              <button
+                onClick={onSearchClick}
+                className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 text-white text-sm font-medium hover:bg-white/20 transition-all cursor-pointer"
+              >
+                <Icon name="search" size={16} className="text-current" />
+                Add songs
+              </button>
             </div>
           </div>
         )}

@@ -70,7 +70,7 @@ export function useRoom() {
       const token = localStorage.getItem("blu3_token");
       if (!token) {
         setError("Not logged in");
-        return null;
+        return { room: null, error: "Not logged in" };
       }
       setLoading(true);
       setError("");
@@ -82,10 +82,10 @@ export function useRoom() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
         setRoom(data.room);
-        return data.room as RoomInfo;
+        return { room: data.room as RoomInfo, error: "" };
       } catch (err: any) {
         setError(err.message);
-        return null;
+        return { room: null, error: err.message };
       } finally {
         setLoading(false);
       }

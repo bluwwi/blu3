@@ -68,6 +68,7 @@ export default function RoomPage() {
     image: string;
     trackCount: number;
   } | null>(null);
+  const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
 
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -843,11 +844,16 @@ export default function RoomPage() {
       localStorage.setItem("blu3_last_room", code);
       return;
     }
-    joinRoom(code).then((r) => {
-      if (r) {
+    joinRoom(code).then((result) => {
+      if (result?.room) {
         setJoined(true);
         localStorage.setItem("blu3_last_room", code);
-      } else router.replace("/browse");
+      } else if (result?.error) {
+        setJoinErrorMessage(result.error);
+        setTimeout(() => router.replace("/browse"), 3000);
+      } else {
+        router.replace("/browse");
+      }
     });
   }, [authLoading, user, code]);
 
@@ -1033,7 +1039,7 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="w-full h-full bg-blend-hue bg-amber-950 via-purple-500 to-blue-700 relative">
+    <div className="w-full h-full bg-orange-900 bg-pink-60 via-purple-500 to-blue-700 relative">
       <ReactPlayerWrapper
         src={player.src}
         playing={player.playing}
@@ -1231,6 +1237,15 @@ export default function RoomPage() {
                 {queueToast.trackCount !== 1 ? "s" : ""} queued
               </p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {joinErrorMessage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
+          <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-3xl border border-white/20 bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
+            <p className="text-white text-lg font-semibold text-center">{joinErrorMessage}</p>
+            <p className="text-white/50 text-sm">Redirecting to browse...</p>
           </div>
         </div>
       )}

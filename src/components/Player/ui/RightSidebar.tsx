@@ -216,6 +216,7 @@ export function RightSidebar({
                 onCycleRepeat={onCycleRepeat}
                 onSearchClick={onSearchClick}
                 clearQueue={clearQueue}
+                userName={user?.name}
               />
             </div>
           </div>
