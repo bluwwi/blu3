@@ -222,7 +222,7 @@ export function QueueAndHistory({
                   )}
                 </div>
 
-                <div className="border-t border-white/[0.06] pt-1">
+                <div className="border-t border-white/6 pt-1">
                   <button
                     onClick={() => {
                       window.location.href = "/playlists";
@@ -262,7 +262,6 @@ export function QueueAndHistory({
             )}
           </div>
 
-          {/* Search */}
           <button
             onClick={() => onSearchClick?.()}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/4@0 cursor-pointer transition-all"
@@ -278,7 +277,6 @@ export function QueueAndHistory({
             <Plus size={20} />
           </button>
 
-          {/* More options menu */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -463,13 +461,13 @@ export function QueueAndHistory({
                     {canControlPlayback && (
                       <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 transition-opacity duration-200 group-hover/img:opacity-100">
                         {isActive ? (
-                          <span className="text-[10px] font-semibold text-white">
+                          <span className="text-[20px] font-bold text-white">
                             ||
                           </span>
                         ) : (
                           <Icon
                             name="playmusic"
-                            size={12}
+                            size={16}
                             className="text-white"
                           />
                         )}
