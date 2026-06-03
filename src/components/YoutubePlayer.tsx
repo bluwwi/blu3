@@ -5,7 +5,6 @@ interface YoutubePlayerProps {
   videoId: string | null;
   isPlaying: boolean;
   volume: number;
-  onEnded: () => void;
   onStateChange: (state: number) => void;
   onPlayerReady: (player: any) => void;
 }
@@ -14,7 +13,6 @@ export default function YoutubePlayer({
   videoId,
   isPlaying,
   volume,
-  onEnded,
   onStateChange,
   onPlayerReady,
 }: YoutubePlayerProps) {
@@ -41,7 +39,6 @@ export default function YoutubePlayer({
           onPlayerReady(e.target);
         }}
         onStateChange={(e: YouTubeEvent) => onStateChange(e.data)}
-        onEnd={() => onEnded()}
       />
     </div>
   );

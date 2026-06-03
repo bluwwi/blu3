@@ -63,10 +63,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     }
   }, [controlYt]);
 
-  const onYtStateChange = useCallback((state: number) => {
-    if (state === 0) {
-      configRef.current.onNext();
-    }
+  const onYtStateChange = useCallback((_state: number) => {
   }, []);
 
   useEffect(() => {

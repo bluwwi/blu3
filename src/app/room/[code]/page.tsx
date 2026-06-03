@@ -689,7 +689,7 @@ export default function RoomPage() {
     sendPlay,
   ]);
 
-  const { onYtReady, onYtStateChange } = useBackgroundAudio({
+  const { onYtReady } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playerState === "playing",
     currentTime: progress.currentTime,
@@ -960,8 +960,11 @@ export default function RoomPage() {
             videoId={player.nowPlaying?.videoId ?? null}
             isPlaying={player.playerState === "playing"}
             volume={player.isMuted ? 0 : player.volume}
-            onEnded={() => handleSkipForward()}
-            onStateChange={onYtStateChange}
+            onStateChange={(state) => {
+              if (state === 1) player.setPlayerState("playing");
+              else if (state === 2) player.setPlayerState("paused");
+              else if (state === 0) player.setPlayerState("ended");
+            }}
             onPlayerReady={onYtReady}
           />
 
