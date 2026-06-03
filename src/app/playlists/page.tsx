@@ -479,7 +479,7 @@ export default function PlaylistsPage() {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-wrap justify-center gap-6 py-24 md:py-0 w-full h-full">
+              <div className="flex flex-wrap justify-center gap-3 py-16 md:py-0 w-full h-full">
                 {loadingPlaylists ? (
                   Array.from({ length: 9 }).map((_, i) => (
                     <SkeletonCard key={i} />
