@@ -8,18 +8,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
+import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
-import dynamic from "next/dynamic";
-const ReactPlayerWrapper = dynamic(
-  () =>
-    import("@/components/Player/ui/ReactPlayerWrapper").then(
-      (m) => m.ReactPlayerWrapper,
-    ),
-  { ssr: false },
-);
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track, PlayerState } from "@/utils/types";
@@ -696,7 +689,7 @@ export default function RoomPage() {
     sendPlay,
   ]);
 
-  useBackgroundAudio({
+  const { onYtReady, onYtStateChange } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playerState === "playing",
     currentTime: progress.currentTime,
@@ -963,17 +956,13 @@ export default function RoomPage() {
         }`}
       >
         <div className="w-full h-full bg-[#334EAC] relative">
-          <ReactPlayerWrapper
-            src={player.src}
-            playing={player.playing}
-            volume={player.isMuted ? 0 : player.volume / 100}
-            muted={player.isMuted}
-            playerRef={player.reactPlayerRef}
-            onReady={player.handleReady}
-            onPlay={player.handlePlayEvent}
-            onPause={player.handlePauseEvent}
-            onEnded={player.handleEnded}
-            onError={player.handleError}
+          <YoutubePlayer
+            videoId={player.nowPlaying?.videoId ?? null}
+            isPlaying={player.playerState === "playing"}
+            volume={player.isMuted ? 0 : player.volume}
+            onEnded={() => handleSkipForward()}
+            onStateChange={onYtStateChange}
+            onPlayerReady={onYtReady}
           />
 
           <div
