@@ -811,7 +811,6 @@ export default function RoomPage() {
     onNext: handleSkipForward,
     onPrev: handleSkipBack,
     onSeek: progress.seekTo,
-    onResume: player.resumeIframe,
   });
 
   const handleToggleShuffle = useCallback(() => {
@@ -1071,8 +1070,8 @@ export default function RoomPage() {
           <ReactPlayerWrapper
             src={player.src}
             playing={player.playing}
-            volume={player.isMuted ? 0 : player.volume / 100}
-            muted={player.isMuted}
+            volume={0}
+            muted={true}
             playerRef={player.reactPlayerRef}
             onReady={player.handleReady}
             onPlay={player.handlePlayEvent}
