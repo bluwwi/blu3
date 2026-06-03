@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track } from "@/utils/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -20,9 +20,9 @@ interface BackgroundAudioConfig {
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const streamUrlRef = useRef<string | null>(null);
-  const isVisibleRef = useRef(true);
   const configRef = useRef(config);
   configRef.current = config;
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -31,17 +31,23 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.preload = "none";
     audioRef.current = audio;
 
-    isVisibleRef.current = !document.hidden;
+    setIsVisible(!document.hidden);
 
     const handleVisibility = () => {
-      isVisibleRef.current = !document.hidden;
+      setIsVisible(!document.hidden);
     };
     document.addEventListener("visibilitychange", handleVisibility);
+
+    const handleEnded = () => {
+      configRef.current.onNext();
+    };
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
       audio.pause();
       audio.src = "";
       document.removeEventListener("visibilitychange", handleVisibility);
+      audio.removeEventListener("ended", handleEnded);
       audioRef.current = null;
     };
   }, []);
@@ -52,6 +58,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const track = config.nowPlaying;
     if (!track?.videoId) {
+      streamUrlRef.current = null;
       audio.pause();
       audio.src = "";
       return;
@@ -78,7 +85,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const audio = audioRef.current;
     if (!audio || !streamUrlRef.current) return;
 
-    if (config.isPlaying && !isVisibleRef.current) {
+    if (!isVisible && config.isPlaying) {
       if (audio.src !== streamUrlRef.current) {
         audio.src = streamUrlRef.current;
       }
@@ -87,55 +94,17 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         audio.currentTime = config.currentTime;
       }
       audio.play().catch(() => {});
-    } else if (!config.isPlaying || isVisibleRef.current) {
-      if (!isVisibleRef.current) return;
+    } else {
       audio.pause();
     }
-  }, [config.isPlaying, config.currentTime, config.volume, config.isMuted]);
+  }, [config.isPlaying, isVisible, config.currentTime, config.volume, config.isMuted]);
 
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
+  const seekNativeAudio = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (audio && streamUrlRef.current) {
+      audio.currentTime = time;
+    }
+  }, []);
 
-    const track = config.nowPlaying;
-
-    try {
-      navigator.mediaSession.metadata = track
-        ? new MediaMetadata({
-            title: track.name || "Unknown",
-            artist: track.artists?.[0]?.name || "Unknown",
-            album: track.album?.name || "",
-            artwork: track.image
-              ? [{ src: track.image, sizes: "512x512", type: "image/png" }]
-              : [],
-          })
-        : null;
-    } catch {}
-
-    try {
-      navigator.mediaSession.setActionHandler("play", () => {
-        configRef.current.onPlay();
-      });
-      navigator.mediaSession.setActionHandler("pause", () => {
-        configRef.current.onPause();
-      });
-      navigator.mediaSession.setActionHandler("previoustrack", () => {
-        configRef.current.onPrev();
-      });
-      navigator.mediaSession.setActionHandler("nexttrack", () => {
-        configRef.current.onNext();
-      });
-      navigator.mediaSession.setActionHandler("seekto", (details) => {
-        if (details.seekTime != null) {
-          configRef.current.onSeek(details.seekTime);
-        }
-      });
-    } catch {}
-  }, [config.nowPlaying?.videoId]);
-
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    try {
-      navigator.mediaSession.playbackState = config.isPlaying ? "playing" : "paused";
-    } catch {}
-  }, [config.isPlaying]);
+  return { seekNativeAudio };
 }
