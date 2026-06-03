@@ -18,6 +18,7 @@ import {
   Search,
 } from "lucide-react";
 import Image from "next/image";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -444,7 +445,7 @@ export default function PlaylistsPage() {
           </div>
 
           {/* ── MAIN CONTENT — mirrors browse's full-screen card grid ── */}
-          <div className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen overflow-y-auto room-scroll">
+          <ScrollArea className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen">
             {!user && !authLoading ? (
               <div className="text-center">
                 <p className="text-4xl font-black tracking-tight mb-2 text-white">
@@ -566,7 +567,7 @@ export default function PlaylistsPage() {
                 )}
               </div>
             )}
-          </div>
+          </ScrollArea>
         </div>
       </div>
 
@@ -785,7 +786,7 @@ export default function PlaylistsPage() {
             </div>
 
             {/* Track list */}
-            <div className="flex-1 overflow-y-auto min-h-0 room-scroll relative z-10">
+            <ScrollArea className="flex-1 min-h-0 relative z-10">
               {loadingTracks ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="animate-spin text-zinc-500" size={20} />
@@ -866,7 +867,7 @@ export default function PlaylistsPage() {
                   ))}
                 </div>
               )}
-            </div>
+            </ScrollArea>
 
             {/* Add track search panel */}
             {!activePlaylist.isLiked && showAddSearch && (
@@ -902,7 +903,7 @@ export default function PlaylistsPage() {
                       </button>
                     )}
                   </div>
-                  <div className="overflow-y-auto room-scroll flex flex-col px-2 py-1.5">
+                  <ScrollArea className="flex flex-col px-2 py-1.5">
                     {modalSearchResults.length === 0 && !isSearchingModal && (
                       <div className="flex items-center justify-center py-6">
                         <p className="text-[9px] text-zinc-700 uppercase tracking-widest">
@@ -957,7 +958,7 @@ export default function PlaylistsPage() {
                         </div>
                       );
                     })}
-                  </div>
+                  </ScrollArea>
                 </div>
               </div>
             )}

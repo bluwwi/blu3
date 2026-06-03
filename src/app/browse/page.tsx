@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import Image from "next/image";
 import { Trash2, Plus, Play } from "lucide-react";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -236,7 +237,7 @@ export default function BrowsePage() {
             </div>
           </div>
 
-          <div className="flex-wrap flex   flex-col items-center justify-center h-full min-h-screen  overflow-y-auto room-scroll">
+          <ScrollArea className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen">
             {!user && !authLoading ? (
               <div className="text-center">
                 <p className="text-4xl font-black tracking-tight mb-2 text-white">
@@ -328,10 +329,10 @@ export default function BrowsePage() {
                   </div>
                 )}
               </div>
-            )}
+              )}
+            </ScrollArea>
           </div>
         </div>
-      </div>
 
       {/* Join Room Bar */}
       {(user || !authLoading) && (

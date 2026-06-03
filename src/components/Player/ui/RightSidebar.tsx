@@ -6,6 +6,7 @@ import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
 import { X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Member {
   userId: string;
@@ -241,7 +242,7 @@ export function RightSidebar({
                   Members({members.length})
                 </h2>
               </div>
-              <div className="max-h-60 overflow-y-auto room-scroll space-y-2">
+              <ScrollArea className="max-h-60 space-y-2">
                 {members.map((m, i) => {
                   const isMe =
                     user?.sub === m.userId || user?.email === m.userId;
@@ -285,7 +286,7 @@ export function RightSidebar({
                     </div>
                   );
                 })}
-              </div>
+              </ScrollArea>
             </div>
           </div>,
           document.body,

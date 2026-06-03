@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Search, X } from "lucide-react";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Props {
   value: string;
@@ -79,7 +80,7 @@ export function SearchInput({
       </div>
 
       {showSuggestions && suggestions.length > 0 && (
-        <div className="room-scroll absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 overflow-y-auto rounded-[20px] border border-white/25 bg-white/15 p-1.5 shadow-2xl backdrop-blur-2xl">
+        <ScrollArea className="absolute inset-x-0 top-full z-40 mt-2.5 max-h-56 rounded-[20px] border border-white/25 bg-white/15 p-1.5 shadow-2xl backdrop-blur-2xl">
           {suggestions.map((s, i) => (
             <button
               key={i}
@@ -90,7 +91,7 @@ export function SearchInput({
               {s}
             </button>
           ))}
-        </div>
+        </ScrollArea>
       )}
     </div>
   );

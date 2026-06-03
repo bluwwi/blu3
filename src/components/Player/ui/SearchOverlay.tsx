@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Props {
   isOpen: boolean;
@@ -213,7 +214,7 @@ export function SearchOverlay({
           >
             {showResults && (
               <div className="flex flex-col" style={{ maxHeight: "65vh" }}>
-                <div className="flex-1 overflow-y-auto room-scroll">
+                <ScrollArea className="flex-1">
                   {!isSearching && searchError && (
                     <div className="py-8 text-center text-sm text-red-400/70">
                       {searchError}
@@ -350,10 +351,10 @@ export function SearchOverlay({
                       </div>
                     );
                   })}
-                </div>
+                  </ScrollArea>
                 {selectedIds.size > 0 && (
                   <div className="border-t border-white/10">
-                    <div className="flex gap-2 overflow-x-auto px-2 pb-2 pt-1.5 room-scroll">
+                    <ScrollArea className="flex gap-2 px-2 pb-2 pt-1.5">
                       {results
                         .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
                         .map((track, i) => {
@@ -397,7 +398,7 @@ export function SearchOverlay({
                             </div>
                           );
                         })}
-                    </div>
+                    </ScrollArea>
                   </div>
                 )}
                 {searchQuery && (

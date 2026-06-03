@@ -2,6 +2,7 @@ import { useRef, useEffect } from "react";
 import { Track } from "@/utils/types";
 import { Play, Pause, SkipBack, SkipForward, X } from "lucide-react";
 import Icon from "@/hooks/useIcon";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Message {
   id: string;
@@ -125,7 +126,7 @@ export function ChatPanel({
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto max-md:px-2 md:px-4 max-md:py-2 md:py-3 flex flex-col gap-3 room-scroll">
+      <ScrollArea className="flex-1 max-md:px-2 md:px-4 max-md:py-2 md:py-3 flex flex-col gap-3">
         {messages.length === 0 && (
           <p className="text-[11px] text-white/35 text-center mt-8">
             no messages yet
@@ -155,7 +156,7 @@ export function ChatPanel({
           </div>
         ))}
         <div ref={chatEndRef} />
-      </div>
+      </ScrollArea>
 
       {/* Chat Input */}
       <div className="max-md:p-2 md:p-3 border-t border-white/10 bg-transparent">

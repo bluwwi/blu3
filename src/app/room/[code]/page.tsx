@@ -1283,11 +1283,6 @@ export default function RoomPage() {
           )}
 
           <style>{`
-        .room-scroll::-webkit-scrollbar { width: 0.5px; height: 0.5px; }
-        .room-scroll::-webkit-scrollbar-button { display: none; }
-        .room-scroll::-webkit-scrollbar-track { background: transparent; }
-        .room-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,1); border-radius: 999px; }
-        .room-scroll { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,1) transparent; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>

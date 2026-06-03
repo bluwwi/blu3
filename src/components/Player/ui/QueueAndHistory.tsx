@@ -7,6 +7,7 @@ import { Icon } from "@/hooks/useIcon";
 import { Shuffle, Repeat, MoreVertical, Trash2, Plus } from "lucide-react";
 import Lottie from "lottie-react";
 import pandaBamboo from "@/assets/lolite/pandabamboo.json";
+import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Props {
   queue: Track[];
@@ -178,7 +179,7 @@ export function QueueAndHistory({
                   borderColor: "var(--room-border, rgba(255,255,255,0.08))",
                 }}
               >
-                <div className="max-h-48 overflow-y-auto room-scroll">
+                <ScrollArea className="max-h-48">
                   {loadingPlaylists ? (
                     <div className="px-3 py-3 text-[10px] text-white/40">
                       Loading...
@@ -222,7 +223,7 @@ export function QueueAndHistory({
                       ))}
                     </div>
                   )}
-                </div>
+                </ScrollArea>
 
                 <div className="border-t border-white/6 pt-1">
                   <button
@@ -491,7 +492,7 @@ export function QueueAndHistory({
       <section className="flex min-h-0 flex-1 flex-col">
         {queue.length > 0 ? (
           <>
-            <div className="room-scroll flex-1 space-y-1 overflow-y-auto pr-1">
+            <ScrollArea className="flex-1 space-y-1 pr-1">
               {queue.map((track, i) => {
                 const isActive = activeVideoId
                   ? activeVideoId === track.videoId
@@ -652,14 +653,14 @@ export function QueueAndHistory({
                   </div>
                 );
               })}
-            </div>
+            </ScrollArea>
           </>
         ) : showRecent && recentToShow.length > 0 ? (
           <div className="flex flex-col min-h-0 flex-1">
             <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-white/40 font-semibold">
               Previously played
             </div>
-            <div className="room-scroll flex-1 space-y-1 overflow-y-auto pr-1">
+            <ScrollArea className="flex-1 space-y-1 pr-1">
               {recentToShow.map((track, i) => {
                 const historyTrack: Track = {
                   id: track.videoId,
@@ -797,7 +798,7 @@ export function QueueAndHistory({
                   </div>
                 );
               })}
-            </div>
+            </ScrollArea>
           </div>
         ) : (
           <div className="relative flex flex-1 items-center justify-center overflow-hidden max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/6 max-md:bg-transparent md:bg-white/3 max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
