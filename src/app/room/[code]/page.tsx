@@ -75,6 +75,11 @@ export default function RoomPage() {
     trackCount: number;
   } | null>(null);
   const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
+  const [starsMounted, setStarsMounted] = useState(false);
+
+  useEffect(() => {
+    setStarsMounted(true);
+  }, []);
 
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -1074,7 +1079,7 @@ export default function RoomPage() {
             />
           </div>
 
-          {queue.length === 0 && (
+          {starsMounted && queue.length === 0 && (
             <div
               className="fixed inset-0 overflow-hidden pointer-events-none"
               style={{ zIndex: 5 }}
