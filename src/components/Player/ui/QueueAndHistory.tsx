@@ -417,6 +417,51 @@ export function QueueAndHistory({
         </div>
       </div>
 
+      {manageMode && queue.length > 0 && (
+        <div className="border-t border-white/10 bg-black/30 p-2 shrink-0">
+          <div className="flex items-center gap-2 mb-2">
+            <div
+              onClick={() => {
+                if (selectedIds.size === queue.length) {
+                  setSelectedIds(new Set());
+                } else {
+                  setSelectedIds(new Set(queue.map((t) => t.id)));
+                }
+              }}
+              className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none"
+            >
+              <div
+                className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                  selectedIds.size === queue.length
+                    ? "bg-violet-500 border-violet-500"
+                    : "border-white/40 hover:border-white/70"
+                }`}
+              >
+                {selectedIds.size === queue.length && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              Select All
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              selectedIds.forEach((id) => removeFromQueue(id));
+              setSelectedIds(new Set());
+              setManageMode(false);
+            }}
+            disabled={selectedIds.size === 0}
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/20 px-4 py-3 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <Trash2 size={16} />
+            Remove selected
+            {selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+          </button>
+        </div>
+      )}
+
       <section className="flex min-h-0 flex-1 flex-col">
         {queue.length > 0 ? (
           <>
@@ -596,59 +641,6 @@ export function QueueAndHistory({
                 );
               })}
             </div>
-            {manageMode && queue.length > 0 && (
-              <div className="border-t border-white/10 bg-black/30 p-2 shrink-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    onClick={() => {
-                      if (selectedIds.size === queue.length) {
-                        setSelectedIds(new Set());
-                      } else {
-                        setSelectedIds(new Set(queue.map((t) => t.id)));
-                      }
-                    }}
-                    className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none"
-                  >
-                    <div
-                      className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
-                        selectedIds.size === queue.length
-                          ? "bg-violet-500 border-violet-500"
-                          : "border-white/40 hover:border-white/70"
-                      }`}
-                    >
-                      {selectedIds.size === queue.length && (
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </div>
-                    Select All
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    selectedIds.forEach((id) => removeFromQueue(id));
-                    setSelectedIds(new Set());
-                    setManageMode(false);
-                  }}
-                  disabled={selectedIds.size === 0}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/20 px-4 py-3 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Trash2 size={16} />
-                  Remove selected
-                  {selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
-                </button>
-              </div>
-            )}
           </>
         ) : showRecent && recentToShow.length > 0 ? (
           <div className="flex flex-col min-h-0 flex-1">
