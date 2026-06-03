@@ -800,6 +800,19 @@ export default function RoomPage() {
     previoustrack: () => handleSkipBack(),
   };
 
+  useBackgroundAudio({
+    nowPlaying: player.nowPlaying,
+    isPlaying: player.playerState === "playing",
+    currentTime: progress.currentTime,
+    volume: player.volume,
+    isMuted: player.isMuted,
+    onPlay: player.play,
+    onPause: player.pause,
+    onNext: handleSkipForward,
+    onPrev: handleSkipBack,
+    onSeek: progress.seekTo,
+  });
+
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     const newShuffle = !playbackMode.shuffle;
