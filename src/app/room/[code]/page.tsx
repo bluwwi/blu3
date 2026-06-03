@@ -1070,8 +1070,8 @@ export default function RoomPage() {
           <ReactPlayerWrapper
             src={player.src}
             playing={player.playing}
-            volume={0}
-            muted={true}
+            volume={player.isMuted ? 0 : player.volume / 100}
+            muted={player.isMuted}
             playerRef={player.reactPlayerRef}
             onReady={player.handleReady}
             onPlay={player.handlePlayEvent}
