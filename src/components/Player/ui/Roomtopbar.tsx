@@ -102,12 +102,49 @@ export function RoomTopBar({
           </button>
           {user ? (
             <div className="relative">
-              {user.avatar && (
-                <img
-                  src={user.avatar}
-                  alt=""
-                  className="w-9 h-9 rounded-full border-2 border-white/10 object-cover hover:border-white/30 transition-colors cursor-pointer"
-                />
+              <button
+                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                className="focus:outline-none"
+                aria-label="Open profile menu"
+              >
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt=""
+                    className="w-9 h-9 rounded-full border-2 border-white/10 object-cover hover:border-white/30 transition-colors cursor-pointer"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-zinc-700 border-2 border-white/10 flex items-center justify-center text-xs font-bold text-white uppercase">
+                    {user.name?.[0] || "U"}
+                  </div>
+                )}
+              </button>
+              {showProfileMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowProfileMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-44 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
+                    <div className="px-3 py-2.5 border-b border-white/10">
+                      <p className="text-[12px] font-bold text-white truncate">
+                        {user.name}
+                      </p>
+                      <p className="text-[9px] text-zinc-500 truncate mt-0.5">
+                        {user.email}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowProfileMenu(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-3 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
+                    >
+                      Log out
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           ) : (
