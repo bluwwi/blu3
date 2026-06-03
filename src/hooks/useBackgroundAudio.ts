@@ -96,9 +96,36 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     setStreamReady(false);
 
     const cdnUrl = `${STREAM_URL}/cdn/${encodeURIComponent(videoId)}`;
-    if (audio.src !== cdnUrl) {
-      audio.src = cdnUrl;
-    }
+    const urlEndpoint = `${STREAM_URL}/stream-url/${encodeURIComponent(videoId)}`;
+
+    fetch(urlEndpoint)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.url) {
+          if (audio.src !== data.url) audio.src = data.url;
+        }
+      })
+      .catch(() => {
+        // Fallback: call YouTube API directly from browser (has cookies)
+        fetch("https://www.youtube.com/youtubei/v1/player?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8", {
+          method: "POST",
+          body: JSON.stringify({
+            videoId,
+            context: { client: { clientName: "ANDROID", clientVersion: "19.09.37", androidSdkVersion: 30 } },
+          }),
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        })
+          .then((r) => r.json())
+          .then((data: any) => {
+            const formats = [...(data.streamingData?.adaptiveFormats || []), ...(data.streamingData?.formats || [])];
+            const audio = formats.find((f: any) => !f.hasVideo && f.mimeType?.includes("audio") && f.url);
+            if (audio?.url && audioRef.current) {
+              audioRef.current.src = audio.url;
+            }
+          })
+          .catch(() => {});
+      });
   }, [config.nowPlaying?.videoId]);
 
   useEffect(() => {
