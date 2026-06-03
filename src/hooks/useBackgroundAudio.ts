@@ -24,7 +24,23 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const configRef = useRef(config);
   configRef.current = config;
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const [streamReady, setStreamReady] = useState(false);
+
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if (wakeLockRef.current) return;
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      wakeLockRef.current.addEventListener("release", () => {
+        wakeLockRef.current = null;
+      });
+    } catch {}
+  }, []);
+
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -39,12 +55,17 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const handleCanPlay = () => {
       setStreamReady(true);
     };
+    const handleWaiting = () => {
+      setStreamReady(false);
+    };
     const handleError = () => {
       setStreamReady(false);
     };
 
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("canplay", handleCanPlay);
+    audio.addEventListener("canplaythrough", handleCanPlay);
+    audio.addEventListener("waiting", handleWaiting);
     audio.addEventListener("error", handleError);
 
     return () => {
@@ -52,6 +73,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.src = "";
       audio.removeEventListener("ended", handleEnded);
       audio.removeEventListener("canplay", handleCanPlay);
+      audio.removeEventListener("canplaythrough", handleCanPlay);
+      audio.removeEventListener("waiting", handleWaiting);
       audio.removeEventListener("error", handleError);
       audioRef.current = null;
     };
@@ -77,6 +100,23 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.src = streamUrl;
     }
   }, [config.nowPlaying?.videoId]);
+
+  useEffect(() => {
+    if (config.isPlaying) acquireWakeLock();
+    else releaseWakeLock();
+    return () => releaseWakeLock();
+  }, [config.isPlaying, acquireWakeLock, releaseWakeLock]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && configRef.current.isPlaying) {
+        acquireWakeLock();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [acquireWakeLock]);
 
   useEffect(() => {
     const audio = audioRef.current;

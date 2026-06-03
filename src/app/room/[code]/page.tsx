@@ -85,15 +85,7 @@ export default function RoomPage() {
 
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const mediaSessionHandlersRef = useRef({
-    play: () => {},
-    pause: () => {},
-    seekbackward: (_offset: number) => {},
-    seekforward: (_offset: number) => {},
-    nexttrack: () => {},
-    previoustrack: () => {},
-  });
+
 
   const {
     connected,
@@ -549,74 +541,6 @@ export default function RoomPage() {
     }
   }, []);
 
-  /* --- Screen Wake Lock ------------------------------- */
-  const acquireWakeLock = useCallback(async () => {
-    try {
-      if (wakeLockRef.current) return;
-      wakeLockRef.current = await navigator.wakeLock.request("screen");
-      wakeLockRef.current.addEventListener("release", () => {
-        wakeLockRef.current = null;
-      });
-    } catch {}
-  }, []);
-
-  const releaseWakeLock = useCallback(() => {
-    wakeLockRef.current?.release().catch(() => {});
-    wakeLockRef.current = null;
-  }, []);
-
-  useEffect(() => {
-    if (player.playerState === "playing") acquireWakeLock();
-    else releaseWakeLock();
-    return () => releaseWakeLock();
-  }, [player.playerState, acquireWakeLock, releaseWakeLock]);
-
-  /* Volume is synced to YT iframe internally by usePlayerState */
-
-  /* --- Media Session API ------------------------------ */
-  useEffect(() => {
-    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
-    const ms = navigator.mediaSession;
-    const t = footerTrack;
-    ms.metadata = new MediaMetadata({
-      title: t?.name || "Blu3",
-      artist: t?.artists?.[0]?.name || "",
-      album: "",
-      artwork: t?.image
-        ? [{ src: t.image, sizes: "512x512", type: "image/jpeg" }]
-        : [],
-    });
-    /* Vibe-style: let Chrome infer playback state from audio */
-  }, [footerTrack, player.playerState]);
-
-  /* Register Media Session action handlers once (reads from ref) */
-  useEffect(() => {
-    if (typeof window === "undefined" || !("mediaSession" in navigator)) return;
-    const ms = navigator.mediaSession;
-    ms.setActionHandler("play", () => mediaSessionHandlersRef.current.play());
-    ms.setActionHandler("pause", () => mediaSessionHandlersRef.current.pause());
-    ms.setActionHandler("seekbackward", (e) => {
-      mediaSessionHandlersRef.current.seekbackward(e.seekOffset ?? 10);
-    });
-    ms.setActionHandler("seekforward", (e) => {
-      mediaSessionHandlersRef.current.seekforward(e.seekOffset ?? 10);
-    });
-    ms.setActionHandler("nexttrack", () =>
-      mediaSessionHandlersRef.current.nexttrack(),
-    );
-    ms.setActionHandler("previoustrack", () =>
-      mediaSessionHandlersRef.current.previoustrack(),
-    );
-    return () => {
-      ms.setActionHandler("play", null);
-      ms.setActionHandler("pause", null);
-      ms.setActionHandler("seekbackward", null);
-      ms.setActionHandler("seekforward", null);
-      ms.setActionHandler("nexttrack", null);
-      ms.setActionHandler("previoustrack", null);
-    };
-  }, []);
-
   const handleSeekAction = (seekToTime: number) => {
     if (!canControlPlayback || !progress.duration) return;
     progress.seekTo(seekToTime);
@@ -771,35 +695,6 @@ export default function RoomPage() {
     queue,
     sendPlay,
   ]);
-
-  /* Keep Media Session handler ref in sync */
-  mediaSessionHandlersRef.current = {
-    play: () => {
-      if (canControlPlayback) handlePlayPauseAction();
-      else if (
-        listenerMuted ||
-        (playback?.isPlaying && player.playerState !== "playing")
-      )
-        handleListenerPlay();
-    },
-    pause: () => {
-      if (canControlPlayback) handlePlayPauseAction();
-    },
-    seekbackward: (offset: number) => {
-      if (!canControlPlayback || !progress.duration) return;
-      const t = Math.max(0, progress.currentTime - offset);
-      progress.seekTo(t);
-      sendSeek(t);
-    },
-    seekforward: (offset: number) => {
-      if (!canControlPlayback || !progress.duration) return;
-      const t = Math.min(progress.duration, progress.currentTime + offset);
-      progress.seekTo(t);
-      sendSeek(t);
-    },
-    nexttrack: () => handleSkipForward(),
-    previoustrack: () => handleSkipBack(),
-  };
 
   useBackgroundAudio({
     nowPlaying: player.nowPlaying,
