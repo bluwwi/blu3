@@ -7,6 +7,7 @@ import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
+import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
@@ -55,6 +56,18 @@ export default function RoomPage() {
     player.reactPlayerRef,
     player.playerState,
   );
+  useBackgroundAudio({
+    nowPlaying: player.nowPlaying,
+    isPlaying: player.playerState === "playing",
+    currentTime: progress.currentTime,
+    volume: player.volume,
+    isMuted: player.isMuted,
+    onPlay: player.play,
+    onPause: player.pause,
+    onNext: handleSkipForward,
+    onPrev: handleSkipBack,
+    onSeek: progress.seekTo,
+  });
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
