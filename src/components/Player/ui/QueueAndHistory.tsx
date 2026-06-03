@@ -515,32 +515,41 @@ export function QueueAndHistory({
                       </p>
                     </div>
 
-                  {manageMode && (
-                    <div className="shrink-0 flex items-center">
-                      <div
-                        onClick={() => {
-                          const newSet = new Set(selectedIds);
-                          if (newSet.has(track.id)) {
-                            newSet.delete(track.id);
-                          } else {
-                            newSet.add(track.id);
-                          }
-                          setSelectedIds(newSet);
-                        }}
-                        className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
-                          selectedIds.has(track.id)
-                            ? "bg-violet-500 border-violet-500"
-                            : "border-white/40 hover:border-white/70"
-                        }`}
-                      >
-                        {selectedIds.has(track.id) && (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
+                    {manageMode && (
+                      <div className="shrink-0 flex items-center">
+                        <div
+                          onClick={() => {
+                            const newSet = new Set(selectedIds);
+                            if (newSet.has(track.id)) {
+                              newSet.delete(track.id);
+                            } else {
+                              newSet.add(track.id);
+                            }
+                            setSelectedIds(newSet);
+                          }}
+                          className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                            selectedIds.has(track.id)
+                              ? "bg-blue-100 border-blue-100"
+                              : "border-white/40 hover:border-white/70"
+                          }`}
+                        >
+                          {selectedIds.has(track.id) && (
+                            <svg
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="black"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                     {!manageMode && (
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
@@ -589,33 +598,42 @@ export function QueueAndHistory({
             </div>
             {manageMode && queue.length > 0 && (
               <div className="border-t border-white/10 bg-black/30 p-2 shrink-0">
-              <div className="flex items-center gap-2 mb-2">
-                <div
-                  onClick={() => {
-                    if (selectedIds.size === queue.length) {
-                      setSelectedIds(new Set());
-                    } else {
-                      setSelectedIds(new Set(queue.map(t => t.id)));
-                    }
-                  }}
-                  className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none"
-                >
+                <div className="flex items-center gap-2 mb-2">
                   <div
-                    className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
-                      selectedIds.size === queue.length
-                        ? "bg-violet-500 border-violet-500"
-                        : "border-white/40 hover:border-white/70"
-                    }`}
+                    onClick={() => {
+                      if (selectedIds.size === queue.length) {
+                        setSelectedIds(new Set());
+                      } else {
+                        setSelectedIds(new Set(queue.map((t) => t.id)));
+                      }
+                    }}
+                    className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none"
                   >
-                    {selectedIds.size === queue.length && (
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
+                    <div
+                      className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
+                        selectedIds.size === queue.length
+                          ? "bg-violet-500 border-violet-500"
+                          : "border-white/40 hover:border-white/70"
+                      }`}
+                    >
+                      {selectedIds.size === queue.length && (
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      )}
+                    </div>
+                    Select All
                   </div>
-                  Select All
                 </div>
-              </div>
                 <button
                   onClick={() => {
                     selectedIds.forEach((id) => removeFromQueue(id));
