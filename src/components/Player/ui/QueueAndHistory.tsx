@@ -64,6 +64,8 @@ export function QueueAndHistory({
   }, [showRecent, recentTracks, activeVideoId]);
 
   const [showMenu, setShowMenu] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -277,6 +279,21 @@ export function QueueAndHistory({
             <Plus size={20} />
           </button>
 
+          <button
+            onClick={() => {
+              setManageMode(!manageMode);
+              if (manageMode) setSelectedIds(new Set());
+            }}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
+              manageMode
+                ? "bg-rose-500/30 text-rose-300"
+                : "bg-white/30 hover:bg-white/40"
+            }`}
+            title={manageMode ? "Exit selection mode" : "Select tracks to remove"}
+          >
+            <Trash2 size={20} className={manageMode ? "text-rose-300" : "text-current"} />
+          </button>
+
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
@@ -397,7 +414,7 @@ export function QueueAndHistory({
 
       <section className="flex min-h-0 flex-1 flex-col">
         {queue.length > 0 ? (
-          <div className="room-scroll flex-1 space-y-1 overflow-y-auto pr-1">
+          <><div className="room-scroll flex-1 space-y-1 overflow-y-auto pr-1">
             {queue.map((track, i) => {
               const isActive = activeVideoId
                 ? activeVideoId === track.videoId
@@ -414,6 +431,7 @@ export function QueueAndHistory({
                     role={canControlPlayback ? "button" : undefined}
                     tabIndex={canControlPlayback ? 0 : -1}
                     onClick={() => {
+                      if (manageMode) return;
                       if (!canControlPlayback) return;
                       handleAdminPlayTrack(track);
                     }}
@@ -491,50 +509,104 @@ export function QueueAndHistory({
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      onClick={() => toggleLike(track)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                        likedTrackIds.has(track.videoId)
-                          ? "text-rose-500 fill-rose-500 hover:text-rose-450"
-                          : "text-white/55 hover:bg-white/10 hover:text-white"
-                      }`}
-                      title={
-                        likedTrackIds.has(track.videoId)
-                          ? "Unlike track"
-                          : "Like track"
-                      }
-                    >
-                      <Icon
-                        name={
-                          likedTrackIds.has(track.videoId)
-                            ? "favorite"
-                            : "heart"
-                        }
-                        size={12}
-                        className="text-current"
+                  {manageMode && (
+                    <div className="shrink-0 flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(track.id)}
+                        onChange={() => {
+                          const newSet = new Set(selectedIds);
+                          if (newSet.has(track.id)) {
+                            newSet.delete(track.id);
+                          } else {
+                            newSet.add(track.id);
+                          }
+                          setSelectedIds(newSet);
+                        }}
+                        className="h-5 w-5 rounded border-white/30 accent-violet-500 cursor-pointer"
                       />
-                    </button>
-                    {canControlPlayback && (
+                    </div>
+                  )}
+                  {!manageMode && (
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
-                        onClick={() => removeFromQueue(track.id)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
-                        aria-label="Remove from queue"
+                        onClick={() => toggleLike(track)}
+                        className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                          likedTrackIds.has(track.videoId)
+                            ? "text-rose-500 fill-rose-500 hover:text-rose-450"
+                            : "text-white/55 hover:bg-white/10 hover:text-white"
+                        }`}
+                        title={
+                          likedTrackIds.has(track.videoId)
+                            ? "Unlike track"
+                            : "Like track"
+                        }
                       >
                         <Icon
-                          name="trash-2"
+                          name={
+                            likedTrackIds.has(track.videoId)
+                              ? "favorite"
+                              : "heart"
+                          }
                           size={12}
                           className="text-current"
                         />
                       </button>
-                    )}
-                  </div>
+                      {canControlPlayback && (
+                        <button
+                          type="button"
+                          onClick={() => removeFromQueue(track.id)}
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                          aria-label="Remove from queue"
+                        >
+                          <Icon
+                            name="trash-2"
+                            size={12}
+                            className="text-current"
+                          />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
+          {manageMode && queue.length > 0 && (
+            <div className="border-t border-white/10 bg-black/30 p-2 shrink-0">
+              <div className="flex items-center gap-2 mb-2">
+                <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === queue.length}
+                    onChange={() => {
+                      if (selectedIds.size === queue.length) {
+                        setSelectedIds(new Set());
+                      } else {
+                        setSelectedIds(new Set(queue.map(t => t.id)));
+                      }
+                    }}
+                    className="h-5 w-5 rounded border-white/30 accent-violet-500 cursor-pointer"
+                  />
+                  Select All
+                </label>
+              </div>
+              <button
+                onClick={() => {
+                  selectedIds.forEach(id => removeFromQueue(id));
+                  setSelectedIds(new Set());
+                  setManageMode(false);
+                }}
+                disabled={selectedIds.size === 0}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/20 px-4 py-3 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <Trash2 size={16} />
+                Remove selected{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+              </button>
+            </div>
+          )}
+          </>
         ) : showRecent && recentToShow.length > 0 ? (
           <div className="flex flex-col min-h-0 flex-1">
             <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-white/40 font-semibold">
@@ -635,40 +707,42 @@ export function QueueAndHistory({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                        type="button"
-                        onClick={() => toggleLike(historyTrack)}
-                        className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                          likedTrackIds.has(historyTrack.videoId)
-                            ? "text-rose-500 fill-rose-500 hover:text-rose-450"
-                            : "text-white/55 hover:bg-white/10 hover:text-white"
-                        }`}
-                        title={
-                          likedTrackIds.has(historyTrack.videoId)
-                            ? "Unlike track"
-                            : "Like track"
-                        }
-                      >
-                        <Icon
-                          name={
+                    {!manageMode && (
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => toggleLike(historyTrack)}
+                          className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                             likedTrackIds.has(historyTrack.videoId)
-                              ? "favorite"
-                              : "heart"
+                              ? "text-rose-500 fill-rose-500 hover:text-rose-450"
+                              : "text-white/55 hover:bg-white/10 hover:text-white"
+                          }`}
+                          title={
+                            likedTrackIds.has(historyTrack.videoId)
+                              ? "Unlike track"
+                              : "Like track"
                           }
-                          size={12}
-                          className="text-current"
-                        />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => addToQueue(historyTrack)}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
-                        aria-label="Add track to queue"
-                      >
-                        <Icon name="plus" size={12} className="text-current" />
-                      </button>
-                    </div>
+                        >
+                          <Icon
+                            name={
+                              likedTrackIds.has(historyTrack.videoId)
+                                ? "favorite"
+                                : "heart"
+                            }
+                            size={12}
+                            className="text-current"
+                          />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => addToQueue(historyTrack)}
+                          className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                          aria-label="Add track to queue"
+                        >
+                          <Icon name="plus" size={12} className="text-current" />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
