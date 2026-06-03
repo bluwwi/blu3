@@ -15,6 +15,7 @@ interface BackgroundAudioConfig {
   onNext: () => void;
   onPrev: () => void;
   onSeek: (time: number) => void;
+  onResume: (time: number) => void;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -34,7 +35,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     setIsVisible(!document.hidden);
 
     const handleVisibility = () => {
-      setIsVisible(!document.hidden);
+      const hidden = document.hidden;
+      setIsVisible(!hidden);
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
@@ -81,11 +83,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     fetchStreamUrl();
   }, [config.nowPlaying?.videoId]);
 
+  const wasHiddenRef = useRef(false);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !streamUrlRef.current) return;
 
     if (!isVisible && config.isPlaying) {
+      wasHiddenRef.current = true;
       if (audio.src !== streamUrlRef.current) {
         audio.src = streamUrlRef.current;
       }
@@ -94,6 +99,15 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         audio.currentTime = config.currentTime;
       }
       audio.play().catch(() => {});
+    } else if (isVisible) {
+      if (wasHiddenRef.current && config.isPlaying) {
+        wasHiddenRef.current = false;
+        const t = audio.currentTime || config.currentTime;
+        audio.pause();
+        config.onResume(t);
+      } else {
+        audio.pause();
+      }
     } else {
       audio.pause();
     }
@@ -101,7 +115,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
   const seekNativeAudio = useCallback((time: number) => {
     const audio = audioRef.current;
-    if (audio && streamUrlRef.current) {
+    if (audio) {
       audio.currentTime = time;
     }
   }, []);

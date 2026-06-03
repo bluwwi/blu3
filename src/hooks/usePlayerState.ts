@@ -29,6 +29,7 @@ interface UsePlayerStateReturn {
   handlePauseEvent: () => void;
   handleEnded: () => void;
   handleError: (e: any) => void;
+  resumeIframe: (time: number) => void;
 }
 
 export function usePlayerState(): UsePlayerStateReturn {
@@ -172,7 +173,26 @@ export function usePlayerState(): UsePlayerStateReturn {
   }, []);
 
   const handlePauseEvent = useCallback(() => {
+    if (typeof document !== "undefined" && document.hidden) return;
     setPlayerState("paused");
+  }, []);
+
+  const resumeIframe = useCallback((time: number) => {
+    const player = reactPlayerRef.current;
+    if (!player) return;
+    if (player.seekTo) {
+      player.seekTo(time, "seconds");
+    }
+    const internal = player.getInternalPlayer() as
+      | { playVideo?: () => void; seekTo?: (t: number, allowAhead: boolean) => void }
+      | undefined
+      | null;
+    if (internal?.seekTo) {
+      internal.seekTo(time, true);
+    }
+    if (internal?.playVideo) {
+      internal.playVideo();
+    }
   }, []);
 
   const handleEnded = useCallback(() => {
@@ -209,5 +229,6 @@ export function usePlayerState(): UsePlayerStateReturn {
     handlePauseEvent,
     handleEnded,
     handleError,
+    resumeIframe,
   };
 }

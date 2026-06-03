@@ -811,6 +811,7 @@ export default function RoomPage() {
     onNext: handleSkipForward,
     onPrev: handleSkipBack,
     onSeek: progress.seekTo,
+    onResume: player.resumeIframe,
   });
 
   const handleToggleShuffle = useCallback(() => {
