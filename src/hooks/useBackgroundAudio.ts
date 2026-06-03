@@ -2,7 +2,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track } from "@/utils/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const STREAM_URL =
+  process.env.NEXT_PUBLIC_STREAM_URL ||
+  process.env.NEXT_PUBLIC_API_URL?.replace(/\/api$/, "") ||
+  "http://localhost:8000";
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
@@ -19,7 +22,6 @@ interface BackgroundAudioConfig {
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const streamUrlRef = useRef<string | null>(null);
   const configRef = useRef(config);
   configRef.current = config;
   const [streamReady, setStreamReady] = useState(false);
@@ -34,15 +36,23 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const handleEnded = () => {
       configRef.current.onNext();
     };
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("error", () => {
+    const handleCanPlay = () => {
+      setStreamReady(true);
+    };
+    const handleError = () => {
       setStreamReady(false);
-    });
+    };
+
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("canplay", handleCanPlay);
+    audio.addEventListener("error", handleError);
 
     return () => {
       audio.pause();
       audio.src = "";
       audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("canplay", handleCanPlay);
+      audio.removeEventListener("error", handleError);
       audioRef.current = null;
     };
   }, []);
@@ -53,7 +63,6 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const track = config.nowPlaying;
     if (!track?.videoId) {
-      streamUrlRef.current = null;
       setStreamReady(false);
       audio.pause();
       audio.src = "";
@@ -63,33 +72,19 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const videoId = track.videoId;
     setStreamReady(false);
 
-    const fetchStreamUrl = async () => {
-      try {
-        const res = await fetch(`${API_URL}/stream/${videoId}`, {
-          redirect: "follow",
-        });
-        if (!res.ok) throw new Error("Stream fetch failed");
-        streamUrlRef.current = res.url;
-        setStreamReady(true);
-      } catch {
-        streamUrlRef.current = null;
-        setStreamReady(false);
-      }
-    };
-
-    fetchStreamUrl();
+    const streamUrl = `${STREAM_URL}/stream/${encodeURIComponent(videoId)}`;
+    if (audio.src !== streamUrl) {
+      audio.src = streamUrl;
+    }
   }, [config.nowPlaying?.videoId]);
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio || !streamUrlRef.current || !streamReady) return;
+    if (!audio || !streamReady) return;
 
     audio.volume = config.isMuted ? 0 : config.volume / 100;
 
     if (config.isPlaying) {
-      if (audio.src !== streamUrlRef.current) {
-        audio.src = streamUrlRef.current;
-      }
       if (Math.abs(audio.currentTime - config.currentTime) > 3) {
         audio.currentTime = config.currentTime;
       }

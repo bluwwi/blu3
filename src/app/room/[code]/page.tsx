@@ -7,6 +7,7 @@ import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
+import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -799,6 +800,19 @@ export default function RoomPage() {
     nexttrack: () => handleSkipForward(),
     previoustrack: () => handleSkipBack(),
   };
+
+  useBackgroundAudio({
+    nowPlaying: player.nowPlaying,
+    isPlaying: player.playerState === "playing",
+    currentTime: progress.currentTime,
+    volume: player.volume,
+    isMuted: player.isMuted,
+    onPlay: () => player.play?.(),
+    onPause: () => player.pause?.(),
+    onNext: () => handleSkipForward(),
+    onPrev: () => handleSkipBack(),
+    onSeek: (time) => progress.seekTo(time),
+  });
 
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
