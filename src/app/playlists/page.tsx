@@ -420,17 +420,31 @@ export default function PlaylistsPage() {
                     )}
                   </button>
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-32 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          logout();
-                        }}
-                        className="w-full text-left px-4 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
-                      >
-                        Log out
-                      </button>
-                    </div>
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowProfileMenu(false)}
+                      />
+                      <div className="absolute right-0 mt-2 w-44 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
+                        <div className="px-3 py-2.5 border-b border-white/10">
+                          <p className="text-[12px] font-bold text-white truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-[9px] text-zinc-500 truncate mt-0.5">
+                            {user.email}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setShowProfileMenu(false);
+                            logout();
+                          }}
+                          className="w-full text-left px-3 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
+                        >
+                          Log out
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               ) : (

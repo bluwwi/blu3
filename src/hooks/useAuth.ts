@@ -26,8 +26,12 @@ export function useAuth() {
         return;
       }
 
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
       fetch(`${API_URL}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
       })
         .then((r) => r.json())
         .then((data) => {
@@ -35,7 +39,10 @@ export function useAuth() {
           else localStorage.removeItem("blu3_token");
         })
         .catch(() => localStorage.removeItem("blu3_token"))
-        .finally(() => setLoading(false));
+        .finally(() => {
+          clearTimeout(timeout);
+          setLoading(false);
+        });
     }, 50);
 
     return () => clearTimeout(timer);
