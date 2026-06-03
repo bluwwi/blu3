@@ -95,17 +95,10 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const videoId = track.videoId;
     setStreamReady(false);
 
-    const urlEndpoint = `${STREAM_URL}/stream-url/${encodeURIComponent(videoId)}`;
-    fetch(urlEndpoint)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.url && audio.src !== data.url) {
-          audio.src = data.url;
-        }
-      })
-      .catch(() => {
-        setStreamReady(false);
-      });
+    const cdnUrl = `${STREAM_URL}/cdn/${encodeURIComponent(videoId)}`;
+    if (audio.src !== cdnUrl) {
+      audio.src = cdnUrl;
+    }
   }, [config.nowPlaying?.videoId]);
 
   useEffect(() => {
