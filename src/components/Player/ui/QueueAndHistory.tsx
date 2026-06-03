@@ -418,19 +418,38 @@ export function QueueAndHistory({
       </div>
 
       {manageMode && queue.length > 0 && (
-        <div className="flex pl-2 py-2 pr-3.5 md:pr-5 items-center justify-between">
-          <button
-            onClick={() => {
-              selectedIds.forEach((id) => removeFromQueue(id));
-              setSelectedIds(new Set());
-              setManageMode(false);
-            }}
-            disabled={selectedIds.size === 0}
-            className="flex w-fit   items-center cursor-pointer justify-center gap-2 rounded-md bg-[#C0392B] px-6 py-2 text-sm text-white transition-all hover:bg-[#C0392B]/80 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Remove selected
-            {selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
-          </button>
+        <div className="flex pl-2.5 py-0 pr-3.5 md:pr-5 items-center justify-between">
+          <div className="flex  items-center gap-2">
+            <button
+              onClick={() => {
+                selectedIds.forEach((id) => removeFromQueue(id));
+                setSelectedIds(new Set());
+                setManageMode(false);
+              }}
+              style={{
+                width: "clamp(3.5rem,3vw,199rem)",
+              }}
+              disabled={selectedIds.size === 0}
+              className="flex aspect-square    items-center cursor-pointer justify-center gap-2 rounded-lg bg-[#C0392B] text-sm text-white transition-all hover:bg-[#C0392B]/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={20} />
+            </button>
+
+            <div className="min-w-0 flex-1">
+              <p
+                className="truncate font-medium text-white"
+                style={{
+                  fontSize: "clamp(0.85rem,0.75vw,199rem)",
+                }}
+              >
+                Delete All
+              </p>
+              <p className="truncate text-[11px] text-white/60">
+                {selectedIds.size > 0 ? ` (${selectedIds.size})` : "(0)"}
+              </p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-2 ">
             <div
               onClick={() => {
@@ -610,7 +629,7 @@ export function QueueAndHistory({
                           className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
                             likedTrackIds.has(track.videoId)
                               ? "text-rose-500 fill-rose-500 hover:text-rose-450"
-                              : "text-white/55 hover:bg-white/10 hover:text-white"
+                              : "text-white/55  hover:text-white"
                           }`}
                           title={
                             likedTrackIds.has(track.videoId)
@@ -624,24 +643,10 @@ export function QueueAndHistory({
                                 ? "favorite"
                                 : "heart"
                             }
-                            size={12}
-                            className="text-current"
+                            size={25}
+                            className="text-current cursor-pointer"
                           />
                         </button>
-                        {canControlPlayback && (
-                          <button
-                            type="button"
-                            onClick={() => removeFromQueue(track.id)}
-                            className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
-                            aria-label="Remove from queue"
-                          >
-                            <Icon
-                              name="trash-2"
-                              size={12}
-                              className="text-current"
-                            />
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>
