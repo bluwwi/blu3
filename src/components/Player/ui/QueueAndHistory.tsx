@@ -286,7 +286,7 @@ export function QueueAndHistory({
             }}
             className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
               manageMode
-                ? "bg-rose-500/30 text-rose-300"
+                ? "bg-[#C0392B]/80 text-white"
                 : "bg-white/30 hover:bg-white/40"
             }`}
             title={
@@ -295,7 +295,7 @@ export function QueueAndHistory({
           >
             <Trash2
               size={20}
-              className={manageMode ? "text-rose-300" : "text-current"}
+              className={manageMode ? "text-white" : "text-current"}
             />
           </button>
 
@@ -418,8 +418,20 @@ export function QueueAndHistory({
       </div>
 
       {manageMode && queue.length > 0 && (
-        <div className="border-t border-white/10 bg-black/30 p-2 shrink-0">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="flex pl-2 py-2 pr-3.5 md:pr-5 items-center justify-between">
+          <button
+            onClick={() => {
+              selectedIds.forEach((id) => removeFromQueue(id));
+              setSelectedIds(new Set());
+              setManageMode(false);
+            }}
+            disabled={selectedIds.size === 0}
+            className="flex w-fit   items-center cursor-pointer justify-center gap-2 rounded-md bg-[#C0392B] px-6 py-2 text-sm text-white transition-all hover:bg-[#C0392B]/80 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            Remove selected
+            {selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+          </button>
+          <div className="flex items-center gap-2 ">
             <div
               onClick={() => {
                 if (selectedIds.size === queue.length) {
@@ -433,32 +445,27 @@ export function QueueAndHistory({
               <div
                 className={`flex h-6 w-6 items-center justify-center rounded border-2 transition-all cursor-pointer ${
                   selectedIds.size === queue.length
-                    ? "bg-violet-500 border-violet-500"
+                    ? "bg-blue-100 border-blue-100"
                     : "border-white/40 hover:border-white/70"
                 }`}
               >
                 {selectedIds.size === queue.length && (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="black"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 )}
               </div>
-              Select All
             </div>
           </div>
-          <button
-            onClick={() => {
-              selectedIds.forEach((id) => removeFromQueue(id));
-              setSelectedIds(new Set());
-              setManageMode(false);
-            }}
-            disabled={selectedIds.size === 0}
-            className="flex w-full items-center justify-center gap-2 rounded-lg bg-rose-500/20 px-4 py-3 text-sm font-semibold text-rose-300 transition-all hover:bg-rose-500/30 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <Trash2 size={16} />
-            Remove selected
-            {selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
-          </button>
         </div>
       )}
 
