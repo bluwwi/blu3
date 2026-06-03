@@ -12,7 +12,10 @@ import { useSuggestions } from "@/hooks/useSuggestions";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import dynamic from "next/dynamic";
 const ReactPlayerWrapper = dynamic(
-  () => import("@/components/Player/ui/ReactPlayerWrapper").then((m) => m.ReactPlayerWrapper),
+  () =>
+    import("@/components/Player/ui/ReactPlayerWrapper").then(
+      (m) => m.ReactPlayerWrapper,
+    ),
   { ssr: false },
 );
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
@@ -1030,14 +1033,18 @@ export default function RoomPage() {
     <div className="relative min-h-screen">
       <div
         className={`absolute inset-0 z-50 transition-opacity duration-500 ${
-          authLoading || !joined || !initialDataLoaded ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          authLoading || !joined || !initialDataLoaded
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
       >
         <RoomLoading />
       </div>
       <div
         className={`transition-opacity duration-500 ${
-          authLoading || !joined || !initialDataLoaded ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+          authLoading || !joined || !initialDataLoaded
+            ? "opacity-0 pointer-events-none"
+            : "opacity-100 pointer-events-auto"
         }`}
       >
         <div className="w-full h-full bg-[#334EAC] relative">

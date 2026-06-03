@@ -149,12 +149,12 @@ body {
 }
 
 .os-theme-bl3 {
-    --os-size: 1px;
+    --os-size: 4px;
     --os-padding-perpendicular: 0;
     --os-padding-axis: 0;
     --os-track-border-radius: 0;
     --os-handle-interactive-area-offset: 0;
-    --os-handle-border-radius: 0;
+    --os-handle-border-radius: 999px;
     --os-handle-bg: rgba(255, 255, 255, 1);
     --os-handle-bg-hover: rgba(255, 255, 255, 1);
     --os-handle-bg-active: rgba(255, 255, 255, 1);
