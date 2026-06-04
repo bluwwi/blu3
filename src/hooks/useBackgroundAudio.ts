@@ -24,6 +24,40 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const ytReadyRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
 
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const oscRef = useRef<OscillatorNode | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
+
+  const ensureSilentAudio = useCallback(() => {
+    try {
+      const AudioCtor = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtor) return;
+      if (!audioCtxRef.current) {
+        const ctx = new AudioCtor();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        gain.gain.value = 0;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        audioCtxRef.current = ctx;
+        oscRef.current = osc;
+        gainRef.current = gain;
+      }
+      if (audioCtxRef.current.state === "suspended") {
+        audioCtxRef.current.resume();
+      }
+    } catch {}
+  }, []);
+
+  const suspendSilentAudio = useCallback(() => {
+    try {
+      if (audioCtxRef.current && audioCtxRef.current.state === "running") {
+        audioCtxRef.current.suspend();
+      }
+    } catch {}
+  }, []);
+
   const acquireWakeLock = useCallback(async () => {
     try {
       if (wakeLockRef.current) return;
@@ -85,9 +119,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   }, [config.isPlaying, config.volume, config.isMuted]);
 
   useEffect(() => {
-    if (config.isPlaying) acquireWakeLock();
-    else releaseWakeLock();
-  }, [config.isPlaying, acquireWakeLock, releaseWakeLock]);
+    if (config.isPlaying) {
+      ensureSilentAudio();
+      acquireWakeLock();
+    } else {
+      suspendSilentAudio();
+      releaseWakeLock();
+    }
+  }, [config.isPlaying, acquireWakeLock, releaseWakeLock, ensureSilentAudio, suspendSilentAudio]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
