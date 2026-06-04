@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
 import { Track } from "@/utils/types";
-import { getAudioStreamUrl } from "@/utils/ytdl";
+import { getAudioStreamUrl, getStreamUrl } from "@/utils/ytdl";
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
@@ -23,35 +23,26 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const fallbackRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
   const fetchIdRef = useRef(0);
-  const hasSrcRef = useRef(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioReloadedRef = useRef(false);
 
-  function enableFallback(videoId: string) {
-    fallbackRef.current = true;
-    const player = ytPlayerRef.current;
-    if (player && ytReadyRef.current) {
-      player.loadVideoById(videoId);
-      lastVideoIdRef.current = videoId;
-      player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
-      if (configRef.current.isPlaying) player.playVideo();
-    }
-  }
+  /* --- WakeLock --- */
+  const acquireWakeLock = useCallback(async () => {
+    try {
+      if (wakeLockRef.current) return;
+      wakeLockRef.current = await navigator.wakeLock.request("screen");
+      wakeLockRef.current.addEventListener("release", () => {
+        wakeLockRef.current = null;
+      });
+    } catch {}
+  }, []);
 
-  function reloadAudioSrc(videoId: string) {
-    audioReloadedRef.current = true;
-    getAudioStreamUrl(videoId).then((url) => {
-      if (!url || !audioRef.current || fallbackRef.current) {
-        if (!fallbackRef.current) enableFallback(videoId);
-        return;
-      }
-      audioRef.current.src = url;
-      if (configRef.current.isPlaying)
-        audioRef.current.play().catch(() => {
-          if (!fallbackRef.current) enableFallback(videoId);
-        });
-    });
-  }
+  const releaseWakeLock = useCallback(() => {
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
+  }, []);
 
+  /* --- Audio element (fallback) --- */
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
@@ -59,17 +50,27 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.style.display = "none";
     document.body.appendChild(audio);
 
-    audio.onplay = () => configRef.current.onPlay();
-    audio.onpause = () => configRef.current.onPause();
-    audio.onended = () => configRef.current.onTrackEnd();
+    audio.onplay = () => {
+      if (fallbackRef.current) configRef.current.onPlay();
+    };
+    audio.onpause = () => {
+      if (fallbackRef.current) configRef.current.onPause();
+    };
+    audio.onended = () => {
+      if (fallbackRef.current) configRef.current.onTrackEnd();
+    };
     audio.onerror = () => {
-      if (fallbackRef.current) return;
+      if (!fallbackRef.current) return;
       const track = configRef.current.nowPlaying;
       if (!track?.videoId) return;
       if (!audioReloadedRef.current) {
-        reloadAudioSrc(track.videoId);
-      } else if (!document.hidden) {
-        enableFallback(track.videoId);
+        audioReloadedRef.current = true;
+        getAudioStreamUrl(track.videoId).then((url) => {
+          if (!url || !audioRef.current) return;
+          audioRef.current.src = url;
+          if (configRef.current.isPlaying)
+            audioRef.current.play().catch(() => {});
+        });
       }
     };
 
@@ -81,22 +82,60 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.onerror = null;
       audio.pause();
       audio.src = "";
-      hasSrcRef.current = false;
       document.body.removeChild(audio);
       audioRef.current = null;
     };
   }, []);
 
+  /* --- Fallback: switch from YT iframe to Audio element --- */
+  const enableFallback = useCallback(() => {
+    if (fallbackRef.current) return;
+    fallbackRef.current = true;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const track = configRef.current.nowPlaying;
+    if (!track?.videoId) return;
+    audio.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
+    audio.currentTime = 0;
+    if (configRef.current.isPlaying) {
+      audio.play().catch(() => {
+        getAudioStreamUrl(track.videoId).then((url) => {
+          if (!url || !audioRef.current) return;
+          audioReloadedRef.current = false;
+          audioRef.current.src = url;
+          if (configRef.current.isPlaying)
+            audioRef.current.play().catch(() => {});
+        });
+      });
+    }
+  }, []);
+
+  /* --- YT iframe callbacks (primary) --- */
   const onYtReady = useCallback((player: any) => {
     ytPlayerRef.current = player;
     ytReadyRef.current = true;
-    player.setVolume(0);
+    player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
+    const track = configRef.current.nowPlaying;
+    if (track?.videoId) {
+      player.loadVideoById(track.videoId);
+      lastVideoIdRef.current = track.videoId;
+      if (configRef.current.isPlaying) player.playVideo();
+    }
   }, []);
 
   const onYtStateChange = useCallback((state: number) => {
-    if (state === 0) configRef.current.onTrackEnd();
+    if (state === 0 && !fallbackRef.current) {
+      configRef.current.onTrackEnd();
+    }
+    if (state === 1 && !fallbackRef.current) {
+      configRef.current.onPlay();
+    }
+    if (state === 2 && !fallbackRef.current) {
+      configRef.current.onPause();
+    }
   }, []);
 
+  /* --- Track change --- */
   useEffect(() => {
     const track = config.nowPlaying;
     if (!track?.videoId) return;
@@ -104,60 +143,55 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     fallbackRef.current = false;
     audioReloadedRef.current = false;
     lastVideoIdRef.current = null;
-    hasSrcRef.current = false;
     const fetchId = ++fetchIdRef.current;
 
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    getAudioStreamUrl(track.videoId)
-      .then((url) => {
-        if (fetchId !== fetchIdRef.current) return;
-        if (!url || !audioRef.current || fallbackRef.current) {
-          if (!fallbackRef.current) enableFallback(track.videoId);
-          return;
-        }
-        audio.src = url;
-        hasSrcRef.current = true;
-        audioReloadedRef.current = false;
-        if (configRef.current.isPlaying)
-          audio.play().catch(() => {
-            if (!document.hidden && !fallbackRef.current)
-              enableFallback(track.videoId);
-          });
-      })
-      .catch(() => {
-        if (fetchId === fetchIdRef.current) enableFallback(track.videoId);
-      });
-
+    /* Start YT iframe (primary) */
     const player = ytPlayerRef.current;
     if (player && ytReadyRef.current) {
       player.loadVideoById(track.videoId);
       lastVideoIdRef.current = track.videoId;
-      player.setVolume(0);
+      player.setVolume(
+        configRef.current.isMuted ? 0 : configRef.current.volume,
+      );
       if (configRef.current.isPlaying) player.playVideo();
+    }
+
+    /* Preload Audio from server proxy (warm standby) */
+    const audio = audioRef.current;
+    if (audio) {
+      audio.src = getStreamUrl(track.videoId);
     }
   }, [config.nowPlaying?.videoId]);
 
+  /* --- Play / Pause / Volume --- */
   useEffect(() => {
+    const player = ytPlayerRef.current;
+    if (player && ytReadyRef.current && !fallbackRef.current) {
+      player.setVolume(config.isMuted ? 0 : config.volume);
+      if (config.isPlaying) {
+        player.playVideo();
+      } else {
+        player.pauseVideo();
+      }
+    }
+
     const audio = audioRef.current;
     if (audio) {
-      audio.volume = config.isMuted ? 0 : config.volume / 100;
-      if (config.isPlaying) {
-        if (hasSrcRef.current) audio.play().catch(() => {});
+      if (fallbackRef.current) {
+        audio.volume = config.isMuted ? 0 : config.volume / 100;
+        if (config.isPlaying) {
+          audio.play().catch(() => {});
+        } else {
+          audio.pause();
+        }
       } else {
-        audio.pause();
+        audio.volume = 0;
       }
     }
-    if (fallbackRef.current) {
-      const player = ytPlayerRef.current;
-      if (player && ytReadyRef.current) {
-        player.setVolume(config.isMuted ? 0 : config.volume);
-        if (config.isPlaying) player.playVideo();
-        else player.pauseVideo();
-      }
-    }
-  }, [config.isPlaying, config.volume, config.isMuted]);
 
-  return { onYtReady, onYtStateChange, ytPlayerRef, audioRef };
+    if (config.isPlaying) acquireWakeLock();
+    else releaseWakeLock();
+  }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, releaseWakeLock]);
+
+  return { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback };
 }

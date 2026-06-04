@@ -7,6 +7,7 @@ interface YoutubePlayerProps {
   volume: number;
   onStateChange: (state: number) => void;
   onPlayerReady: (player: any) => void;
+  onError?: () => void;
 }
 
 export default function YoutubePlayer({
@@ -14,6 +15,7 @@ export default function YoutubePlayer({
   volume,
   onStateChange,
   onPlayerReady,
+  onError,
 }: YoutubePlayerProps) {
   const playerRef = useRef<any>(null);
 
@@ -45,6 +47,7 @@ export default function YoutubePlayer({
           onPlayerReady(e.target);
         }}
         onStateChange={(e: YouTubeEvent) => onStateChange(e.data)}
+        onError={onError}
       />
     </div>
   );
