@@ -458,8 +458,7 @@ export default function PlaylistsPage() {
             </div>
           </div>
 
-          {/* ── MAIN CONTENT — mirrors browse's full-screen card grid ── */}
-          <ScrollArea className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen">
+          <ScrollArea className="flex items-center justify-center h-full min-h-screen w-full">
             {!user && !authLoading ? (
               <div className="text-center">
                 <p className="text-4xl font-black tracking-tight mb-2 text-white">

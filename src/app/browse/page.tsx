@@ -163,7 +163,7 @@ export default function BrowsePage() {
     <div className="h-full min-h-screen relative overflow-hidden">
       <div className=" min-h-screen flex justify-center items-center  z-10 h-full w-full overflow-hidden">
         <div className=" flex flex-col justify-center items-center h-full min-h-screen w-full ">
-          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none  before:to-transparent">
+          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
             <Link
               href="/browse"
               className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
@@ -171,7 +171,7 @@ export default function BrowsePage() {
               blu3
             </Link>
 
-            <div className="flex items-center gap-4 relative z-10">
+            <div className="flex items-center gap-4 realtive z-20">
               <div className="flex items-center gap-4 border-l border-white/10 pl-4 h-4">
                 <Link
                   href="/browse"
@@ -188,7 +188,7 @@ export default function BrowsePage() {
               </div>
             </div>
 
-            <div className="relative z-10">
+            <div className="relative -z-10">
               {user ? (
                 <div className="relative">
                   {/* ✅ Toggle button always renders for authenticated users */}
@@ -271,7 +271,7 @@ export default function BrowsePage() {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-wrap items-start justify-center gap-3 py-16 md:py-0 w-full h-full">
+              <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 w-full h-full">
                 {loading
                   ? Array.from({ length: 9 }).map((_, i) => (
                       <SkeletonCard key={i} />
