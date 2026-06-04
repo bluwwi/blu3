@@ -45,7 +45,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         gainRef.current = gain;
       }
       if (audioCtxRef.current?.state === "suspended") {
-        audioCtxRef.current.resume();
+        audioCtxRef.current!.resume();
       }
     } catch {}
   }, []);
