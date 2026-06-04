@@ -556,11 +556,11 @@ export default function RoomPage() {
     }
   }, []);
 
-  const handleSeekAction = (seekToTime: number) => {
-    if (!canControlPlayback || !progress.duration) return;
+  const handleSeekAction = useCallback((seekToTime: number) => {
+    if (!canControlPlayback || !player.nowPlaying?.videoId) return;
     progress.seekTo(seekToTime);
     sendSeek(seekToTime);
-  };
+  }, [canControlPlayback, player.nowPlaying?.videoId, progress, sendSeek]);
 
   const handlePlayPauseAction = useCallback(() => {
     if (!canControlPlayback) return;
