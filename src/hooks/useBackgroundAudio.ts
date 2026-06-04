@@ -59,7 +59,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     ytReadyRef.current = true;
     const track = configRef.current.nowPlaying;
     if (track?.videoId) {
-      controlYt(track.videoId);
+      Promise.resolve().then(() => controlYt(track.videoId));
     }
   }, [controlYt]);
 
