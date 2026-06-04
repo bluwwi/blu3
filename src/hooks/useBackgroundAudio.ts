@@ -24,6 +24,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const lastVideoIdRef = useRef<string | null>(null);
   const fetchIdRef = useRef(0);
   const hasSrcRef = useRef(false);
+  const audioReloadedRef = useRef(false);
 
   function enableFallback(videoId: string) {
     fallbackRef.current = true;
@@ -34,6 +35,21 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
       if (configRef.current.isPlaying) player.playVideo();
     }
+  }
+
+  function reloadAudioSrc(videoId: string) {
+    audioReloadedRef.current = true;
+    getAudioStreamUrl(videoId).then((url) => {
+      if (!url || !audioRef.current || fallbackRef.current) {
+        if (!fallbackRef.current) enableFallback(videoId);
+        return;
+      }
+      audioRef.current.src = url;
+      if (configRef.current.isPlaying)
+        audioRef.current.play().catch(() => {
+          if (!fallbackRef.current) enableFallback(videoId);
+        });
+    });
   }
 
   useEffect(() => {
@@ -47,10 +63,13 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.onpause = () => configRef.current.onPause();
     audio.onended = () => configRef.current.onTrackEnd();
     audio.onerror = () => {
-      if (document.hidden) return;
-      if (!fallbackRef.current) {
-        const track = configRef.current.nowPlaying;
-        if (track?.videoId) enableFallback(track.videoId);
+      if (fallbackRef.current) return;
+      const track = configRef.current.nowPlaying;
+      if (!track?.videoId) return;
+      if (!audioReloadedRef.current) {
+        reloadAudioSrc(track.videoId);
+      } else if (!document.hidden) {
+        enableFallback(track.videoId);
       }
     };
 
@@ -83,6 +102,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (!track?.videoId) return;
 
     fallbackRef.current = false;
+    audioReloadedRef.current = false;
     lastVideoIdRef.current = null;
     hasSrcRef.current = false;
     const fetchId = ++fetchIdRef.current;
@@ -99,6 +119,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         }
         audio.src = url;
         hasSrcRef.current = true;
+        audioReloadedRef.current = false;
         if (configRef.current.isPlaying)
           audio.play().catch(() => {
             if (!document.hidden && !fallbackRef.current)
