@@ -678,7 +678,7 @@ export function QueueAndHistory({
                   <div
                     key={`${track.videoId}-${i}`}
                     className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
-                      isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
+                      isActive ? "bg-white/15" : "hover:bg-white/6"
                     }`}
                   >
                     <div

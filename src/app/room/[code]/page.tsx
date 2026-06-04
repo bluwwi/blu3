@@ -46,7 +46,7 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const { onYtReady, onYtStateChange, ytPlayerRef } = useBackgroundAudio({
+  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     volume: player.volume,
@@ -57,6 +57,7 @@ export default function RoomPage() {
   const progress = useProgressTracking(
     ytPlayerRef,
     player.playerState,
+    audioRef,
   );
 
   const onYtStateChangeWrapped = useCallback((state: number) => {
@@ -808,13 +809,15 @@ export default function RoomPage() {
         wasPlayingRef.current = false;
         const yt = ytPlayerRef.current;
         if (yt && yt.playVideo) yt.playVideo();
+        const a = audioRef.current;
+        if (a && a.paused) a.play().catch(() => {});
         player.play?.();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [player.play, ytPlayerRef]);
+  }, [player.play, ytPlayerRef, audioRef]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;

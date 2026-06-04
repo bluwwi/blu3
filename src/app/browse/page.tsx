@@ -343,10 +343,10 @@ export default function BrowsePage() {
                   </div>
                 )}
               </div>
-              )}
-            </ScrollArea>
-          </div>
+            )}
+          </ScrollArea>
         </div>
+      </div>
 
       {/* Join Room Bar */}
       {(user || !authLoading) && (
