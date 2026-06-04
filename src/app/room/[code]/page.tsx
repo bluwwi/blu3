@@ -51,6 +51,8 @@ export default function RoomPage() {
     isPlaying: player.playing,
     volume: player.volume,
     isMuted: player.isMuted,
+    onPlay: () => player.handlePlayEvent(),
+    onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
   });
 
@@ -78,7 +80,6 @@ export default function RoomPage() {
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
   const [listenerMuted, setListenerMuted] = useState(false);
   const [stableVideoId, setStableVideoId] = useState<string | null>(null);
-  const stableVideoSetRef = useRef(false);
   const [joinToasts, setJoinToasts] = useState<
     Array<{ id: string; name: string; avatar?: string }>
   >([]);
@@ -95,8 +96,7 @@ export default function RoomPage() {
   }, []);
 
   useEffect(() => {
-    if (player.nowPlaying?.videoId && !stableVideoSetRef.current) {
-      stableVideoSetRef.current = true;
+    if (player.nowPlaying?.videoId) {
       setStableVideoId(player.nowPlaying.videoId);
     }
   }, [player.nowPlaying?.videoId]);
@@ -972,7 +972,7 @@ export default function RoomPage() {
     <>
       <YoutubePlayer
         videoId={stableVideoId}
-        volume={player.isMuted ? 0 : player.volume}
+        volume={0}
         onStateChange={onYtStateChangeWrapped}
         onPlayerReady={onYtReady}
       />

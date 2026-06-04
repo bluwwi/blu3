@@ -8,6 +8,8 @@ interface BackgroundAudioConfig {
   isPlaying: boolean;
   volume: number;
   isMuted: boolean;
+  onPlay: () => void;
+  onPause: () => void;
   onTrackEnd: () => void;
 }
 
@@ -41,6 +43,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.style.display = "none";
     document.body.appendChild(audio);
 
+    audio.onplay = () => configRef.current.onPlay();
+    audio.onpause = () => configRef.current.onPause();
     audio.onended = () => configRef.current.onTrackEnd();
     audio.onerror = () => {
       if (document.hidden) return;
@@ -52,6 +56,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     audioRef.current = audio;
     return () => {
+      audio.onplay = null;
+      audio.onpause = null;
       audio.onended = null;
       audio.onerror = null;
       audio.pause();
@@ -65,6 +71,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const onYtReady = useCallback((player: any) => {
     ytPlayerRef.current = player;
     ytReadyRef.current = true;
+    player.setVolume(0);
   }, []);
 
   const onYtStateChange = useCallback((state: number) => {
@@ -90,7 +97,6 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           if (!fallbackRef.current) enableFallback(track.videoId);
           return;
         }
-        const wasPaused = audio.paused;
         audio.src = url;
         hasSrcRef.current = true;
         if (configRef.current.isPlaying)
@@ -102,6 +108,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       .catch(() => {
         if (fetchId === fetchIdRef.current) enableFallback(track.videoId);
       });
+
+    const player = ytPlayerRef.current;
+    if (player && ytReadyRef.current) {
+      player.loadVideoById(track.videoId);
+      lastVideoIdRef.current = track.videoId;
+      player.setVolume(0);
+      if (configRef.current.isPlaying) player.playVideo();
+    }
   }, [config.nowPlaying?.videoId]);
 
   useEffect(() => {
