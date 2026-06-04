@@ -21,6 +21,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const fallbackRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
   const fetchIdRef = useRef(0);
+  const hasSrcRef = useRef(false);
 
   function enableFallback(videoId: string) {
     fallbackRef.current = true;
@@ -37,9 +38,12 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const audio = new Audio();
     audio.preload = "auto";
     audio.crossOrigin = "anonymous";
+    audio.style.display = "none";
+    document.body.appendChild(audio);
 
     audio.onended = () => configRef.current.onTrackEnd();
     audio.onerror = () => {
+      if (document.hidden) return;
       if (!fallbackRef.current) {
         const track = configRef.current.nowPlaying;
         if (track?.videoId) enableFallback(track.videoId);
@@ -52,6 +56,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.onerror = null;
       audio.pause();
       audio.src = "";
+      hasSrcRef.current = false;
+      document.body.removeChild(audio);
       audioRef.current = null;
     };
   }, []);
@@ -71,6 +77,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     fallbackRef.current = false;
     lastVideoIdRef.current = null;
+    hasSrcRef.current = false;
     const fetchId = ++fetchIdRef.current;
 
     const audio = audioRef.current;
@@ -83,9 +90,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           if (!fallbackRef.current) enableFallback(track.videoId);
           return;
         }
+        const wasPaused = audio.paused;
         audio.src = url;
+        hasSrcRef.current = true;
         if (configRef.current.isPlaying)
-          audio.play().catch(() => enableFallback(track.videoId));
+          audio.play().catch(() => {
+            if (!document.hidden && !fallbackRef.current)
+              enableFallback(track.videoId);
+          });
       })
       .catch(() => {
         if (fetchId === fetchIdRef.current) enableFallback(track.videoId);
@@ -97,7 +109,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (audio) {
       audio.volume = config.isMuted ? 0 : config.volume / 100;
       if (config.isPlaying) {
-        audio.play().catch(() => {});
+        if (hasSrcRef.current) audio.play().catch(() => {});
       } else {
         audio.pause();
       }
