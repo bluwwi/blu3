@@ -129,6 +129,16 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   }, [config.isPlaying, acquireWakeLock, releaseWakeLock, ensureSilentAudio, suspendSilentAudio]);
 
   useEffect(() => {
+    return () => {
+      try {
+        if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+          audioCtxRef.current.close();
+        }
+      } catch {}
+    };
+  }, []);
+
+  useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     try {
       navigator.mediaSession.metadata = config.nowPlaying
