@@ -784,14 +784,16 @@ export default function RoomPage() {
       if (document.hidden) {
         wasPlayingRef.current = player.playerState === "playing";
       } else if (wasPlayingRef.current) {
-        player.play?.();
         wasPlayingRef.current = false;
+        const yt = ytPlayerRef.current;
+        if (yt && yt.playVideo) yt.playVideo();
+        player.play?.();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [player.play]);
+  }, [player.play, ytPlayerRef]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
