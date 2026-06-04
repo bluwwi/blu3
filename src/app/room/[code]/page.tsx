@@ -691,7 +691,7 @@ export default function RoomPage() {
 
   const { onYtReady } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
-    isPlaying: player.playerState === "playing",
+    isPlaying: player.playing,
     currentTime: progress.currentTime,
     volume: player.volume,
     isMuted: player.isMuted,
@@ -958,12 +958,15 @@ export default function RoomPage() {
         <div className="w-full h-full bg-[#334EAC] relative">
           <YoutubePlayer
             videoId={player.nowPlaying?.videoId ?? null}
-            isPlaying={player.playerState === "playing"}
+            isPlaying={player.playing}
             volume={player.isMuted ? 0 : player.volume}
             onStateChange={(state) => {
               if (state === 1) player.setPlayerState("playing");
               else if (state === 2) player.setPlayerState("paused");
-              else if (state === 0) player.setPlayerState("ended");
+              else if (state === 0) {
+                player.setPlayerState("ended");
+                player.pause?.();
+              }
             }}
             onPlayerReady={onYtReady}
           />
