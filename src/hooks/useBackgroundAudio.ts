@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef } from "react";
+import { getStreamUrl } from "@/utils/stream";
 import type { Track } from "@/utils/types";
 
 interface BackgroundAudioConfig {
@@ -17,6 +18,7 @@ interface BackgroundAudioConfig {
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const ytPlayerRef = useRef<any>(null);
   const configRef = useRef(config);
   configRef.current = config;
@@ -24,38 +26,15 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const ytReadyRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
 
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscRef = useRef<OscillatorNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
-
-  const ensureSilentAudio = useCallback(() => {
-    try {
-      const AudioCtor = (window as any).AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtor) return;
-      if (!audioCtxRef.current) {
-        const ctx = new AudioCtor();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        gain.gain.value = 0;
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        audioCtxRef.current = ctx;
-        oscRef.current = osc;
-        gainRef.current = gain;
-      }
-      if (audioCtxRef.current?.state === "suspended") {
-        audioCtxRef.current!.resume();
-      }
-    } catch {}
-  }, []);
-
-  const suspendSilentAudio = useCallback(() => {
-    try {
-      if (audioCtxRef.current && audioCtxRef.current.state === "running") {
-        audioCtxRef.current.suspend();
-      }
-    } catch {}
+  useEffect(() => {
+    const audio = new Audio();
+    audio.preload = "auto";
+    audioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
   }, []);
 
   const acquireWakeLock = useCallback(async () => {
@@ -80,8 +59,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       player.loadVideoById(videoId);
       lastVideoIdRef.current = videoId;
     }
+    player.setVolume(0);
     if (configRef.current.isPlaying) {
-      player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume * 2);
       player.playVideo();
     } else {
       player.pauseVideo();
@@ -91,11 +70,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const onYtReady = useCallback((player: any) => {
     ytPlayerRef.current = player;
     ytReadyRef.current = true;
+    player.setVolume(0);
     const track = configRef.current.nowPlaying;
     if (track?.videoId) {
-      controlYt(track.videoId);
+      player.loadVideoById(track.videoId);
+      lastVideoIdRef.current = track.videoId;
+      if (configRef.current.isPlaying) player.playVideo();
     }
-  }, [controlYt]);
+  }, []);
 
   const onYtStateChange = useCallback((state: number) => {
     if (state === 0) configRef.current.onTrackEnd();
@@ -105,38 +87,38 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const track = config.nowPlaying;
     if (!track?.videoId) return;
     controlYt(track.videoId);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.src = getStreamUrl(track.videoId);
+      if (config.isPlaying) audio.play().catch(() => {});
+    }
   }, [config.nowPlaying?.videoId, controlYt]);
 
   useEffect(() => {
-    if (!ytPlayerRef.current || !ytReadyRef.current) return;
+    const audio = audioRef.current;
+    if (audio) {
+      if (config.isPlaying) {
+        audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+      audio.volume = config.isMuted ? 0 : config.volume / 100;
+    }
     const player = ytPlayerRef.current;
-    if (config.isPlaying) {
-      player.setVolume(config.isMuted ? 0 : config.volume * 2);
-      player.playVideo();
-    } else {
-      player.pauseVideo();
+    if (player && ytReadyRef.current) {
+      player.setVolume(0);
+      if (config.isPlaying) player.playVideo();
+      else player.pauseVideo();
     }
   }, [config.isPlaying, config.volume, config.isMuted]);
 
   useEffect(() => {
     if (config.isPlaying) {
-      ensureSilentAudio();
       acquireWakeLock();
     } else {
-      suspendSilentAudio();
       releaseWakeLock();
     }
-  }, [config.isPlaying, acquireWakeLock, releaseWakeLock, ensureSilentAudio, suspendSilentAudio]);
-
-  useEffect(() => {
-    return () => {
-      try {
-        if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
-          audioCtxRef.current.close();
-        }
-      } catch {}
-    };
-  }, []);
+  }, [config.isPlaying, acquireWakeLock, releaseWakeLock]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -164,5 +146,5 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     navigator.mediaSession.playbackState = config.isPlaying ? "playing" : "paused";
   }, [config.nowPlaying?.videoId, config.isPlaying]);
 
-  return { onYtReady, onYtStateChange, ytPlayerRef };
+  return { onYtReady, onYtStateChange, ytPlayerRef, audioRef };
 }
