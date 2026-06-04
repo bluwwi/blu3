@@ -44,7 +44,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         oscRef.current = osc;
         gainRef.current = gain;
       }
-      if (audioCtxRef.current.state === "suspended") {
+      if (audioCtxRef.current?.state === "suspended") {
         audioCtxRef.current.resume();
       }
     } catch {}
