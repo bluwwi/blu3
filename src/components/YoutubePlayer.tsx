@@ -29,7 +29,7 @@ export default function YoutubePlayer({
             fs: 0,
             modestbranding: 1,
             rel: 0,
-            autoplay: 0,
+            autoplay: 1,
           },
         }}
         onReady={(e: YouTubeEvent) => {
