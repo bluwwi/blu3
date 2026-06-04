@@ -69,7 +69,6 @@ export default function RoomPage() {
     onYtStateChange(state);
     if (state === 1) player.handlePlayEvent();
     else if (state === 2) player.handlePauseEvent();
-    else if (state === -1) player.handleEnded();
     else if (state === 0) player.handleEnded();
   }, [onYtStateChange, player]);
 
