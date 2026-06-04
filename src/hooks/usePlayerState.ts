@@ -90,18 +90,6 @@ export function usePlayerState(): UsePlayerStateReturn {
     } catch {}
   }, [nowPlaying]);
 
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    try {
-      navigator.mediaSession.setActionHandler("play", () => { setPlaying(true); });
-      navigator.mediaSession.setActionHandler("pause", () => { setPlaying(false); });
-      navigator.mediaSession.setActionHandler("seekbackward", () => {});
-      navigator.mediaSession.setActionHandler("seekforward", () => {});
-      navigator.mediaSession.setActionHandler("previoustrack", () => {});
-      navigator.mediaSession.setActionHandler("nexttrack", () => {});
-    } catch {}
-  }, []);
-
   const togglePlayPause = useCallback(() => {
     const id = nowPlayingRef.current?.videoId;
     if (!id) return;

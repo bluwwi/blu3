@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export function useProgressTracking(
   ytPlayerRef: React.MutableRefObject<any>,
   playerState: string,
-  audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -49,15 +48,10 @@ export function useProgressTracking(
           player.seekTo(time, true);
         }
       } catch {}
-      try {
-        if (audioRef?.current) {
-          audioRef.current.currentTime = time;
-        }
-      } catch {}
       const tot = duration;
       if (tot > 0) setProgress((time / tot) * 100);
     },
-    [ytPlayerRef, duration, audioRef],
+    [ytPlayerRef, duration],
   );
 
   const handleSeek = useCallback(
@@ -79,26 +73,6 @@ export function useProgressTracking(
     }
     return () => stopTracking();
   }, [playerState, startTracking, stopTracking]);
-
-  useEffect(() => {
-    const audio = audioRef?.current;
-    if (!audio) return;
-    const handleTimeUpdate = () => {
-      try {
-        const cur = audio.currentTime;
-        const dur = audio.duration || 0;
-        setCurrentTime(cur);
-        setDuration(dur);
-        if (dur > 0) setProgress((cur / dur) * 100);
-      } catch {}
-    };
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [audioRef]);
-
-  useEffect(() => {
-    return () => stopTracking();
-  }, [stopTracking]);
 
   return {
     progress,

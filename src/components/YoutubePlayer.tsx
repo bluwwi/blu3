@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 import YouTube, { YouTubeEvent } from "react-youtube";
 
 interface YoutubePlayerProps {
@@ -14,6 +15,12 @@ export default function YoutubePlayer({
   onStateChange,
   onPlayerReady,
 }: YoutubePlayerProps) {
+  const playerRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (playerRef.current) playerRef.current.setVolume(volume);
+  }, [volume]);
+
   if (!videoId) return null;
 
   return (
@@ -34,6 +41,7 @@ export default function YoutubePlayer({
         }}
         onReady={(e: YouTubeEvent) => {
           e.target.setVolume(volume);
+          playerRef.current = e.target;
           onPlayerReady(e.target);
         }}
         onStateChange={(e: YouTubeEvent) => onStateChange(e.data)}

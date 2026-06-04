@@ -46,24 +46,17 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef } = useBackgroundAudio({
+  const { onYtReady, onYtStateChange, ytPlayerRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
-    currentTime: 0,
     volume: player.volume,
     isMuted: player.isMuted,
-    onPlay: () => player.play?.(),
-    onPause: () => player.pause?.(),
-    onNext: () => handleSkipForward(),
-    onPrev: () => handleSkipBack(),
-    onSeek: (time) => progress.seekTo(time),
     onTrackEnd: () => player.setPlayerState("ended"),
   });
 
   const progress = useProgressTracking(
     ytPlayerRef,
     player.playerState,
-    audioRef,
   );
 
   const onYtStateChangeWrapped = useCallback((state: number) => {
@@ -749,6 +742,25 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
+  /* --- Media Session lock-screen controls ------------- */
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    try {
+      navigator.mediaSession.setActionHandler("previoustrack", () => handleSkipBack());
+      navigator.mediaSession.setActionHandler("nexttrack", () => handleSkipForward());
+      navigator.mediaSession.setActionHandler("seekbackward", () => {
+        const newTime = Math.max(0, progress.currentTime - 10);
+        progress.seekTo(newTime);
+        if (canControlPlayback) sendSeek(newTime);
+      });
+      navigator.mediaSession.setActionHandler("seekforward", () => {
+        const newTime = Math.min(progress.duration, progress.currentTime + 10);
+        progress.seekTo(newTime);
+        if (canControlPlayback) sendSeek(newTime);
+      });
+    } catch {}
+  }, [handleSkipBack, handleSkipForward, progress, canControlPlayback, sendSeek]);
+
   /* --- Lifecycle effects ------------------------------ */
   useEffect(() => {
     return () => {
@@ -796,8 +808,6 @@ export default function RoomPage() {
         wasPlayingRef.current = false;
         const yt = ytPlayerRef.current;
         if (yt && yt.playVideo) yt.playVideo();
-        const a = audioRef.current;
-        if (a && a.paused) a.play().catch(() => {});
         player.play?.();
       }
     };
