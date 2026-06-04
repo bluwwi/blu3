@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
-import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -30,6 +29,7 @@ import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const STREAM_URL = process.env.NEXT_PUBLIC_STREAM_URL || API_URL;
 type RepeatMode = "off" | "all" | "one";
 
 export default function RoomPage() {
@@ -46,14 +46,28 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
+  const { audioRef } = useBackgroundAudio({
+    nowPlaying: player.nowPlaying,
+    isPlaying: player.playing,
+    currentTime: 0,
+    volume: player.volume,
+    isMuted: player.isMuted,
+    streamUrl: STREAM_URL,
+    onPlay: () => player.play?.(),
+    onPause: () => player.pause?.(),
+    onNext: () => handleSkipForward(),
+    onPrev: () => handleSkipBack(),
+    onSeek: (time) => progress.seekTo(time),
+    onTrackEnd: () => player.setPlayerState("ended"),
+  });
+
   const progress = useProgressTracking(
-    player.reactPlayerRef,
+    audioRef,
     player.playerState,
   );
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
-  /* OLD: useYouTubeAPI() — react-youtube handles loading the IFrame API internally */
 
   const [chatInput, setChatInput] = useState("");
   const [joined, setJoined] = useState(false);
@@ -482,9 +496,8 @@ export default function RoomPage() {
       0,
     );
     const timeoutId = window.setTimeout(() => {
-      const ref = player.reactPlayerRef.current;
-      const currentTime = ref?.getCurrentTime?.() ?? progress.currentTime;
-      const duration = ref?.getDuration?.() ?? activeTrack.duration_ms / 1000;
+      const currentTime = audioRef.current?.currentTime ?? progress.currentTime;
+      const duration = audioRef.current?.duration ?? activeTrack.duration_ms / 1000;
       const isNearEnd =
         duration > 0 && currentTime >= Math.max(duration - 2, 0);
       if (player.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
@@ -495,7 +508,7 @@ export default function RoomPage() {
     joined,
     maybeAdvanceQueue,
     player.nowPlaying,
-    player.reactPlayerRef,
+    audioRef,
     player.playerState,
     progress.currentTime,
     queue,
@@ -689,19 +702,6 @@ export default function RoomPage() {
     sendPlay,
   ]);
 
-  const { onYtReady } = useBackgroundAudio({
-    nowPlaying: player.nowPlaying,
-    isPlaying: player.playing,
-    currentTime: progress.currentTime,
-    volume: player.volume,
-    isMuted: player.isMuted,
-    onPlay: () => player.play?.(),
-    onPause: () => player.pause?.(),
-    onNext: () => handleSkipForward(),
-    onPrev: () => handleSkipBack(),
-    onSeek: (time) => progress.seekTo(time),
-  });
-
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     const newShuffle = !playbackMode.shuffle;
@@ -789,7 +789,7 @@ export default function RoomPage() {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       const liveCurrentTime =
-        player.reactPlayerRef.current?.getCurrentTime?.() ??
+        audioRef.current?.currentTime ??
         progress.currentTime;
       if (player.playerState === "playing") sendProgress(liveCurrentTime);
     }, 2000);
@@ -798,7 +798,7 @@ export default function RoomPage() {
     canControlPlayback,
     joined,
     player.nowPlaying?.videoId,
-    player.reactPlayerRef,
+    audioRef,
     player.playerState,
     sendProgress,
   ]);
@@ -956,21 +956,6 @@ export default function RoomPage() {
         }`}
       >
         <div className="w-full h-full bg-[#334EAC] relative">
-          <YoutubePlayer
-            videoId={player.nowPlaying?.videoId ?? null}
-            isPlaying={player.playing}
-            volume={player.isMuted ? 0 : player.volume}
-            onStateChange={(state) => {
-              if (state === 1) player.setPlayerState("playing");
-              else if (state === 2) player.setPlayerState("paused");
-              else if (state === 0) {
-                player.setPlayerState("ended");
-                player.pause?.();
-              }
-            }}
-            onPlayerReady={onYtReady}
-          />
-
           <div
             className="fixed inset-0 overflow-hidden pointer-events-none"
             style={{ zIndex: 0 }}

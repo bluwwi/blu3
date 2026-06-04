@@ -3,17 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
-import ReactPlayer from "react-player";
 
 interface UsePlayerStateReturn {
-  reactPlayerRef: React.MutableRefObject<ReactPlayer | null>;
   playerState: PlayerStateType;
   volume: number;
   isMuted: boolean;
   nowPlaying: Track | null;
   activeVideoId: string | null;
   error: string;
-  src: string | null;
   playing: boolean;
   playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
@@ -38,10 +35,8 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [src, setSrc] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
 
-  const reactPlayerRef = useRef<ReactPlayer | null>(null);
   const nowPlayingRef = useRef(nowPlaying);
   nowPlayingRef.current = nowPlaying;
   const playerStateRef = useRef(playerState);
@@ -62,14 +57,7 @@ export function usePlayerState(): UsePlayerStateReturn {
       }
 
       setPlayerState("loading");
-      if (track.videoId === activeVideoIdRef.current) {
-        reactPlayerRef.current?.seekTo(startTime ?? 0, "seconds");
-        setPlaying(shouldPlay);
-      } else {
-        const videoSrc = `https://www.youtube.com/watch?v=${track.videoId}&start=${Math.floor(startTime ?? 0)}`;
-        setSrc(videoSrc);
-        setPlaying(shouldPlay);
-      }
+      setPlaying(shouldPlay);
     },
     [],
   );
@@ -82,21 +70,12 @@ export function usePlayerState(): UsePlayerStateReturn {
     setPlaying(false);
   }, []);
 
-  /* Sync volume/mute to ReactPlayer */
-  useEffect(() => {
-    const player = reactPlayerRef.current;
-    if (!player) return;
-    /* ReactPlayer handles volume via the `volume` and `muted` props — nothing else needed */
-  }, []);
-
-  /* Sync Media Session playbackState — tells Android Chrome to keep background audio alive */
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState =
       playerState === "playing" ? "playing" : "paused";
   }, [playerState]);
 
-  /* Sync Media Session metadata — shows track info on lock screen */
   useEffect(() => {
     if (!("mediaSession" in navigator) || !nowPlaying) return;
     try {
@@ -111,27 +90,13 @@ export function usePlayerState(): UsePlayerStateReturn {
     } catch {}
   }, [nowPlaying]);
 
-  /* Set up Media Session action handlers (play, pause, next, prev, seek) */
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     try {
       navigator.mediaSession.setActionHandler("play", () => { setPlaying(true); });
       navigator.mediaSession.setActionHandler("pause", () => { setPlaying(false); });
-      navigator.mediaSession.setActionHandler("seekbackward", () => {
-        const player = reactPlayerRef.current;
-        if (player) {
-          const cur = player.getCurrentTime() ?? 0;
-          player.seekTo(Math.max(0, cur - 10), "seconds");
-        }
-      });
-      navigator.mediaSession.setActionHandler("seekforward", () => {
-        const player = reactPlayerRef.current;
-        if (player) {
-          const cur = player.getCurrentTime() ?? 0;
-          const dur = player.getDuration() ?? 0;
-          player.seekTo(Math.min(dur, cur + 10), "seconds");
-        }
-      });
+      navigator.mediaSession.setActionHandler("seekbackward", () => {});
+      navigator.mediaSession.setActionHandler("seekforward", () => {});
       navigator.mediaSession.setActionHandler("previoustrack", () => {});
       navigator.mediaSession.setActionHandler("nexttrack", () => {});
     } catch {}
@@ -164,7 +129,6 @@ export function usePlayerState(): UsePlayerStateReturn {
   }, []);
 
   const handleReady = useCallback(() => {
-    /* ReactPlayer is ready — no special action needed */
   }, []);
 
   const handlePlayEvent = useCallback(() => {
@@ -181,20 +145,18 @@ export function usePlayerState(): UsePlayerStateReturn {
   }, []);
 
   const handleError = useCallback((e: any) => {
-    console.error("[ReactPlayer] Error:", e);
+    console.error("[Audio] Error:", e);
     setError(`Player error`);
     setPlayerState("error");
   }, []);
 
   return {
-    reactPlayerRef,
     playerState,
     volume,
     isMuted,
     nowPlaying,
     activeVideoId,
     error,
-    src,
     playing,
     playTrack,
     togglePlayPause,

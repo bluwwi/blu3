@@ -8,21 +8,21 @@ interface BackgroundAudioConfig {
   currentTime: number;
   volume: number;
   isMuted: boolean;
+  streamUrl: string;
   onPlay: () => void;
   onPause: () => void;
   onNext: () => void;
   onPrev: () => void;
   onSeek: (time: number) => void;
+  onTrackEnd: () => void;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const ytPlayerRef = useRef<any>(null);
   const configRef = useRef(config);
   configRef.current = config;
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const ytReadyRef = useRef(false);
-  const lastVideoIdRef = useRef<string | null>(null);
+  const prevVideoIdRef = useRef<string | null>(null);
 
   const acquireWakeLock = useCallback(async () => {
     try {
@@ -39,36 +39,10 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     wakeLockRef.current = null;
   }, []);
 
-  const controlYt = useCallback((videoId: string) => {
-    const player = ytPlayerRef.current;
-    if (!player || !ytReadyRef.current) return;
-    if (lastVideoIdRef.current !== videoId) {
-      player.loadVideoById(videoId);
-      lastVideoIdRef.current = videoId;
-    }
-    if (configRef.current.isPlaying) {
-      player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume * 2);
-      player.playVideo();
-    } else {
-      player.pauseVideo();
-    }
-  }, []);
-
-  const onYtReady = useCallback((player: any) => {
-    ytPlayerRef.current = player;
-    ytReadyRef.current = true;
-    const track = configRef.current.nowPlaying;
-    if (track?.videoId) {
-      controlYt(track.videoId);
-    }
-  }, [controlYt]);
-
-  const onYtStateChange = useCallback((_state: number) => {
-  }, []);
-
   useEffect(() => {
     if (typeof window === "undefined") return;
     const audio = new Audio();
+    audio.preload = "auto";
     audioRef.current = audio;
     return () => {
       audio.pause();
@@ -79,24 +53,52 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
   useEffect(() => {
     const track = config.nowPlaying;
-    if (!track?.videoId) {
-      const audio = audioRef.current;
+    const audio = audioRef.current;
+    if (!track?.videoId || !audio) {
       if (audio) { audio.pause(); audio.src = ""; }
+      prevVideoIdRef.current = null;
       return;
     }
-    controlYt(track.videoId);
-  }, [config.nowPlaying?.videoId, controlYt]);
+
+    const videoId = track.videoId;
+    if (prevVideoIdRef.current === videoId) return;
+    prevVideoIdRef.current = videoId;
+
+    audio.src = `${config.streamUrl}/cdn/${encodeURIComponent(videoId)}`;
+    audio.currentTime = 0;
+    if (config.isPlaying) {
+      const p = audio.play();
+      if (p) p.catch(() => {});
+    }
+  }, [config.nowPlaying?.videoId, config.streamUrl, config.isPlaying]);
 
   useEffect(() => {
-    if (!ytPlayerRef.current || !ytReadyRef.current) return;
-    const player = ytPlayerRef.current;
+    const audio = audioRef.current;
+    if (!audio || !config.nowPlaying?.videoId) return;
     if (config.isPlaying) {
-      player.setVolume(config.isMuted ? 0 : config.volume * 2);
-      player.playVideo();
+      acquireWakeLock();
+      const p = audio.play();
+      if (p) p.catch(() => {});
     } else {
-      player.pauseVideo();
+      audio.pause();
+      releaseWakeLock();
     }
-  }, [config.isPlaying, config.volume, config.isMuted]);
+  }, [config.isPlaying, config.nowPlaying?.videoId, acquireWakeLock, releaseWakeLock]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = config.isMuted ? 0 : config.volume / 100;
+    audio.muted = config.isMuted;
+  }, [config.volume, config.isMuted]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handler = () => configRef.current.onTrackEnd();
+    audio.addEventListener("ended", handler);
+    return () => audio.removeEventListener("ended", handler);
+  }, []);
 
   useEffect(() => {
     if (config.isPlaying) acquireWakeLock();
@@ -129,5 +131,5 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     navigator.mediaSession.playbackState = config.isPlaying ? "playing" : "paused";
   }, [config.nowPlaying?.videoId, config.isPlaying]);
 
-  return { onYtReady, onYtStateChange, ytPlayerRef };
+  return { audioRef };
 }
