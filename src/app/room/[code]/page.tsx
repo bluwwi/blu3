@@ -948,7 +948,6 @@ export default function RoomPage() {
     <>
       <YoutubePlayer
         videoId={player.nowPlaying?.videoId ?? null}
-        isPlaying={player.playing}
         volume={player.isMuted ? 0 : player.volume}
         onStateChange={onYtStateChangeWrapped}
         onPlayerReady={onYtReady}

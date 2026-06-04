@@ -3,7 +3,6 @@ import YouTube, { YouTubeEvent } from "react-youtube";
 
 interface YoutubePlayerProps {
   videoId: string | null;
-  isPlaying: boolean;
   volume: number;
   onStateChange: (state: number) => void;
   onPlayerReady: (player: any) => void;
@@ -11,7 +10,6 @@ interface YoutubePlayerProps {
 
 export default function YoutubePlayer({
   videoId,
-  isPlaying,
   volume,
   onStateChange,
   onPlayerReady,
@@ -31,7 +29,7 @@ export default function YoutubePlayer({
             fs: 0,
             modestbranding: 1,
             rel: 0,
-            autoplay: isPlaying ? 1 : 0,
+            autoplay: 0,
           },
         }}
         onReady={(e: YouTubeEvent) => {
