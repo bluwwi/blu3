@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKENDS = [
+  "https://api.blu3.in",
   process.env.API_URL,
   "https://blu3-server.onrender.com",
-  "https://api.blu3.in",
   "http://localhost:8000",
 ].filter(Boolean) as string[];
 
