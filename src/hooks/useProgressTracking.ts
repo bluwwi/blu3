@@ -4,24 +4,28 @@ import { CONFIG } from "@/components/Player/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useProgressTracking(
-  audioRef: React.MutableRefObject<HTMLAudioElement | null>,
+  ytPlayerRef: React.MutableRefObject<any>,
   playerState: string,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const playerStateRef = useRef(playerState);
+  playerStateRef.current = playerState;
+
   const progressInt = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const tick = useCallback(() => {
-    const audio = audioRef.current;
-    if (audio) {
-      const cur = audio.currentTime ?? 0;
-      const tot = audio.duration ?? 0;
+    try {
+      const player = ytPlayerRef.current;
+      if (!player || !player.getCurrentTime) return;
+      const cur = player.getCurrentTime() ?? 0;
+      const dur = player.getDuration() ?? 0;
       setCurrentTime(cur);
-      setDuration(tot);
-      setProgress(tot > 0 ? (cur / tot) * 100 : 0);
-    }
-  }, [audioRef]);
+      setDuration(dur);
+      setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+    } catch {}
+  }, [ytPlayerRef]);
 
   const startTracking = useCallback(() => {
     if (progressInt.current) clearInterval(progressInt.current);
@@ -37,27 +41,28 @@ export function useProgressTracking(
 
   const seekTo = useCallback(
     (time: number) => {
-      const audio = audioRef.current;
       setCurrentTime(time);
-      if (audio) {
-        audio.currentTime = time;
-      }
-      const tot = audio?.duration ?? 0;
+      try {
+        const player = ytPlayerRef.current;
+        if (player && player.seekTo) {
+          player.seekTo(time, true);
+        }
+      } catch {}
+      const tot = duration;
       if (tot > 0) setProgress((time / tot) * 100);
     },
-    [audioRef],
+    [ytPlayerRef, duration],
   );
 
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      const audio = audioRef.current;
-      const dur = audio?.duration ?? 0;
+      const dur = duration;
       if (!dur) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const seekToTime = ((e.clientX - rect.left) / rect.width) * dur;
       seekTo(seekToTime);
     },
-    [audioRef, seekTo],
+    [seekTo, duration],
   );
 
   useEffect(() => {

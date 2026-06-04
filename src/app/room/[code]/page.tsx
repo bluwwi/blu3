@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
+import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -29,7 +30,6 @@ import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const STREAM_URL = process.env.NEXT_PUBLIC_STREAM_URL || API_URL;
 type RepeatMode = "off" | "all" | "one";
 
 export default function RoomPage() {
@@ -46,13 +46,12 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const { audioRef } = useBackgroundAudio({
+  const { onYtReady, onYtStateChange, ytPlayerRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     currentTime: 0,
     volume: player.volume,
     isMuted: player.isMuted,
-    streamUrl: STREAM_URL,
     onPlay: () => player.play?.(),
     onPause: () => player.pause?.(),
     onNext: () => handleSkipForward(),
@@ -62,9 +61,18 @@ export default function RoomPage() {
   });
 
   const progress = useProgressTracking(
-    audioRef,
+    ytPlayerRef,
     player.playerState,
   );
+
+  const onYtStateChangeWrapped = useCallback((state: number) => {
+    onYtStateChange(state);
+    if (state === 1) player.handlePlayEvent();
+    else if (state === 2) player.handlePauseEvent();
+    else if (state === -1) player.handleEnded();
+    else if (state === 0) player.handleEnded();
+  }, [onYtStateChange, player]);
+
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -496,8 +504,8 @@ export default function RoomPage() {
       0,
     );
     const timeoutId = window.setTimeout(() => {
-      const currentTime = audioRef.current?.currentTime ?? progress.currentTime;
-      const duration = audioRef.current?.duration ?? activeTrack.duration_ms / 1000;
+      const currentTime = progress.currentTime;
+      const duration = activeTrack.duration_ms / 1000;
       const isNearEnd =
         duration > 0 && currentTime >= Math.max(duration - 2, 0);
       if (player.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
@@ -508,7 +516,6 @@ export default function RoomPage() {
     joined,
     maybeAdvanceQueue,
     player.nowPlaying,
-    audioRef,
     player.playerState,
     progress.currentTime,
     queue,
@@ -776,30 +783,28 @@ export default function RoomPage() {
     const handleVisibility = () => {
       if (document.hidden) {
         wasPlayingRef.current = player.playerState === "playing";
-      } else if (wasPlayingRef.current && player.playerState !== "playing") {
+      } else if (wasPlayingRef.current) {
         player.play?.();
+        wasPlayingRef.current = false;
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [player.playerState, player.play]);
+  }, [player.play]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
-      const liveCurrentTime =
-        audioRef.current?.currentTime ??
-        progress.currentTime;
-      if (player.playerState === "playing") sendProgress(liveCurrentTime);
+      if (player.playerState === "playing") sendProgress(progress.currentTime);
     }, 2000);
     return () => window.clearInterval(heartbeatId);
   }, [
     canControlPlayback,
     joined,
     player.nowPlaying?.videoId,
-    audioRef,
     player.playerState,
+    progress.currentTime,
     sendProgress,
   ]);
 
@@ -938,7 +943,15 @@ export default function RoomPage() {
   }, [joined]);
 
   return (
-    <div className="relative min-h-screen">
+    <>
+      <YoutubePlayer
+        videoId={player.nowPlaying?.videoId ?? null}
+        isPlaying={player.playing}
+        volume={player.isMuted ? 0 : player.volume}
+        onStateChange={onYtStateChangeWrapped}
+        onPlayerReady={onYtReady}
+      />
+      <div className="relative min-h-screen">
       <div
         className={`absolute inset-0 z-50 transition-opacity duration-500 ${
           authLoading || !joined || !initialDataLoaded
@@ -1229,5 +1242,6 @@ export default function RoomPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
