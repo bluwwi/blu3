@@ -370,9 +370,9 @@ export default function PlaylistsPage() {
   );
 
   return (
-    <div className="h-full min-h-screen relative overflow-hidden">
-      <div className="min-h-screen flex justify-center items-center z-10 h-full w-full overflow-hidden">
-        <div className="flex flex-col justify-center items-center h-full min-h-screen w-full">
+    <div className="h-screen relative overflow-hidden">
+      <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
+        <div className="flex flex-col justify-center items-center h-full w-full">
           {/* ── NAV BAR — identical to browse page ── */}
           <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
             <Link
@@ -458,14 +458,14 @@ export default function PlaylistsPage() {
             </div>
           </div>
 
-          <ScrollArea className="flex items-center justify-center h-full min-h-screen w-full">
-            <div className="flex flex-wrap justify-center gap-3 py-16 md:py-0 w-full h-full">
+          <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
+            <div className="flex flex-wrap items-center justify-center content-center gap-3 py-16 w-full min-h-full">
               {loadingPlaylists ? (
                 Array.from({ length: 9 }).map((_, i) => (
                   <SkeletonCard key={i} />
                 ))
               ) : playlists.length === 0 ? (
-                  <div className="text-center my-auto">
+                  <div className="text-center">
                     <p className="text-zinc-600 text-sm mb-2 tracking-wide">
                       no playlists yet
                     </p>

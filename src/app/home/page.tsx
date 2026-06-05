@@ -70,7 +70,7 @@ export default function Home() {
           width: clamp(240px, 40vmin, 440px);
           height: clamp(240px, 40vmin, 440px);
           flex-shrink: 0;
-          overflow: hidden;
+          overflow: hidden;j
           border-radius: 4px;
           box-shadow:
             0 24px 64px rgba(0,0,0,0.22),
