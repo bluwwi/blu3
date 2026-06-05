@@ -46,7 +46,7 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
-  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback } = useBackgroundAudio({
+  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback, isBgAudioActiveRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     volume: player.volume,
@@ -62,6 +62,7 @@ export default function RoomPage() {
     ytPlayerRef,
     player.playerState,
     audioRef,
+    isBgAudioActiveRef,
   );
 
   const onYtStateChangeWrapped = useCallback((state: number) => {
