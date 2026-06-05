@@ -1,12 +1,8 @@
 "use client";
 
-import { useAuth } from "@/hooks/useAuth";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
-  const { login } = useAuth();
-
   return (
     <div className="h-screen w-full bg-[#080808] flex items-center justify-center">
       <div
@@ -20,7 +16,7 @@ export default function LoginPage() {
         </p>
 
         <button
-          onClick={login}
+          onClick={() => authClient.signIn.social({ provider: "google" })}
           className="block w-full py-3.5 mb-2.5 text-[#1a1a1a] text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#ffffff", borderRadius: "12px" }}
           onMouseOver={(e) =>
@@ -31,6 +27,20 @@ export default function LoginPage() {
           }
         >
           sign in with google
+        </button>
+
+        <button
+          onClick={() => authClient.signIn.social({ provider: "discord" })}
+          className="block w-full py-3.5 text-white text-[15px] font-semibold transition-all duration-500 relative z-10"
+          style={{ background: "#5865F2", borderRadius: "12px" }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "#4752C4")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.background = "#5865F2")
+          }
+        >
+          sign in with discord
         </button>
       </div>
     </div>
