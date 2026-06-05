@@ -30,7 +30,7 @@ export function useAuth() {
 
   const login = useCallback((provider: "google" | "discord" = "google") => {
     sessionStorage.setItem("returnUrl", window.location.pathname);
-    authClient.signIn.social({ provider });
+    authClient.signIn.social({ provider, callbackURL: window.location.origin });
   }, []);
 
   const logout = useCallback(async () => {

@@ -16,7 +16,7 @@ export default function LoginPage() {
         </p>
 
         <button
-          onClick={() => authClient.signIn.social({ provider: "google" })}
+          onClick={() => authClient.signIn.social({ provider: "google", callbackURL: window.location.origin })}
           className="block w-full py-3.5 mb-2.5 text-[#1a1a1a] text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#ffffff", borderRadius: "12px" }}
           onMouseOver={(e) =>
@@ -30,7 +30,7 @@ export default function LoginPage() {
         </button>
 
         <button
-          onClick={() => authClient.signIn.social({ provider: "discord" })}
+          onClick={() => authClient.signIn.social({ provider: "discord", callbackURL: window.location.origin })}
           className="block w-full py-3.5 text-white text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#5865F2", borderRadius: "12px" }}
           onMouseOver={(e) =>
