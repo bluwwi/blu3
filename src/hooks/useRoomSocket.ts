@@ -29,6 +29,8 @@ export interface PlaybackState {
   isPlaying: boolean;
   currentTime: number;
   updatedAt: number;
+  anchorServerTime?: number;
+  positionMs?: number;
 }
 
 export type RepeatMode = "off" | "all" | "one";
@@ -42,6 +44,7 @@ interface PlayMessage {
   videoId: string;
   seekTo: number;
   serverTime: number;
+  anchorServerTime: number;
   id?: string;
   trackName?: string;
   artistName?: string;
@@ -53,6 +56,7 @@ interface PlayMessage {
 interface SeekMessage {
   seekTo: number;
   serverTime: number;
+  anchorServerTime: number;
 }
 
 type RoomSocketMessage =
@@ -62,6 +66,7 @@ type RoomSocketMessage =
       videoId: string;
       seekTo: number;
       serverTime: number;
+      anchorServerTime: number;
       id?: string;
       trackName?: string;
       artistName?: string;
@@ -69,8 +74,8 @@ type RoomSocketMessage =
       duration_ms?: number;
       recentTracks?: RecentTrack[];
     }
-  | { type: "pause"; serverTime: number }
-  | { type: "seek"; seekTo: number; serverTime: number }
+  | { type: "pause"; serverTime: number; anchorServerTime: number; positionMs: number }
+  | { type: "seek"; seekTo: number; serverTime: number; anchorServerTime: number }
   | {
       type: "room:joined";
       isHost: boolean;
@@ -151,6 +156,16 @@ export function useRoomSocket({
     [],
   );
 
+  const getSyncedPosition = useCallback(
+    (positionMs: number, anchorServerTime: number, isPlaying: boolean): number => {
+      if (!isPlaying) return positionMs;
+      const serverNow = Date.now() + clockOffsetRef.current;
+      const elapsed = serverNow - anchorServerTime;
+      return Math.max(0, positionMs + elapsed);
+    },
+    [],
+  );
+
   const safeSend = useCallback((data: string) => {
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
@@ -223,7 +238,12 @@ export function useRoomSocket({
         case "room:joined":
           setIsHost(msg.isHost);
           setMembers(msg.members ?? []);
-          setPlayback(msg.playback ?? null);
+          if (msg.playback) {
+            const pb = msg.playback;
+            setPlayback({ ...pb, anchorServerTime: pb.updatedAt, positionMs: pb.currentTime });
+          } else {
+            setPlayback(null);
+          }
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
@@ -254,6 +274,8 @@ export function useRoomSocket({
             isPlaying: true,
             currentTime: msg.seekTo ?? 0,
             updatedAt: msg.serverTime,
+            anchorServerTime: msg.anchorServerTime,
+            positionMs: msg.seekTo ?? 0,
           });
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           onPlayRef.current?.(msg);
@@ -261,7 +283,7 @@ export function useRoomSocket({
         case "pause":
           setPlayback((prev) =>
             prev
-              ? { ...prev, isPlaying: false, updatedAt: msg.serverTime }
+              ? { ...prev, isPlaying: false, updatedAt: msg.serverTime, anchorServerTime: msg.anchorServerTime, positionMs: msg.positionMs, currentTime: msg.positionMs }
               : prev,
           );
           onPauseRef.current?.(msg);
@@ -273,6 +295,8 @@ export function useRoomSocket({
                   ...prev,
                   currentTime: msg.seekTo ?? prev.currentTime,
                   updatedAt: msg.serverTime,
+                  anchorServerTime: msg.anchorServerTime,
+                  positionMs: msg.seekTo ?? prev.positionMs,
                 }
               : prev,
           );
@@ -287,6 +311,8 @@ export function useRoomSocket({
             isPlaying: Boolean(msg.isPlaying),
             currentTime: msg.currentTime ?? 0,
             updatedAt: msg.updatedAt ?? Date.now(),
+            anchorServerTime: msg.updatedAt ?? Date.now(),
+            positionMs: msg.currentTime ?? 0,
           });
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
@@ -421,6 +447,7 @@ export function useRoomSocket({
     sendProgress,
     sendTrackEnded,
     getSyncedTime,
+    getSyncedPosition,
     addToQueue,
     removeFromQueue,
     cycleQueueCurrent,
