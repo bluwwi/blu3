@@ -149,7 +149,7 @@ export function RoomTopBar({
             </div>
           ) : (
             <button
-              onClick={login}
+              onClick={() => login()}
               className="text-[10px] border border-white/10 rounded-lg px-3 py-1.5 text-white/50 hover:bg-white/10 hover:text-white transition-all tracking-widest uppercase font-semibold"
             >
               sign in

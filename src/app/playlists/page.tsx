@@ -449,7 +449,7 @@ export default function PlaylistsPage() {
                 </div>
               ) : (
                 <button
-                  onClick={login}
+                  onClick={() => login()}
                   className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase"
                 >
                   sign in

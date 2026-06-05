@@ -217,7 +217,7 @@ export default function RoomPage() {
       });
   }, [connected, joined, queuePlaylistId, code, addToQueue, router]);
 
-  const isHost = room?.hostId === user?.sub || socketIsHost;
+  const isHost = room?.hostId === user?.id || socketIsHost;
   const canControlPlayback = isHost || !isHostActive;
   const queueAdvanceLockRef = useRef<string | null>(null);
   const syncHandledRef = useRef(false);
@@ -1060,7 +1060,7 @@ export default function RoomPage() {
                           }
                           userProfile={{
                             name: user?.name || user?.email || "U",
-                            avatar: user?.avatar,
+                            avatar: user?.avatar ?? undefined,
                           }}
                         />
                       </div>
@@ -1244,7 +1244,7 @@ export default function RoomPage() {
             onAddToQueue={(track) => {
               addToQueue(track);
             }}
-            avatarUrl={user?.avatar}
+            avatarUrl={user?.avatar ?? undefined}
             avatarLabel={user?.name || user?.email || "U"}
             popularGenres={popularGenres}
           />

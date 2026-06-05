@@ -48,7 +48,7 @@ interface Props {
   unreadChatCount?: number;
   onSearchClick?: () => void;
   clearQueue?: () => void;
-  user?: { sub: string; email: string; name: string; avatar?: string } | null;
+  user?: { id: string; email: string; name: string; image?: string | null; avatar?: string | null } | null;
   onLogout?: () => void;
   onLeave?: () => void;
   roomCode?: string;
@@ -243,7 +243,7 @@ export function RightSidebar({
               <ScrollArea className="max-h-60 space-y-2">
                 {members.map((m, i) => {
                   const isMe =
-                    user?.sub === m.userId || user?.email === m.userId;
+                    user?.id === m.userId || user?.email === m.userId;
                   return (
                     <div key={i} className="flex items-center gap-3 rounded-xl">
                       <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">

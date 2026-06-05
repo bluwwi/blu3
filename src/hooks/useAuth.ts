@@ -7,8 +7,8 @@ export interface AuthUser {
   id: string;
   email: string;
   name: string;
-  image?: string;
-  avatar?: string;
+  image?: string | null;
+  avatar?: string | null;
 }
 
 export function useAuth() {

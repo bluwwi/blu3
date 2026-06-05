@@ -243,7 +243,7 @@ export default function BrowsePage() {
                 </div>
               ) : (
                 <button
-                  onClick={login}
+                  onClick={() => login()}
                   className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase"
                 >
                   sign in
@@ -259,7 +259,7 @@ export default function BrowsePage() {
                     <SkeletonCard key={i} />
                   ))
                 : rooms.map((room) => {
-                    const isHost = room.hostId === user?.sub;
+                    const isHost = room.hostId === user?.id;
                     return (
                         <div
                           key={room.id}
