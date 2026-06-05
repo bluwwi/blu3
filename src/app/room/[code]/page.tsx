@@ -80,7 +80,6 @@ export default function RoomPage() {
   const [chatOpen, setChatOpen] = useState(false);
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
   const [listenerMuted, setListenerMuted] = useState(false);
-  const [stableVideoId, setStableVideoId] = useState<string | null>(null);
   const [joinToasts, setJoinToasts] = useState<
     Array<{ id: string; name: string; avatar?: string }>
   >([]);
@@ -95,12 +94,6 @@ export default function RoomPage() {
   useEffect(() => {
     setStarsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (player.nowPlaying?.videoId) {
-      setStableVideoId(player.nowPlaying.videoId);
-    }
-  }, [player.nowPlaying?.videoId]);
 
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -972,7 +965,6 @@ export default function RoomPage() {
   return (
     <>
       <YoutubePlayer
-        videoId={stableVideoId}
         volume={0}
         onStateChange={onYtStateChangeWrapped}
         onPlayerReady={onYtReady}

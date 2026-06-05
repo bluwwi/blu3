@@ -3,15 +3,15 @@ import { useEffect, useRef } from "react";
 import YouTube, { YouTubeEvent } from "react-youtube";
 
 interface YoutubePlayerProps {
-  videoId: string | null;
   volume: number;
   onStateChange: (state: number) => void;
   onPlayerReady: (player: any) => void;
   onError?: () => void;
 }
 
+const PLACEHOLDER_ID = "dQw4w9WgXcQ";
+
 export default function YoutubePlayer({
-  videoId,
   volume,
   onStateChange,
   onPlayerReady,
@@ -23,12 +23,10 @@ export default function YoutubePlayer({
     if (playerRef.current) playerRef.current.setVolume(volume);
   }, [volume]);
 
-  if (!videoId) return null;
-
   return (
     <div className="opacity-0 h-0 w-0 pointer-events-none absolute overflow-hidden">
       <YouTube
-        videoId={videoId}
+        videoId={PLACEHOLDER_ID}
         opts={{
           height: "0",
           width: "0",
@@ -38,7 +36,7 @@ export default function YoutubePlayer({
             fs: 0,
             modestbranding: 1,
             rel: 0,
-            autoplay: 1,
+            autoplay: 0,
           },
         }}
         onReady={(e: YouTubeEvent) => {
