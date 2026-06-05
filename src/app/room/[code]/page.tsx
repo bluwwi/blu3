@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
+import { useQueuePreCache } from "@/hooks/useQueuePreCache";
 import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
@@ -51,12 +52,18 @@ export default function RoomPage() {
     isPlaying: player.playing,
     volume: player.volume,
     isMuted: player.isMuted,
-    token: typeof window !== "undefined" ? localStorage.getItem("blu3_token") ?? undefined : undefined,
+    token,
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
     pendingStartTimeRef: player.pendingStartTimeRef,
   });
+
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("blu3_token") ?? undefined
+      : undefined;
+  useQueuePreCache(queue, token);
 
   const progress = useProgressTracking(
     ytPlayerRef,
