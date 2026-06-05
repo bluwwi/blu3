@@ -111,7 +111,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       if (!track?.videoId) return;
       if (!audioReloadedRef.current) {
         audioReloadedRef.current = true;
-        getAudioStreamUrl(track.videoId).then((url) => {
+        getAudioStreamUrl(track.videoId, configRef.current.token).then((url) => {
           if (!url || !audioRef.current) return;
           audioRef.current.src = url;
           if (configRef.current.isPlaying)
@@ -145,7 +145,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.currentTime = 0;
     if (configRef.current.isPlaying) {
       audio.play().catch(() => {
-        getAudioStreamUrl(track.videoId).then((url) => {
+        getAudioStreamUrl(track.videoId, configRef.current.token).then((url) => {
           if (!url || !audioRef.current) return;
           audioReloadedRef.current = false;
           audioRef.current.src = url;
