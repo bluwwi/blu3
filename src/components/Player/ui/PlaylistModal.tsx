@@ -163,45 +163,42 @@ export function PlaylistModal({
           ) : (
             <div className="space-y-1">
               {playlists.map((p) => (
-                <div key={p.id}>
-                  <div className="flex cursor-pointer items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors group">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                      {p.coverImage ? (
-                        <img
-                          src={p.coverImage}
-                          alt=""
-                          className="w-full h-full object-cover"
+                <div
+                  key={p.id}
+                  onClick={async () => {
+                    await handleQueue(p.id);
+                    onClose();
+                  }}
+                  className="flex cursor-pointer items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors group"
+                >
+                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                    {p.coverImage ? (
+                      <img
+                        src={p.coverImage}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/30">
+                        <Icon
+                          name="list-music"
+                          size={16}
+                          className="text-current"
                         />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-white/30">
-                          <Icon
-                            name="list-music"
-                            size={16}
-                            className="text-current"
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] text-white/90 truncate">
-                        {p.name}
-                      </p>
-                      <p className="text-[10px] text-white/40">
-                        {p.trackCount ?? 0} tracks
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handleQueue(p.id)}
-                      disabled={queuing === p.id}
-                      className="shrink-0 px-3 py-1.5 text-[11px] font-medium rounded-lg bg-violet-500/20 text-violet-300 hover:bg-violet-500/30 transition-colors disabled:opacity-50"
-                    >
-                      {queuing === p.id ? (
-                        <Loader2 size={12} className="animate-spin" />
-                      ) : (
-                        "Queue"
-                      )}
-                    </button>
+                      </div>
+                    )}
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] text-white/90 truncate">
+                      {p.name}
+                    </p>
+                    <p className="text-[10px] text-white/40">
+                      {p.trackCount ?? 0} tracks
+                    </p>
+                  </div>
+                  {queuing === p.id && (
+                    <Loader2 size={12} className="shrink-0 text-violet-300 animate-spin" />
+                  )}
                 </div>
               ))}
             </div>

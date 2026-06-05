@@ -359,32 +359,35 @@ export function QueueAndHistory({
                   ? activeVideoId === track.videoId
                   : i === 0;
 
+                const handlePlay = () => {
+                  if (manageMode) return;
+                  if (!canControlPlayback) return;
+                  handleAdminPlayTrack(track);
+                };
+
                 return (
                   <div
                     key={`${track.id}-${i}`}
-                    className={`group flex items-center cursor-default gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
+                    onClick={handlePlay}
+                    className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
                       isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
-                    }`}
+                    } ${canControlPlayback && !manageMode ? "cursor-pointer" : "cursor-default"}`}
                   >
                     <div
                       role={canControlPlayback ? "button" : undefined}
                       tabIndex={canControlPlayback ? 0 : -1}
-                      onClick={() => {
-                        if (manageMode) return;
-                        if (!canControlPlayback) return;
-                        handleAdminPlayTrack(track);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); handlePlay(); }}
                       onKeyDown={(event) => {
                         if (!canControlPlayback) return;
                         if (event.key === "Enter" || event.key === " ") {
                           event.preventDefault();
-                          handleAdminPlayTrack(track);
+                          handlePlay();
                         }
                       }}
                       style={{
                         width: "clamp(3.5rem,3vw,199rem)",
                       }}
-                      className="relative group/img shrink-0 aspect-square cursor-pointer rounded-lg"
+                      className="relative group/img shrink-0 aspect-square rounded-lg"
                     >
                       <Image
                         width={300}
