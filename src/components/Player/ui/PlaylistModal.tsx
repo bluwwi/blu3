@@ -133,7 +133,7 @@ export function PlaylistModal({
     >
       <div
         ref={modalRef}
-        className="w-[90%] md:w-[35vw] max-w-[90vw] max-h-[80vh] flex flex-col rounded-3xl border backdrop-blur-2xl overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)]"
+        className="w-[90%] md:w-[35vw] max-w-[90vw] max-h-[80vh] flex flex-col rounded-4xl border backdrop-blur-2xl overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)]"
         style={{
           background: "var(--room-surface, rgba(0,0,0,0.4))",
           borderColor: "var(--room-border, rgba(255,255,255,0.08))",
@@ -141,7 +141,7 @@ export function PlaylistModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <span className="text-[13px] font-medium text-white">Playlists</span>
+          <span className="text-lg font-medium text-white">Playlists</span>
           <button
             onClick={onClose}
             className="text-white/40 hover:text-white/80 transition-colors"
@@ -151,7 +151,7 @@ export function PlaylistModal({
         </div>
 
         {/* Playlist list */}
-        <ScrollArea className="flex-1 px-5 py-2">
+        <ScrollArea className="flex-1 px-3 py-2">
           {loading ? (
             <div className="flex items-center justify-center py-10">
               <Loader2 size={20} className="text-white/40 animate-spin" />
@@ -161,7 +161,7 @@ export function PlaylistModal({
               No playlists yet
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-3">
               {playlists.map((p) => (
                 <div
                   key={p.id}
@@ -171,7 +171,7 @@ export function PlaylistModal({
                   }}
                   className="flex cursor-pointer items-center gap-3 rounded-xl hover:bg-white/[0.04] transition-colors group"
                 >
-                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-white/10">
                     {p.coverImage ? (
                       <img
                         src={p.coverImage}
@@ -197,7 +197,10 @@ export function PlaylistModal({
                     </p>
                   </div>
                   {queuing === p.id && (
-                    <Loader2 size={12} className="shrink-0 text-violet-300 animate-spin" />
+                    <Loader2
+                      size={12}
+                      className="shrink-0 text-violet-300 animate-spin"
+                    />
                   )}
                 </div>
               ))}
@@ -207,9 +210,10 @@ export function PlaylistModal({
 
         {/* Import URL input (inline) */}
         {showImport && (
-          <div className="px-5 py-3 border-t border-white/[0.06]">
+          <div className="px-3 py-3 border-t border-white/[0.06]">
             <p className="text-[12px] text-white/50 mb-2">
-              Paste a playlist link from Spotify, YouTube, JioSaavn, or Apple Music
+              Paste a playlist link from Spotify, YouTube, JioSaavn, or Apple
+              Music
             </p>
             <input
               value={importUrl}
@@ -218,9 +222,7 @@ export function PlaylistModal({
               placeholder="https://open.spotify.com/playlist/..."
               className="w-full px-4 py-3 text-[13px] rounded-xl border bg-white/5 text-white placeholder:text-white/20 outline-none transition-colors"
               style={{
-                borderColor: importError
-                  ? "#C0392B"
-                  : "rgba(255,255,255,0.08)",
+                borderColor: importError ? "#C0392B" : "rgba(255,255,255,0.08)",
               }}
             />
             {importError && (
@@ -243,20 +245,22 @@ export function PlaylistModal({
         )}
 
         {/* Bottom buttons */}
-        <div className="flex gap-2 px-5 py-3 border-t border-white/[0.06]">
+        <div className="flex gap-2 px-4 pb-4 pt-2 ">
           <button
             onClick={() => {
               setShowImport((v) => !v);
               setImportError("");
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[12px] font-medium rounded-xl bg-white/10 text-white/70 hover:bg-white/20 hover:text-white/90 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-white text-black hover:bg-white/70 cursor-pointer duration-200 transition-colors"
           >
             <Plus size={14} />
             Import Playlist
           </button>
           <button
-            onClick={() => { window.location.href = "/playlists"; }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[12px] font-medium rounded-xl bg-white/10 text-white/70 hover:bg-white/20 hover:text-white/90 transition-colors"
+            onClick={() => {
+              window.location.href = "/playlists";
+            }}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-white text-black hover:bg-white/70 cursor-pointer duration-200 transition-colors"
           >
             <PlaylistIcon size={16} weight="regular" />
             Manage
