@@ -7,6 +7,7 @@ export function useProgressTracking(
   ytPlayerRef: React.MutableRefObject<any>,
   playerState: string,
   audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
+  isBgAudioActiveRef?: React.MutableRefObject<boolean>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -18,6 +19,15 @@ export function useProgressTracking(
 
   const tick = useCallback(() => {
     try {
+      if (isBgAudioActiveRef?.current && audioRef?.current) {
+        const audio = audioRef.current;
+        const cur = audio.currentTime ?? 0;
+        const dur = audio.duration || 0;
+        setCurrentTime(cur);
+        setDuration(dur);
+        setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+        return;
+      }
       const player = ytPlayerRef.current;
       if (!player || !player.getCurrentTime) return;
       const cur = player.getCurrentTime() ?? 0;
