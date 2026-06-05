@@ -30,6 +30,9 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioReloadedRef = useRef(false);
+  const isBgAudioActiveRef = useRef(false);
+  const crossSourcePosRef = useRef(0);
+  const wasPlayingBeforeBgRef = useRef(false);
 
   const acquireWakeLock = useCallback(async () => {
     try {
@@ -46,7 +49,40 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     wakeLockRef.current = null;
   }, []);
 
-  /* --- Audio element (primary for proxied audio, fallback for YouTube) --- */
+  /* --- Tab visibility: switch between YT iframe and <audio> --- */
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        wasPlayingBeforeBgRef.current = configRef.current.isPlaying;
+        if (!hasAudioUrlRef.current && audioUrlRef.current && configRef.current.isPlaying) {
+          isBgAudioActiveRef.current = true;
+          const pos = crossSourcePosRef.current;
+          const audio = audioRef.current;
+          if (!audio) return;
+          audio.src = audioUrlRef.current;
+          audio.currentTime = pos;
+          audio.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
+          audio.play().catch(() => {});
+          try { ytPlayerRef.current?.pauseVideo(); } catch {}
+        }
+      } else {
+        if (isBgAudioActiveRef.current) {
+          isBgAudioActiveRef.current = false;
+          const pos = audioRef.current?.currentTime ?? 0;
+          crossSourcePosRef.current = pos;
+          audioRef.current?.pause();
+          if (wasPlayingBeforeBgRef.current) {
+            try {
+              ytPlayerRef.current?.seekTo(pos, true);
+              ytPlayerRef.current?.playVideo();
+            } catch {}
+          }
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
@@ -55,18 +91,18 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     document.body.appendChild(audio);
 
     audio.onplay = () => {
-      if (hasAudioUrlRef.current || fallbackRef.current)
+      if (hasAudioUrlRef.current || fallbackRef.current || isBgAudioActiveRef.current)
         configRef.current.onPlay();
     };
     audio.onpause = () => {
-      if (hasAudioUrlRef.current || fallbackRef.current)
+      if (hasAudioUrlRef.current || fallbackRef.current || isBgAudioActiveRef.current)
         configRef.current.onPause();
     };
     audio.onended = () => {
       configRef.current.onTrackEnd();
     };
     audio.onerror = () => {
-      if (hasAudioUrlRef.current) {
+      if (hasAudioUrlRef.current || isBgAudioActiveRef.current) {
         configRef.current.onTrackEnd();
         return;
       }
@@ -194,7 +230,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   /* --- Play / Pause / Volume --- */
   useEffect(() => {
     const player = ytPlayerRef.current;
-    if (player && ytReadyRef.current && !fallbackRef.current && !hasAudioUrlRef.current) {
+    if (player && ytReadyRef.current && !fallbackRef.current && !hasAudioUrlRef.current && !isBgAudioActiveRef.current) {
       player.setVolume(config.isMuted ? 0 : config.volume);
       if (config.isPlaying) {
         player.playVideo();
@@ -205,7 +241,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const audio = audioRef.current;
     if (audio) {
-      if (hasAudioUrlRef.current || fallbackRef.current) {
+      if (hasAudioUrlRef.current || fallbackRef.current || isBgAudioActiveRef.current) {
         audio.volume = config.isMuted ? 0 : config.volume / 100;
         if (config.isPlaying) {
           audio.play().catch(() => {});
@@ -221,5 +257,5 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     else releaseWakeLock();
   }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, releaseWakeLock]);
 
-  return { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback };
+  return { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback, isBgAudioActiveRef, crossSourcePosRef };
 }
