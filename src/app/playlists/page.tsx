@@ -428,12 +428,13 @@ export default function PlaylistsPage() {
                               className="room-card-img rounded-md w-full h-full object-cover"
                             />
                           ) : playlist.isLiked ? (
-                            <div className="w-full h-full rounded-md bg-white/5 border border-white/[0.08] flex items-center justify-center">
-                              <Heart
-                                size={24}
-                                className="text-white/20 fill-white/20"
-                              />
-                            </div>
+                            <Image
+                              width={400}
+                              height={400}
+                              src="/queue/finalheart.jpg"
+                              alt={playlist.name}
+                              className="room-card-img rounded-md w-full h-full object-cover"
+                            />
                           ) : (
                             <div className="w-full h-full rounded-md bg-white/5 border border-white/[0.08] flex items-center justify-center">
                               <Music2 size={20} className="text-white/15" />
@@ -666,9 +667,11 @@ export default function PlaylistsPage() {
                     alt=""
                   />
                 ) : activePlaylist.isLiked ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Heart size={18} className="text-white/30 fill-white/30" />
-                  </div>
+                  <img
+                    src="/queue/finalheart.jpg"
+                    className="w-full h-full object-cover"
+                    alt=""
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <Music2 size={16} className="text-white/20" />
