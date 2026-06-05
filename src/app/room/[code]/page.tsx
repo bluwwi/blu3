@@ -47,6 +47,10 @@ export default function RoomPage() {
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("blu3_token") ?? undefined
+      : undefined;
   const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback, isBgAudioActiveRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
@@ -58,12 +62,6 @@ export default function RoomPage() {
     onTrackEnd: () => player.setPlayerState("ended"),
     pendingStartTimeRef: player.pendingStartTimeRef,
   });
-
-  const token =
-    typeof window !== "undefined"
-      ? localStorage.getItem("blu3_token") ?? undefined
-      : undefined;
-  useQueuePreCache(queue, token);
 
   const progress = useProgressTracking(
     ytPlayerRef,
@@ -183,6 +181,8 @@ export default function RoomPage() {
       }, 3000);
     }, []),
   });
+
+  useQueuePreCache(queue, token);
 
   const playbackRef = useRef(playback);
   useEffect(() => {

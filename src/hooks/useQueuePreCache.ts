@@ -5,22 +5,28 @@ import { preResolveYt } from "@/utils/ytdl";
 
 export function useQueuePreCache(queue: Track[], token?: string) {
   const tokenRef = useRef(token);
-  tokenRef.current = token;
   const seenRef = useRef(new Set<string>());
   const processingRef = useRef(false);
-  const pendingRef = useRef<Track[]>([]);
+  const queueLenRef = useRef(0);
+
+  tokenRef.current = token;
 
   useEffect(() => {
+    if (queue.length === queueLenRef.current) return;
+    queueLenRef.current = queue.length;
+
     const newTracks = queue.filter((t) => t.videoId && !seenRef.current.has(t.videoId));
     for (const t of newTracks) seenRef.current.add(t.videoId);
-    pendingRef.current.push(...newTracks);
 
+    if (newTracks.length === 0) return;
+
+    const pending = [...newTracks];
     if (processingRef.current) return;
 
     processingRef.current = true;
     const processNext = async () => {
-      while (pendingRef.current.length > 0) {
-        const track = pendingRef.current.shift();
+      while (pending.length > 0) {
+        const track = pending.shift();
         if (!track?.videoId) continue;
         try {
           await preResolveYt(track.videoId, tokenRef.current);
