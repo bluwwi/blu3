@@ -2,8 +2,6 @@
 import { useState } from "react";
 import { Track } from "@/utils/types";
 import { RoomTheme } from "@/utils/roomHelpers";
-import { LogOut, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { Profile } from "@/components/Profile";
 
 interface Props {
@@ -26,7 +24,6 @@ export function RoomTopBar({
   onLeave,
   onSearchClick,
 }: Props) {
-  const { user, loading: authLoading } = useAuth();
   const [showLeavePopup, setShowLeavePopup] = useState(false);
 
   return (
