@@ -9,6 +9,7 @@ interface UsePlayerStateReturn {
   volume: number;
   isMuted: boolean;
   nowPlaying: Track | null;
+  activeSource: string;
   activeVideoId: string | null;
   error: string;
   playing: boolean;
@@ -34,6 +35,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   const [volume, setVolume] = useState(CONFIG.DEFAULT_VOLUME);
   const [isMuted, setIsMuted] = useState(false);
   const [nowPlaying, setNowPlaying] = useState<Track | null>(null);
+  const [activeSource, setActiveSource] = useState<string>("youtube");
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [playing, setPlaying] = useState(false);
@@ -42,6 +44,8 @@ export function usePlayerState(): UsePlayerStateReturn {
   nowPlayingRef.current = nowPlaying;
   const playerStateRef = useRef(playerState);
   playerStateRef.current = playerState;
+  const activeSourceRef = useRef(activeSource);
+  activeSourceRef.current = activeSource;
   const activeVideoIdRef = useRef(activeVideoId);
   activeVideoIdRef.current = activeVideoId;
   const pendingStartTimeRef = useRef(0);
@@ -50,6 +54,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
       setNowPlaying(track);
+      setActiveSource(track.source ?? "youtube");
       setActiveVideoId(track.videoId);
       pendingStartTimeRef.current = startTime ?? 0;
 
@@ -146,6 +151,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     volume,
     isMuted,
     nowPlaying,
+    activeSource,
     activeVideoId,
     error,
     playing,

@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
 import { Track } from "@/utils/types";
-import { getAudioStreamUrl, getStreamUrl } from "@/utils/ytdl";
+import { getAudioStreamUrl, getStreamUrl, resolveTrackSource } from "@/utils/ytdl";
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
@@ -23,11 +23,11 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const ytReadyRef = useRef(false);
   const fallbackRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
+  const lastSourceRef = useRef<string>("youtube");
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioReloadedRef = useRef(false);
 
-  /* --- WakeLock --- */
   const acquireWakeLock = useCallback(async () => {
     try {
       if (wakeLockRef.current) return;
@@ -43,7 +43,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     wakeLockRef.current = null;
   }, []);
 
-  /* --- Audio element (fallback) --- */
+  /* --- Audio element (primary for JioSaavn, fallback for YouTube) --- */
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "auto";
@@ -52,15 +52,21 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     document.body.appendChild(audio);
 
     audio.onplay = () => {
-      if (fallbackRef.current) configRef.current.onPlay();
+      if (lastSourceRef.current === "jiosaavn" || fallbackRef.current)
+        configRef.current.onPlay();
     };
     audio.onpause = () => {
-      if (fallbackRef.current) configRef.current.onPause();
+      if (lastSourceRef.current === "jiosaavn" || fallbackRef.current)
+        configRef.current.onPause();
     };
     audio.onended = () => {
-      if (fallbackRef.current) configRef.current.onTrackEnd();
+      configRef.current.onTrackEnd();
     };
     audio.onerror = () => {
+      if (lastSourceRef.current === "jiosaavn") {
+        configRef.current.onTrackEnd();
+        return;
+      }
       if (!fallbackRef.current) return;
       const track = configRef.current.nowPlaying;
       if (!track?.videoId) return;
@@ -88,7 +94,6 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     };
   }, []);
 
-  /* --- Fallback: switch from YT iframe to Audio element --- */
   const enableFallback = useCallback(() => {
     if (fallbackRef.current) return;
     fallbackRef.current = true;
@@ -111,13 +116,13 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     }
   }, []);
 
-  /* --- YT iframe callbacks (primary) --- */
+  /* --- YT iframe callbacks (YouTube source only) --- */
   const onYtReady = useCallback((player: any) => {
     ytPlayerRef.current = player;
     ytReadyRef.current = true;
     player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
     const track = configRef.current.nowPlaying;
-    if (track?.videoId) {
+    if (track?.videoId && track.source !== "jiosaavn") {
       const start = configRef.current.pendingStartTimeRef?.current ?? 0;
       player.loadVideoById({ videoId: track.videoId, startSeconds: start });
       lastVideoIdRef.current = track.videoId;
@@ -126,13 +131,13 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   }, []);
 
   const onYtStateChange = useCallback((state: number) => {
-    if (state === 0 && !fallbackRef.current) {
+    if (state === 0 && !fallbackRef.current && lastSourceRef.current !== "jiosaavn") {
       configRef.current.onTrackEnd();
     }
-    if (state === 1 && !fallbackRef.current) {
+    if (state === 1 && !fallbackRef.current && lastSourceRef.current !== "jiosaavn") {
       configRef.current.onPlay();
     }
-    if (state === 2 && !fallbackRef.current) {
+    if (state === 2 && !fallbackRef.current && lastSourceRef.current !== "jiosaavn") {
       configRef.current.onPause();
     }
   }, []);
@@ -142,12 +147,39 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const track = config.nowPlaying;
     if (!track?.videoId) return;
 
+    lastSourceRef.current = track.source ?? "youtube";
     fallbackRef.current = false;
     audioReloadedRef.current = false;
     lastVideoIdRef.current = null;
     const fetchId = ++fetchIdRef.current;
 
-    /* Start YT iframe (primary) */
+    if (track.source === "jiosaavn") {
+      const audio = audioRef.current;
+      if (!audio) return;
+      const start = config.pendingStartTimeRef?.current ?? 0;
+
+      resolveTrackSource(track.videoId, track.name, track.artists?.[0]?.name)
+        .then((result) => {
+          if (fetchIdRef.current !== fetchId) return;
+          if (result.source === "jiosaavn" && result.url) {
+            audio.src = result.url;
+            audio.currentTime = start;
+            if (configRef.current.isPlaying)
+              audio.play().catch(() => {});
+          } else {
+            lastSourceRef.current = "youtube";
+            const player = ytPlayerRef.current;
+            if (player && ytReadyRef.current) {
+              player.loadVideoById({ videoId: track.videoId, startSeconds: start });
+              lastVideoIdRef.current = track.videoId;
+              if (configRef.current.isPlaying) player.playVideo();
+            }
+          }
+        });
+      return;
+    }
+
+    /* YouTube source: Start YT iframe (primary) */
     const player = ytPlayerRef.current;
     if (player && ytReadyRef.current) {
       const start = config.pendingStartTimeRef?.current ?? 0;
@@ -169,7 +201,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   /* --- Play / Pause / Volume --- */
   useEffect(() => {
     const player = ytPlayerRef.current;
-    if (player && ytReadyRef.current && !fallbackRef.current) {
+    if (player && ytReadyRef.current && !fallbackRef.current && lastSourceRef.current !== "jiosaavn") {
       player.setVolume(config.isMuted ? 0 : config.volume);
       if (config.isPlaying) {
         player.playVideo();
@@ -180,7 +212,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const audio = audioRef.current;
     if (audio) {
-      if (fallbackRef.current) {
+      if (lastSourceRef.current === "jiosaavn" || fallbackRef.current) {
         audio.volume = config.isMuted ? 0 : config.volume / 100;
         if (config.isPlaying) {
           audio.play().catch(() => {});

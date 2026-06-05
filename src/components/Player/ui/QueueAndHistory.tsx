@@ -144,6 +144,7 @@ export function QueueAndHistory({
         data.tracks.forEach((t: any) => {
           addToQueue({
             id: t.id,
+            source: "youtube",
             videoId: t.videoId,
             name: t.trackName,
             artists: [{ name: t.artistName }],
@@ -664,6 +665,7 @@ export function QueueAndHistory({
               {recentToShow.map((track, i) => {
                 const historyTrack: Track = {
                   id: track.videoId,
+                  source: (track as any).source ?? "youtube",
                   videoId: track.videoId,
                   name: track.trackName,
                   artists: [{ name: track.artistName }],

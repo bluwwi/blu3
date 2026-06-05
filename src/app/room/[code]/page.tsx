@@ -147,6 +147,7 @@ export default function RoomPage() {
         p.playTrack(
           {
             id: `room-${state.videoId}`,
+            source: (state as any).source ?? "youtube",
             videoId: state.videoId,
             name: state.trackName,
             duration_ms: 0,
@@ -194,6 +195,7 @@ export default function RoomPage() {
           data.tracks.forEach((t: any) => {
             addToQueue({
               id: t.id,
+              source: "youtube",
               videoId: t.videoId,
               name: t.trackName,
               artists: [{ name: t.artistName }],
@@ -280,6 +282,7 @@ export default function RoomPage() {
 
       const track = {
         id: state.id ?? `room-${state.videoId}`,
+        source: (state as any).source ?? "youtube",
         videoId: state.videoId,
         name: state.trackName ?? "Playing from room",
         duration_ms: state.duration_ms ?? 0,
@@ -346,6 +349,7 @@ export default function RoomPage() {
       p.playTrack(
         {
           id: `room-${playback.videoId}`,
+          source: playback.source ?? "youtube",
           videoId: playback.videoId,
           name: playback.trackName,
           duration_ms: 0,
@@ -388,6 +392,7 @@ export default function RoomPage() {
       if (playbackMode.repeatMode === "one") {
         sendPlay({
           id: activeTrack.id,
+          source: activeTrack.source ?? "youtube",
           videoId: activeTrack.videoId,
           trackName: activeTrack.name,
           artistName: activeTrack.artists?.[0]?.name ?? "",
@@ -417,6 +422,7 @@ export default function RoomPage() {
       if (nextTrack) {
         sendPlay({
           id: nextTrack.id,
+          source: nextTrack.source ?? "youtube",
           videoId: nextTrack.videoId,
           trackName: nextTrack.name,
           artistName: nextTrack.artists?.[0]?.name ?? "",
@@ -428,6 +434,7 @@ export default function RoomPage() {
     } else {
       sendPlay({
         id: currentQueueTrack.id,
+        source: currentQueueTrack.source ?? "youtube",
         videoId: currentQueueTrack.videoId,
         trackName: currentQueueTrack.name,
         artistName: currentQueueTrack.artists?.[0]?.name ?? "",
@@ -531,6 +538,7 @@ export default function RoomPage() {
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
+        source: track.source ?? "youtube",
         videoId: track.videoId,
         trackName: track.name,
         artistName: track.artists?.[0]?.name ?? "",
@@ -565,6 +573,7 @@ export default function RoomPage() {
       player.playTrack(firstTrack, 0, true);
       sendPlay({
         id: firstTrack.id,
+        source: firstTrack.source ?? "youtube",
         videoId: firstTrack.videoId,
         trackName: firstTrack.name,
         artistName: firstTrack.artists?.[0]?.name ?? "",
@@ -582,6 +591,7 @@ export default function RoomPage() {
     player.play?.();
     sendPlay({
       id: player.nowPlaying.id,
+      source: player.nowPlaying.source ?? "youtube",
       videoId: player.nowPlaying.videoId,
       trackName: player.nowPlaying.name,
       artistName: player.nowPlaying.artists?.[0]?.name ?? "",
@@ -644,6 +654,7 @@ export default function RoomPage() {
     player.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
+      source: nextTrack.source ?? "youtube",
       videoId: nextTrack.videoId,
       trackName: nextTrack.name,
       artistName: nextTrack.artists?.[0]?.name ?? "",
@@ -690,6 +701,7 @@ export default function RoomPage() {
     player.playTrack(prevTrack, 0, true);
     sendPlay({
       id: prevTrack.id,
+      source: prevTrack.source ?? "youtube",
       videoId: prevTrack.videoId,
       trackName: prevTrack.name,
       artistName: prevTrack.artists?.[0]?.name ?? "",
