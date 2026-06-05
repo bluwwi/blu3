@@ -208,19 +208,14 @@ export function PlaylistModal({
           )}
         </ScrollArea>
 
-        {/* Import URL input (inline) */}
         {showImport && (
-          <div className="px-3 py-3 border-t border-white/[0.06]">
-            <p className="text-[12px] text-white/50 mb-2">
-              Paste a playlist link from Spotify, YouTube, JioSaavn, or Apple
-              Music
-            </p>
+          <div className="px-4 py-2">
             <input
               value={importUrl}
               onChange={(e) => setImportUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleImport()}
               placeholder="https://open.spotify.com/playlist/..."
-              className="w-full px-4 py-3 text-[13px] rounded-xl border bg-white/5 text-white placeholder:text-white/20 outline-none transition-colors"
+              className="w-full px-4 py-3 text-[13px] rounded-xl border bg-white/5 text-white placeholder:text-white/40 outline-none transition-colors"
               style={{
                 borderColor: importError ? "#C0392B" : "rgba(255,255,255,0.08)",
               }}
@@ -231,7 +226,7 @@ export function PlaylistModal({
             <button
               onClick={handleImport}
               disabled={importing || !importUrl.trim()}
-              className="mt-2 w-full py-3 text-[13px] font-medium rounded-xl bg-violet-500/20 text-violet-300 hover:bg-violet-500/30 transition-colors disabled:opacity-50"
+              className="mt-2 w-full py-3 text-[13px] font-medium rounded-xl bg-violet-500/20 text-black bg-white hover:bg-violet-500/30 transition-colors disabled:opacity-50"
             >
               {importing ? (
                 <span className="flex items-center justify-center gap-2">
@@ -251,7 +246,7 @@ export function PlaylistModal({
               setShowImport((v) => !v);
               setImportError("");
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-white text-black hover:bg-white/70 cursor-pointer duration-200 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg c cursor-pointer duration-200 transition-colors"
           >
             <Plus size={14} />
             Import Playlist
