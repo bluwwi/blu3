@@ -988,9 +988,6 @@ export default function RoomPage() {
             <RoomBackground
               isPlaying={player.playerState === "playing"}
               trackImage={footerTrack?.image}
-              trackId={footerTrack?.videoId}
-              liveBandsRef={audioAnalyzer.bandsRef}
-              isLiveAudio={audioAnalyzer.isActive}
             />
           </div>
 
