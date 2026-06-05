@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, Search, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Icon } from "@/hooks/useIcon";
@@ -145,19 +146,21 @@ export function PlaylistModal({ open, onClose, onQueuePlaylist, onImportStatus }
     }
   }
 
-  if (!open) return null;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  return (
+  if (!open || !mounted) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center"
-      style={{ background: "rgba(0,0,0,0.6)" }}
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         ref={modalRef}
-        className="w-[480px] max-w-[90vw] max-h-[80vh] flex flex-col rounded-3xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+        className="w-[480px] max-w-[90vw] max-h-[80vh] flex flex-col rounded-3xl border backdrop-blur-2xl overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
         style={{
-          background: "var(--room-surface, #0D0D14)",
+          background: "var(--room-surface, rgba(13,13,20,0.85))",
           borderColor: "var(--room-border, rgba(255,255,255,0.08))",
         }}
       >
@@ -302,6 +305,7 @@ export function PlaylistModal({ open, onClose, onQueuePlaylist, onImportStatus }
           )}
         </ScrollArea>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
