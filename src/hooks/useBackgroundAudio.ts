@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
 import { Track } from "@/utils/types";
-import { getAudioStreamUrl, getStreamUrl, preResolveYt, resolveTrackSource } from "@/utils/ytdl";
+import { getAudioStreamUrl, preResolveYt, resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
 
 interface BackgroundAudioConfig {
@@ -226,7 +226,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           }
           const audio = audioRef.current;
           if (audio) {
-            audio.src = getStreamUrl(track.videoId);
+            audio.src = "";
           }
         }
       });
