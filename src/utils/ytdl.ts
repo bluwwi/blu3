@@ -6,10 +6,14 @@ export function getStreamUrl(videoId: string): string {
 
 export async function getAudioStreamUrl(
   videoId: string,
+  token?: string,
 ): Promise<string | null> {
   try {
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     const res = await fetch(
       `${API_URL}/api/ytdl/${encodeURIComponent(videoId)}`,
+      { headers },
     );
     if (!res.ok) return null;
     const data = await res.json();
@@ -17,6 +21,13 @@ export async function getAudioStreamUrl(
   } catch {
     return null;
   }
+}
+
+export function preResolveYt(
+  videoId: string,
+  token?: string,
+): Promise<string | null> {
+  return getAudioStreamUrl(videoId, token);
 }
 
 export async function resolveTrackSource(
