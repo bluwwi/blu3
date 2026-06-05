@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Trash2, Plus, Play } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
+import { Profile } from "@/components/Profile";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -63,13 +64,12 @@ function useRooms(user: any, authLoading: boolean) {
 
 export default function BrowsePage() {
   const router = useRouter();
-  const { user, loading: authLoading, login, logout } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { rooms, loading, removeRoom } = useRooms(user, authLoading);
   const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const autoCreated = useRef(false);
 
   // Auto-create a random room for first-time users
@@ -189,66 +189,8 @@ export default function BrowsePage() {
               </div>
             </div>
 
-            <div className="relative -z-10">
-              {user ? (
-                <div className="relative">
-                  {/* ✅ Toggle button always renders for authenticated users */}
-                  <button
-                    onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="focus:outline-none"
-                    aria-label="Open profile menu"
-                  >
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt=""
-                        className="w-7 h-7 rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer"
-                      />
-                    ) : (
-                      /* Fallback: initials or default icon */
-                      <div className="w-7 h-7 rounded-full bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                        {user.name?.[0] || "U"}
-                      </div>
-                    )}
-                  </button>
-
-                  {/* Popup menu */}
-                  {showProfileMenu && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-40"
-                        onClick={() => setShowProfileMenu(false)}
-                      />
-                      <div className="absolute right-0 mt-2 w-44 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
-                        <div className="px-3 py-2.5 border-b border-white/10">
-                          <p className="text-[12px] font-bold text-white truncate">
-                            {user.name}
-                          </p>
-                          <p className="text-[9px] text-zinc-500 truncate mt-0.5">
-                            {user.email}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            setShowProfileMenu(false);
-                            logout();
-                          }}
-                          className="w-full text-left px-3 py-2 text-[10px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors uppercase tracking-widest"
-                        >
-                          Log out
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => login()}
-                  className="text-[11px] border border-zinc-700 rounded-lg px-3 py-1.5 text-zinc-400 hover:border-zinc-500 transition-colors tracking-widest uppercase"
-                >
-                  sign in
-                </button>
-              )}
+            <div className="relative z-10">
+              <Profile />
             </div>
           </div>
 

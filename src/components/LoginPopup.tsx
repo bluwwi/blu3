@@ -7,7 +7,7 @@ import { authClient } from "@/lib/auth-client";
 
 function LoginPopup() {
   const handleLogin = (provider: "google" | "discord") => {
-    sessionStorage.setItem("returnUrl", "/browse");
+    sessionStorage.setItem("returnUrl", window.location.pathname);
     authClient.signIn.social({ provider, callbackURL: window.location.origin });
   };
 
