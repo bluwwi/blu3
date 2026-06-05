@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   name: string;
   image?: string;
+  avatar?: string;
 }
 
 export function useAuth() {
@@ -21,7 +22,10 @@ export function useAuth() {
     }
   }, [session, isPending]);
 
-  const user: AuthUser | null = session?.user ?? null;
+  const sessionUser = session?.user ?? null;
+  const user: AuthUser | null = sessionUser
+    ? { ...sessionUser, avatar: sessionUser.image }
+    : null;
   const loading = isPending;
 
   const login = useCallback((provider: "google" | "discord" = "google") => {
