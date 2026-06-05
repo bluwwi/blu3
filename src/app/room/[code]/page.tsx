@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
-import { useQueuePreCache } from "@/hooks/useQueuePreCache";
 import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
@@ -51,7 +50,7 @@ export default function RoomPage() {
     typeof window !== "undefined"
       ? localStorage.getItem("blu3_token") ?? undefined
       : undefined;
-  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, enableFallback, isBgAudioActiveRef } = useBackgroundAudio({
+  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, hasAudioUrlRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     volume: player.volume,
@@ -67,7 +66,6 @@ export default function RoomPage() {
     ytPlayerRef,
     player.playerState,
     audioRef,
-    isBgAudioActiveRef,
   );
 
   const onYtStateChangeWrapped = useCallback((state: number) => {
@@ -181,8 +179,6 @@ export default function RoomPage() {
       }, 3000);
     }, []),
   });
-
-  useQueuePreCache(queue, token);
 
   const playbackRef = useRef(playback);
   useEffect(() => {
