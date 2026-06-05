@@ -374,7 +374,7 @@ export default function PlaylistsPage() {
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           {/* ── NAV BAR — identical to browse page ── */}
-          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
+          <div className="flex absolute z-50 top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
             <Link
               href="/browse"
               className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
@@ -460,21 +460,11 @@ export default function PlaylistsPage() {
 
           <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
             <div className="flex flex-wrap items-center justify-center content-center gap-3 py-16 w-full min-h-full">
-              {loadingPlaylists ? (
-                Array.from({ length: 9 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))
-              ) : playlists.length === 0 ? (
-                  <div className="text-center">
-                    <p className="text-zinc-600 text-sm mb-2 tracking-wide">
-                      no playlists yet
-                    </p>
-                    <p className="text-[11px] text-zinc-700 tracking-widest">
-                      create one or import from spotify · youtube · apple music
-                    </p>
-                  </div>
-                ) : (
-                  playlists.map((playlist) => {
+              {loadingPlaylists
+                ? Array.from({ length: 9 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
+                : playlists.map((playlist) => {
                     const hasCover =
                       playlist.coverImage &&
                       playlist.coverImage.trim().length > 0;
@@ -537,29 +527,28 @@ export default function PlaylistsPage() {
                         </div>
                       </div>
                     );
-                  })
-                )}
+                  })}
 
-                {/* Create card — identical pattern to browse's "+ Create Room" */}
-                {!loadingPlaylists && (
-                  <div
-                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
-                    onClick={() => setShowCreateModal(true)}
-                  >
-                    <div className="aspect-square text-neutral-700 hover:text-neutral-400 border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                      <Plus
-                        className="create-plus w-30 h-30 transition-all"
-                        strokeWidth={2.25}
-                      />
-                    </div>
-                    <div className="px-0.5">
-                      <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
-                        New Playlist
-                      </p>
-                    </div>
+              {/* Create card — identical pattern to browse's "+ Create Room" */}
+              {!loadingPlaylists && (
+                <div
+                  className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  <div className="aspect-square text-neutral-700 hover:text-neutral-400 border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                    <Plus
+                      className="create-plus w-30 h-30 transition-all"
+                      strokeWidth={2.25}
+                    />
                   </div>
-                )}
-              </div>
+                  <div className="px-0.5">
+                    <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
+                      New Playlist
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </ScrollArea>
         </div>
       </div>
