@@ -1,62 +1,39 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { authClient } from "@/lib/auth-client";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-interface AuthUser {
-  sub: string;
+export interface AuthUser {
+  id: string;
   email: string;
   name: string;
-  avatar?: string;
+  image?: string;
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: session, isPending, error } = authClient.useSession();
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // small wait to ensure localStorage is hydrated after redirect
-    const timer = setTimeout(() => {
-      const token = localStorage.getItem("blu3_token");
-      console.log("TOKEN FOUND:", token?.slice(0, 20));
+    if (session?.session?.token) {
+      setToken(session.session.token);
+    } else {
+      setToken(null);
+    }
+  }, [session]);
 
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+  const user: AuthUser | null = session?.user ?? null;
+  const loading = isPending;
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-
-      fetch(`${API_URL}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal,
-      })
-        .then((r) => r.json())
-        .then((data) => {
-          if (data.user) setUser(data.user);
-          else localStorage.removeItem("blu3_token");
-        })
-        .catch(() => localStorage.removeItem("blu3_token"))
-        .finally(() => {
-          clearTimeout(timeout);
-          setLoading(false);
-        });
-    }, 50);
-
-    return () => clearTimeout(timer);
+  const login = useCallback((provider: "google" | "discord" = "google") => {
+    sessionStorage.setItem("returnUrl", window.location.pathname);
+    authClient.signIn.social({ provider });
   }, []);
 
-  const login = useCallback(() => {
-    sessionStorage.setItem("returnUrl", "/browse");
-    window.location.href = `${API_URL}/auth/google`;
+  const logout = useCallback(async () => {
+    await authClient.signOut();
+    setToken(null);
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem("blu3_token");
-    setUser(null);
-  }, []);
-
-  return { user, loading, login, logout };
+  return { user, loading, login, logout, token };
 }

@@ -3,9 +3,13 @@
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { authClient } from "@/lib/auth-client";
 
 function LoginPopup() {
-  const { login } = useAuth();
+  const handleLogin = (provider: "google" | "discord") => {
+    sessionStorage.setItem("returnUrl", "/browse");
+    authClient.signIn.social({ provider });
+  };
 
   return (
     <div
@@ -20,7 +24,7 @@ function LoginPopup() {
         </p>
 
         <button
-          onClick={login}
+          onClick={() => handleLogin("google")}
           className="block w-full py-3.5 mb-2.5 text-[#1a1a1a] text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#ffffff", borderRadius: "12px" }}
           onMouseOver={(e) =>
@@ -32,6 +36,20 @@ function LoginPopup() {
         >
           sign in with google
         </button>
+
+        <button
+          onClick={() => handleLogin("discord")}
+          className="block w-full py-3.5 text-white text-[15px] font-semibold transition-all duration-500 relative z-10"
+          style={{ background: "#5865F2", borderRadius: "12px" }}
+          onMouseOver={(e) =>
+            (e.currentTarget.style.background = "#4752C4")
+          }
+          onMouseOut={(e) =>
+            (e.currentTarget.style.background = "#5865F2")
+          }
+        >
+          sign in with discord
+        </button>
       </div>
     </div>
   );
@@ -39,12 +57,14 @@ function LoginPopup() {
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { user, loading } = useAuth();
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("blu3_token");
-    setShowPopup(!token);
-  }, [pathname]);
+    if (!loading) {
+      setShowPopup(!user);
+    }
+  }, [user, loading]);
 
   useEffect(() => {
     const onError = (e: Event) => {
