@@ -73,8 +73,13 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           audioRef.current?.pause();
           if (wasPlayingBeforeBgRef.current) {
             try {
-              ytPlayerRef.current?.seekTo(pos, true);
-              ytPlayerRef.current?.playVideo();
+              const player = ytPlayerRef.current;
+              if (player?.seekTo) {
+                player.seekTo(pos, true);
+                player.playVideo();
+              } else if (player?.loadVideoById) {
+                player.loadVideoById({ videoId: configRef.current.nowPlaying?.videoId, startSeconds: pos });
+              }
             } catch {}
           }
         }
