@@ -11,6 +11,7 @@ interface BackgroundAudioConfig {
   onPlay: () => void;
   onPause: () => void;
   onTrackEnd: () => void;
+  pendingStartTimeRef?: React.MutableRefObject<number>;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -117,7 +118,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
     const track = configRef.current.nowPlaying;
     if (track?.videoId) {
-      player.loadVideoById(track.videoId);
+      const start = configRef.current.pendingStartTimeRef?.current ?? 0;
+      player.loadVideoById({ videoId: track.videoId, startSeconds: start });
       lastVideoIdRef.current = track.videoId;
       if (configRef.current.isPlaying) player.playVideo();
     }
@@ -148,7 +150,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     /* Start YT iframe (primary) */
     const player = ytPlayerRef.current;
     if (player && ytReadyRef.current) {
-      player.loadVideoById(track.videoId);
+      const start = config.pendingStartTimeRef?.current ?? 0;
+      player.loadVideoById({ videoId: track.videoId, startSeconds: start });
       lastVideoIdRef.current = track.videoId;
       player.setVolume(
         configRef.current.isMuted ? 0 : configRef.current.volume,

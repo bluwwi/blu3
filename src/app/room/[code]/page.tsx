@@ -54,6 +54,7 @@ export default function RoomPage() {
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
+    pendingStartTimeRef: player.pendingStartTimeRef,
   });
 
   const progress = useProgressTracking(
