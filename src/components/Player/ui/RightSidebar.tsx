@@ -7,6 +7,7 @@ import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
 import { X } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
+import { log } from "console";
 
 interface Member {
   userId: string;
@@ -118,7 +119,6 @@ export function RightSidebar({
         .catch(() => {});
     }
   };
-
   const [copied, setCopied] = useState(false);
 
   return (
@@ -128,7 +128,6 @@ export function RightSidebar({
         style={getRoomThemeVars(roomTheme)}
       >
         <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
-          {/* Header */}
           <div className=" px-3 max-md:pt-0 md:pt-3 pb-2  shrink-0">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center">
@@ -144,7 +143,7 @@ export function RightSidebar({
                       {m.avatar ? (
                         <img
                           src={m.avatar}
-                          alt=""
+                          alt="hello"
                           className="h-5 w-5 aspect-square rounded-full object-cover"
                         />
                       ) : (
@@ -155,7 +154,6 @@ export function RightSidebar({
                     </div>
                   ))}
                 </button>
-
                 {onChatToggle && (
                   <button
                     onClick={onChatToggle}
