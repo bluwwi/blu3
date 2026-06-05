@@ -1,45 +1,22 @@
 "use client";
 
-import { useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { RoomLoading } from "@/components/Player/ui/RoomLoading";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-function CallbackHandler() {
+export default function AuthCallback() {
   const router = useRouter();
-  const params = useSearchParams();
 
   useEffect(() => {
-    const token = params.get("token");
-    console.log("CALLBACK TOKEN:", token?.slice(0, 20));
-
-    if (token) {
-      localStorage.setItem("blu3_token", token);
-      console.log(
-        "SAVED. NOW IN STORAGE:",
-        localStorage.getItem("blu3_token")?.slice(0, 20),
-      );
-    }
-
-    // ← delay redirect so localStorage write completes first
     const returnUrl = sessionStorage.getItem("returnUrl");
     sessionStorage.removeItem("returnUrl");
-    setTimeout(() => router.replace(returnUrl || "/browse"), 100);
-  }, [params, router]);
+    router.replace(returnUrl || "/browse");
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center">
-      <p className="text-zinc-500 text-sm  tracking-widest animate-pulse">
+      <p className="text-zinc-500 text-sm tracking-widest animate-pulse">
         signing in...
       </p>
     </div>
   );
 }
-
-export default function AuthCallback() {
-  return (
-    <Suspense fallback={<RoomLoading />}>
-      <CallbackHandler />
-    </Suspense>
-  );
-}
-w
