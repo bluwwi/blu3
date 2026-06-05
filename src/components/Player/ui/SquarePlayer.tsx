@@ -203,7 +203,12 @@ export function SquarePlayer({
   }, [isPlaying, track?.id, track?.videoId]);
 
   return (
-    <div className="flex flex-col text-white items-center justify-center  md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full">
+    <div ref={frameRef} className="flex flex-col text-white items-center justify-center  md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full relative">
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 0 }}
+      />
     <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
 
       <div className="p-0.5 w-fit border-2 rounded-full border-white">
@@ -227,19 +232,13 @@ export function SquarePlayer({
         ref={wrapRef}
         className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
       >
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 pointer-events-none"
-          style={{ zIndex: 0 }}
-        />
         <Image
           width={800}
           height={800}
           src={albumArt}
           alt={title}
           priority
-          className="w-full h-full object-cover relative"
-          style={{ zIndex: 1 }}
+          className="w-full h-full object-cover"
         />
       </div>
 
