@@ -2,13 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const TOTAL = 16;
 
 export default function Home() {
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
-  const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -18,10 +16,6 @@ export default function Home() {
       });
     }, 1800);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    setSignedIn(!!localStorage.getItem("blu3_token"));
   }, []);
 
   return (
@@ -193,18 +187,8 @@ export default function Home() {
           )}
         </div>
 
-        <button
-          className="btn"
-          onClick={() => {
-            if (signedIn) {
-              window.location.href = "/browse";
-            } else {
-              sessionStorage.setItem("returnUrl", "/browse");
-              window.location.href = `${API_URL}/auth/google`;
-            }
-          }}
-        >
-          <span>{signedIn ? "Start" : "sign in"}</span>
+        <button className="btn" onClick={() => window.location.href = "/login"}>
+          <span>get started</span>
         </button>
       </div>
     </>
