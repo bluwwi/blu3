@@ -93,9 +93,11 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const onYtReady = useCallback((player: any) => {
     ytPlayerRef.current = player;
     ytReadyRef.current = true;
-    player.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
+    const isJio = hasAudioUrlRef.current;
+    player.setVolume(isJio ? 0 : (configRef.current.isMuted ? 0 : configRef.current.volume));
+    if (isJio) return;
     const track = configRef.current.nowPlaying;
-    if (track?.videoId && !hasAudioUrlRef.current) {
+    if (track?.videoId) {
       const start = configRef.current.pendingStartTimeRef?.current ?? 0;
       player.loadVideoById({ videoId: track.videoId, startSeconds: start });
       lastVideoIdRef.current = track.videoId;
@@ -121,15 +123,10 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     hasAudioUrlRef.current = false;
     lastVideoIdRef.current = null;
+    const fetchId = ++fetchIdRef.current;
 
-    const player = ytPlayerRef.current;
-    if (player && ytReadyRef.current) {
-      try { player.stopVideo(); } catch {}
-    }
     const audio = audioRef.current;
     if (audio) { audio.pause(); audio.src = ""; }
-
-    const fetchId = ++fetchIdRef.current;
 
     resolveTrackSource(track.videoId, track.name, track.artists?.[0]?.name, config.token)
       .then((result) => {
@@ -158,22 +155,30 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
   useEffect(() => {
     const player = ytPlayerRef.current;
-    if (player && ytReadyRef.current && !hasAudioUrlRef.current) {
-      player.setVolume(config.isMuted ? 0 : config.volume);
-      if (config.isPlaying) {
-        player.playVideo();
-      } else {
+    const audio = audioRef.current;
+
+    if (hasAudioUrlRef.current) {
+      if (player && ytReadyRef.current) {
+        player.setVolume(0);
         player.pauseVideo();
       }
-    }
-
-    const audio = audioRef.current;
-    if (audio && hasAudioUrlRef.current) {
-      audio.volume = config.isMuted ? 0 : config.volume / 100;
-      if (config.isPlaying) {
-        audio.play().catch(() => {});
-      } else {
-        audio.pause();
+      if (audio) {
+        audio.volume = config.isMuted ? 0 : config.volume / 100;
+        if (config.isPlaying) {
+          audio.play().catch(() => {});
+        } else {
+          audio.pause();
+        }
+      }
+    } else {
+      if (audio) audio.volume = 0;
+      if (player && ytReadyRef.current) {
+        player.setVolume(config.isMuted ? 0 : config.volume);
+        if (config.isPlaying) {
+          player.playVideo();
+        } else {
+          player.pauseVideo();
+        }
       }
     }
 
