@@ -44,9 +44,40 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem("blu3_token");
     setShowPopup(!token);
+  }, [pathname]);
+
+  useEffect(() => {
+    const onError = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "SCRIPT" &&
+        (target.getAttribute("src")?.includes("/_next/static/chunks/") ||
+          e instanceof ErrorEvent ||
+          (e as any)?.message?.includes("chunk"))
+      ) {
+        localStorage.setItem("blu3_reload", "1");
+        window.location.reload();
+      }
+    };
+    const onRejection = (e: PromiseRejectionEvent) => {
+      if (
+        e.reason?.message?.includes("chunk") ||
+        e.reason?.message?.includes("Loading") ||
+        e.reason?.message?.includes("import()")
+      ) {
+        localStorage.setItem("blu3_reload", "1");
+        window.location.reload();
+      }
+    };
+    window.addEventListener("error", onError, true);
+    window.addEventListener("unhandledrejection", onRejection);
+    return () => {
+      window.removeEventListener("error", onError, true);
+      window.removeEventListener("unhandledrejection", onRejection);
+    };
   }, []);
 
-  if (pathname === "/home") return <>{children}</>;
+  if (pathname === "/home" || pathname === "/auth/callback" || pathname === "/login") return <>{children}</>;
 
   return (
     <>
