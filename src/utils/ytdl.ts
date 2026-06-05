@@ -18,3 +18,22 @@ export async function getAudioStreamUrl(
     return null;
   }
 }
+
+export async function resolveTrackSource(
+  videoId: string,
+  name: string,
+  artists?: string,
+): Promise<{ source: string; url?: string; videoId: string }> {
+  try {
+    const res = await fetch(`${API_URL}/api/resolve`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoId, name, artists }),
+    });
+    if (!res.ok) return { source: "youtube", videoId };
+    const data = await res.json();
+    return { source: data.source ?? "youtube", url: data.url, videoId: data.videoId };
+  } catch {
+    return { source: "youtube", videoId };
+  }
+}

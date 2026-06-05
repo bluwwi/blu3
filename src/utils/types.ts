@@ -8,6 +8,7 @@ export type PlayerState =
 
 export interface Track {
   id: string;
+  source: string;
   videoId: string;
   name: string;
   duration_ms: number;
@@ -43,6 +44,7 @@ export interface SuggestResponse {
 
 export interface TimelineSnapshot {
   videoId: string | null;
+  source: string;
   trackName: string;
   artistName: string;
   image: string;

@@ -4,6 +4,7 @@ import { Track } from "./types";
 export function asTrackFromPlayback(
   playback: {
     videoId: string | null;
+    source?: string;
     trackName: string;
     artistName: string;
     image: string;
@@ -13,6 +14,7 @@ export function asTrackFromPlayback(
   if (!playback?.videoId) return null;
   return {
     id: `room-${playback.videoId}`,
+    source: playback.source ?? "youtube",
     videoId: playback.videoId,
     name: playback.trackName,
     duration_ms: 0,
@@ -25,6 +27,7 @@ export function asTrackFromPlayback(
 
 export function asTrackFromRecent(recentTrack?: {
   videoId: string;
+  source?: string;
   trackName: string;
   artistName: string;
   image: string;
@@ -32,6 +35,7 @@ export function asTrackFromRecent(recentTrack?: {
   if (!recentTrack) return null;
   return {
     id: recentTrack.videoId,
+    source: recentTrack.source ?? "youtube",
     videoId: recentTrack.videoId,
     name: recentTrack.trackName,
     duration_ms: 0,

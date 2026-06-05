@@ -23,6 +23,7 @@ export interface Member {
 
 export interface PlaybackState {
   videoId: string | null;
+  source?: string;
   trackName: string;
   artistName: string;
   image: string;
@@ -42,6 +43,7 @@ export interface PlaybackMode {
 
 interface PlayMessage {
   videoId: string;
+  source?: string;
   seekTo: number;
   serverTime: number;
   anchorServerTime: number;
@@ -64,6 +66,7 @@ type RoomSocketMessage =
   | {
       type: "play";
       videoId: string;
+      source?: string;
       seekTo: number;
       serverTime: number;
       anchorServerTime: number;
@@ -95,6 +98,7 @@ type RoomSocketMessage =
   | {
       type: "playback:sync";
       videoId: string | null;
+      source?: string;
       trackName: string;
       artistName: string;
       image: string;
@@ -268,6 +272,7 @@ export function useRoomSocket({
         case "play":
           setPlayback({
             videoId: msg.videoId ?? null,
+            source: msg.source ?? "youtube",
             trackName: msg.trackName ?? "",
             artistName: msg.artistName ?? "",
             image: msg.image ?? "",
@@ -305,6 +310,7 @@ export function useRoomSocket({
         case "playback:sync":
           setPlayback({
             videoId: msg.videoId ?? null,
+            source: (msg as any).source ?? "youtube",
             trackName: msg.trackName ?? "",
             artistName: msg.artistName ?? "",
             image: msg.image ?? "",
@@ -348,6 +354,7 @@ export function useRoomSocket({
   const sendPlay = useCallback(
     (track: {
       id?: string;
+      source?: string;
       videoId: string;
       trackName: string;
       artistName: string;
