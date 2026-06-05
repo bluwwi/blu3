@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useCallback } from "react";
 import { Track } from "@/utils/types";
-import { getAudioStreamUrl, getStreamUrl, resolveTrackSource } from "@/utils/ytdl";
+import { getAudioStreamUrl, getStreamUrl, preResolveYt, resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
 
 interface BackgroundAudioConfig {
@@ -26,6 +26,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const fallbackRef = useRef(false);
   const lastVideoIdRef = useRef<string | null>(null);
   const hasAudioUrlRef = useRef(false);
+  const audioUrlRef = useRef<string | null>(null);
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const audioReloadedRef = useRef(false);
