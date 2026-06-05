@@ -31,7 +31,7 @@ export interface PlaybackState {
   currentTime: number;
   updatedAt: number;
   anchorServerTime?: number;
-  positionMs?: number;
+  positionSec?: number;
 }
 
 export type RepeatMode = "off" | "all" | "one";
@@ -77,7 +77,7 @@ type RoomSocketMessage =
       duration_ms?: number;
       recentTracks?: RecentTrack[];
     }
-  | { type: "pause"; serverTime: number; anchorServerTime: number; positionMs: number }
+  | { type: "pause"; serverTime: number; anchorServerTime: number; positionSec: number }
   | { type: "seek"; seekTo: number; serverTime: number; anchorServerTime: number }
   | {
       type: "room:joined";
@@ -164,11 +164,11 @@ export function useRoomSocket({
   );
 
   const getSyncedPosition = useCallback(
-    (positionMs: number, anchorServerTime: number, isPlaying: boolean): number => {
-      if (!isPlaying) return positionMs;
+    (positionSec: number, anchorServerTime: number, isPlaying: boolean): number => {
+      if (!isPlaying) return positionSec;
       const serverNow = Date.now() + clockOffsetRef.current;
-      const elapsed = serverNow - anchorServerTime;
-      return Math.max(0, positionMs + elapsed);
+      const elapsed = (serverNow - anchorServerTime) / 1000;
+      return Math.max(0, positionSec + elapsed);
     },
     [],
   );
@@ -248,7 +248,7 @@ export function useRoomSocket({
           setMembers(msg.members ?? []);
           if (msg.playback) {
             const pb = msg.playback;
-            setPlayback({ ...pb, anchorServerTime: pb.updatedAt, positionMs: pb.currentTime });
+            setPlayback({ ...pb, anchorServerTime: pb.updatedAt, positionSec: pb.currentTime });
           } else {
             setPlayback(null);
           }
@@ -287,7 +287,7 @@ export function useRoomSocket({
             currentTime: msg.seekTo ?? 0,
             updatedAt: msg.serverTime,
             anchorServerTime: msg.anchorServerTime,
-            positionMs: msg.seekTo ?? 0,
+            positionSec: msg.seekTo ?? 0,
           });
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           onPlayRef.current?.(msg);
@@ -295,7 +295,7 @@ export function useRoomSocket({
         case "pause":
           setPlayback((prev) =>
             prev
-              ? { ...prev, isPlaying: false, updatedAt: msg.serverTime, anchorServerTime: msg.anchorServerTime, positionMs: msg.positionMs, currentTime: msg.positionMs }
+              ? { ...prev, isPlaying: false, updatedAt: msg.serverTime, anchorServerTime: msg.anchorServerTime, positionSec: msg.positionSec, currentTime: msg.positionSec }
               : prev,
           );
           onPauseRef.current?.(msg);
