@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { authClient } from "@/lib/auth-client";
 
@@ -57,14 +57,24 @@ function LoginPopup() {
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, loading } = useAuth();
   const [showPopup, setShowPopup] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
-      setShowPopup(!user);
+    if (!loading && !user) {
+      if (pathname.startsWith("/room/")) {
+        setRedirecting(true);
+        router.replace(`/login?returnUrl=${encodeURIComponent(pathname)}`);
+      } else {
+        setShowPopup(true);
+      }
     }
-  }, [user, loading]);
+    if (!loading && user) {
+      setShowPopup(false);
+    }
+  }, [user, loading, pathname, router]);
 
   useEffect(() => {
     const onError = (e: Event) => {
@@ -98,6 +108,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (pathname === "/" || pathname === "/auth/callback" || pathname === "/login") return <>{children}</>;
+
+  if (redirecting) return <>{children}</>;
 
   return (
     <>

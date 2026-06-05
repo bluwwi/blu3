@@ -3,6 +3,15 @@
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
+  const handleLogin = (provider: "google" | "discord") => {
+    const params = new URLSearchParams(window.location.search);
+    const returnUrl = params.get("returnUrl");
+    if (returnUrl) {
+      sessionStorage.setItem("returnUrl", returnUrl);
+    }
+    authClient.signIn.social({ provider, callbackURL: window.location.origin });
+  };
+
   return (
     <div className="h-screen w-full bg-[#080808] flex items-center justify-center">
       <div
@@ -16,7 +25,7 @@ export default function LoginPage() {
         </p>
 
         <button
-          onClick={() => authClient.signIn.social({ provider: "google", callbackURL: window.location.origin })}
+          onClick={() => handleLogin("google")}
           className="block w-full py-3.5 mb-2.5 text-[#1a1a1a] text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#ffffff", borderRadius: "12px" }}
           onMouseOver={(e) =>
@@ -30,7 +39,7 @@ export default function LoginPage() {
         </button>
 
         <button
-          onClick={() => authClient.signIn.social({ provider: "discord", callbackURL: window.location.origin })}
+          onClick={() => handleLogin("discord")}
           className="block w-full py-3.5 text-white text-[15px] font-semibold transition-all duration-500 relative z-10"
           style={{ background: "#5865F2", borderRadius: "12px" }}
           onMouseOver={(e) =>
