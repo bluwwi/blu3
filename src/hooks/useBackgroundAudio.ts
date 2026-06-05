@@ -62,6 +62,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.onerror = () => {
       if (hasAudioUrlRef.current) {
         hasAudioUrlRef.current = false;
+        audio.pause();
         audio.src = "";
         const track = configRef.current.nowPlaying;
         const player = ytPlayerRef.current;
@@ -120,6 +121,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     hasAudioUrlRef.current = false;
     lastVideoIdRef.current = null;
+
+    const player = ytPlayerRef.current;
+    if (player && ytReadyRef.current) {
+      try { player.stopVideo(); } catch {}
+    }
+    const audio = audioRef.current;
+    if (audio) { audio.pause(); audio.src = ""; }
+
     const fetchId = ++fetchIdRef.current;
 
     resolveTrackSource(track.videoId, track.name, track.artists?.[0]?.name, config.token)
