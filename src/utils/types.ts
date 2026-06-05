@@ -40,3 +40,24 @@ export interface SearchResponse {
 export interface SuggestResponse {
   suggestions: string[];
 }
+
+export interface TimelineSnapshot {
+  videoId: string | null;
+  trackName: string;
+  artistName: string;
+  image: string;
+  isPlaying: boolean;
+  positionMs: number;
+  anchorServerTime: number;
+  shuffle: boolean;
+  repeatMode: "off" | "all" | "one";
+}
+
+export function computePosition(
+  timeline: TimelineSnapshot,
+  serverTime: number,
+): number {
+  if (!timeline.isPlaying) return timeline.positionMs;
+  const elapsed = serverTime - timeline.anchorServerTime;
+  return Math.max(0, timeline.positionMs + elapsed);
+}
