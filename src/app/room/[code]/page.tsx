@@ -51,6 +51,7 @@ export default function RoomPage() {
     isPlaying: player.playing,
     volume: player.volume,
     isMuted: player.isMuted,
+    token: typeof window !== "undefined" ? localStorage.getItem("blu3_token") ?? undefined : undefined,
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
