@@ -107,7 +107,23 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       configRef.current.onTrackEnd();
     };
     audio.onerror = () => {
-      if (hasAudioUrlRef.current || isBgAudioActiveRef.current) {
+      if (hasAudioUrlRef.current) {
+        hasAudioUrlRef.current = false;
+        audio.src = "";
+        const track = configRef.current.nowPlaying;
+        const player = ytPlayerRef.current;
+        const wasPlaying = configRef.current.isPlaying;
+        if (track?.videoId && player && ytReadyRef.current) {
+          const start = configRef.current.pendingStartTimeRef?.current ?? 0;
+          lastVideoIdRef.current = track.videoId;
+          try {
+            player.loadVideoById({ videoId: track.videoId, startSeconds: start });
+            if (wasPlaying) player.playVideo();
+          } catch {}
+        }
+        return;
+      }
+      if (isBgAudioActiveRef.current) {
         configRef.current.onTrackEnd();
         return;
       }
