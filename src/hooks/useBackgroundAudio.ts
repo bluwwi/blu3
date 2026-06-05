@@ -171,6 +171,11 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           if (configRef.current.isPlaying)
             audio.play().catch(() => {});
         } else {
+          audioUrlRef.current = null;
+          preResolveYt(track.videoId, config.token).then((url) => {
+            if (fetchIdRef.current !== fetchId) return;
+            audioUrlRef.current = url;
+          });
           const player = ytPlayerRef.current;
           if (player && ytReadyRef.current) {
             const start = config.pendingStartTimeRef?.current ?? 0;
