@@ -49,6 +49,7 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(() => {
+    sessionStorage.setItem("returnUrl", "/browse");
     window.location.href = `${API_URL}/auth/google`;
   }, []);
 

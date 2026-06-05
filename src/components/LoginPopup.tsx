@@ -6,10 +6,11 @@ import { usePathname } from "next/navigation";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 function LoginPopup() {
-  const handleLogin = () => {
-    sessionStorage.setItem("returnUrl", window.location.pathname + window.location.search);
-    window.location.href = `${API_URL}/auth/google`;
-  };
+  const { login } = useAuth();
+
+  useEffect(() => {
+    import("@/hooks/useAuth");
+  }, []);
 
   return (
     <div
