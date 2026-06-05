@@ -82,12 +82,14 @@ type RoomSocketMessage =
   | {
       type: "room:joined";
       isHost: boolean;
+      isHostActive?: boolean;
       members?: Member[];
       playback?: PlaybackState | null;
       playbackMode?: PlaybackMode;
       recentTracks?: RecentTrack[];
       queue?: Track[];
     }
+  | { type: "host:active_changed"; isHostActive: boolean }
   | {
       type: "room:member_joined";
       members?: Member[];
@@ -137,6 +139,7 @@ export function useRoomSocket({
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [clockOffsetMs, setClockOffsetMs] = useState(0);
   const [isHost, setIsHost] = useState(false);
+  const [isHostActive, setIsHostActive] = useState(true);
   const [members, setMembers] = useState<Member[]>([]);
   const [playback, setPlayback] = useState<PlaybackState | null>(null);
   const [playbackMode, setPlaybackModeState] = useState<PlaybackMode>({
@@ -241,6 +244,7 @@ export function useRoomSocket({
         }
         case "room:joined":
           setIsHost(msg.isHost);
+          setIsHostActive(msg.isHostActive ?? true);
           setMembers(msg.members ?? []);
           if (msg.playback) {
             const pb = msg.playback;
@@ -257,6 +261,9 @@ export function useRoomSocket({
               safeSend(JSON.stringify({ type: "playback:sync_request" }));
             }, 0);
           }
+          break;
+        case "host:active_changed":
+          setIsHostActive(msg.isHostActive);
           break;
         case "room:member_joined":
           setMembers(msg.members ?? []);
@@ -438,6 +445,7 @@ export function useRoomSocket({
     initialDataLoaded,
     clockOffsetMs,
     isHost,
+    isHostActive,
     members,
     playback,
     playbackMode,

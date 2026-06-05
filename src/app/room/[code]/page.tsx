@@ -99,6 +99,7 @@ export default function RoomPage() {
     connected,
     initialDataLoaded,
     isHost: socketIsHost,
+    isHostActive,
     members,
     playback,
     playbackMode,
@@ -217,10 +218,7 @@ export default function RoomPage() {
   }, [connected, joined, queuePlaylistId, code, addToQueue, router]);
 
   const isHost = room?.hostId === user?.sub || socketIsHost;
-  const isHostPresent = room?.hostId
-    ? members.some((m) => m.userId === room.hostId)
-    : false;
-  const canControlPlayback = isHost || !isHostPresent;
+  const canControlPlayback = isHost || !isHostActive;
   const queueAdvanceLockRef = useRef<string | null>(null);
   const syncHandledRef = useRef(false);
   const joinedRef = useRef(joined);
@@ -357,7 +355,7 @@ export default function RoomPage() {
         time,
         true,
       );
-      /* OLD: audioStreamRef.current?.seek(time) — YT iframe handles seek */
+      p.play?.();
       setListenerMuted(true);
     }
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);

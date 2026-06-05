@@ -139,7 +139,7 @@ export function RightSidebar({
                   {members.map((m, i) => (
                     <div
                       key={i}
-                      className="flex items-center rounded-full border border-white/50 aspect-square"
+                      className="flex items-center rounded-full border border-white/50 h-6 w-6"
                     >
                       {m.avatar ? (
                         <img
