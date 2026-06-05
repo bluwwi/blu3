@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export interface AuthUser {
@@ -11,16 +11,15 @@ export interface AuthUser {
 }
 
 export function useAuth() {
-  const { data: session, isPending, error } = authClient.useSession();
-  const [token, setToken] = useState<string | null>(null);
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     if (session?.session?.token) {
-      setToken(session.session.token);
-    } else {
-      setToken(null);
+      localStorage.setItem("blu3_token", session.session.token);
+    } else if (!isPending) {
+      localStorage.removeItem("blu3_token");
     }
-  }, [session]);
+  }, [session, isPending]);
 
   const user: AuthUser | null = session?.user ?? null;
   const loading = isPending;
@@ -32,8 +31,8 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     await authClient.signOut();
-    setToken(null);
+    localStorage.removeItem("blu3_token");
   }, []);
 
-  return { user, loading, login, logout, token };
+  return { user, loading, login, logout };
 }
