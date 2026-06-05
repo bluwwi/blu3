@@ -9,6 +9,7 @@ export interface AuthUser {
   name: string;
   image?: string | null;
   avatar?: string | null;
+  role?: string;
 }
 
 export function useAuth() {

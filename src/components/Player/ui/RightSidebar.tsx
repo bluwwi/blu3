@@ -48,7 +48,13 @@ interface Props {
   unreadChatCount?: number;
   onSearchClick?: () => void;
   clearQueue?: () => void;
-  user?: { id: string; email: string; name: string; image?: string | null; avatar?: string | null } | null;
+  user?: {
+    id: string;
+    email: string;
+    name: string;
+    image?: string | null;
+    avatar?: string | null;
+  } | null;
   onLogout?: () => void;
   onLeave?: () => void;
   roomCode?: string;
@@ -133,18 +139,18 @@ export function RightSidebar({
               <div className="flex items-center">
                 <button
                   onClick={openMembers}
-                  className="flex flex-wrap -space-x-2 cursor-pointer"
+                  className="flex  -space-x-3 cursor-pointer"
                 >
                   {members.map((m, i) => (
                     <div
                       key={i}
-                      className="flex items-center rounded-full border border-white/50 h-6 w-6"
+                      className="flex items-center rounded-full   h-6 w-6"
                     >
                       {m.avatar ? (
                         <img
                           src={m.avatar}
                           alt="hello"
-                          className="h-5 w-5 aspect-square rounded-full object-cover"
+                          className="h-5 w-5 aspect-square rounded-full border border-white/30 object-cover"
                         />
                       ) : (
                         <div className="h-4 w-4 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
@@ -235,17 +241,20 @@ export function RightSidebar({
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-3">
                 <h2 className="text-white font-semibold text-lg">
                   Members({members.length})
                 </h2>
               </div>
-              <ScrollArea className="max-h-60 space-y-2">
+              <ScrollArea className="max-h-60 ">
                 {members.map((m, i) => {
                   const isMe =
                     user?.id === m.userId || user?.email === m.userId;
                   return (
-                    <div key={i} className="flex items-center gap-3 rounded-xl">
+                    <div
+                      key={i}
+                      className="flex mt-1 items-center gap-3 rounded-xl"
+                    >
                       <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
                         {m.avatar ? (
                           <img
