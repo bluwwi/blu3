@@ -72,7 +72,13 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       }
     }
     if (!loading && user) {
-      setShowPopup(false);
+      const returnUrl = sessionStorage.getItem("returnUrl");
+      if (returnUrl) {
+        sessionStorage.removeItem("returnUrl");
+        router.replace(returnUrl);
+      } else {
+        setShowPopup(false);
+      }
     }
   }, [user, loading, pathname, router]);
 

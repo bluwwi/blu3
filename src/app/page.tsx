@@ -14,7 +14,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/browse");
+      const returnUrl = sessionStorage.getItem("returnUrl");
+      if (returnUrl) {
+        sessionStorage.removeItem("returnUrl");
+        router.replace(returnUrl);
+      } else {
+        router.replace("/browse");
+      }
     }
   }, [user, loading, router]);
 
