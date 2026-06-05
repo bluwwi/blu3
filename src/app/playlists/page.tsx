@@ -372,7 +372,7 @@ export default function PlaylistsPage() {
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           {/* ── NAV BAR — identical to browse page ── */}
-          <div className="flex absolute z-50 top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
+          <div className="flex absolute z-50 top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
             <Link
               href="/browse"
               className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
