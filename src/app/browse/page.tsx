@@ -72,18 +72,19 @@ export default function BrowsePage() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const autoCreated = useRef(false);
 
-  // Auto-create ROOM 1 for first-time users
+  // Auto-create a random room for first-time users
   useEffect(() => {
     if (loading || !user || rooms.length > 0 || autoCreated.current) return;
     autoCreated.current = true;
     const token = localStorage.getItem("blu3_token");
+    const roomName = "Room " + Math.floor(1000 + Math.random() * 9000);
     fetch(`${API_URL}/api/rooms`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name: "ROOM 1" }),
+      body: JSON.stringify({ name: roomName }),
     })
       .then((r) => r.json())
       .then((data) => {
