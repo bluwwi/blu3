@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import Image from "next/image";
-import { Trash2, Plus, Play } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
 
@@ -272,8 +272,7 @@ export default function BrowsePage() {
       </div>
 
       {/* Join Room Bar */}
-      {(user || !authLoading) && (
-        <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
           <div className="flex items-center gap-3 pointer-events-auto">
             <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
               <input
@@ -293,7 +292,6 @@ export default function BrowsePage() {
             </div>
           </div>
         </div>
-      )}
 
       {/* Create Room Modal */}
       {showCreateModal && (

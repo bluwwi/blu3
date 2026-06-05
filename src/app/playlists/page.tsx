@@ -6,13 +6,11 @@ import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
 import {
   Plus,
-  Link2,
   Heart,
   Trash2,
   Play,
   X,
   Music2,
-  FolderHeart,
   Loader2,
   GripVertical,
   Search,
