@@ -252,33 +252,14 @@ export default function BrowsePage() {
           </div>
 
           <ScrollArea className="flex-wrap flex flex-col items-center justify-center h-full min-h-screen">
-            {!user && !authLoading ? (
-              <div className="text-center">
-                <p className="text-4xl font-black tracking-tight mb-2 text-white">
-                  blu3
-                </p>
-                <p className="text-[11px] text-zinc-600 tracking-widest mb-10">
-                  listen together
-                </p>
-                <p className="text-zinc-600 text-sm mb-5 tracking-wide">
-                  sign in to create or join rooms
-                </p>
-                <button
-                  onClick={login}
-                  className="px-5 py-2.5 bg-white text-black text-xs rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors"
-                >
-                  sign in with google
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 w-full h-full">
-                {loading
-                  ? Array.from({ length: 9 }).map((_, i) => (
-                      <SkeletonCard key={i} />
-                    ))
-                  : rooms.map((room) => {
-                      const isHost = room.hostId === user?.sub;
-                      return (
+            <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 w-full h-full">
+              {loading
+                ? Array.from({ length: 9 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                  ))
+                : rooms.map((room) => {
+                    const isHost = room.hostId === user?.sub;
+                    return (
                         <div
                           key={room.id}
                           className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
@@ -343,7 +324,6 @@ export default function BrowsePage() {
                   </div>
                 )}
               </div>
-            )}
           </ScrollArea>
         </div>
       </div>

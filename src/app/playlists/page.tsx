@@ -459,31 +459,12 @@ export default function PlaylistsPage() {
           </div>
 
           <ScrollArea className="flex items-center justify-center h-full min-h-screen w-full">
-            {!user && !authLoading ? (
-              <div className="text-center">
-                <p className="text-4xl font-black tracking-tight mb-2 text-white">
-                  blu3
-                </p>
-                <p className="text-[11px] text-zinc-600 tracking-widest mb-10">
-                  listen together
-                </p>
-                <p className="text-zinc-600 text-sm mb-5 tracking-wide">
-                  sign in to manage playlists
-                </p>
-                <button
-                  onClick={login}
-                  className="px-5 py-2.5 bg-white text-black text-xs rounded-lg tracking-widest uppercase font-bold hover:bg-zinc-200 transition-colors"
-                >
-                  sign in with google
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-wrap justify-center gap-3 py-16 md:py-0 w-full h-full">
-                {loadingPlaylists ? (
-                  Array.from({ length: 9 }).map((_, i) => (
-                    <SkeletonCard key={i} />
-                  ))
-                ) : playlists.length === 0 ? (
+            <div className="flex flex-wrap justify-center gap-3 py-16 md:py-0 w-full h-full">
+              {loadingPlaylists ? (
+                Array.from({ length: 9 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))
+              ) : playlists.length === 0 ? (
                   <div className="text-center my-auto">
                     <p className="text-zinc-600 text-sm mb-2 tracking-wide">
                       no playlists yet
@@ -579,7 +560,6 @@ export default function PlaylistsPage() {
                   </div>
                 )}
               </div>
-            )}
           </ScrollArea>
         </div>
       </div>
