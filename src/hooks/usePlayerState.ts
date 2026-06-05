@@ -12,6 +12,7 @@ interface UsePlayerStateReturn {
   activeVideoId: string | null;
   error: string;
   playing: boolean;
+  pendingStartTimeRef: React.MutableRefObject<number>;
   playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
   handleVolume: (val: number) => void;
@@ -43,12 +44,14 @@ export function usePlayerState(): UsePlayerStateReturn {
   playerStateRef.current = playerState;
   const activeVideoIdRef = useRef(activeVideoId);
   activeVideoIdRef.current = activeVideoId;
+  const pendingStartTimeRef = useRef(0);
 
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
       setError("");
       setNowPlaying(track);
       setActiveVideoId(track.videoId);
+      pendingStartTimeRef.current = startTime ?? 0;
 
       if (!track.videoId) {
         setPlayerState("error");
@@ -146,6 +149,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     activeVideoId,
     error,
     playing,
+    pendingStartTimeRef,
     playTrack,
     togglePlayPause,
     handleVolume,
