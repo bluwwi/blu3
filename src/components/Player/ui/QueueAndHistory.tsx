@@ -8,6 +8,8 @@ import { Shuffle, Repeat, MoreVertical, Trash2, Plus } from "lucide-react";
 import Lottie from "lottie-react";
 import pandaBamboo from "@/assets/lolite/pandabamboo.json";
 import { ScrollArea } from "@/components/ui/ScrollArea";
+import { PlaylistModal } from "./PlaylistModal";
+import { ImportToast, type ImportStatus } from "./ImportToast";
 
 interface Props {
   queue: Track[];
@@ -81,54 +83,8 @@ export function QueueAndHistory({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [showMenu]);
 
-  const [playlists, setPlaylists] = useState<any[]>([]);
-  const [showPlaylistDropdown, setShowPlaylistDropdown] = useState(true);
-  const [loadingPlaylists, setLoadingPlaylists] = useState(false);
-  const playlistRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        playlistRef.current &&
-        !playlistRef.current.contains(e.target as Node)
-      ) {
-        setShowPlaylistDropdown(false);
-      }
-    };
-    if (showPlaylistDropdown) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    }
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [showPlaylistDropdown]);
-
-  const handlePlusClick = async () => {
-    if (showPlaylistDropdown) {
-      setShowPlaylistDropdown(false);
-      return;
-    }
-    setShowPlaylistDropdown(true);
-    setLoadingPlaylists(true);
-    const token = localStorage.getItem("blu3_token");
-    if (!token) {
-      setLoadingPlaylists(false);
-      return;
-    }
-    try {
-      const API_URL =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_URL}/api/playlists`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.playlists) {
-        setPlaylists(data.playlists);
-      }
-    } catch (err) {
-      console.error("Failed to fetch playlists:", err);
-    } finally {
-      setLoadingPlaylists(false);
-    }
-  };
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [importStatus, setImportStatus] = useState<ImportStatus>({ type: "idle" });
 
   const handleQueuePlaylist = async (playlistId: string) => {
     const token = localStorage.getItem("blu3_token");
@@ -155,7 +111,6 @@ export function QueueAndHistory({
           });
         });
       }
-      setShowPlaylistDropdown(false);
     } catch (err) {
       console.error("Failed to queue playlist:", err);
     }
@@ -171,111 +126,16 @@ export function QueueAndHistory({
         </span>
 
         <div className="ml-auto relative flex gap-1 ">
-          <div className="" ref={playlistRef}>
-            {showPlaylistDropdown && (
-              <div
-                className="absolute right-0 top-0  w-64 h-fit rounded-lg backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-999 py-1.5"
-                style={{
-                  background: "var(--room-surface, #0D0D14)",
-                  borderColor: "var(--room-border, rgba(255,255,255,0.08))",
-                }}
-              >
-                <ScrollArea className="max-h-48">
-                  {loadingPlaylists ? (
-                    <div className="px-3 py-3 text-[10px] text-white/40">
-                      Loading...
-                    </div>
-                  ) : playlists.length === 0 ? (
-                    <div className="px-3 py-3 text-[10px] text-white/40">
-                      No playlists found
-                    </div>
-                  ) : (
-                    <div>
-                      {playlists.map((p) => (
-                        <button
-                          key={p.id}
-                          onClick={() => handleQueuePlaylist(p.id)}
-                          className="w-full flex items-center gap-2.5 text-left px-2 py-1 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-                        >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                            {p.coverImage ? (
-                              <img
-                                src={p.coverImage}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-white/30">
-                                <Icon
-                                  name="list-music"
-                                  size={12}
-                                  className="text-current"
-                                />
-                              </div>
-                            )}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-white/90">{p.name}</p>
-                            <p className="text-[9px] text-white/40">
-                              {p.trackCount ?? 0} tracks
-                            </p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </ScrollArea>
-
-                <div className="border-t border-white/6 pt-1">
-                  <button
-                    onClick={() => {
-                      window.location.href = "/playlists";
-                    }}
-                    className="w-full flex items-center gap-2.5 text-left px-2 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-white/50">
-                      <div className="w-full h-full flex items-center justify-center text-white">
-                        <Icon name="plus" size={20} className="text-current" />
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-white">Import Playlist</p>
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      window.location.href = "/playlists";
-                    }}
-                    className="w-full flex items-center gap-2.5 text-left px-2 py-1 text-[11px] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border-2 border-white/50">
-                      <div className="w-full h-full flex items-center justify-center text-white">
-                        <Icon
-                          name="setting"
-                          size={20}
-                          className="text-current"
-                        />
-                      </div>
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-white">Manage Playlist</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/4@0 cursor-pointer transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="text-current" />
           </button>
           <button
-            onClick={handlePlusClick}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
+            onClick={() => setShowPlaylistModal(true)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Add playlist to queue"
           >
             <Plus size={20} />
@@ -848,6 +708,14 @@ export function QueueAndHistory({
           </div>
         )}
       </section>
+
+      <PlaylistModal
+        open={showPlaylistModal}
+        onClose={() => setShowPlaylistModal(false)}
+        onQueuePlaylist={handleQueuePlaylist}
+        onImportStatus={setImportStatus}
+      />
+      <ImportToast status={importStatus} onDismiss={() => setImportStatus({ type: "idle" })} />
     </div>
   );
 }
