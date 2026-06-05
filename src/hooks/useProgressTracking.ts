@@ -4,10 +4,8 @@ import { CONFIG } from "@/components/Player/constants";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function useProgressTracking(
-  ytPlayerRef: React.MutableRefObject<any>,
   playerState: string,
   audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
-  isBgAudioActiveRef?: React.MutableRefObject<boolean>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -19,24 +17,15 @@ export function useProgressTracking(
 
   const tick = useCallback(() => {
     try {
-      if (isBgAudioActiveRef?.current && audioRef?.current) {
-        const audio = audioRef.current;
-        const cur = audio.currentTime ?? 0;
-        const dur = audio.duration || 0;
-        setCurrentTime(cur);
-        setDuration(dur);
-        setProgress(dur > 0 ? (cur / dur) * 100 : 0);
-        return;
-      }
-      const player = ytPlayerRef.current;
-      if (!player || !player.getCurrentTime) return;
-      const cur = player.getCurrentTime() ?? 0;
-      const dur = player.getDuration() ?? 0;
+      const audio = audioRef?.current;
+      if (!audio) return;
+      const cur = audio.currentTime ?? 0;
+      const dur = audio.duration || 0;
       setCurrentTime(cur);
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
     } catch {}
-  }, [ytPlayerRef]);
+  }, [audioRef]);
 
   const startTracking = useCallback(() => {
     if (progressInt.current) clearInterval(progressInt.current);
@@ -54,12 +43,6 @@ export function useProgressTracking(
     (time: number) => {
       setCurrentTime(time);
       try {
-        const player = ytPlayerRef.current;
-        if (player && player.seekTo) {
-          player.seekTo(time, true);
-        }
-      } catch {}
-      try {
         if (audioRef?.current) {
           audioRef.current.currentTime = time;
         }
@@ -67,7 +50,7 @@ export function useProgressTracking(
       const tot = duration;
       if (tot > 0) setProgress((time / tot) * 100);
     },
-    [ytPlayerRef, duration, audioRef],
+    [duration, audioRef],
   );
 
   const handleSeek = useCallback(

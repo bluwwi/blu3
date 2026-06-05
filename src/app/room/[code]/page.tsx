@@ -8,7 +8,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
-import YoutubePlayer from "@/components/YoutubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -50,7 +49,7 @@ export default function RoomPage() {
     typeof window !== "undefined"
       ? localStorage.getItem("blu3_token") ?? undefined
       : undefined;
-  const { onYtReady, onYtStateChange, ytPlayerRef, audioRef, hasAudioUrlRef } = useBackgroundAudio({
+  const { audioRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     volume: player.volume,
@@ -63,17 +62,9 @@ export default function RoomPage() {
   });
 
   const progress = useProgressTracking(
-    ytPlayerRef,
     player.playerState,
     audioRef,
   );
-
-  const onYtStateChangeWrapped = useCallback((state: number) => {
-    onYtStateChange(state);
-    if (state === 1) player.handlePlayEvent();
-    else if (state === 2) player.handlePauseEvent();
-    else if (state === 0) player.handleEnded();
-  }, [onYtStateChange, player]);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -646,6 +637,8 @@ export default function RoomPage() {
         t.id === player.nowPlaying?.id,
     );
     if (currentIdx === -1) return;
+    const currentTrack = queue[currentIdx];
+    if (currentTrack) cycleQueueCurrent(currentTrack.id);
     const upcomingTracks = queue.slice(currentIdx + 1);
     const nextTrack =
       upcomingTracks.length > 0
@@ -675,6 +668,7 @@ export default function RoomPage() {
     player.nowPlaying,
     queue,
     sendPlay,
+    cycleQueueCurrent,
   ]);
 
   const handleVolumeWrapped = useCallback(
@@ -818,8 +812,6 @@ export default function RoomPage() {
         wasPlayingRef.current = player.playerState === "playing";
       } else if (wasPlayingRef.current) {
         wasPlayingRef.current = false;
-        const yt = ytPlayerRef.current;
-        if (yt && yt.playVideo) yt.playVideo();
         const a = audioRef.current;
         if (a && a.paused) a.play().catch(() => {});
         player.play?.();
@@ -828,7 +820,7 @@ export default function RoomPage() {
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [player.play, ytPlayerRef, audioRef]);
+  }, [player.play, audioRef]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
@@ -981,11 +973,6 @@ export default function RoomPage() {
 
   return (
     <>
-      <YoutubePlayer
-        volume={0}
-        onStateChange={onYtStateChangeWrapped}
-        onPlayerReady={onYtReady}
-      />
       <div className="relative min-h-screen">
       <div
         className={`absolute inset-0 z-50 transition-opacity duration-500 ${
