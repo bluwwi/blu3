@@ -18,6 +18,7 @@ import {
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
+import { cachedFetch } from "@/lib/fetchCache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -80,10 +81,9 @@ export default function PlaylistsPage() {
       return;
     }
     try {
-      const res = await fetch(`${API_URL}/api/playlists`, {
+      const data = await cachedFetch(`${API_URL}/api/playlists`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await res.json();
       if (data.playlists) setPlaylists(data.playlists);
     } catch (err) {
       console.error(err);

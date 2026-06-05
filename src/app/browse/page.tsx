@@ -9,6 +9,7 @@ import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
 import PlusIcon from "@/components/ui/PlusIcon";
+import { cachedFetch } from "@/lib/fetchCache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -44,12 +45,10 @@ function useRooms(user: any, authLoading: boolean) {
 
     const token = localStorage.getItem("blu3_token");
 
-    fetch(`${API_URL}/api/rooms/user/mine`, {
+    cachedFetch(`${API_URL}/api/rooms/user/mine`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then((r) => r.json())
       .then((data) => {
-        console.log("Rooms API response:", data);
         setRooms(data.rooms ?? []);
       })
       .catch(console.error)
