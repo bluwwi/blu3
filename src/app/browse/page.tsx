@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
+import PlusIcon from "@/components/ui/PlusIcon";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -203,95 +204,92 @@ export default function BrowsePage() {
                 : rooms.map((room) => {
                     const isHost = room.hostId === user?.id;
                     return (
-                        <div
-                          key={room.id}
-                          className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
-                          onClick={() => router.push(`/room/${room.code}`)}
-                        >
-                          <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
-                            {room.lastTrack?.image ? (
-                              <Image
-                                width={400}
-                                height={400}
-                                src={room.lastTrack.image}
-                                alt={room.name}
-                                className="room-card-img rounded-md w-full h-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <span className="text-3xl text-white/20 select-none">
-                                  ♫
-                                </span>
-                              </div>
-                            )}
+                      <div
+                        key={room.id}
+                        className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40"
+                        onClick={() => router.push(`/room/${room.code}`)}
+                      >
+                        <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
+                          {room.lastTrack?.image ? (
+                            <Image
+                              width={400}
+                              height={400}
+                              src={room.lastTrack.image}
+                              alt={room.name}
+                              className="room-card-img rounded-md w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <span className="text-3xl text-white/20 select-none">
+                                ♫
+                              </span>
+                            </div>
+                          )}
 
-                            <div className="room-play-overlay hover:border-2  border-white rounded-md  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
+                          <div className="room-play-overlay hover:border-2  border-white rounded-md  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
 
-                            <button
-                              onClick={(e) =>
-                                isHost
-                                  ? handleDeleteRoom(e, room)
-                                  : handleLeaveRoom(e, room)
-                              }
-                              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
-                              title={isHost ? "Delete room" : "Leave room"}
-                            >
-                              <Trash2 className="w-3 h-3 text-white/80" />
-                            </button>
-                          </div>
-                          <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
-                            <p className="text-xs md:text-[14px]   text-white truncate  leading-tight">
-                              {room.hostName} • {room.name}
-                            </p>
-                          </div>
+                          <button
+                            onClick={(e) =>
+                              isHost
+                                ? handleDeleteRoom(e, room)
+                                : handleLeaveRoom(e, room)
+                            }
+                            className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
+                            title={isHost ? "Delete room" : "Leave room"}
+                          >
+                            <Trash2 className="w-3 h-3 text-white/80" />
+                          </button>
                         </div>
-                      );
-                    })}
+                        <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
+                          <p className="text-xs md:text-[14px]   text-white truncate  leading-tight">
+                            {room.hostName} • {room.name}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
 
-                {!loading && (
-                  <div
-                    className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
-                    onClick={() => setShowCreateModal(true)}
-                  >
-                    <div className="aspect-square text-neutral-700 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                      <Plus
-                        className="create-plus w-30 h-30  transition-all"
-                        strokeWidth={2.25}
-                      />
-                    </div>
-                    <div className="px-0.5">
-                      <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
-                        Create Room
-                      </p>
-                    </div>
+              {!loading && (
+                <div
+                  className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
+                  onClick={() => setShowCreateModal(true)}
+                >
+                  <div className="aspect-square text-neutral-700 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                    <PlusIcon />
                   </div>
-                )}
-              </div>
+                  <div className="px-0.5">
+                    <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
+                      Create Room
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </ScrollArea>
         </div>
       </div>
 
       {/* Join Room Bar */}
       <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
-          <div className="flex items-center gap-3 pointer-events-auto">
-            <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-              <input
-                value={joinCode}
-                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-                placeholder="enter room code"
-                maxLength={8}
-                className="join-input bg-transparent text-sm text-white w-52 border-none tracking-wide"
-              />
-              <button
-                onClick={handleJoin}
-                className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
-              >
-                Join
-              </button>
-            </div>
+        <div className="flex items-center gap-3 pointer-events-auto">
+          <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+            <input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+              placeholder="enter room code"
+              maxLength={8}
+              className="join-input bg-transparent text-sm text-white w-52 border-none tracking-wide"
+            />
+            <button
+              onClick={handleJoin}
+              className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
+            >
+              Join
+            </button>
           </div>
         </div>
+      </div>
 
       {/* Create Room Modal */}
       {showCreateModal && (
