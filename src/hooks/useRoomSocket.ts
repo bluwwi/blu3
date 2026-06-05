@@ -308,7 +308,7 @@ export function useRoomSocket({
                   currentTime: msg.seekTo ?? prev.currentTime,
                   updatedAt: msg.serverTime,
                   anchorServerTime: msg.anchorServerTime,
-                  positionMs: msg.seekTo ?? prev.positionMs,
+                  positionSec: msg.seekTo ?? prev.positionSec,
                 }
               : prev,
           );
@@ -325,7 +325,7 @@ export function useRoomSocket({
             currentTime: msg.currentTime ?? 0,
             updatedAt: msg.updatedAt ?? Date.now(),
             anchorServerTime: msg.updatedAt ?? Date.now(),
-            positionMs: msg.currentTime ?? 0,
+            positionSec: msg.currentTime ?? 0,
           });
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
