@@ -97,7 +97,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  if (pathname === "/home" || pathname === "/auth/callback" || pathname === "/login") return <>{children}</>;
+  if (pathname === "/" || pathname === "/auth/callback" || pathname === "/login") return <>{children}</>;
 
   return (
     <>
