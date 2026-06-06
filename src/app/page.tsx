@@ -11,6 +11,20 @@ export default function Home() {
   const { user, loading } = useAuth();
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState<number | null>(null);
+  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err === "account_not_linked") {
+      setOauthError("Sign-in failed because an account already exists with this email. Try a different sign-in method.");
+    } else if (err) {
+      setOauthError("Sign-in failed. Please try again.");
+    }
+    if (err) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     if (!loading && user) {
@@ -182,6 +196,12 @@ export default function Home() {
 
       <div className="page">
         <div className="grain" />
+
+        {oauthError && (
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600/90 text-white px-5 py-3 rounded-xl text-sm max-w-md text-center shadow-lg backdrop-blur-sm">
+            {oauthError}
+          </div>
+        )}
 
         {/* Logo anchored to the page, not the frame — z:0, behind everything */}
         <img src="/logo/bg.svg" alt="Blu3" className="logo" draggable={false} />
