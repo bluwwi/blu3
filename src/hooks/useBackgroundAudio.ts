@@ -34,6 +34,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const blobCacheRef = useRef<Map<string, CacheEntry>>(new Map());
   const downloadRef = useRef<Map<string, boolean>>(new Map());
+  const switchingRef = useRef(false);
+  const downloadAbortRef = useRef<AbortController | null>(null);
 
   const getCachedBlobUrl = useCallback((videoId: string): string | null => {
     const map = blobCacheRef.current;
@@ -64,7 +66,12 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const startBackgroundDownload = useCallback((url: string, videoId: string) => {
     if (downloadRef.current.get(videoId)) return;
     downloadRef.current.set(videoId, true);
-    fetch(url)
+
+    downloadAbortRef.current?.abort();
+    const controller = new AbortController();
+    downloadAbortRef.current = controller;
+
+    fetch(url, { signal: controller.signal })
       .then((res) => {
         const contentType = res.headers.get("content-type") || "audio/mpeg";
         return res.arrayBuffer().then((buf) => ({ buf, contentType }));
@@ -107,6 +114,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     audio.onplay = () => configRef.current.onPlay();
 
     audio.onpause = () => {
+      if (switchingRef.current) return;
       if (typeof document !== "undefined" && document.hidden) return;
       const cfg = configRef.current;
       if (cfg.manualPauseRef?.current) {
@@ -153,7 +161,12 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const fetchId = ++fetchIdRef.current;
     const audio = audioRef.current;
-    if (audio) { audio.pause(); audio.src = ""; }
+    if (audio) {
+      switchingRef.current = true;
+      audio.pause();
+      audio.src = "";
+      switchingRef.current = false;
+    }
 
     const cachedUrl = getCachedBlobUrl(track.videoId);
     if (cachedUrl && audio) {
