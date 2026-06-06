@@ -11,7 +11,6 @@ const ICON_MAP: Record<string, string> = {
   "skip-back": "Skip-prev.svg",
   stop: "Stop_fill.svg",
 
-  // Audio
   "volume-up": "VolumeUp.svg",
   volume: "VolumeUp.svg",
   "volume-2": "VolumeUp.svg",

@@ -61,10 +61,8 @@ export default function Home() {
           </div>
         )}
 
-        {/* Logo anchored to the page, not the frame — z:0, behind everything */}
         <img src="/logo/bg.svg" alt="Blu3" className="logo" draggable={false} />
 
-        {/* Slideshow — z:1, sits on top of logo */}
         <div className="frame">
           <div
             key={`enter-${current}`}

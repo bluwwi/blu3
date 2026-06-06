@@ -80,7 +80,6 @@ export default function PlaylistDetailModal({
       }}
     >
       <div className="modal-box w-full max-w-2xl mx-auto rounded-[24px] flex flex-col bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden relative before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent h-[85vh]">
-        {/* Header */}
         <div className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.06] shrink-0 relative z-10">
           <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] shrink-0">
             {playlist.coverImage ? (
@@ -137,7 +136,6 @@ export default function PlaylistDetailModal({
           </div>
         </div>
 
-        {/* Track list */}
         <ScrollArea className="flex-1 min-h-0 relative z-10">
           {loading ? (
             <div className="flex items-center justify-center h-full">
@@ -221,7 +219,6 @@ export default function PlaylistDetailModal({
           )}
         </ScrollArea>
 
-        {/* Add track search panel */}
         {!playlist.isLiked && showAddSearch && (
           <div className="shrink-0 border-t border-white/[0.06] relative z-10">
             <div className="flex flex-col max-h-[280px]">

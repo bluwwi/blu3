@@ -139,7 +139,6 @@ export function PlaylistModal({
           borderColor: "var(--room-border, rgba(255,255,255,0.08))",
         }}
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <span className="text-lg font-medium text-white">Playlists</span>
           <button
@@ -150,7 +149,6 @@ export function PlaylistModal({
           </button>
         </div>
 
-        {/* Playlist list */}
         <ScrollArea className="flex-1 px-3 py-2">
           {loading ? (
             <div className="flex items-center justify-center py-10">
@@ -238,7 +236,6 @@ export function PlaylistModal({
           </div>
         )}
 
-        {/* Bottom buttons */}
         <div className="flex gap-2 px-4 pb-4 pt-2 ">
           <button
             onClick={() => {

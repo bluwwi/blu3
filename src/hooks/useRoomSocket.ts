@@ -217,9 +217,6 @@ export function useRoomSocket({
       const attempt = reconnectAttemptRef.current;
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
       reconnectAttemptRef.current = attempt + 1;
-      console.log(
-        `[WS] disconnected, reconnecting in ${delay}ms (attempt ${attempt + 1})`,
-      );
       reconnectTimerRef.current = setTimeout(connectWs, delay);
     };
     ws.onerror = (e) => {
@@ -368,7 +365,6 @@ export function useRoomSocket({
       duration_ms?: number;
     }) => {
       const msg = JSON.stringify({ type: "playback:play", ...track });
-      console.log("[WS] sending play:", msg.slice(0, 200));
       safeSend(msg);
     },
     [safeSend],

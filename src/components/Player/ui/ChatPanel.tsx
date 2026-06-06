@@ -99,7 +99,6 @@ export function ChatPanel({
       <div className="flex items-center justify-between max-md:px-2 md:px-4 max-md:py-2 md:py-3 border-b border-white/10 bg-transparent">
         <h2 className="text-lg font-bold w-20">Chat</h2>
 
-        {/* Center: Avatar */}
         <div className="flex-1 flex justify-center">
           {userProfile?.avatar ? (
             <img
@@ -114,7 +113,6 @@ export function ChatPanel({
           ) : null}
         </div>
 
-        {/* Right: Close Button */}
         <div className="w-20 flex justify-end">
           <button
             onClick={onClose}
@@ -125,7 +123,6 @@ export function ChatPanel({
         </div>
       </div>
 
-      {/* Chat Messages */}
       <ScrollArea className="flex-1 max-md:px-2 md:px-4 max-md:py-2 md:py-3 flex flex-col gap-3">
         {messages.length === 0 && (
           <p className="text-[11px] text-white/35 text-center mt-8">
@@ -158,7 +155,6 @@ export function ChatPanel({
         <div ref={chatEndRef} />
       </ScrollArea>
 
-      {/* Chat Input */}
       <div className="max-md:p-2 md:p-3 border-t border-white/10 bg-transparent">
         <div className="relative flex items-center">
           <div className="absolute left-3 text-white/40 flex items-center gap-2">

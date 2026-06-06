@@ -44,7 +44,6 @@ export default function CreateImportPlaylistModal({
       }}
     >
       <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-        {/* Tab switcher */}
         <div className="flex items-center gap-1 mb-5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] relative z-10">
           <button
             onClick={() => setTab("create")}
@@ -68,7 +67,6 @@ export default function CreateImportPlaylistModal({
           </button>
         </div>
 
-        {/* CREATE tab */}
         {tab === "create" && (
           <>
             <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
@@ -104,7 +102,6 @@ export default function CreateImportPlaylistModal({
           </>
         )}
 
-        {/* IMPORT tab */}
         {tab === "import" && (
           <>
             <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
