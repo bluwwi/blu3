@@ -158,10 +158,9 @@ export function SearchOverlay({
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 ${
           isOpen
-            ? "pointer-events-auto opacity-100"
-            : "pointer-events-none opacity-0"
+            ? "pointer-events-auto opacity-100 backdrop-blur-md"
+            : "pointer-events-none opacity-0 backdrop-blur-none"
         }`}
-        style={{ backdropFilter: isOpen ? "blur(12px)" : "blur(0px)" }}
       >
         <div className="absolute inset-0 bg-black/55" />
       </div>
@@ -213,7 +212,7 @@ export function SearchOverlay({
             }`}
           >
             {showResults && (
-              <div className="flex flex-col" style={{ maxHeight: "65vh" }}>
+              <div className="flex flex-col max-h-[65vh]">
                 <ScrollArea className="flex-1">
                   {!isSearching && searchError && (
                     <div className="py-8 text-center text-sm text-red-400/70">
