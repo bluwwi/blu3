@@ -189,11 +189,7 @@ export function RightSidebar({
                       className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
                       title="Share invite link"
                     >
-                      <Icon
-                        name="share"
-                        size={20}
-                        className="text-current"
-                      />
+                      <Icon name="share" size={20} className="text-current" />
                     </button>
                     <button
                       onClick={openLeave}
@@ -367,7 +363,7 @@ export function RightSidebar({
             onClick={closeShare}
           >
             <div
-              className="w-80 p-6 text-center border border-white/30"
+              className="w-80 p-4 text-center border border-white/30"
               style={{
                 background: "rgba(0,0,0,0.35)",
                 backdropFilter: "blur(6px)",
@@ -388,14 +384,14 @@ export function RightSidebar({
                 />
               </div>
 
-              <p className="text-zinc-400 text-xs mb-3 truncate px-2">
+              <p className="text-white/60 text-sm mb-3 truncate px-2">
                 {window.location.origin}/room/{roomCode}
               </p>
 
               <button
                 onClick={handleCopyLink}
-                className="flex items-center justify-center gap-2 w-full py-3 mb-2 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-                style={{ background: "#ffffff", borderRadius: "12px" }}
+                className="flex items-center rounded-lg justify-center gap-2 w-full py-1.5 mb-2 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
+                style={{ background: "#ffffff" }}
                 onMouseOver={(e) =>
                   (e.currentTarget.style.background = "#e8e8e8")
                 }
@@ -404,22 +400,19 @@ export function RightSidebar({
                 }
               >
                 {copied ? (
-                  <><Check size={18} /> Copied!</>
+                  <>
+                    <Check size={14} /> Copied!
+                  </>
                 ) : (
-                  <><Copy size={18} /> Copy Link</>
+                  <>
+                    <Copy size={14} /> Copy Link
+                  </>
                 )}
               </button>
 
               <button
                 onClick={closeShare}
-                className="block w-full py-3 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-                style={{ background: "rgba(255,255,255,0.1)", borderRadius: "12px" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.2)")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-                }
+                className="block w-full bg-[#c0392b] hover:bg-[#c0392b]/80  py-1.5 rounded-lg text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
               >
                 Close
               </button>
