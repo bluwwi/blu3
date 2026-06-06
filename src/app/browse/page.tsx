@@ -8,6 +8,7 @@ import Image from "next/image";
 import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
+import JoinCodeInput from "@/components/JoinCodeInput";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -66,7 +67,6 @@ export default function BrowsePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { rooms, loading, removeRoom } = useRooms(user, authLoading);
-  const [joinCode, setJoinCode] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
@@ -95,9 +95,9 @@ export default function BrowsePage() {
       });
   }, [loading, user, rooms, router]);
 
-  const handleJoin = () => {
-    if (!joinCode.trim()) return;
-    router.push(`/room/${joinCode.trim().toUpperCase()}`);
+  const handleJoin = (code: string) => {
+    if (!code.trim()) return;
+    router.push(`/room/${code.trim().toUpperCase()}`);
   };
 
   const handleCreate = async () => {
@@ -171,7 +171,7 @@ export default function BrowsePage() {
           </div>
 
           <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
-            <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 w-full min-h-full">
+            <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 px-6 w-full min-h-full">
               {loading
                 ? Array.from({ length: 9 }).map((_, i) => (
                     <SkeletonCard key={i} />
@@ -247,29 +247,8 @@ export default function BrowsePage() {
         </div>
       </div>
 
-  
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
-        <div className="flex items-center gap-3 pointer-events-auto">
-          <div className="border border-white/[0.08] flex items-center rounded-2xl overflow-hidden pl-4 pr-1 py-1 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-            <input
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-              placeholder="enter room code"
-              maxLength={8}
-              className="join-input bg-transparent outline-none text-sm text-white w-52 border-none tracking-wide"
-            />
-            <button
-              onClick={handleJoin}
-              className="px-4 py-1.5 bg-white text-black text-xs font-bold rounded-lg tracking-widest uppercase cursor-pointer hover:bg-zinc-200 transition-colors"
-            >
-              Join
-            </button>
-          </div>
-        </div>
-      </div>
+      <JoinCodeInput handleJoin={handleJoin} />
 
-      {/* Create Room Modal */}
       {showCreateModal && (
         <div
           className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
