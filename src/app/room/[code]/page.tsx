@@ -539,12 +539,6 @@ export default function RoomPage() {
     [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
-  }, []);
-
   const handleSeekAction = useCallback(
     (seekToTime: number) => {
       if (!canControlPlayback || !player.nowPlaying?.videoId) return;

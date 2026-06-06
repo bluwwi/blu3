@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { PlaylistsProvider } from "@/hooks/usePlaylists";
 import { AuthGate } from "@/components/LoginPopup";
+import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
   title: "Blu3",
@@ -45,6 +46,7 @@ export default function RootLayout({
         <PlaylistsProvider>
           <AuthGate>{children}</AuthGate>
         </PlaylistsProvider>
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

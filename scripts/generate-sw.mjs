@@ -1,4 +1,14 @@
-const CACHE = "blu3-mq2gvix6";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const publicDir = join(__dirname, "..", "public");
+
+const version = Date.now().toString(36);
+const CACHE = `blu3-${version}`;
+
+const swContent = `const CACHE = ${JSON.stringify(CACHE)};
 
 const PRECACHE_URLS = ["/", "/browse", "/manifest.json"];
 
@@ -43,4 +53,7 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches.match(event.request).then((cached) => cached || fetch(event.request).catch(() => new Response(null, { status: 503 }))),
   );
-});
+});`;
+
+writeFileSync(join(publicDir, "sw.js"), swContent, "utf-8");
+console.log(`[generate-sw] Generated sw.js with cache version: ${CACHE}`);

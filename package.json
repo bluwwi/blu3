@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "dev": "node scripts/generate-sw.mjs && next dev",
+    "build": "node scripts/generate-sw.mjs && next build",
+    "start": "next start",
+    "postinstall": "node scripts/generate-sw.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
