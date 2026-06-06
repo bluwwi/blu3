@@ -95,18 +95,13 @@ export function RoomBackground({
   return (
     <div
       ref={wrapRef}
-      className="absolute inset-0 overflow-hidden"
-      style={{ zIndex: 0 }}
+      className="absolute inset-0 overflow-hidden z-0"
     >
       <img
         src={trackImage ? trackImage : "/queue/sunflower.jpg"}
         alt=""
+        className="absolute inset-0 w-full h-full object-cover"
         style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
           filter: "blur(50px) brightness(0.7) saturate(2.75)",
           transform: "scale(1.35)",
           transformOrigin: "center center",
@@ -117,8 +112,7 @@ export function RoomBackground({
 
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 3, display: "block" }}
+        className="absolute inset-0 pointer-events-none z-[3] block"
       />
     </div>
   );

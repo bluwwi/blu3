@@ -103,13 +103,11 @@ export function RoomTopBar({
 
       {showLeavePopup && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: "rgba(0,0,0,0.55)" }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/55"
           onClick={() => setShowLeavePopup(false)}
         >
           <div
-            className="w-[340px] p-8 text-center"
-            style={{ background: "#1a1a1a", borderRadius: "24px" }}
+            className="w-[340px] p-8 text-center bg-[#1a1a1a] rounded-[24px]"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-white text-xl font-semibold leading-snug mb-7">
@@ -123,24 +121,14 @@ export function RoomTopBar({
                 setShowLeavePopup(false);
                 onLeave();
               }}
-              className="block w-full py-4 mb-2.5 text-white text-[15px] font-semibold transition-colors"
-              style={{ background: "#c0392b", borderRadius: "12px" }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.background = "#a93226")
-              }
-              onMouseOut={(e) => (e.currentTarget.style.background = "#c0392b")}
+              className="block w-full py-4 mb-2.5 text-white text-[15px] font-semibold transition-colors bg-[#c0392b] rounded-xl hover:bg-[#a93226]"
             >
               Yes, leave room
             </button>
 
             <button
               onClick={() => setShowLeavePopup(false)}
-              className="block w-full py-4 text-[#1a1a1a] text-[15px] font-medium transition-colors"
-              style={{ background: "#ffffff", borderRadius: "12px" }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.background = "#e8e8e8")
-              }
-              onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
+              className="block w-full py-4 text-[#1a1a1a] text-[15px] font-medium transition-colors bg-white rounded-xl hover:bg-[#e8e8e8]"
             >
               Cancel
             </button>
