@@ -49,15 +49,6 @@ export function useSearch() {
     [doSearch],
   );
 
-  // Cleanup timeout on unmount
-  useCallback(() => {
-    return () => {
-      if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current);
-      }
-    };
-  }, []);
-
   return {
     searchQuery,
     results,

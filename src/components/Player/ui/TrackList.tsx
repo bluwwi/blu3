@@ -27,7 +27,6 @@ export function TrackList({
   searchQuery,
   searchError,
 }: Props) {
-  // Loading state
   if (isSearching) {
     return (
       <div className="grid gap-2">

@@ -178,7 +178,6 @@ export function useRoomSocket({
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(data);
     } else {
-      console.log("[WS] safeSend skipped — ws not OPEN", ws?.readyState);
     }
   }, []);
 
@@ -210,7 +209,6 @@ export function useRoomSocket({
     wsRef.current = ws;
 
     ws.onopen = () => {
-      console.log("[WS] connected to", wsUrl);
       setConnected(true);
       reconnectAttemptRef.current = 0;
     };

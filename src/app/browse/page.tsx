@@ -49,7 +49,6 @@ function useRooms(user: any, authLoading: boolean) {
     })
       .then((r) => r.json())
       .then((data) => {
-        console.log("Rooms API response:", data);
         setRooms(data.rooms ?? []);
       })
       .catch(console.error)
@@ -70,7 +69,6 @@ export default function BrowsePage() {
   const [creating, setCreating] = useState(false);
   const autoCreated = useRef(false);
 
-  // Auto-create a random room for first-time users
   useEffect(() => {
     if (loading || !user || rooms.length > 0 || autoCreated.current) return;
     autoCreated.current = true;

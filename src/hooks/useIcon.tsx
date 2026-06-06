@@ -2,12 +2,7 @@
 
 import React from "react";
 
-/**
- * All available icon names mapped to their filenames in /icons/.
- * Usage: <Icon name="play" size={20} className="text-white" />
- */
 const ICON_MAP: Record<string, string> = {
-  // Playback
   play: "Play.svg",
   pause: "Pause.svg",
   "skip-next": "Skip-next.svg",
@@ -27,11 +22,9 @@ const ICON_MAP: Record<string, string> = {
   "vol-full": "vol-full.svg",
   "sound-fill": "Sound_fill.svg",
   chat: "Chat.svg",
-  // Likes / Favorites
   heart: "Heart.svg",
   favorite: "Favorite.svg",
 
-  // UI Actions
   search: "Search.svg",
   plus: "Add_round.svg",
   add: "Add_round.svg",
@@ -52,21 +45,18 @@ const ICON_MAP: Record<string, string> = {
   comment: "comment.svg",
   "message-square": "comment.svg",
 
-  // Music
   music: "Music.svg",
   "music-fill": "Music_fill.svg",
   "music-2": "Music.svg",
   "list-music": "Music.svg",
   "disc-3": "Music_fill.svg",
 
-  // Time / Clock
   time: "Time.svg",
   clock: "Time.svg",
   "clock-3": "Time.svg",
   "time-attack": "Time_atack.svg",
   "time-progress": "Time_progress.svg",
 
-  // Modes
   shuffle: "Sort_random.svg",
   "sort-random": "Sort_random.svg",
   repeat: "Refresh_2.svg",
@@ -74,7 +64,6 @@ const ICON_MAP: Record<string, string> = {
   refresh: "Refresh.svg",
   "refresh-2": "Refresh_2.svg",
   playmusic: "playmusic.svg",
-  // Misc
   speed: "Speed_alt.svg",
   desktop: "desktop.svg",
   "log-out": "Share.svg",
@@ -93,10 +82,6 @@ interface IconProps {
   title?: string;
 }
 
-/**
- * Renders an SVG icon from the custom /icons/ pack using a CSS mask
- * so the icon follows `currentColor`.
- */
 export function Icon({
   name,
   size = 24,
@@ -107,7 +92,6 @@ export function Icon({
   const filename = ICON_MAP[name.toLowerCase()];
 
   if (!filename) {
-    // Fallback: render a placeholder square if icon is unknown
     return (
       <span
         className={`inline-block ${className}`}
@@ -141,10 +125,6 @@ export function Icon({
   );
 }
 
-/**
- * A hook that returns the Icon component for convenience.
- * Usage: const { Icon } = useIcon();
- */
 export function useIcon() {
   return { Icon };
 }

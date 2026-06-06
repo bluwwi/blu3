@@ -1,10 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap");
 
 @import "tailwindcss";
-* {
-    /*border: 1px solid black;*/
-}
-
 @font-face {
     font-family: "Marmelat-other";
     src: url("/fonts/Marmelat Book.otf") format("opentype");
@@ -118,13 +114,11 @@ body {
         var(--background);
 }
 
-/* Custom icon pack: icons use currentColor via CSS mask */
 .icon-inherit-color {
     opacity: 1;
     transition: opacity 0.15s ease;
 }
 
-/* Sequential Z glow animation */
 .dot-glow {
     opacity: 0;
     animation: dot-glow 2s ease-in-out infinite;
@@ -160,11 +154,9 @@ body {
     --os-handle-bg-active: rgba(255, 255, 255, 1);
 }
 
-/* ── Scrollbar hide utility ── */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ── Custom scrollbar ── */
 ::-webkit-scrollbar {
     width: 2px;
     height: 1.5px;
@@ -180,11 +172,9 @@ body {
     background: rgba(255, 255, 255, 0.7);
 }
 
-/* ── Animation keyframes ── */
 @keyframes spin { to { transform: rotate(360deg) } }
 @keyframes bounce { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.6)} }
 
-/* ── HOME PAGE ── */
 .page {
     position: relative;
     width: 100%;

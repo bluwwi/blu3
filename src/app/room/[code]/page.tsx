@@ -237,7 +237,6 @@ export default function RoomPage() {
     progressRef_fix.current = progress;
   }, [progress]);
 
-  /* --- Derived UI state --- */
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
   const footerTrack = player.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
@@ -259,7 +258,6 @@ export default function RoomPage() {
     if (player.nowPlaying) toggleLike(player.nowPlaying);
   }, [player.nowPlaying, toggleLike]);
 
-  /* --- Sync play handlers — immediate with latency-compensated seek --- */
   const handlePlay = useCallback(
     (state: {
       videoId: string;
@@ -314,7 +312,6 @@ export default function RoomPage() {
     [progress],
   );
 
-  /* --- Reset syncHandledRef on socket (re)connect ----- */
   const prevConnected = useRef(connected);
   useEffect(() => {
     if (connected && !prevConnected.current) {
@@ -323,7 +320,6 @@ export default function RoomPage() {
     prevConnected.current = connected;
   }, [connected]);
 
-  /* --- Listener mute on join -------------------------- */
   useEffect(() => {
     if (
       !joined ||
@@ -361,7 +357,6 @@ export default function RoomPage() {
     }
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
 
-  /* --- Queue advance ---------------------------------- */
   const maybeAdvanceQueue = useCallback(() => {
     if (!canControlPlaybackRef.current || !joined) return;
     const p = playerRef_fix.current;
@@ -520,7 +515,6 @@ export default function RoomPage() {
     queue,
   ]);
 
-  /* --- Admin play -------------------------------------- */
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback || !track.videoId) return;
@@ -545,9 +539,6 @@ export default function RoomPage() {
     [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
-  /* --- No autoplay keeper needed — YT iframe handles its own audio session --- */
-
-  /* --- Service Worker registration -------------------- */
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
@@ -610,7 +601,6 @@ export default function RoomPage() {
     player.playTrack,
   ]);
 
-  // Listener clicks Play → unmute + seek to exact synced position
   const handleListenerPlay = useCallback(() => {
     if (!playback?.isPlaying) return;
     let actualCurrentTime = playback.currentTime ?? 0;
@@ -620,7 +610,6 @@ export default function RoomPage() {
     }
     if (player.isMuted) player.toggleMute();
     progress.seekTo(actualCurrentTime);
-    /* OLD: audioStreamRef.current?.seek(actualCurrentTime) — YT iframe handles seek via progress.seekTo */
     player.play?.();
     setListenerMuted(false);
   }, [playback, getSyncedTime, progress, player]);
@@ -750,7 +739,6 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
-  /* --- Media Session lock-screen controls ------------- */
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     try {
@@ -779,7 +767,6 @@ export default function RoomPage() {
     sendSeek,
   ]);
 
-  /* --- Lifecycle effects ------------------------------ */
   useEffect(() => {
     return () => {
       syncHandledRef.current = false;
@@ -806,7 +793,6 @@ export default function RoomPage() {
     });
   }, [authLoading, user, code]);
 
-  /* --- Auto-resume player when tab returns to foreground (Android Chrome pauses YT iframes in background) --- */
   const wasPlayingRef = useRef(false);
   useEffect(() => {
     const handleVisibility = () => {
@@ -935,7 +921,6 @@ export default function RoomPage() {
     }
   }, [player.playerState, audioAnalyzer]);
 
-  /* --- Background Video Looper ------------------------ */
   useEffect(() => {
     if (!joined) return;
     const video = videoRef.current;

@@ -91,7 +91,6 @@ export function RightSidebar({
   const [showLeavePopup, setShowLeavePopup] = useState(false);
   const [isLeaveVisible, setIsLeaveVisible] = useState(false);
 
-  // Fade-in / Fade-out handlers
   const openMembers = () => {
     setShowMembersPopup(true);
     requestAnimationFrame(() => setIsMembersVisible(true));

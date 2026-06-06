@@ -47,15 +47,6 @@ export function useSuggestions(apiUrl: string) {
     setShowSuggestions(false);
   }, []);
 
-  // Cleanup on unmount
-  useCallback(() => {
-    return () => {
-      if (suggestTimeout.current) {
-        clearTimeout(suggestTimeout.current);
-      }
-    };
-  }, []);
-
   return {
     suggestions,
     showSuggestions,

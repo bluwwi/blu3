@@ -373,7 +373,6 @@ export default function PlaylistsPage() {
                     />
                   ))}
 
-              {/* Create card — identical pattern to browse's "+ Create Room" */}
               {!loadingPlaylists && (
                 <div
                   className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"

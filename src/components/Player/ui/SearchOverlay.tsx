@@ -19,7 +19,6 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
 
-  // search state
   searchQuery: string;
   suggestions: string[];
   showSuggestions: boolean;
@@ -28,12 +27,10 @@ interface Props {
   searchError: string;
   recentTracks?: Track[];
 
-  // player state
   activeTrackId: string | null;
   loadingTrackId: string | null;
   isPlaying: boolean;
 
-  // handlers
   onSearchInput: (val: string) => void;
   onSearch: (q: string) => void;
   onSuggestionSelect: (s: string) => void;
@@ -126,7 +123,6 @@ export function SearchOverlay({
     }
   }, [isOpen]);
 
-  // close on Escape
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -135,7 +131,6 @@ export function SearchOverlay({
     return () => window.removeEventListener("keydown", handler);
   }, [isOpen, onClose]);
 
-  // close on backdrop click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (e.target === overlayRef.current) onClose();
@@ -154,7 +149,6 @@ export function SearchOverlay({
 
   return (
     <>
-      {/* backdrop */}
       <div
         className={`fixed inset-0 z-[60] transition-all duration-300 ${
           isOpen
@@ -165,7 +159,6 @@ export function SearchOverlay({
         <div className="absolute inset-0 bg-black/55" />
       </div>
 
-      {/* panel */}
       <div
         ref={overlayRef}
         onClick={handleBackdropClick}
@@ -180,7 +173,6 @@ export function SearchOverlay({
             isOpen ? "translate-y-0 scale-100" : "-translate-y-4 scale-95"
           }`}
         >
-          {/* search bar */}
           <div
             className={`flex items-center gap-3  border border-white/10  px-6 py-4 shadow-2xl backdrop-blur-3xl
               ${searchQuery ? "rounded-t-2xl" : "rounded-2xl py-5"}
@@ -255,7 +247,6 @@ export function SearchOverlay({
                               : "hover:bg-white/5 transition-all duration-300"
                         }`}
                       >
-                        {/* thumbnail */}
                         <div
                           className="relative aspect-square shrink-0 overflow-hidden rounded-lg bg-white/10"
                           style={{
@@ -301,7 +292,6 @@ export function SearchOverlay({
                           )}
                         </div>
 
-                        {/* info */}
                         <div className="min-w-0 flex-1">
                           <p
                             className={`truncate text-sm font-medium leading-tight ${
@@ -318,7 +308,6 @@ export function SearchOverlay({
                           </p>
                         </div>
 
-                        {/* actions */}
                         <div className="flex shrink-0 items-center gap-1">
                           <div
                             onClick={(e) => {

@@ -17,7 +17,6 @@ export function useRoom() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Restore room from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(ROOM_KEY);
     if (saved) {

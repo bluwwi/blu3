@@ -64,7 +64,6 @@ export function useAudioAnalyzer() {
 
       stream.addEventListener("inactive", stop);
     } catch {
-      // user cancelled dialog or unsupported
     }
   }, [stop]);
 

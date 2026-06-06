@@ -51,7 +51,6 @@ export function PlaylistsProvider({ children }: { children: React.ReactNode }) {
 
     const videoId = track.videoId;
 
-    // Optimistic UI Update
     setLikedTrackIds((prev) => {
       const next = new Set(prev);
       if (next.has(videoId)) {

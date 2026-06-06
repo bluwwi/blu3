@@ -187,7 +187,6 @@ export function SquarePlayer({
         scrollOffsetRef.current += dt * p.tempoFactor;
       }
 
-      // vertical center of the album art relative to the frame
       const aRect = artWrap.getBoundingClientRect();
       const fRect = frame.getBoundingClientRect();
       const midY = aRect.top - fRect.top + aRect.height / 2;
