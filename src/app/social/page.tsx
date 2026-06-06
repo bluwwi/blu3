@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { DiscordBanner } from "@/components/ui/DiscordBanner";
+import { DiscordHomeBanner } from "@/components/ui/DiscordHomeBanner";
 import { TwitterBanner } from "@/components/ui/TwitterBanner";
+import { TwitterHomeBanner } from "@/components/ui/TwitterHomeBanner";
 import { InstagramBanner } from "@/components/ui/InstagramBanner";
+import { InstagramHomeBanner } from "@/components/ui/InstagramHomeBanner";
 import { WhatsAppBanner } from "@/components/ui/WhatsAppBanner";
+import { WhatsAppHomeBanner } from "@/components/ui/WhatsAppHomeBanner";
 import { useAuth } from "@/hooks/useAuth";
 
 type Platform = "discord" | "twitter" | "instagram" | "whatsapp";
@@ -44,11 +48,29 @@ export default function SocialPage() {
   const [copied, setCopied] = useState(false);
 
   const data = getShareData(shareType);
+  const avatar = user?.image || undefined;
+  const name = user?.name;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(data.url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const renderBanner = () => {
+    const bannerProps = { ...data, avatar, name };
+    const isHome = shareType === "home";
+
+    switch (platform) {
+      case "discord":
+        return isHome ? <DiscordHomeBanner {...bannerProps} /> : <DiscordBanner {...bannerProps} />;
+      case "twitter":
+        return isHome ? <TwitterHomeBanner {...bannerProps} /> : <TwitterBanner {...bannerProps} />;
+      case "instagram":
+        return isHome ? <InstagramHomeBanner {...bannerProps} /> : <InstagramBanner {...bannerProps} />;
+      case "whatsapp":
+        return isHome ? <WhatsAppHomeBanner {...bannerProps} /> : <WhatsAppBanner {...bannerProps} />;
+    }
   };
 
   return (
@@ -110,12 +132,7 @@ export default function SocialPage() {
             <p className="text-xs text-white/40 uppercase tracking-wide font-medium">
               Preview
             </p>
-            <div className="flex justify-center">
-              {platform === "discord" && <DiscordBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
-              {platform === "twitter" && <TwitterBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
-              {platform === "instagram" && <InstagramBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
-              {platform === "whatsapp" && <WhatsAppBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
-            </div>
+            <div className="flex justify-center">{renderBanner()}</div>
 
             <div className="pt-3 border-t border-white/10">
               <p className="text-xs text-white/40 mb-1">Share Link</p>
