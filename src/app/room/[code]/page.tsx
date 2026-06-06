@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
+import { resolveTrackSource } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -55,6 +56,9 @@ export default function RoomPage() {
     typeof window !== "undefined"
       ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
+  const resolvedUrlsRef = useRef(new Map<string, string>());
+  const resolvingRef = useRef(new Set<string>());
+
   const { audioRef, retryPlay } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
@@ -66,6 +70,7 @@ export default function RoomPage() {
     onTrackEnd: () => player.setPlayerState("ended"),
     pendingStartTimeRef: player.pendingStartTimeRef,
     manualPauseRef,
+    resolvedUrlsRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -174,6 +179,27 @@ export default function RoomPage() {
       }, 3000);
     }, []),
   });
+
+  useEffect(() => {
+    for (const track of queue) {
+      const videoId = track.videoId;
+      if (!videoId) continue;
+      if (resolvedUrlsRef.current.has(videoId)) continue;
+      if (resolvingRef.current.has(videoId)) continue;
+
+      resolvingRef.current.add(videoId);
+      resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
+        .then((result) => {
+          if (result.audioUrl) {
+            resolvedUrlsRef.current.set(videoId, result.audioUrl);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          resolvingRef.current.delete(videoId);
+        });
+    }
+  }, [queue, token]);
 
   const playbackRef = useRef(playback);
   useEffect(() => {

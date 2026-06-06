@@ -22,6 +22,7 @@ interface BackgroundAudioConfig {
   onTrackEnd: () => void;
   pendingStartTimeRef?: React.MutableRefObject<number>;
   manualPauseRef?: React.MutableRefObject<boolean>;
+  resolvedUrlsRef?: React.MutableRefObject<Map<string, string>>;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -161,6 +162,22 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.currentTime = start;
       if (configRef.current.isPlaying)
         audio.play().catch(() => {});
+      return;
+    }
+
+    const resolved = config.resolvedUrlsRef?.current.get(track.videoId);
+
+    if (resolved) {
+      const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
+      const streamingUrl = `${API_URL}${resolved}${tokenParam}`;
+      if (audio) {
+        const start = config.pendingStartTimeRef?.current ?? 0;
+        audio.src = streamingUrl;
+        audio.currentTime = start;
+        if (configRef.current.isPlaying)
+          audio.play().catch(() => {});
+        startBackgroundDownload(streamingUrl, track.videoId);
+      }
       return;
     }
 
