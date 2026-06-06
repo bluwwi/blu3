@@ -10,5 +10,6 @@ export const authClient = createAuthClient({
   },
   fetchOptions: {
     credentials: "include",
+    retryAttempt: 0,
   },
 });
