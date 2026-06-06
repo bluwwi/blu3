@@ -30,6 +30,8 @@ import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles"
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { RoomTopSection } from "@/components/Player/ui/RoomTopSection";
 import { RoomFooter } from "@/components/Player/ui/RoomFooter";
+import { QueueToast } from "@/components/Player/ui/QueueToast";
+import { RoomErrorModal } from "@/components/Player/ui/RoomErrorModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -1143,59 +1145,8 @@ export default function RoomPage() {
               <RoomFooter />
             </div>
 
-            {/* Queue toast */}
-            {queueToast && (
-              <div className="fixed top-24 right-4 lg:right-[calc(50%-35rem)] z-50 animate-in slide-in-from-right-4 fade-in duration-300">
-                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                    {queueToast.image ? (
-                      <img
-                        src={queueToast.image}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-white/40">
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M9 18V5l12-2v13" />
-                          <circle cx="6" cy="18" r="3" />
-                          <circle cx="18" cy="16" r="3" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-semibold truncate max-w-[200px]">
-                      {queueToast.playlistName}
-                    </p>
-                    <p className="text-white/50 text-xs">
-                      {queueToast.trackCount} track
-                      {queueToast.trackCount !== 1 ? "s" : ""} queued
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {joinErrorMessage && (
-              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
-                <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-3xl border border-white/20 bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
-                  <p className="text-white text-lg font-semibold text-center">
-                    {joinErrorMessage}
-                  </p>
-                  <p className="text-white/50 text-sm">
-                    Redirecting to browse...
-                  </p>
-                </div>
-              </div>
-            )}
+            {queueToast && <QueueToast data={queueToast} />}
+            {joinErrorMessage && <RoomErrorModal message={joinErrorMessage} />}
 
 
 
