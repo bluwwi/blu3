@@ -67,8 +67,6 @@ export default function BrowsePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { rooms, loading, removeRoom } = useRooms(user, authLoading);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
   const autoCreated = useRef(false);
 
@@ -101,24 +99,25 @@ export default function BrowsePage() {
   };
 
   const handleCreate = async () => {
-    if (!newRoomName.trim()) return;
     setCreating(true);
     const token = localStorage.getItem("blu3_token");
     try {
+      const name = Array.from(
+        { length: 16 },
+        () => "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)],
+      ).join("");
       const res = await fetch(`${API_URL}/api/rooms`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: newRoomName.trim() }),
+        body: JSON.stringify({ name }),
       });
       const data = await res.json();
       if (data.room) router.push(`/room/${data.room.code}`);
     } finally {
       setCreating(false);
-      setShowCreateModal(false);
-      setNewRoomName("");
     }
   };
 
@@ -161,7 +160,7 @@ export default function BrowsePage() {
   );
 
   return (
-    <div className="min-h-screen max-h-screen h-[100dvh] relative overflow-hidden">
+    <div className="min-h-screen max-h-screen h-dvh relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           <div className="flex absolute top-5 right-5 items-center  rounded-2xl overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
@@ -171,7 +170,7 @@ export default function BrowsePage() {
           </div>
 
           <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
-            <div className="flex flex-wrap items-center justify-center content-center gap-4 py-16 px-6 w-full min-h-full">
+            <div className="flex flex-wrap items-center justify-center content-center gap-6 py-16 px-6 w-full min-h-full">
               {loading
                 ? Array.from({ length: 9 }).map((_, i) => (
                     <SkeletonCard key={i} />
@@ -194,11 +193,13 @@ export default function BrowsePage() {
                               className="room-card-img rounded-md w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <span className="text-3xl text-white/20 select-none">
-                                ♫
-                              </span>
-                            </div>
+                            <Image
+                              width={400}
+                              height={400}
+                              src={"/queue/pfp.jpg"}
+                              alt={room.name}
+                              className="room-card-img rounded-md w-full h-full object-cover"
+                            />
                           )}
 
                           <div className="room-play-overlay hover:border-2  border-white rounded-md  cursor-pointer absolute inset-0 flex items-center justify-center"></div>
@@ -227,7 +228,7 @@ export default function BrowsePage() {
               {!loading && (
                 <div
                   className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
-                  onClick={() => setShowCreateModal(true)}
+                  onClick={handleCreate}
                 >
                   <div className="aspect-square text-neutral-600 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
                     <Plus
@@ -235,8 +236,8 @@ export default function BrowsePage() {
                       strokeWidth={2.25}
                     />
                   </div>
-                  <div className="px-0.5">
-                    <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">
+                  <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
+                    <p className="text-xs md:text-[14px] w-full uppercase text-center  text-white truncate  leading-tight">
                       Create Room
                     </p>
                   </div>
@@ -248,62 +249,6 @@ export default function BrowsePage() {
       </div>
 
       <JoinCodeInput handleJoin={handleJoin} />
-
-      {showCreateModal && (
-        <div
-          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) {
-              setShowCreateModal(false);
-              setNewRoomName("");
-            }
-          }}
-        >
-          <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            <p className="text-base font-black tracking-tight text-white mb-1 relative z-10">
-              new room
-            </p>
-            <p className="text-[11px] text-zinc-500 tracking-widest mb-5 relative z-10 uppercase">
-              give it a name
-            </p>
-
-            <input
-              autoFocus
-              value={newRoomName}
-              onChange={(e) => setNewRoomName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleCreate();
-                if (e.key === "Escape") {
-                  setShowCreateModal(false);
-                  setNewRoomName("");
-                }
-              }}
-              placeholder="room name..."
-              maxLength={40}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
-            />
-
-            <div className="flex gap-2 relative z-10">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setNewRoomName("");
-                }}
-                className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
-              >
-                cancel
-              </button>
-              <button
-                onClick={handleCreate}
-                disabled={!newRoomName.trim() || creating}
-                className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-              >
-                {creating ? "creating..." : "create"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
