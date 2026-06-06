@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { QueueAndHistory } from "./QueueAndHistory";
+import { QRCode } from "@/components/QRCode";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
@@ -376,12 +377,7 @@ export function RightSidebar({
               </p>
 
               <div className="flex justify-center mb-4">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin + "/room/" + roomCode)}`}
-                  alt="QR Code"
-                  className="rounded-xl border border-white/20"
-                  style={{ width: 160, height: 160 }}
-                />
+                <QRCode value={`${window.location.origin}/room/${roomCode}`} size={160} />
               </div>
 
               <p className="text-white/60 text-sm mb-3 truncate px-2">
