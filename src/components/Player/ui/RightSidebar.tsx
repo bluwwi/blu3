@@ -5,7 +5,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
-import { X } from "lucide-react";
+import { X, Copy, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { log } from "console";
 
@@ -111,21 +111,26 @@ export function RightSidebar({
     setTimeout(() => setShowLeavePopup(false), 200);
   };
 
-  const handleShare = () => {
-    const url = window.location.origin + "/room/" + roomCode;
-    if (navigator.share) {
-      navigator.share({ url }).catch(() => {});
-    } else {
-      navigator.clipboard
-        .writeText(url)
-        .then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        })
-        .catch(() => {});
-    }
-  };
+  const [showSharePopup, setShowSharePopup] = useState(false);
+  const [isShareVisible, setIsShareVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const openShare = () => {
+    setShowSharePopup(true);
+    requestAnimationFrame(() => setIsShareVisible(true));
+  };
+  const closeShare = () => {
+    setIsShareVisible(false);
+    setTimeout(() => setShowSharePopup(false), 200);
+  };
+
+  const handleCopyLink = () => {
+    const url = window.location.origin + "/room/" + roomCode;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   return (
     <>
@@ -180,14 +185,14 @@ export function RightSidebar({
                 {roomCode && (
                   <>
                     <button
-                      onClick={handleShare}
+                      onClick={openShare}
                       className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
-                      title={copied ? "Copied!" : "Share invite link"}
+                      title="Share invite link"
                     >
                       <Icon
                         name="share"
                         size={20}
-                        className={copied ? "text-green-400" : "text-current"}
+                        className="text-current"
                       />
                     </button>
                     <button
@@ -349,6 +354,74 @@ export function RightSidebar({
                 }
               >
                 Cancel
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {showSharePopup &&
+        createPortal(
+          <div
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isShareVisible ? "opacity-100" : "opacity-0"}`}
+            onClick={closeShare}
+          >
+            <div
+              className="w-80 p-6 text-center border border-white/30"
+              style={{
+                background: "rgba(0,0,0,0.35)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "24px",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <p className="text-white text-lg font-semibold mb-5">
+                Share Room
+              </p>
+
+              <div className="flex justify-center mb-4">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.origin + "/room/" + roomCode)}`}
+                  alt="QR Code"
+                  className="rounded-xl border border-white/20"
+                  style={{ width: 160, height: 160 }}
+                />
+              </div>
+
+              <p className="text-zinc-400 text-xs mb-3 truncate px-2">
+                {window.location.origin}/room/{roomCode}
+              </p>
+
+              <button
+                onClick={handleCopyLink}
+                className="flex items-center justify-center gap-2 w-full py-3 mb-2 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+                style={{ background: "#ffffff", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#e8e8e8")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
+              >
+                {copied ? (
+                  <><Check size={18} /> Copied!</>
+                ) : (
+                  <><Copy size={18} /> Copy Link</>
+                )}
+              </button>
+
+              <button
+                onClick={closeShare}
+                className="block w-full py-3 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+                style={{ background: "rgba(255,255,255,0.1)", borderRadius: "12px" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "rgba(255,255,255,0.2)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
+                }
+              >
+                Close
               </button>
             </div>
           </div>,
