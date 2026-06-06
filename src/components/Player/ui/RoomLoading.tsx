@@ -43,7 +43,7 @@ export function RoomLoading() {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         background: T.bg,
         display: "flex",
         alignItems: "center",
@@ -59,7 +59,7 @@ export function RoomLoading() {
         <Image
           width={400}
           height={400}
-          src={"/logo/blue.svg"}
+          src={"/logo/blu3.svg"}
           alt={"blu3"}
           priority
           className={"w-24"}

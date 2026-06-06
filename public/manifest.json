@@ -10,19 +10,19 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo/logo.svg",
+      "src": "/publiclogo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/logo/logo.png",
+      "src": "/publiclogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/logo/logo.png",
+      "src": "/publiclogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
