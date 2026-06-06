@@ -7,7 +7,6 @@ import { Icon } from "@/hooks/useIcon";
 import { Shuffle, Repeat, Trash2, Plus, MoreVertical } from "lucide-react";
 import Lottie from "lottie-react";
 import pandaBamboo from "@/assets/lolite/pandabamboo.json";
-import { ScrollArea } from "@/components/ui/ScrollArea";
 import { PlaylistModal } from "./PlaylistModal";
 import { ImportToast, type ImportStatus } from "./ImportToast";
 
@@ -171,12 +170,12 @@ export function QueueAndHistory({
               onClick={() => setShowMenu(!showMenu)}
               className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md transition-all cursor-pointer ${
                 showMenu
-                  ? "bg-white/40 text-black"
+                  ? "bg-white/40 text-white"
                   : "bg-white/30 text-white hover:bg-white/40"
               }`}
               title="More options"
             >
-              <MoreVertical size={20} />
+              <Icon name="menu" size={20} />
             </button>
 
             {showMenu && (
@@ -273,24 +272,6 @@ export function QueueAndHistory({
                     background: "var(--room-border, rgba(255,255,255,0.06))",
                   }}
                 />
-
-                <button
-                  onClick={() => {
-                    clearQueue?.();
-                    setShowMenu(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all ${
-                    canControlPlayback && queue.length > 0
-                      ? "text-white/70 hover:text-red-400 hover:bg-white/10"
-                      : "text-white/30 cursor-not-allowed"
-                  }`}
-                  disabled={!canControlPlayback || queue.length === 0}
-                >
-                  <Trash2 size={16} />
-                  <span className="flex-1 text-left font-medium">
-                    Clear queue
-                  </span>
-                </button>
               </div>
             )}
           </div>
@@ -298,7 +279,7 @@ export function QueueAndHistory({
       </div>
 
       {manageMode && queue.length > 0 && (
-        <div className="flex pl-2.5 py-0 pr-3.5 md:pr-5 items-center justify-between">
+        <div className="flex pl-2.5 py-0 pr-5.5 md:pr-5.5 items-center justify-between">
           <div className="flex  items-center gap-2">
             <button
               onClick={() => {
@@ -322,7 +303,7 @@ export function QueueAndHistory({
                   fontSize: "clamp(0.85rem,0.75vw,199rem)",
                 }}
               >
-                Delete All
+                Delete Selected
               </p>
               <p className="truncate text-[11px] text-white/60">
                 {selectedIds.size > 0 ? ` (${selectedIds.size})` : "(0)"}
@@ -371,7 +352,7 @@ export function QueueAndHistory({
       <section className="flex min-h-0 flex-1 flex-col">
         {queue.length > 0 ? (
           <>
-            <ScrollArea className="flex-1 space-y-1 pr-1">
+            <div className="flex-1 space-y-1 pr-1 overflow-y-auto hide-scrollbar">
               {queue.map((track, i) => {
                 const isActive = activeVideoId
                   ? activeVideoId === track.videoId
@@ -473,7 +454,7 @@ export function QueueAndHistory({
                     </div>
 
                     {manageMode && (
-                      <div className="shrink-0 flex items-center">
+                      <div className="shrink-0 px-2 flex items-center">
                         <div
                           onClick={() => {
                             const newSet = new Set(selectedIds);
@@ -538,14 +519,14 @@ export function QueueAndHistory({
                   </div>
                 );
               })}
-            </ScrollArea>
+            </div>
           </>
         ) : showRecent && recentToShow.length > 0 ? (
           <div className="flex flex-col min-h-0 flex-1">
             <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-white/40 font-semibold">
               Previously played
             </div>
-            <ScrollArea className="flex-1 space-y-1 pr-1">
+            <div className="flex-1 space-y-1 pr-1 overflow-y-auto hide-scrollbar">
               {recentToShow.map((track, i) => {
                 const historyTrack: Track = {
                   id: track.videoId,
@@ -684,7 +665,7 @@ export function QueueAndHistory({
                   </div>
                 );
               })}
-            </ScrollArea>
+            </div>
           </div>
         ) : (
           <div className="relative flex flex-1 items-center justify-center overflow-hidden max-md:rounded-none md:rounded-[20px] max-md:border-0 md:border md:border-white/6 max-md:bg-transparent md:bg-white/3 max-md:backdrop-blur-none md:backdrop-blur-sm px-3 py-8 text-center text-white/55">
@@ -743,6 +724,27 @@ export function QueueAndHistory({
         status={importStatus}
         onDismiss={() => setImportStatus({ type: "idle" })}
       />
+
+      <style>{`
+        ::-webkit-scrollbar {
+          width: 2px;
+          height: 1.5px;
+        }
+        ::-webkit-scrollbar-track {
+          background: none;
+        }
+        ::-webkit-scrollbar-thumb {
+          background-color: gray;
+          border-radius: 2rem;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #b2b2b2;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+      `}</style>
     </div>
   );
 }

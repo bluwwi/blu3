@@ -1067,7 +1067,7 @@ export default function RoomPage() {
                     <aside
                       className="
                   w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 lg:min-h-0
-                  max-md:rounded-none md:rounded-3xl
+                  max-md:rounded-none md:rounded-xl
                   max-md:border-0 md:border md:border-white/8
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
@@ -1137,8 +1137,8 @@ export default function RoomPage() {
 
                     <aside
                       className="
-                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0
-                  max-md:rounded-none md:rounded-3xl
+                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 lg:min-h-0
+                  max-md:rounded-none md:rounded-xl
                   max-md:border-0 md:border md:border-white/8
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
