@@ -275,8 +275,8 @@ export function SquarePlayer({
         className="w-[80%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
       >
         <Image
-          width={800}
-          height={800}
+          width={1200}
+          height={1200}
           src={albumArt}
           alt={title}
           priority
