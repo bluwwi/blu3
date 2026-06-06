@@ -64,7 +64,7 @@ export default function LoginPage() {
         </div>
 
         <button
-          onClick={() => onLogin("google")}
+          onClick={() => handleLogin("google")}
           className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 mb-3 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
           style={{ background: "#ffffff" }}
           onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
@@ -75,7 +75,7 @@ export default function LoginPage() {
         </button>
 
         <button
-          onClick={() => onLogin("discord")}
+          onClick={() => handleLogin("discord")}
           className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
           style={{ background: "#ffffff" }}
           onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
