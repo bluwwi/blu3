@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export interface AuthUser {
@@ -24,9 +24,11 @@ export function useAuth() {
   }, [session, isPending]);
 
   const sessionUser = session?.user ?? null;
-  const user: AuthUser | null = sessionUser
-    ? { ...sessionUser, avatar: sessionUser.image }
-    : null;
+  const user = useMemo(() => {
+    return sessionUser
+      ? { ...sessionUser, avatar: sessionUser.image }
+      : null;
+  }, [sessionUser]);
   const loading = isPending;
 
   const login = useCallback((provider: "google" | "discord" = "google") => {
