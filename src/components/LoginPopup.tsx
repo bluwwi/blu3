@@ -13,13 +13,7 @@ function LoginCard({
 }) {
   return (
     <div
-      className="w-80 p-5 text-center"
-      style={{
-        background: "rgba(0,0,0,0.35)",
-        backdropFilter: "blur(6px)",
-        borderRadius: "24px",
-        border: "1px solid rgba(255,255,255,0.3)",
-      }}
+      className="w-80 p-5 text-center bg-black/35 backdrop-blur-sm rounded-[24px] border border-white/30"
     >
       <div className="flex flex-col mb-16 gap-1">
         <p className="text-white text-3xl text-left leading-snug">
@@ -32,10 +26,7 @@ function LoginCard({
 
       <button
         onClick={() => onLogin("google")}
-        className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 mb-3 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
-        style={{ background: "#ffffff" }}
-        onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
-        onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
+        className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 mb-3 text-black text-sm font-semibold transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
       >
         <GoogleLogo />
         continue with Google
@@ -43,10 +34,7 @@ function LoginCard({
 
       <button
         onClick={() => onLogin("discord")}
-        className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
-        style={{ background: "#ffffff" }}
-        onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
-        onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
+        className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 text-black text-sm font-semibold transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
       >
         <DiscordLogo />
         continue with Discord
@@ -105,8 +93,7 @@ function LoginPopup() {
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
-      style={{ background: "rgba(0,0,0,0.55)" }}
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/55 transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
     >
       <LoginCard onLogin={handleLogin} />
     </div>,

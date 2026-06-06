@@ -69,17 +69,11 @@ export function Profile({ size = "sm" }: ProfileProps) {
       {open &&
         createPortal(
           <div
-            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
-            style={{ background: "rgba(0,0,0,0.55)" }}
+            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/55 transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
             onClick={close}
           >
             <div
-              className="w-80 p-4 text-center border border-white/30"
-              style={{
-                background: "rgba(0,0,0,0.35)",
-                backdropFilter: "blur(6px)",
-                borderRadius: "24px",
-              }}
+              className="w-80 p-4 text-center border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
               onClick={(e) => e.stopPropagation()}
             >
               {user.avatar ? (
@@ -112,28 +106,14 @@ export function Profile({ size = "sm" }: ProfileProps) {
               </Link>
               <button
                 onClick={handleLogout}
-                className="block w-full rounded-lg py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-                style={{ background: "#c0392b" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#a93226")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#c0392b")
-                }
+                className="block w-full rounded-lg py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer bg-[#c0392b] hover:bg-[#a93226]"
               >
                 Log out
               </button>
 
               <button
                 onClick={close}
-                className="block w-full rounded-lg py-1.5 text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 cursor-pointer"
-                style={{ background: "#ffffff" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#e8e8e8")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#ffffff")
-                }
+                className="block w-full rounded-lg py-1.5 text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
               >
                 Cancel
               </button>

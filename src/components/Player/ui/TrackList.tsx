@@ -37,7 +37,7 @@ export function TrackList({
             className="flex animate-pulse items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-3"
           >
             <div className="h-12 w-12 rounded-xl bg-white/10" />
-            <div style={{ flex: 1 }}>
+            <div className="flex-1">
               <div className="mb-2 h-3 w-3/4 rounded-full bg-white/10" />
               <div className="h-2 w-1/2 rounded-full bg-white/5" />
             </div>

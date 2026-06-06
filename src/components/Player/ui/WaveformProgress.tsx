@@ -118,12 +118,7 @@ export function WaveformProgress({
     <canvas
       ref={canvasRef}
       onClick={handleClick}
-      style={{
-        width: "100%",
-        height: "20px",
-        cursor: "pointer",
-        display: "block",
-      }}
+      className="w-full h-5 cursor-pointer block"
     />
   );
 }

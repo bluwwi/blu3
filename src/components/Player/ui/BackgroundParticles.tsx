@@ -132,8 +132,7 @@ export function BackgroundParticles({ isPlaying, image }: Props) {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none"
-      style={{ zIndex: 1 }}
+      className="absolute inset-0 pointer-events-none z-[1]"
     />
   );
 }
