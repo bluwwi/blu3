@@ -17,7 +17,7 @@ export function QRCode({ value, size = 160 }: Props) {
 
     const logo = new Image();
     logo.crossOrigin = "anonymous";
-    logo.src = "/logo/blu3black.svg";
+    logo.src = "/logo/blu3.svg";
 
     logo.onload = () => {
       QRCodeLib.toCanvas(
@@ -40,17 +40,29 @@ export function QRCode({ value, size = 160 }: Props) {
           const y = (size - logoSize) / 2;
 
           ctx.beginPath();
-          ctx.arc(x + logoSize / 2, y + logoSize / 2, logoSize / 2 + 4, 0, Math.PI * 2);
+          ctx.arc(
+            x + logoSize / 2,
+            y + logoSize / 2,
+            logoSize / 2 + 4,
+            0,
+            Math.PI * 2,
+          );
           ctx.fillStyle = "#000000";
           ctx.fill();
 
           ctx.save();
           ctx.beginPath();
-          ctx.arc(x + logoSize / 2, y + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+          ctx.arc(
+            x + logoSize / 2,
+            y + logoSize / 2,
+            logoSize / 2,
+            0,
+            Math.PI * 2,
+          );
           ctx.clip();
           ctx.drawImage(logo, x, y, logoSize, logoSize);
           ctx.restore();
-        }
+        },
       );
     };
   }, [value, size]);
