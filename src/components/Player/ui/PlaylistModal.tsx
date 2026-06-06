@@ -215,10 +215,9 @@ export function PlaylistModal({
               onChange={(e) => setImportUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleImport()}
               placeholder="https://open.spotify.com/playlist/..."
-              className="w-full px-1 py-3 text-sm rounded-xl outline-none  bg-black/30 text-white placeholder:text-white/60 transition-colors "
-              style={{
-                borderColor: importError ? "#C0392B" : "rgba(255,255,255,0.08)",
-              }}
+              className={`w-full px-1 py-3 text-sm rounded-xl outline-none bg-black/30 text-white placeholder:text-white/60 transition-colors border ${
+                importError ? "border-[#C0392B]" : "border-white/[0.08]"
+              }`}
             />
             {importError && (
               <p className="mt-2 text-[11px] text-red-400">{importError}</p>
