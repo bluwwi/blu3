@@ -725,22 +725,6 @@ export function QueueAndHistory({
         onDismiss={() => setImportStatus({ type: "idle" })}
       />
 
-      <style>{`
-        ::-webkit-scrollbar {
-          width: 2px;
-          height: 1.5px;
-        }
-        ::-webkit-scrollbar-track {
-          background: none;
-        }
-        ::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.5);
-          border-radius: 2rem;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.7);
-        }
-      `}</style>
     </div>
   );
 }

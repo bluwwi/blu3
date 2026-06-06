@@ -137,10 +137,6 @@ export function TrackItem({
         </button>
       )}
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        @keyframes bounce { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(1.6)} }
-      `}</style>
     </div>
   );
 }
