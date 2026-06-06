@@ -993,8 +993,7 @@ export default function RoomPage() {
         >
           <div className="w-full h-full bg-[#334EAC] relative">
             <div
-              className="fixed inset-0 overflow-hidden pointer-events-none"
-              style={{ zIndex: 0 }}
+              className="fixed inset-0 overflow-hidden pointer-events-none z-0"
             >
               <RoomBackground
                 isPlaying={player.playerState === "playing"}
@@ -1004,8 +1003,7 @@ export default function RoomPage() {
 
             {starsMounted && queue.length === 0 && (
               <div
-                className="fixed inset-0 overflow-hidden pointer-events-none"
-                style={{ zIndex: 5 }}
+                className="fixed inset-0 overflow-hidden pointer-events-none z-[5]"
               >
                 {Array.from({ length: 500 }).map((_, i) => (
                   <span

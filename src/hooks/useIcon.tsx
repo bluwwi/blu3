@@ -110,13 +110,8 @@ export function Icon({
     // Fallback: render a placeholder square if icon is unknown
     return (
       <span
-        className={className}
-        style={{
-          display: "inline-block",
-          width: size,
-          height: size,
-          ...style,
-        }}
+        className={`inline-block ${className}`}
+        style={{ width: size, height: size, ...style }}
         {...rest}
       />
     );
@@ -126,11 +121,8 @@ export function Icon({
     <span
       role="img"
       aria-label={rest["aria-label"] ?? name}
-      className={`icon-inherit-color ${className}`}
+      className={`icon-inherit-color inline-block align-middle shrink-0 ${className}`}
       style={{
-        display: "inline-block",
-        verticalAlign: "middle",
-        flexShrink: 0,
         width: size,
         height: size,
         backgroundColor: "currentColor",
