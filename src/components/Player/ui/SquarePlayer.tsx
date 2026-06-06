@@ -36,11 +36,41 @@ const GAP = 28;
 const SPEED = 0.45;
 
 const WAVE_LINES = [
-  { amp: 0.038, wlSpeed: 0.11, wlPhase: 0.0, scrollSpeed: 0.7, scrollPhase: 0.0 },
-  { amp: 0.055, wlSpeed: 0.08, wlPhase: 1.3, scrollSpeed: 0.55, scrollPhase: 0.8 },
-  { amp: 0.07, wlSpeed: 0.13, wlPhase: 2.6, scrollSpeed: 0.65, scrollPhase: 1.6 },
-  { amp: 0.055, wlSpeed: 0.09, wlPhase: 3.9, scrollSpeed: 0.58, scrollPhase: 2.4 },
-  { amp: 0.038, wlSpeed: 0.12, wlPhase: 5.2, scrollSpeed: 0.72, scrollPhase: 3.2 },
+  {
+    amp: 0.038,
+    wlSpeed: 0.11,
+    wlPhase: 0.0,
+    scrollSpeed: 0.7,
+    scrollPhase: 0.0,
+  },
+  {
+    amp: 0.055,
+    wlSpeed: 0.08,
+    wlPhase: 1.3,
+    scrollSpeed: 0.55,
+    scrollPhase: 0.8,
+  },
+  {
+    amp: 0.07,
+    wlSpeed: 0.13,
+    wlPhase: 2.6,
+    scrollSpeed: 0.65,
+    scrollPhase: 1.6,
+  },
+  {
+    amp: 0.055,
+    wlSpeed: 0.09,
+    wlPhase: 3.9,
+    scrollSpeed: 0.58,
+    scrollPhase: 2.4,
+  },
+  {
+    amp: 0.038,
+    wlSpeed: 0.12,
+    wlPhase: 5.2,
+    scrollSpeed: 0.72,
+    scrollPhase: 3.2,
+  },
 ];
 
 function ease(x: number) {
@@ -126,7 +156,10 @@ export function SquarePlayer({
     const loop = (ts: number) => {
       syncSize();
       const ctx = canvas.getContext("2d");
-      if (!ctx) { rafRef.current = requestAnimationFrame(loop); return; }
+      if (!ctx) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
       const W = canvas.width;
       const H = canvas.height;
 
@@ -144,7 +177,11 @@ export function SquarePlayer({
       const mt = ease(morphTRef.current);
       ctx.clearRect(0, 0, W, H);
 
-      const seed = track?.id ? hashStr(track.id) : track?.videoId ? hashStr(track.videoId) : 0;
+      const seed = track?.id
+        ? hashStr(track.id)
+        : track?.videoId
+          ? hashStr(track.videoId)
+          : 0;
       const p = getPersonality(seed);
       if (isPlaying) {
         scrollOffsetRef.current += dt * p.tempoFactor;
@@ -155,15 +192,19 @@ export function SquarePlayer({
       const fRect = frame.getBoundingClientRect();
       const midY = aRect.top - fRect.top + aRect.height / 2;
 
-      const baseYs = Array.from({ length: NUM_LINES }, (_, i) =>
-        midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
+      const baseYs = Array.from(
+        { length: NUM_LINES },
+        (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
       );
 
       WAVE_LINES.forEach((cfg) => {
         const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
-        const scroll = scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
+        const scroll =
+          scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
         const freq = ((2 * Math.PI) / W) * 1.5;
-        const breath = 1 + 0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
+        const breath =
+          1 +
+          0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
         const amp = H * cfg.amp * mt * breath;
 
         ctx.strokeStyle = "rgba(255,255,255,0.07)";
@@ -203,30 +244,31 @@ export function SquarePlayer({
   }, [isPlaying, track?.id, track?.videoId]);
 
   return (
-    <div ref={frameRef} className="flex flex-col text-white items-center justify-center  md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full relative">
+    <div
+      ref={frameRef}
+      className="flex flex-col text-white items-center justify-center   md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full relative"
+    >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none"
         style={{ zIndex: 0 }}
       />
-    <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
-
-      <div className="p-0.5 w-fit border-2 rounded-full border-white">
-        <Image
-          width={400}
-          height={400}
-          src={"/logo/logo.png"}
-          alt={title}
-          priority
-          className={
-            "w-10 h-10 " +
-            (isPlaying ? "rotating-logo" : "") +
-            " aspect-square  "
-          }
-        />
+      <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
+        <div className="p-0.5 w-fit border-2 rounded-full border-white">
+          <Image
+            width={400}
+            height={400}
+            src={"/logo/logo.png"}
+            alt={title}
+            priority
+            className={
+              "w-10 h-10 " +
+              (isPlaying ? "rotating-logo" : "") +
+              " aspect-square  "
+            }
+          />
+        </div>
       </div>
-    </div>
-
 
       <div
         ref={wrapRef}
@@ -267,7 +309,7 @@ export function SquarePlayer({
         <button
           onClick={onPlayPause}
           disabled={!onPlayPause}
-          className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
+          className="flex h-13 w-13 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
           aria-label={isPlaying ? "Pause" : "Play"}
         >
           {isPlaying ? (
@@ -305,9 +347,9 @@ export function SquarePlayer({
             max={100}
             step={1}
             className="cursor-pointer"
-            trackClassName="h-1.25 bg-white/20"
-            rangeClassName="bg-white"
-            thumbClassName="hidden"
+            trackClassName="h-1.25 -mb-0.75 bg-white/20"
+            rangeClassName="bg-white -mb-0.75"
+            thumbClassName="bg-white -mb-0.75"
           />
         </div>
 
@@ -345,8 +387,8 @@ export function SquarePlayer({
               step={0.5}
               className="cursor-pointer"
               trackClassName="h-1.25  bg-white/10"
-              rangeClassName="bg-gradient-to-r from-white/60 to-white"
-              thumbClassName="hidden"
+              rangeClassName="bg-gradient-to-r  from-white/60 to-white"
+              thumbClassName="bg-white"
             />
           </div>
           <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">

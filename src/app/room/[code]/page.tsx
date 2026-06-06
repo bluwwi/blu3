@@ -47,7 +47,7 @@ export default function RoomPage() {
   setPlayerStateRef.current = player.setPlayerState;
   const token =
     typeof window !== "undefined"
-      ? localStorage.getItem("blu3_token") ?? undefined
+      ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
   const { audioRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
@@ -61,10 +61,7 @@ export default function RoomPage() {
     pendingStartTimeRef: player.pendingStartTimeRef,
   });
 
-  const progress = useProgressTracking(
-    player.playerState,
-    audioRef,
-  );
+  const progress = useProgressTracking(player.playerState, audioRef);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -93,7 +90,6 @@ export default function RoomPage() {
 
   const originalQueueRef = useRef<Track[]>([]);
   const videoRef = useRef<HTMLVideoElement>(null);
-
 
   const {
     connected,
@@ -553,11 +549,14 @@ export default function RoomPage() {
     }
   }, []);
 
-  const handleSeekAction = useCallback((seekToTime: number) => {
-    if (!canControlPlayback || !player.nowPlaying?.videoId) return;
-    progress.seekTo(seekToTime);
-    sendSeek(seekToTime);
-  }, [canControlPlayback, player.nowPlaying?.videoId, progress, sendSeek]);
+  const handleSeekAction = useCallback(
+    (seekToTime: number) => {
+      if (!canControlPlayback || !player.nowPlaying?.videoId) return;
+      progress.seekTo(seekToTime);
+      sendSeek(seekToTime);
+    },
+    [canControlPlayback, player.nowPlaying?.videoId, progress, sendSeek],
+  );
 
   const handlePlayPauseAction = useCallback(() => {
     if (!canControlPlayback) return;
@@ -750,8 +749,12 @@ export default function RoomPage() {
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     try {
-      navigator.mediaSession.setActionHandler("previoustrack", () => handleSkipBack());
-      navigator.mediaSession.setActionHandler("nexttrack", () => handleSkipForward());
+      navigator.mediaSession.setActionHandler("previoustrack", () =>
+        handleSkipBack(),
+      );
+      navigator.mediaSession.setActionHandler("nexttrack", () =>
+        handleSkipForward(),
+      );
       navigator.mediaSession.setActionHandler("seekbackward", () => {
         const newTime = Math.max(0, progress.currentTime - 10);
         progress.seekTo(newTime);
@@ -763,7 +766,13 @@ export default function RoomPage() {
         if (canControlPlayback) sendSeek(newTime);
       });
     } catch {}
-  }, [handleSkipBack, handleSkipForward, progress, canControlPlayback, sendSeek]);
+  }, [
+    handleSkipBack,
+    handleSkipForward,
+    progress,
+    canControlPlayback,
+    sendSeek,
+  ]);
 
   /* --- Lifecycle effects ------------------------------ */
   useEffect(() => {
@@ -791,8 +800,6 @@ export default function RoomPage() {
       }
     });
   }, [authLoading, user, code]);
-
-
 
   /* --- Auto-resume player when tab returns to foreground (Android Chrome pauses YT iframes in background) --- */
   const wasPlayingRef = useRef(false);
@@ -964,68 +971,68 @@ export default function RoomPage() {
   return (
     <>
       <div className="relative min-h-screen">
-      <div
-        className={`absolute inset-0 z-50 transition-opacity duration-500 ${
-          authLoading || !joined || !initialDataLoaded
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-      >
-        <RoomLoading />
-      </div>
-      <div
-        className={`transition-opacity duration-500 ${
-          authLoading || !joined || !initialDataLoaded
-            ? "opacity-0 pointer-events-none"
-            : "opacity-100 pointer-events-auto"
-        }`}
-      >
-        <div className="w-full h-full bg-[#334EAC] relative">
-          <div
-            className="fixed inset-0 overflow-hidden pointer-events-none"
-            style={{ zIndex: 0 }}
-          >
-            <RoomBackground
-              isPlaying={player.playerState === "playing"}
-              trackImage={footerTrack?.image}
-            />
-          </div>
-
-          {starsMounted && queue.length === 0 && (
+        <div
+          className={`absolute inset-0 z-50 transition-opacity duration-500 ${
+            authLoading || !joined || !initialDataLoaded
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }`}
+        >
+          <RoomLoading />
+        </div>
+        <div
+          className={`transition-opacity duration-500 ${
+            authLoading || !joined || !initialDataLoaded
+              ? "opacity-0 pointer-events-none"
+              : "opacity-100 pointer-events-auto"
+          }`}
+        >
+          <div className="w-full h-full bg-[#334EAC] relative">
             <div
               className="fixed inset-0 overflow-hidden pointer-events-none"
-              style={{ zIndex: 5 }}
+              style={{ zIndex: 0 }}
             >
-              {Array.from({ length: 500 }).map((_, i) => (
-                <span
-                  key={i}
-                  className="absolute rounded-full bg-white"
-                  style={{
-                    width: `${Math.random() * 2.5 + 1}px`,
-                    height: `${Math.random() * 2.5 + 1}px`,
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
-                    opacity: Math.random() * 0.6 + 0.2,
-                    animation: `starTwinkle ${Math.random() * 4 + 2}s ease-in-out infinite`,
-                    animationDelay: `${Math.random() * 4}s`,
-                  }}
-                />
-              ))}
+              <RoomBackground
+                isPlaying={player.playerState === "playing"}
+                trackImage={footerTrack?.image}
+              />
             </div>
-          )}
 
-          <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
-            <div
-              className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
+            {starsMounted && queue.length === 0 && (
+              <div
+                className="fixed inset-0 overflow-hidden pointer-events-none"
+                style={{ zIndex: 5 }}
+              >
+                {Array.from({ length: 500 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="absolute rounded-full bg-white"
+                    style={{
+                      width: `${Math.random() * 2.5 + 1}px`,
+                      height: `${Math.random() * 2.5 + 1}px`,
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                      opacity: Math.random() * 0.6 + 0.2,
+                      animation: `starTwinkle ${Math.random() * 4 + 2}s ease-in-out infinite`,
+                      animationDelay: `${Math.random() * 4}s`,
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
+              <div
+                className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
               w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
-            >
-              <div className="flex h-full mt-0  gap-0 md:gap-2 pt-0  min-h-0">
-                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 md:gap-3 pb-0  lg:pb-0">
-                  <aside
-                    className="
-                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-105 lg:min-h-0
+              >
+                <div className="flex h-full mt-0  gap-0 md:gap-2 pt-0  min-h-0">
+                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 md:gap-3 pb-0  lg:pb-0">
+                    <aside
+                      className="
+                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 lg:min-h-0
                   max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border md:border-white/8
                   max-md:bg-transparent md:bg-white/5
@@ -1039,63 +1046,63 @@ export default function RoomPage() {
                   relative transition-all duration-300
                   max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
                 "
-                  >
-                    {chatOpen ? (
-                      <div className="absolute inset-0 animate-in fade-in duration-300">
-                        <ChatPanel
-                          messages={messages}
-                          chatInput={chatInput}
-                          setChatInput={setChatInput}
-                          handleSendChat={handleSendChat}
-                          onClose={() => setChatOpen(false)}
+                    >
+                      {chatOpen ? (
+                        <div className="absolute inset-0 animate-in fade-in duration-300">
+                          <ChatPanel
+                            messages={messages}
+                            chatInput={chatInput}
+                            setChatInput={setChatInput}
+                            handleSendChat={handleSendChat}
+                            onClose={() => setChatOpen(false)}
+                            track={footerTrack}
+                            isPlaying={player.playerState === "playing"}
+                            canControlPlayback={canControlPlayback}
+                            onPlayPause={onPlayPauseAction}
+                            onSkipBack={
+                              canControlPlayback ? handleSkipBack : undefined
+                            }
+                            onSkipForward={
+                              canControlPlayback ? handleSkipForward : undefined
+                            }
+                            userProfile={{
+                              name: user?.name || user?.email || "U",
+                              avatar: user?.avatar ?? undefined,
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <SquarePlayer
                           track={footerTrack}
-                          isPlaying={player.playerState === "playing"}
-                          canControlPlayback={canControlPlayback}
+                          activeVideoId={
+                            player.activeVideoId ?? playback?.videoId ?? null
+                          }
+                          playerState={footerPlayerState}
+                          isLiked={isLiked}
+                          onToggleLike={handleToggleLike}
+                          progress={displayProgress}
+                          currentTime={displayCurrentTime}
+                          duration={displayDuration}
+                          volume={player.volume}
+                          isMuted={player.isMuted}
                           onPlayPause={onPlayPauseAction}
+                          onMute={toggleMuteWrapped}
+                          onVolume={handleVolumeWrapped}
+                          onSeek={
+                            canControlPlayback ? handleSeekAction : undefined
+                          }
                           onSkipBack={
                             canControlPlayback ? handleSkipBack : undefined
                           }
                           onSkipForward={
                             canControlPlayback ? handleSkipForward : undefined
                           }
-                          userProfile={{
-                            name: user?.name || user?.email || "U",
-                            avatar: user?.avatar ?? undefined,
-                          }}
                         />
-                      </div>
-                    ) : (
-                      <SquarePlayer
-                        track={footerTrack}
-                        activeVideoId={
-                          player.activeVideoId ?? playback?.videoId ?? null
-                        }
-                        playerState={footerPlayerState}
-                        isLiked={isLiked}
-                        onToggleLike={handleToggleLike}
-                        progress={displayProgress}
-                        currentTime={displayCurrentTime}
-                        duration={displayDuration}
-                        volume={player.volume}
-                        isMuted={player.isMuted}
-                        onPlayPause={onPlayPauseAction}
-                        onMute={toggleMuteWrapped}
-                        onVolume={handleVolumeWrapped}
-                        onSeek={
-                          canControlPlayback ? handleSeekAction : undefined
-                        }
-                        onSkipBack={
-                          canControlPlayback ? handleSkipBack : undefined
-                        }
-                        onSkipForward={
-                          canControlPlayback ? handleSkipForward : undefined
-                        }
-                      />
-                    )}
-                  </aside>
+                      )}
+                    </aside>
 
-                  <aside
-                    className="
+                    <aside
+                      className="
                   flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-[380px] lg:min-h-0
                   max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border md:border-white/8
@@ -1111,146 +1118,146 @@ export default function RoomPage() {
                   max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
                   flex flex-col
                 "
-                  >
-                    <RightSidebar
-                      members={members}
-                      messages={messages}
-                      queue={queue}
-                      recentTracks={recentTracks}
-                      canControlPlayback={canControlPlayback}
-                      handleAdminPlayTrack={handleAdminPlayTrack}
-                      removeFromQueue={removeFromQueue}
-                      addToQueue={addToQueue}
-                      activeVideoId={
-                        player.activeVideoId ?? playback?.videoId ?? null
-                      }
-                      roomTheme={roomTheme}
-                      onThemeChange={setRoomTheme}
-                      playerState={footerPlayerState}
-                      shuffleEnabled={playbackMode.shuffle}
-                      repeatMode={playbackMode.repeatMode}
-                      onToggleShuffle={
-                        canControlPlayback ? handleToggleShuffle : undefined
-                      }
-                      onCycleRepeat={
-                        canControlPlayback ? handleCycleRepeat : undefined
-                      }
-                      onChatToggle={() => setChatOpen(!chatOpen)}
-                      onSearchClick={openSearchOverlay}
-                      clearQueue={clearQueue}
-                      user={user}
-                      onLogout={() => {
-                        logout();
-                        router.push("/");
-                      }}
-                      onLeave={handleLeave}
-                      roomCode={code}
-                    />
-                  </aside>
+                    >
+                      <RightSidebar
+                        members={members}
+                        messages={messages}
+                        queue={queue}
+                        recentTracks={recentTracks}
+                        canControlPlayback={canControlPlayback}
+                        handleAdminPlayTrack={handleAdminPlayTrack}
+                        removeFromQueue={removeFromQueue}
+                        addToQueue={addToQueue}
+                        activeVideoId={
+                          player.activeVideoId ?? playback?.videoId ?? null
+                        }
+                        roomTheme={roomTheme}
+                        onThemeChange={setRoomTheme}
+                        playerState={footerPlayerState}
+                        shuffleEnabled={playbackMode.shuffle}
+                        repeatMode={playbackMode.repeatMode}
+                        onToggleShuffle={
+                          canControlPlayback ? handleToggleShuffle : undefined
+                        }
+                        onCycleRepeat={
+                          canControlPlayback ? handleCycleRepeat : undefined
+                        }
+                        onChatToggle={() => setChatOpen(!chatOpen)}
+                        onSearchClick={openSearchOverlay}
+                        clearQueue={clearQueue}
+                        user={user}
+                        onLogout={() => {
+                          logout();
+                          router.push("/");
+                        }}
+                        onLeave={handleLeave}
+                        roomCode={code}
+                      />
+                    </aside>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Queue toast */}
-          {queueToast && (
-            <div className="fixed top-24 right-4 lg:right-[calc(50%-35rem)] z-50 animate-in slide-in-from-right-4 fade-in duration-300">
-              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
-                <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
-                  {queueToast.image ? (
-                    <img
-                      src={queueToast.image}
-                      alt=""
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-white/40">
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M9 18V5l12-2v13" />
-                        <circle cx="6" cy="18" r="3" />
-                        <circle cx="18" cy="16" r="3" />
-                      </svg>
-                    </div>
-                  )}
+            {/* Queue toast */}
+            {queueToast && (
+              <div className="fixed top-24 right-4 lg:right-[calc(50%-35rem)] z-50 animate-in slide-in-from-right-4 fade-in duration-300">
+                <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/10">
+                    {queueToast.image ? (
+                      <img
+                        src={queueToast.image}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-white/40">
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M9 18V5l12-2v13" />
+                          <circle cx="6" cy="18" r="3" />
+                          <circle cx="18" cy="16" r="3" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-white text-sm font-semibold truncate max-w-[200px]">
+                      {queueToast.playlistName}
+                    </p>
+                    <p className="text-white/50 text-xs">
+                      {queueToast.trackCount} track
+                      {queueToast.trackCount !== 1 ? "s" : ""} queued
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-white text-sm font-semibold truncate max-w-[200px]">
-                    {queueToast.playlistName}
+              </div>
+            )}
+
+            {joinErrorMessage && (
+              <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
+                <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-3xl border border-white/20 bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
+                  <p className="text-white text-lg font-semibold text-center">
+                    {joinErrorMessage}
                   </p>
-                  <p className="text-white/50 text-xs">
-                    {queueToast.trackCount} track
-                    {queueToast.trackCount !== 1 ? "s" : ""} queued
+                  <p className="text-white/50 text-sm">
+                    Redirecting to browse...
                   </p>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {joinErrorMessage && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60">
-              <div className="flex flex-col items-center gap-4 px-8 py-6 rounded-3xl border border-white/20 bg-black/70 backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
-                <p className="text-white text-lg font-semibold text-center">
-                  {joinErrorMessage}
-                </p>
-                <p className="text-white/50 text-sm">
-                  Redirecting to browse...
-                </p>
-              </div>
-            </div>
-          )}
-
-          <style>{`
+            <style>{`
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-          <SearchOverlay
-            isOpen={searchOpen}
-            onClose={closeSearchOverlay}
-            searchQuery={searchState.searchQuery}
-            suggestions={suggestState.suggestions}
-            showSuggestions={suggestState.showSuggestions}
-            results={searchState.results}
-            isSearching={searchState.isSearching}
-            searchError={searchState.searchError ?? ""}
-            recentTracks={
-              recentTracks.map(asTrackFromRecent).filter(Boolean) as Track[]
-            }
-            activeTrackId={player.nowPlaying?.id ?? null}
-            loadingTrackId={null}
-            isPlaying={player.playerState === "playing"}
-            onSearchInput={(val) => {
-              searchState.onSearchInput(val);
-              suggestState.onSuggestInput(val);
-            }}
-            onSearch={(q) => {
-              suggestState.hideSuggestions();
-              if (q.trim()) searchState.doSearch(q.trim());
-              else searchState.setResults([]);
-            }}
-            onSuggestionSelect={(s) => {
-              suggestState.hideSuggestions();
-              searchState.onSearchInput(s);
-              searchState.doSearch(s);
-            }}
-            onTrackSelect={handleSearchTrackSelect}
-            onAddToQueue={(track) => {
-              addToQueue(track);
-            }}
-            avatarUrl={user?.avatar ?? undefined}
-            avatarLabel={user?.name || user?.email || "U"}
-            popularGenres={popularGenres}
-          />
+            <SearchOverlay
+              isOpen={searchOpen}
+              onClose={closeSearchOverlay}
+              searchQuery={searchState.searchQuery}
+              suggestions={suggestState.suggestions}
+              showSuggestions={suggestState.showSuggestions}
+              results={searchState.results}
+              isSearching={searchState.isSearching}
+              searchError={searchState.searchError ?? ""}
+              recentTracks={
+                recentTracks.map(asTrackFromRecent).filter(Boolean) as Track[]
+              }
+              activeTrackId={player.nowPlaying?.id ?? null}
+              loadingTrackId={null}
+              isPlaying={player.playerState === "playing"}
+              onSearchInput={(val) => {
+                searchState.onSearchInput(val);
+                suggestState.onSuggestInput(val);
+              }}
+              onSearch={(q) => {
+                suggestState.hideSuggestions();
+                if (q.trim()) searchState.doSearch(q.trim());
+                else searchState.setResults([]);
+              }}
+              onSuggestionSelect={(s) => {
+                suggestState.hideSuggestions();
+                searchState.onSearchInput(s);
+                searchState.doSearch(s);
+              }}
+              onTrackSelect={handleSearchTrackSelect}
+              onAddToQueue={(track) => {
+                addToQueue(track);
+              }}
+              avatarUrl={user?.avatar ?? undefined}
+              avatarLabel={user?.name || user?.email || "U"}
+              popularGenres={popularGenres}
+            />
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 }
