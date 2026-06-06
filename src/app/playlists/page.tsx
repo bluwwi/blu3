@@ -7,7 +7,6 @@ import Link from "next/link";
 import {
   Plus,
   Heart,
-  Trash2,
   Play,
   X,
   Music2,
@@ -15,10 +14,11 @@ import {
   GripVertical,
   Search,
 } from "lucide-react";
-import Image from "next/image";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
 import { cachedFetch } from "@/lib/fetchCache";
+import { SkeletonCard } from "./SkeletonCard";
+import { PlaylistCard } from "./PlaylistCard";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -359,14 +359,6 @@ export default function PlaylistsPage() {
     handleModalSearch("trending");
   };
 
-  const SkeletonCard = () => (
-    <div className="flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40">
-      <div className="aspect-square rounded-md bg-white/5 animate-pulse" />
-      <div className="h-2.5 w-3/4 bg-white/5 rounded animate-pulse mt-1" />
-      <div className="h-2 w-1/2 bg-white/5 rounded animate-pulse" />
-    </div>
-  );
-
   return (
     <div className="h-screen relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
@@ -381,71 +373,14 @@ export default function PlaylistsPage() {
                 ? Array.from({ length: 9 }).map((_, i) => (
                     <SkeletonCard key={i} />
                   ))
-                : playlists.map((playlist) => {
-                    const hasCover =
-                      playlist.coverImage &&
-                      playlist.coverImage.trim().length > 0;
-                    return (
-                      <div
-                        key={playlist.id}
-                        className="room-card flex flex-col gap-2 relative group/card w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
-                        onClick={() => handleViewPlaylist(playlist)}
-                      >
-                        <div className="relative aspect-square overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0 before:pointer-events-none before:to-transparent">
-                          {hasCover ? (
-                            <Image
-                              width={400}
-                              height={400}
-                              src={playlist.coverImage!}
-                              alt={playlist.name}
-                              className="room-card-img rounded-md w-full h-full object-cover"
-                            />
-                          ) : playlist.isLiked ? (
-                            <Image
-                              width={400}
-                              height={400}
-                              src="/queue/finalheart.jpg"
-                              alt={playlist.name}
-                              className="room-card-img rounded-md w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full rounded-md bg-white/5 border border-white/[0.08] flex items-center justify-center">
-                              <Music2 size={20} className="text-white/15" />
-                            </div>
-                          )}
-
-                          <div className="room-play-overlay hover:border-2 border-white rounded-md cursor-pointer absolute inset-0 flex items-center justify-center" />
-
-                          {!playlist.isLiked && (
-                            <button
-                              onClick={(e) =>
-                                handleDeletePlaylist(
-                                  e,
-                                  playlist.id,
-                                  playlist.name,
-                                )
-                              }
-                              className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
-                              title="Delete playlist"
-                            >
-                              <Trash2 className="w-3 h-3 text-white/80" />
-                            </button>
-                          )}
-                        </div>
-                        <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
-                          <p className="text-xs md:text-[14px] text-white truncate leading-tight">
-                            {playlist.name}
-                            {playlist.trackCount !== undefined && (
-                              <span className="text-zinc-500">
-                                {" "}
-                                • {playlist.trackCount}
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                : playlists.map((playlist) => (
+                    <PlaylistCard
+                      key={playlist.id}
+                      playlist={playlist}
+                      onView={handleViewPlaylist}
+                      onDelete={handleDeletePlaylist}
+                    />
+                  ))}
 
               {/* Create card — identical pattern to browse's "+ Create Room" */}
               {!loadingPlaylists && (
