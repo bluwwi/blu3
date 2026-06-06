@@ -978,9 +978,7 @@ export default function RoomPage() {
           }`}
         >
           <div className="w-full h-full bg-[#334EAC] relative">
-            <div
-              className="fixed inset-0 overflow-hidden pointer-events-none z-0"
-            >
+            <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
               <RoomBackground
                 isPlaying={player.playerState === "playing"}
                 trackImage={footerTrack?.image}
@@ -989,7 +987,7 @@ export default function RoomPage() {
 
             {starsMounted && queue.length === 0 && <RoomStars />}
 
-            <div className="relative z-10 gap-2 py-2 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
+            <div className="relative z-10 gap-2 py-1.5 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
               <RoomTopSection onSearchClick={openSearchOverlay} />
 
               <div
@@ -1132,8 +1130,6 @@ export default function RoomPage() {
 
             {queueToast && <QueueToast data={queueToast} />}
             {joinErrorMessage && <RoomErrorModal message={joinErrorMessage} />}
-
-
 
             <SearchOverlay
               isOpen={searchOpen}
