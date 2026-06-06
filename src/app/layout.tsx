@@ -5,6 +5,7 @@ import { AuthGate } from "@/components/LoginPopup";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://blu3.app"),
   title: "Blu3",
   description: "Blu3 — music rooms",
   appleWebApp: {
@@ -14,6 +15,21 @@ export const metadata: Metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
+  },
+  openGraph: {
+    title: "Blu3 — Music Rooms",
+    description: "Listen to music together in real-time with friends",
+    url: "https://blu3.app",
+    siteName: "Blu3",
+    images: [{ url: "/hero.png", width: 1200, height: 630 }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blu3 — Music Rooms",
+    description: "Listen to music together in real-time with friends",
+    images: ["/hero.png"],
   },
 };
 

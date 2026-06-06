@@ -165,7 +165,8 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   if (
     pathname === "/" ||
     pathname === "/auth/callback" ||
-    pathname === "/login"
+    pathname === "/login" ||
+    pathname === "/social"
   )
     return <>{children}</>;
 
