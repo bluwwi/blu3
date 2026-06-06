@@ -364,7 +364,7 @@ export function RightSidebar({
             onClick={closeShare}
           >
             <div
-              className="w-80 p-4 text-center border border-white/30"
+              className="w-80 p-4 text-center items-center flex flex-col border border-white/30"
               style={{
                 background: "rgba(0,0,0,0.35)",
                 backdropFilter: "blur(6px)",
@@ -376,8 +376,11 @@ export function RightSidebar({
                 Share Room
               </p>
 
-              <div className="flex justify-center mb-4">
-                <QRCode value={`${window.location.origin}/room/${roomCode}`} size={160} />
+              <div className="flex justify-center mb-4 border-2 w-fit border-white">
+                <QRCode
+                  value={`${window.location.origin}/room/${roomCode}`}
+                  size={200}
+                />
               </div>
 
               <p className="text-white/60 text-sm mb-3 truncate px-2">

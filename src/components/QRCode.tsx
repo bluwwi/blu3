@@ -8,7 +8,7 @@ interface Props {
   size?: number;
 }
 
-export function QRCode({ value, size = 160 }: Props) {
+export function QRCode({ value, size = 200 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function QRCode({ value, size = 160 }: Props) {
 
     const logo = new Image();
     logo.crossOrigin = "anonymous";
-    logo.src = "/logo/blu3.svg";
+    logo.src = "/logo/star.svg";
 
     logo.onload = () => {
       QRCodeLib.toCanvas(
@@ -25,7 +25,7 @@ export function QRCode({ value, size = 160 }: Props) {
         value,
         {
           width: size,
-          margin: 2,
+          margin: 1,
           color: {
             dark: "#ffffff",
             light: "#000000",
@@ -35,7 +35,7 @@ export function QRCode({ value, size = 160 }: Props) {
           const ctx = canvas.getContext("2d");
           if (!ctx) return;
 
-          const logoSize = size * 0.24;
+          const logoSize = size * 0.2;
           const x = (size - logoSize) / 2;
           const y = (size - logoSize) / 2;
 
@@ -43,11 +43,11 @@ export function QRCode({ value, size = 160 }: Props) {
           ctx.arc(
             x + logoSize / 2,
             y + logoSize / 2,
-            logoSize / 2 + 4,
+            logoSize / 2 + 6,
             0,
             Math.PI * 2,
           );
-          ctx.fillStyle = "#000000";
+          ctx.fillStyle = "#fff";
           ctx.fill();
 
           ctx.save();

@@ -371,39 +371,12 @@ export default function PlaylistsPage() {
     <div className="h-screen relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
-          {/* ── NAV BAR — identical to browse page ── */}
-          <div className="flex absolute z-50 top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
-            <Link
-              href="/browse"
-              className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
-            >
-              blu3
-            </Link>
-
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="flex items-center gap-4 border-l border-white/10 pl-4 h-4">
-                <Link
-                  href="/browse"
-                  className="text-[10px] tracking-widest uppercase text-zinc-500 hover:text-white font-medium transition-colors"
-                >
-                  Rooms
-                </Link>
-                <Link
-                  href="/playlists"
-                  className="text-[10px] tracking-widest uppercase text-white font-medium transition-colors"
-                >
-                  Playlists
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative z-10">
-              <Profile />
-            </div>
+          <div className="flex absolute z-50 top-4 right-5 items-center mt-2  backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none before:to-transparent">
+            <Profile size="md" />
           </div>
 
-          <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
-            <div className="flex flex-wrap items-center justify-center content-center gap-3 py-16 w-full min-h-full">
+          <ScrollArea className="flex flex-col px-4 items-center justify-center h-full w-full">
+            <div className="flex flex-wrap items-center justify-center content-center gap-6 py-16 w-full min-h-full">
               {loadingPlaylists
                 ? Array.from({ length: 9 }).map((_, i) => (
                     <SkeletonCard key={i} />
