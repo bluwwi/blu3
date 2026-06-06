@@ -1,13 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { useState } from "react";
 import { QueueAndHistory } from "./QueueAndHistory";
-import { QRCode } from "@/components/QRCode";
+import { MembersPopup } from "./MembersPopup";
+import { LeavePopup } from "./LeavePopup";
+import { SharePopup } from "./SharePopup";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
-import { X, Copy, Check } from "lucide-react";
-import { ScrollArea } from "@/components/ui/ScrollArea";
 
 interface Member {
   userId: string;
@@ -113,7 +112,11 @@ export function RightSidebar({
 
   const [showSharePopup, setShowSharePopup] = useState(false);
   const [isShareVisible, setIsShareVisible] = useState(false);
-  const [copied, setCopied] = useState(false);
+
+  const handleLeaveConfirm = () => {
+    closeLeave();
+    setTimeout(() => onLeave?.(), 200);
+  };
 
   const openShare = () => {
     setShowSharePopup(true);
@@ -122,14 +125,6 @@ export function RightSidebar({
   const closeShare = () => {
     setIsShareVisible(false);
     setTimeout(() => setShowSharePopup(false), 200);
-  };
-
-  const handleCopyLink = () => {
-    const url = window.location.origin + "/room/" + roomCode;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
   };
 
   return (
@@ -228,151 +223,30 @@ export function RightSidebar({
         </div>
       </div>
 
-      {showMembersPopup &&
-        createPortal(
-          <div
-            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isMembersVisible ? "opacity-100" : "opacity-0"}`}
-            onClick={closeMembers}
-          >
-            <div
-              className="w-72 md:w-96 rounded-3xl border border-white/30 py-3 px-4 bg-black/60 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-white font-semibold text-lg">
-                  Members({members.length})
-                </h2>
-              </div>
-              <ScrollArea className="max-h-60 ">
-                {members.map((m, i) => {
-                  const isMe =
-                    user?.id === m.userId || user?.email === m.userId;
-                  return (
-                    <div
-                      key={i}
-                      className="flex mt-1 items-center gap-3 rounded-xl"
-                    >
-                      <div className="flex items-center rounded-full border-2 border-white/30 shrink-0">
-                        {m.avatar ? (
-                          <img
-                            src={m.avatar}
-                            alt=""
-                            className="h-10 w-10 aspect-square rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="h-9 w-9 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
-                            {m.name[0]}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm text-white/95 font-medium truncate flex-1">
-                          {m.name}
-                          {isMe && (
-                            <span className="text-xs text-white ml-1">
-                              (you)
-                            </span>
-                          )}
-                        </span>
-                      </div>
+      {showMembersPopup && (
+        <MembersPopup
+          members={members}
+          isVisible={isMembersVisible}
+          onClose={closeMembers}
+          userId={user?.id}
+        />
+      )}
 
+      {showLeavePopup && (
+        <LeavePopup
+          isVisible={isLeaveVisible}
+          onConfirm={handleLeaveConfirm}
+          onCancel={closeLeave}
+        />
+      )}
 
-                    </div>
-                  );
-                })}
-              </ScrollArea>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {showLeavePopup &&
-        createPortal(
-          <div
-            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isLeaveVisible ? "opacity-100" : "opacity-0"}`}
-            onClick={closeLeave}
-          >
-            <div
-              className="w-80 p-4 text-center border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <p className="text-white text-xl font-semibold leading-snug py-6">
-                Are you sure you want to
-                <br />
-                leave this Room?
-              </p>
-
-              <button
-                onClick={() => {
-                  closeLeave();
-                  setTimeout(() => onLeave?.(), 200);
-                }}
-                className="block w-full cursor-pointer py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 bg-[#c0392b] rounded-xl hover:bg-[#a93226]"
-              >
-                Yes, leave room
-              </button>
-
-              <button
-                onClick={closeLeave}
-                className="block w-full py-1.5 cursor-pointer text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 bg-white rounded-xl hover:bg-[#e8e8e8]"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>,
-          document.body,
-        )}
-
-      {showSharePopup &&
-        createPortal(
-          <div
-            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isShareVisible ? "opacity-100" : "opacity-0"}`}
-            onClick={closeShare}
-          >
-            <div
-              className="w-80 p-4 text-center items-center flex flex-col border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <p className="text-white text-lg font-semibold mb-5">
-                Share Room
-              </p>
-
-              <div className="flex justify-center mb-4 border-2 w-fit border-white">
-                <QRCode
-                  value={`${window.location.origin}/room/${roomCode}`}
-                  size={200}
-                />
-              </div>
-
-              <p className="text-white/60 text-sm mb-3 truncate px-2">
-                {window.location.origin}/room/{roomCode}
-              </p>
-
-              <button
-                onClick={handleCopyLink}
-                className="flex items-center rounded-lg justify-center gap-2 w-full py-1.5 mb-2 text-black text-sm font-semibold transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
-              >
-                {copied ? (
-                  <>
-                    <Check size={14} /> Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy size={14} /> Copy Link
-                  </>
-                )}
-              </button>
-
-              <button
-                onClick={closeShare}
-                className="block w-full bg-[#c0392b] hover:bg-[#c0392b]/80  py-1.5 rounded-lg text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>,
-          document.body,
-        )}
+      {showSharePopup && (
+        <SharePopup
+          isVisible={isShareVisible}
+          roomCode={roomCode}
+          onClose={closeShare}
+        />
+      )}
     </>
   );
 }
