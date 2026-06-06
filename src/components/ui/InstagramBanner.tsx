@@ -7,39 +7,45 @@ interface InstagramBannerProps {
   name?: string;
 }
 
-export function InstagramBanner({ title, description, image, url, avatar, name }: InstagramBannerProps) {
+export function InstagramBanner({
+  title,
+  description,
+  image,
+  url,
+  avatar,
+  name,
+}: InstagramBannerProps) {
+  const domain = new URL(url).hostname;
+
   return (
-    <div className="relative w-[240px] h-[426px] rounded-2xl overflow-hidden">
-      <img
-        src={image}
-        alt=""
-        className="absolute inset-0 w-full h-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#f58529]/70 via-[#dd2a7b]/70 to-[#8134af]/70" />
+    <div className="w-90 h-50 bg-linear-to-br from-fuchsia-700 via-pink-600 to-orange-500 p-4 relative">
       {avatar && (
-        <div className="absolute top-4 left-4 right-4 flex items-center gap-2.5">
-          <div className="p-[2px] rounded-full bg-gradient-to-tr from-[#f58529] via-[#dd2a7b] to-[#8134af]">
+        <div className="w-full flex flex-col justify-between h-full">
+          <div className="absolute top-4 right-4 justify-end gap-2">
             <img
               src={avatar}
               alt=""
-              className="w-8 h-8 rounded-full object-cover border-2 border-black"
+              className="w-14 h-14 border-2 border-white/70 rounded-full object-cover"
             />
           </div>
-          <span className="text-white text-[11px] font-semibold drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-            {name || "youraccount"}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-white text-3xl">
+              {name?.split(" ")[0] || "You"}
+              {","}
+            </span>
+            <span className="text-white/70 text-xl">invited you to</span>
+            <span className="text-white/70 -mt-1 text-xl">Blu3{".in"}</span>
+          </div>
+          <div className="w-full text-sm pr-1.5 text-right">{domain}</div>
+          <div className="absolute bottom-4 left-4 justify-end gap-2">
+            <img
+              src={"/logo/blu3.svg"}
+              alt=""
+              className="w-14 h-fit p-0.5 object-cover"
+            />
+          </div>
         </div>
       )}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-white text-center">
-        <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center mb-4">
-          <span className="text-2xl font-bold text-white">B</span>
-        </div>
-        <h2 className="text-lg font-bold leading-tight mb-2">{title}</h2>
-        <p className="text-xs text-white/80 line-clamp-2">{description}</p>
-        <p className="absolute bottom-6 text-[10px] text-white/60">
-          blu3.app
-        </p>
-      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-interface TwitterBannerProps {
+interface InstagramHomeBannerProps {
   title: string;
   description: string;
   image: string;
@@ -7,18 +7,18 @@ interface TwitterBannerProps {
   name?: string;
 }
 
-export function TwitterBanner({
+export function InstagramHomeBanner({
   title,
   description,
   image,
   url,
   avatar,
   name,
-}: TwitterBannerProps) {
+}: InstagramHomeBannerProps) {
   const domain = new URL(url).hostname;
 
   return (
-    <div className="w-90 h-50 bg-linear-to-b from-sky-700 to-black p-4 relative">
+    <div className="w-90 h-50 bg-linear-to-br from-fuchsia-700 via-pink-600 to-orange-500 p-4 relative">
       {avatar && (
         <div className="w-full flex flex-col justify-between h-full">
           <div className="absolute top-4 right-4 justify-end gap-2">
@@ -33,7 +33,7 @@ export function TwitterBanner({
               {name?.split(" ")[0] || "You"}
               {","}
             </span>
-            <span className="text-white/70 text-xl">invited you to</span>
+            <span className="text-white/70 text-xl">shared</span>
             <span className="text-white/70 -mt-1 text-xl">Blu3{".in"}</span>
           </div>
           <div className="w-full text-sm pr-1.5 text-right">{domain}</div>

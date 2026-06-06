@@ -7,46 +7,47 @@ interface DiscordBannerProps {
   name?: string;
 }
 
-export function DiscordBanner({ title, description, image, url, avatar, name }: DiscordBannerProps) {
+export function DiscordBanner({
+  title,
+  description,
+  image,
+  url,
+  avatar,
+  name,
+}: DiscordBannerProps) {
   const domain = new URL(url).hostname;
 
   return (
-    <div className="w-[360px]">
+    <div className="w-90 h-50 bg-linear-to-b from-blue-900 to-black p-4 relative">
       {avatar && (
-        <div className="flex items-center gap-2 px-0.5 pb-2">
-          <img
-            src={avatar}
-            alt=""
-            className="w-5 h-5 rounded-full object-cover"
-          />
-          <span className="text-[#dbdee1] text-[13px] font-medium">
-            {name || "You"}
-          </span>
-          <span className="text-[#949ba4] text-[13px]">shared a link</span>
+        <div className="w-full flex flex-col justify-between h-full">
+          <div className=" absolute top-4 right-4 justify-end gap-2 ">
+            <img
+              src={avatar}
+              alt=""
+              className="w-14 h-14 border-2 border-white/70 rounded-full object-cover"
+            />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-white text-3xl ">
+              {name?.split(" ")[0] || "You"}
+              {","}
+            </span>
+            <span className="text-white/70 text-xl">invited you to</span>
+            <span className="text-white/70 -mt-1 text-xl">Blu3{".in"}</span>
+          </div>
+          <div className="w-full text-sm pr-1.5 text-right">{"blu3.in"}</div>
+
+          <div className=" absolute bottom-4 left-4 justify-end gap-2 ">
+            <img
+              src={"/logo/blu3.svg"}
+              alt=""
+              className="w-14 h-fit p-0.5  object-cover"
+            />
+          </div>
         </div>
       )}
-      <div className="bg-[#2b2d31] rounded-lg overflow-hidden border-l-4 border-[#5865F2]">
-        <div className="flex p-3 gap-3">
-          <div className="flex-1 min-w-0">
-            <p className="text-[#949ba4] text-[10px] uppercase tracking-wide font-medium mb-1">
-              {domain}
-            </p>
-            <h2 className="text-white text-sm font-semibold leading-snug mb-1 line-clamp-2">
-              {title}
-            </h2>
-            <p className="text-[#949ba4] text-[11px] leading-relaxed line-clamp-2">
-              {description}
-            </p>
-          </div>
-          {image && (
-            <img
-              src={image}
-              alt=""
-              className="w-20 h-20 rounded-lg object-cover shrink-0"
-            />
-          )}
-        </div>
-      </div>
+      <div className="bg-[#2b2d31] rounded-lg overflow-hidden border-l-4 border-[#5865F2]"></div>
     </div>
   );
 }
