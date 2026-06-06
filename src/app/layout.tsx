@@ -5,7 +5,7 @@ import { AuthGate } from "@/components/LoginPopup";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://blu3.app"),
+  metadataBase: new URL("https://blu3.in"),
   title: "Blu3",
   description: "Blu3 — music rooms",
   appleWebApp: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Blu3 — Music Rooms",
     description: "Listen to music together in real-time with friends",
-    url: "https://blu3.app",
+    url: "https://blu3.in",
     siteName: "Blu3",
     images: [{ url: "/hero.png", width: 1200, height: 630 }],
     locale: "en_US",
@@ -42,15 +42,8 @@ export default function RootLayout({
     <html lang="en" className={`milano  text-black h-full antialiased`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link
-          rel="apple-touch-icon"
-          href="/logo/logo.png"
-          sizes="512x512"
-        />
-        <meta
-          name="apple-mobile-web-app-capable"
-          content="yes"
-        />
+        <link rel="apple-touch-icon" href="/logo/logo.png" sizes="512x512" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
           name="apple-mobile-web-app-status-bar-style"
           content="black-translucent"

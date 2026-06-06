@@ -42,7 +42,7 @@ export function DiscordBanner({
             <img
               src={"/logo/blu3.svg"}
               alt=""
-              className="w-14 h-fit p-0.5  object-cover"
+              className="w-12 h-fit p-0.5  object-cover"
             />
           </div>
         </div>

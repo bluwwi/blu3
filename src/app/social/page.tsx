@@ -29,14 +29,14 @@ function getShareData(type: ShareType) {
       title: "Join me on Blu3",
       description: "Listening to music together in real-time",
       image: "/queue/blu3.jpg",
-      url: `https://blu3.app/room/${ROOM_CODE}`,
+      url: `https://blu3.in/room/${ROOM_CODE}`,
     };
   }
   return {
     title: "Blu3 — Music Rooms",
     description: "Listen to music together in real-time with friends",
     image: "/hero.png",
-    url: "https://blu3.app",
+    url: "https://blu3.in",
   };
 }
 
@@ -63,13 +63,29 @@ export default function SocialPage() {
 
     switch (platform) {
       case "discord":
-        return isHome ? <DiscordHomeBanner {...bannerProps} /> : <DiscordBanner {...bannerProps} />;
+        return isHome ? (
+          <DiscordHomeBanner {...bannerProps} />
+        ) : (
+          <DiscordBanner {...bannerProps} />
+        );
       case "twitter":
-        return isHome ? <TwitterHomeBanner {...bannerProps} /> : <TwitterBanner {...bannerProps} />;
+        return isHome ? (
+          <TwitterHomeBanner {...bannerProps} />
+        ) : (
+          <TwitterBanner {...bannerProps} />
+        );
       case "instagram":
-        return isHome ? <InstagramHomeBanner {...bannerProps} /> : <InstagramBanner {...bannerProps} />;
+        return isHome ? (
+          <InstagramHomeBanner {...bannerProps} />
+        ) : (
+          <InstagramBanner {...bannerProps} />
+        );
       case "whatsapp":
-        return isHome ? <WhatsAppHomeBanner {...bannerProps} /> : <WhatsAppBanner {...bannerProps} />;
+        return isHome ? (
+          <WhatsAppHomeBanner {...bannerProps} />
+        ) : (
+          <WhatsAppBanner {...bannerProps} />
+        );
     }
   };
 
@@ -88,7 +104,10 @@ export default function SocialPage() {
             </label>
             <div className="flex gap-4">
               {(["home", "room"] as ShareType[]).map((t) => (
-                <label key={t} className="flex items-center gap-2 cursor-pointer">
+                <label
+                  key={t}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
                   <input
                     type="radio"
                     name="shareType"
@@ -96,7 +115,9 @@ export default function SocialPage() {
                     onChange={() => setShareType(t)}
                     className="accent-[#5865F2]"
                   />
-                  <span className="capitalize text-sm">{t === "home" ? "Home Page" : "Room"}</span>
+                  <span className="capitalize text-sm">
+                    {t === "home" ? "Home Page" : "Room"}
+                  </span>
                 </label>
               ))}
             </div>
