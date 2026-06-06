@@ -1026,7 +1026,7 @@ export default function RoomPage() {
             )}
 
             <div className="relative z-10 gap-2 py-2 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
-              <div className="h-[10vh] md:border border-white/10 flex items-center justify-between  md:h-[12%] w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] px-4 py-3 2xl:w-[60%] rounded-xl md:bg-white/10">
+              <div className="h-[10vh] gap-3 md:border border-white/10 flex items-center justify-between  md:h-[12%] w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] px-4 py-3 2xl:w-[60%] rounded-xl md:bg-white/10">
                 <Image
                   alt="logo"
                   src={"/logo/blu3.svg"}
@@ -1191,7 +1191,7 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
-              <div className="h-full justify-between flex items-center px-4 md:h-[9%] border border-white/10 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
+              <div className="h-full  hidden md:flex justify-between items-center px-4 md:h-[9%] border border-white/10 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
                 <Image
                   alt="logo"
                   src={"/logo/quote.svg"}

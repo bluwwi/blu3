@@ -48,14 +48,14 @@ export function ChatPanel({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-transparent rounded-[20px] overflow-hidden text-white w-full">
+    <div className="flex flex-col h-full bg-transparent overflow-hidden text-white w-full">
       {track && (
         <div className="flex items-center justify-between max-md:p-0 md:p-3 border-b border-white/10 bg-transparent">
           <div className="flex items-center gap-3 overflow-hidden">
             <img
               src={track.image || "https://via.placeholder.com/150"}
               alt="Track cover"
-              className="w-10 h-10 rounded-md object-cover flex-shrink-0"
+              className="w-10 h-10 rounded-md object-cover shrink-0"
             />
             <div className="min-w-0">
               <p className="text-[13px] font-semibold truncate text-white">

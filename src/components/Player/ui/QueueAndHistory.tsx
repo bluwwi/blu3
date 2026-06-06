@@ -4,7 +4,7 @@ import { Track } from "@/utils/types";
 import { usePlaylists } from "@/hooks/usePlaylists";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
-import { Shuffle, Repeat, MoreVertical, Trash2, Plus } from "lucide-react";
+import { Shuffle, Repeat, Trash2, Plus, MoreVertical } from "lucide-react";
 import Lottie from "lottie-react";
 import pandaBamboo from "@/assets/lolite/pandabamboo.json";
 import { ScrollArea } from "@/components/ui/ScrollArea";
@@ -66,25 +66,13 @@ export function QueueAndHistory({
     return filtered.slice(0, 10);
   }, [showRecent, recentTracks, activeVideoId]);
 
-  const [showMenu, setShowMenu] = useState(false);
   const [manageMode, setManageMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-    if (showMenu) {
-      document.addEventListener("mousedown", handleOutsideClick);
-    }
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [showMenu]);
 
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
-  const [importStatus, setImportStatus] = useState<ImportStatus>({ type: "idle" });
+  const [importStatus, setImportStatus] = useState<ImportStatus>({
+    type: "idle",
+  });
 
   const handleQueuePlaylist = async (playlistId: string) => {
     const token = localStorage.getItem("blu3_token");
@@ -125,7 +113,7 @@ export function QueueAndHistory({
           {")"}
         </span>
 
-        <div className="ml-auto relative flex gap-1 ">
+        <div className="ml-auto relative flex gap-1 items-center">
           <button
             onClick={() => onSearchClick?.()}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
@@ -133,6 +121,7 @@ export function QueueAndHistory({
           >
             <Icon name="search" size={20} className="text-current" />
           </button>
+
           <button
             onClick={() => setShowPlaylistModal(true)}
             className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
@@ -141,42 +130,44 @@ export function QueueAndHistory({
             <Plus size={20} />
           </button>
 
-          <button
-            onClick={() => {
-              setManageMode(!manageMode);
-              if (manageMode) setSelectedIds(new Set());
-            }}
-            className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
-              manageMode
-                ? "bg-[#C0392B]/80 text-white"
-                : "bg-white/30 hover:bg-white/40"
-            }`}
-            title={
-              manageMode ? "Exit selection mode" : "Select tracks to remove"
-            }
-          >
-            <Trash2
-              size={20}
-              className={manageMode ? "text-white" : "text-current"}
-            />
-          </button>
+          {canControlPlayback && (
+            <button
+              onClick={() => {
+                setManageMode(!manageMode);
+                if (manageMode) setSelectedIds(new Set());
+              }}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
+                manageMode
+                  ? "bg-[#C0392B]/80 text-white"
+                  : "bg-white/30 hover:bg-white/40"
+              }`}
+              title={
+                manageMode ? "Exit selection mode" : "Select tracks to remove"
+              }
+            >
+              <Trash2
+                size={20}
+                className={manageMode ? "text-white" : "text-current"}
+              />
+            </button>
+          )}
 
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu(!showMenu)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg bg-white/30  backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all ${
+              className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md transition-all cursor-pointer ${
                 showMenu
                   ? "bg-white/40 text-black"
-                  : "bg-white/10 text-black hover:bg-white/40"
+                  : "bg-white/30 text-white hover:bg-white/40"
               }`}
               title="More options"
             >
-              <Icon name="menu" size={20} className="text-current" />
+              <MoreVertical size={20} />
             </button>
 
             {showMenu && (
               <div
-                className="absolute right-0 mt-2 w-52 rounded-2xl backdrop-blur-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
+                className="absolute right-0 mt-2 w-52 origin-top-right scale-100 opacity-100 transition-all duration-200 rounded-2xl border overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)] z-50 py-1.5"
                 style={{
                   background: "var(--room-surface, #0D0D14)",
                   borderColor: "var(--room-border, rgba(255,255,255,0.08))",
@@ -185,94 +176,107 @@ export function QueueAndHistory({
                 <button
                   onClick={() => {
                     onToggleShuffle?.();
+                    setShowMenu(false);
                   }}
                   disabled={!onToggleShuffle}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all disabled:opacity-30 ${
                     shuffleEnabled
-                      ? "text-violet-300"
+                      ? "text-violet-300 bg-violet-500/10"
                       : "text-white/70 hover:text-white hover:bg-white/10"
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${
                       shuffleEnabled
-                        ? "bg-violet-400 border-violet-400"
+                        ? "bg-violet-500 border-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.4)]"
                         : "border-white/30"
                     }`}
                   >
-                    {shuffleEnabled && (
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    )}
+                    <Shuffle
+                      size={12}
+                      className={
+                        shuffleEnabled ? "text-white" : "text-white/50"
+                      }
+                    />
                   </div>
-                  <Shuffle size={14} />
-                  <span className="flex-1 text-left">Shuffle</span>
+                  <span className="flex-1 text-left font-medium">Shuffle</span>
+                  {shuffleEnabled && (
+                    <span className="text-[10px] text-violet-400 font-semibold">
+                      ON
+                    </span>
+                  )}
                 </button>
+
+                <div
+                  className="h-px mx-3"
+                  style={{
+                    background: "var(--room-border, rgba(255,255,255,0.06))",
+                  }}
+                />
 
                 <button
                   onClick={() => {
                     onCycleRepeat?.();
+                    setShowMenu(false);
                   }}
                   disabled={!onCycleRepeat}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-[11px] transition-all disabled:opacity-30 ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all disabled:opacity-30 ${
                     repeatMode !== "off"
-                      ? "text-violet-300"
+                      ? "text-violet-300 bg-violet-500/10"
                       : "text-white/70 hover:text-white hover:bg-white/10"
                   }`}
                 >
                   <div
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                    className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 relative ${
                       repeatMode !== "off"
-                        ? "bg-violet-400 border-violet-400"
+                        ? "bg-violet-500 border-violet-500 shadow-[0_0_12px_rgba(139,92,246,0.4)]"
                         : "border-white/30"
                     }`}
                   >
-                    {repeatMode !== "off" && (
-                      <svg
-                        width="10"
-                        height="10"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
+                    <Repeat
+                      size={12}
+                      className={
+                        repeatMode !== "off" ? "text-white" : "text-white/50"
+                      }
+                    />
+                    {repeatMode === "one" && (
+                      <span className="absolute -top-1 -right-1 text-[7px] font-bold text-white">
+                        1
+                      </span>
                     )}
                   </div>
-                  <Repeat size={14} />
-                  <span className="flex-1 text-left">
-                    Repeat{" "}
-                    {repeatMode !== "off"
-                      ? `(${repeatMode === "one" ? "1" : "all"})`
-                      : ""}
-                  </span>
+                  <span className="flex-1 text-left font-medium">Repeat</span>
+                  {repeatMode !== "off" && (
+                    <span className="text-[10px] text-violet-400 font-semibold">
+                      {repeatMode === "one" ? "1" : "ALL"}
+                    </span>
+                  )}
                 </button>
 
-                {clearQueue && canControlPlayback && queue.length > 0 && (
-                  <button
-                    onClick={() => {
-                      clearQueue?.();
-                      setShowMenu(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2 text-[11px] text-white/70 hover:text-red-400 hover:bg-white/10 transition-all"
-                  >
-                    <Trash2 size={14} />
-                    <span>Delete all queue</span>
-                  </button>
-                )}
+                <div
+                  className="h-px mx-3"
+                  style={{
+                    background: "var(--room-border, rgba(255,255,255,0.06))",
+                  }}
+                />
+
+                <button
+                  onClick={() => {
+                    clearQueue?.();
+                    setShowMenu(false);
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm transition-all ${
+                    canControlPlayback && queue.length > 0
+                      ? "text-white/70 hover:text-red-400 hover:bg-white/10"
+                      : "text-white/30 cursor-not-allowed"
+                  }`}
+                  disabled={!canControlPlayback || queue.length === 0}
+                >
+                  <Trash2 size={16} />
+                  <span className="flex-1 text-left font-medium">
+                    Clear queue
+                  </span>
+                </button>
               </div>
             )}
           </div>
@@ -376,7 +380,10 @@ export function QueueAndHistory({
                     <div
                       role={canControlPlayback ? "button" : undefined}
                       tabIndex={canControlPlayback ? 0 : -1}
-                      onClick={(e) => { e.stopPropagation(); handlePlay(); }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlay();
+                      }}
                       onKeyDown={(event) => {
                         if (!canControlPlayback) return;
                         if (event.key === "Enter" || event.key === " ") {
@@ -718,7 +725,10 @@ export function QueueAndHistory({
         onQueuePlaylist={handleQueuePlaylist}
         onImportStatus={setImportStatus}
       />
-      <ImportToast status={importStatus} onDismiss={() => setImportStatus({ type: "idle" })} />
+      <ImportToast
+        status={importStatus}
+        onDismiss={() => setImportStatus({ type: "idle" })}
+      />
     </div>
   );
 }

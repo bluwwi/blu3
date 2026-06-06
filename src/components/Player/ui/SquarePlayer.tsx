@@ -272,7 +272,7 @@ export function SquarePlayer({
 
       <div
         ref={wrapRef}
-        className="w-[90%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
+        className="w-[80%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
       >
         <Image
           width={800}

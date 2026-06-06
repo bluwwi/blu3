@@ -150,7 +150,7 @@ export function RightSidebar({
                         <img
                           src={m.avatar}
                           alt="hello"
-                          className="h-5 w-5 aspect-square rounded-full border border-white/30 object-cover"
+                          className="h-6 w-6 aspect-square rounded-full border border-white/30 object-cover"
                         />
                       ) : (
                         <div className="h-4 w-4 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
@@ -260,7 +260,7 @@ export function RightSidebar({
                           <img
                             src={m.avatar}
                             alt=""
-                            className="h-9 w-9 aspect-square rounded-full object-cover"
+                            className="h-10 w-10 aspect-square rounded-full object-cover"
                           />
                         ) : (
                           <div className="h-9 w-9 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">
