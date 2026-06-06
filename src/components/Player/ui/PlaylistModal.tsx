@@ -209,13 +209,13 @@ export function PlaylistModal({
         </ScrollArea>
 
         {showImport && (
-          <div className="px-4 py-2">
+          <div className="px-4 py-0">
             <input
               value={importUrl}
               onChange={(e) => setImportUrl(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleImport()}
               placeholder="https://open.spotify.com/playlist/..."
-              className="w-full px-4 py-3 text-[13px] rounded-xl border bg-white/5 text-white placeholder:text-white/40 outline-none transition-colors"
+              className="w-full px-1 py-3 text-sm rounded-xl outline-none  bg-black/30 text-white placeholder:text-white/60 transition-colors "
               style={{
                 borderColor: importError ? "#C0392B" : "rgba(255,255,255,0.08)",
               }}
@@ -226,7 +226,7 @@ export function PlaylistModal({
             <button
               onClick={handleImport}
               disabled={importing || !importUrl.trim()}
-              className="mt-2 w-full py-3 text-[13px] font-medium rounded-xl bg-violet-500/20 text-black bg-white hover:bg-violet-500/30 transition-colors disabled:opacity-50"
+              className="mt-2 w-full cursor-pointer  text-sm py-2.5 font-medium rounded-lg  bg-blue-200 text-black hover:bg-blue-100/70 transition-colors disabled:opacity-50"
             >
               {importing ? (
                 <span className="flex items-center justify-center gap-2">
@@ -246,7 +246,7 @@ export function PlaylistModal({
               setShowImport((v) => !v);
               setImportError("");
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg c cursor-pointer duration-200 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg   bg-blue-200 text-black hover:bg-blue-100/70 cursor-pointer duration-200 transition-colors"
           >
             <Plus size={14} />
             Import Playlist
@@ -255,7 +255,7 @@ export function PlaylistModal({
             onClick={() => {
               window.location.href = "/playlists";
             }}
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-white text-black hover:bg-white/70 cursor-pointer duration-200 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-blue-200 text-black hover:bg-blue-100/70 cursor-pointer duration-200 transition-colors"
           >
             <PlaylistIcon size={16} weight="regular" />
             Manage
