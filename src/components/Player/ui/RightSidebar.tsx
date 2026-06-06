@@ -8,7 +8,6 @@ import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
 import { X, Copy, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
-import { log } from "console";
 
 interface Member {
   userId: string;
@@ -236,11 +235,7 @@ export function RightSidebar({
             onClick={closeMembers}
           >
             <div
-              className="w-72 md:w-96 rounded-3xl border border-white/30 py-3 px-4 backdrop-blur-3xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
-              style={{
-                background: "rgba(0,0,0,0.6)",
-                backdropFilter: "blur(4px)",
-              }}
+              className="w-72 md:w-96 rounded-3xl border border-white/30 py-3 px-4 bg-black/60 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-3">
@@ -281,17 +276,7 @@ export function RightSidebar({
                         </span>
                       </div>
 
-                      {/*{isMe && onLogout && (
-                        <button
-                          onClick={() => {
-                            closeMembers();
-                            setTimeout(onLogout, 200);
-                          }}
-                          className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white bg-red-600 transition-all shrink-0"
-                        >
-                          Logout
-                        </button>
-                      )}*/}
+
                     </div>
                   );
                 })}
@@ -308,12 +293,7 @@ export function RightSidebar({
             onClick={closeLeave}
           >
             <div
-              className="w-80 p-4 text-center border border-white/30"
-              style={{
-                background: "rgba(0,0,0,0.35)",
-                backdropFilter: "blur(6px)",
-                borderRadius: "24px",
-              }}
+              className="w-80 p-4 text-center border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
               onClick={(e) => e.stopPropagation()}
             >
               <p className="text-white text-xl font-semibold leading-snug py-6">
@@ -327,28 +307,14 @@ export function RightSidebar({
                   closeLeave();
                   setTimeout(() => onLeave?.(), 200);
                 }}
-                className="block w-full cursor-pointer py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500"
-                style={{ background: "#c0392b", borderRadius: "12px" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#a93226")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#c0392b")
-                }
+                className="block w-full cursor-pointer py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 bg-[#c0392b] rounded-xl hover:bg-[#a93226]"
               >
                 Yes, leave room
               </button>
 
               <button
                 onClick={closeLeave}
-                className="block w-full py-1.5 cursor-pointer text-[#1a1a1a] text-[15px] font-medium transition-all duration-500"
-                style={{ background: "#ffffff", borderRadius: "12px" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#e8e8e8")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#ffffff")
-                }
+                className="block w-full py-1.5 cursor-pointer text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 bg-white rounded-xl hover:bg-[#e8e8e8]"
               >
                 Cancel
               </button>
@@ -364,12 +330,7 @@ export function RightSidebar({
             onClick={closeShare}
           >
             <div
-              className="w-80 p-4 text-center items-center flex flex-col border border-white/30"
-              style={{
-                background: "rgba(0,0,0,0.35)",
-                backdropFilter: "blur(6px)",
-                borderRadius: "24px",
-              }}
+              className="w-80 p-4 text-center items-center flex flex-col border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
               onClick={(e) => e.stopPropagation()}
             >
               <p className="text-white text-lg font-semibold mb-5">
@@ -389,14 +350,7 @@ export function RightSidebar({
 
               <button
                 onClick={handleCopyLink}
-                className="flex items-center rounded-lg justify-center gap-2 w-full py-1.5 mb-2 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
-                style={{ background: "#ffffff" }}
-                onMouseOver={(e) =>
-                  (e.currentTarget.style.background = "#e8e8e8")
-                }
-                onMouseOut={(e) =>
-                  (e.currentTarget.style.background = "#ffffff")
-                }
+                className="flex items-center rounded-lg justify-center gap-2 w-full py-1.5 mb-2 text-black text-sm font-semibold transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
               >
                 {copied ? (
                   <>
