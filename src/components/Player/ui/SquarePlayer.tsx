@@ -250,25 +250,9 @@ export function SquarePlayer({
     >
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 pointer-events-none"
-        style={{ zIndex: 0 }}
+        className="absolute inset-0 pointer-events-none z-0"
       />
       <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
-        {/*<div className="p-0.5 w-fit border-2 rounded-full border-white">
-          <Image
-            width={400}
-            height={400}
-            src={"/logo/logo.png"}
-            alt={title}
-            priority
-            className={
-              "w-10 h-10 " +
-              (isPlaying ? "rotating-logo" : "") +
-              " aspect-square  "
-            }
-          />
-        </div>*/}
-      </div>
 
       <div
         ref={wrapRef}
