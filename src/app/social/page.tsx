@@ -5,6 +5,7 @@ import { DiscordBanner } from "@/components/ui/DiscordBanner";
 import { TwitterBanner } from "@/components/ui/TwitterBanner";
 import { InstagramBanner } from "@/components/ui/InstagramBanner";
 import { WhatsAppBanner } from "@/components/ui/WhatsAppBanner";
+import { useAuth } from "@/hooks/useAuth";
 
 type Platform = "discord" | "twitter" | "instagram" | "whatsapp";
 type ShareType = "home" | "room";
@@ -36,6 +37,7 @@ function getShareData(type: ShareType) {
 }
 
 export default function SocialPage() {
+  const { user } = useAuth();
   const [shareType, setShareType] = useState<ShareType>("home");
   const [platform, setPlatform] = useState<Platform>("discord");
   const [showPreview, setShowPreview] = useState(false);
@@ -109,10 +111,10 @@ export default function SocialPage() {
               Preview
             </p>
             <div className="flex justify-center">
-              {platform === "discord" && <DiscordBanner {...data} />}
-              {platform === "twitter" && <TwitterBanner {...data} />}
-              {platform === "instagram" && <InstagramBanner {...data} />}
-              {platform === "whatsapp" && <WhatsAppBanner {...data} />}
+              {platform === "discord" && <DiscordBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
+              {platform === "twitter" && <TwitterBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
+              {platform === "instagram" && <InstagramBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
+              {platform === "whatsapp" && <WhatsAppBanner {...data} avatar={user?.image || undefined} name={user?.name} />}
             </div>
 
             <div className="pt-3 border-t border-white/10">
