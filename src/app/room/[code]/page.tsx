@@ -48,6 +48,7 @@ export default function RoomPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
+  const manualPauseRef = useRef(false);
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
   const token =
@@ -89,7 +90,6 @@ export default function RoomPage() {
   } | null>(null);
   const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
   const [starsMounted, setStarsMounted] = useState(false);
-  const manualPauseRef = useRef(false);
 
   useEffect(() => {
     setStarsMounted(true);
