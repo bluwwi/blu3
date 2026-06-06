@@ -8,8 +8,6 @@ import Image from "next/image";
 import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
-import PlusIcon from "@/components/ui/PlusIcon";
-import { cachedFetch } from "@/lib/fetchCache";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -45,10 +43,12 @@ function useRooms(user: any, authLoading: boolean) {
 
     const token = localStorage.getItem("blu3_token");
 
-    cachedFetch(`${API_URL}/api/rooms/user/mine`, {
+    fetch(`${API_URL}/api/rooms/user/mine`, {
       headers: { Authorization: `Bearer ${token}` },
     })
+      .then((r) => r.json())
       .then((data) => {
+        console.log("Rooms API response:", data);
         setRooms(data.rooms ?? []);
       })
       .catch(console.error)
@@ -164,33 +164,9 @@ export default function BrowsePage() {
     <div className="h-screen relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
-          <div className="flex absolute top-5 items-center border border-white/80 mt-2 rounded-2xl justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2 bg-white/5 backdrop-blur-2xl shadow-[0_4px_24px_-6px_rgba(0,0,0,0.4)] before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
-            <Link
-              href="/browse"
-              className="text-lg font-black tracking-tight text-white hover:opacity-80 transition-opacity relative z-10"
-            >
-              blu3
-            </Link>
-
-            <div className="flex items-center gap-4 realtive z-20">
-              <div className="flex items-center gap-4 border-l border-white/10 pl-4 h-4">
-                <Link
-                  href="/browse"
-                  className="text-[10px] tracking-widest uppercase text-white font-medium transition-colors"
-                >
-                  Rooms
-                </Link>
-                <Link
-                  href="/playlists"
-                  className="text-[10px] tracking-widest uppercase text-zinc-500 hover:text-white font-medium transition-colors"
-                >
-                  Playlists
-                </Link>
-              </div>
-            </div>
-
-            <div className="relative z-10">
-              <Profile />
+          <div className="flex absolute top-5 right-5 items-center  rounded-2xl overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
+            <div className="relative z-10 w-fit aspect-square">
+              <Profile size="md" />
             </div>
           </div>
 
@@ -253,8 +229,11 @@ export default function BrowsePage() {
                   className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
                   onClick={() => setShowCreateModal(true)}
                 >
-                  <div className="aspect-square text-neutral-700 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
-                    <PlusIcon />
+                  <div className="aspect-square text-neutral-600 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                    <Plus
+                      className="create-plus w-30 h-30  transition-all"
+                      strokeWidth={2.25}
+                    />
                   </div>
                   <div className="px-0.5">
                     <p className="text-xs md:text-sm text-center uppercase text-white tracking-wide">

@@ -1,5 +1,5 @@
 const PlusIcon = ({
-  size = 40,
+  size = 100,
   color = "white",
 }: {
   size?: number;
