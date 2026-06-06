@@ -6,13 +6,8 @@ import Image from "next/image";
 export function RoomLoading() {
   return (
     <div
-      style={{
-        minHeight: "100dvh",
-        background: T.bg,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
+      className="min-h-dvh flex items-center justify-center"
+      style={{ background: T.bg }}
     >
       <div className="flex flex-col items-end">
         <Image
