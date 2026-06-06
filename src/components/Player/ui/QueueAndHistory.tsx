@@ -526,7 +526,7 @@ export function QueueAndHistory({
             <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-white/40 font-semibold">
               Previously played
             </div>
-            <div className="flex-1 space-y-1 pr-1 overflow-y-auto hide-scrollbar">
+            <div className="flex-1 space-y-1 pr-1 overflow-y-auto">
               {recentToShow.map((track, i) => {
                 const historyTrack: Track = {
                   id: track.videoId,
