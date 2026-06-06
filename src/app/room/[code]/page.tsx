@@ -29,6 +29,8 @@ import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
 import { Profile } from "@/components/Profile";
 import Image from "next/image";
+import Icon from "@/hooks/useIcon";
+import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -1039,30 +1041,16 @@ export default function RoomPage() {
                     e.stopPropagation();
                     openSearchOverlay();
                   }}
-                  className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.06] hover:bg-white/[0.1] px-3 sm:px-5 py-2 sm:py-2.5 transition-all text-left min-w-0"
+                  className="flex-1 cursor-pointer max-w-lg flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/5 hover:bg-white/10 px-3 sm:px-5 py-2 sm:py-4 transition-all text-left min-w-0"
                 >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-white/60 flex-shrink-0"
-                  >
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.35-4.35" />
-                  </svg>
-                  <span className="flex-1 text-[13px] text-white/60 truncate">
+                  <Icon name="search" className="text-white/80 " />
+                  <span className="flex-1 text-sm text-white/80 truncate">
                     <span className="hidden sm:inline">
                       What do you want to play next?
                     </span>
                     <span className="sm:hidden">Search next...</span>
                   </span>
-                  <span className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-md border border-white/[0.06] text-[10px] text-white/30">
-                    <kbd className="text-white/40">⌘</kbd>
-                    <kbd>K</kbd>
-                  </span>
+                  <Icon name="heart" className="text-white/80 " />
                 </button>
 
                 <Profile size="lg" />
@@ -1203,7 +1191,32 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
-              <div className="h-full md:h-[9%] border border-white/20 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl bg-white/10"></div>
+              <div className="h-full justify-between flex items-center px-4 md:h-[9%] border border-white/10 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
+                <Image
+                  alt="logo"
+                  src={"/logo/quote.svg"}
+                  width={300}
+                  height={400}
+                  className="h-full w-fit"
+                />
+
+                <div className="h-full flex font-bold items-center gap-2">
+                  <div className="text-xl font-bold">Built by</div>
+                  <Link
+                    href={"https://www.instagram.com/realblue07/?"}
+                    className="h-full items-center flex"
+                    target="_blank"
+                  >
+                    <Image
+                      alt="logo"
+                      src={"/me.jpg"}
+                      width={300}
+                      height={400}
+                      className="h-[80%] border-2 cursor-pointer border-white w-fit rounded-full"
+                    />
+                  </Link>
+                </div>
+              </div>
             </div>
 
             {/* Queue toast */}

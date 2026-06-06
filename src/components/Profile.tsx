@@ -16,7 +16,7 @@ export function Profile({ size = "sm" }: ProfileProps) {
   const sizeClasses = {
     sm: "w-7 h-7 text-xs",
     md: "w-9 h-9 text-sm",
-    lg: "w-10 h-10 md:w-12 md:h-12 text-base",
+    lg: "w-10 h-10 md:w-11 md:h-11 text-base",
     xl: "w-16 h-16 text-lg",
     "2xl": "w-24 h-24 text-xl",
   };
