@@ -16,7 +16,7 @@ export function EmptyQueue({ userName, onSearchClick }: Props) {
             {userName?.split(" ")[0]}
             {","}
           </p>
-          <p className="text-white/90 text-lg md:text-3xl font-bold">
+          <p className="text-white/90 text-lg md:text-xl font-bold">
             looks like your <br /> queue is empty
           </p>
         </div>
@@ -42,12 +42,12 @@ export function EmptyQueue({ userName, onSearchClick }: Props) {
             </span>
           ))}
         </div>
-        <div className="w-50 h-25 lg:w-60 lg:h-30 -z-10 flex items-center justify-center overflow-hidden">
+        <div className="w-50 h-25 lg:w-60 lg:h-25 -z-10 flex items-center justify-center ">
           <Lottie
             animationData={pandaBamboo}
             loop
             autoplay
-            style={{ width: "clamp(30rem,30vw,199rem)", height: 500 }}
+            style={{ width: "clamp(30rem,30vw,199rem)", height: 200 }}
           />
         </div>
       </div>
