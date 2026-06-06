@@ -4,10 +4,7 @@ import { T } from "@/utils/roomHelpers";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 
-import Lottie from "lottie-react";
-import cow from "@/assets/lolite/carrot.json";
-import { Heart } from "lucide-react";
-import { HeartIcon } from "@phosphor-icons/react";
+
 
 const COLORS = [
   "#fff",
