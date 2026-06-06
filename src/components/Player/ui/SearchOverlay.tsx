@@ -351,53 +351,55 @@ export function SearchOverlay({
                       </div>
                     );
                   })}
-                  </ScrollArea>
+                </ScrollArea>
                 {selectedIds.size > 0 && (
                   <div className="border-t border-white/10">
-                    <ScrollArea className="flex gap-2 px-2 pb-2 pt-1.5">
-                      {results
-                        .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
-                        .map((track, i) => {
-                          const thumbSrc =
-                            track.image ||
-                            (track.videoId
-                              ? `https://i.ytimg.com/vi/${track.videoId}/default.jpg`
-                              : undefined);
-                          return (
-                            <div
-                              key={getTrackKey(track, i)}
-                              className="flex shrink-0 items-center gap-2 rounded-md bg-white/15 px-2.5 py-1.5"
-                            >
-                              <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-white/10">
-                                {thumbSrc ? (
-                                  <img
-                                    src={thumbSrc}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                  />
-                                ) : (
-                                  <Music2
-                                    size={10}
-                                    className="m-auto text-white/30"
-                                  />
-                                )}
-                              </div>
-                              <span className="max-w-25 truncate text-xs text-white/80">
-                                {track.name}
-                              </span>
-
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleSelect(track, i);
-                                }}
-                                className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white/80 hover:text-white  transition-colors cursor-pointer"
+                    <ScrollArea className="px-2 pb-2 pt-1.5">
+                      <div className="flex flex-row gap-2">
+                        {results
+                          .filter((t, i) => selectedIds.has(getTrackKey(t, i)))
+                          .map((track, i) => {
+                            const thumbSrc =
+                              track.image ||
+                              (track.videoId
+                                ? `https://i.ytimg.com/vi/${track.videoId}/default.jpg`
+                                : undefined);
+                            return (
+                              <div
+                                key={getTrackKey(track, i)}
+                                className="flex w-fit shrink-0 items-center gap-2 rounded-md bg-white/15 px-2.5 py-1.5"
                               >
-                                <X size={20} />
-                              </button>
-                            </div>
-                          );
-                        })}
+                                <div className="h-8 w-8 shrink-0 overflow-hidden rounded bg-white/10">
+                                  {thumbSrc ? (
+                                    <img
+                                      src={thumbSrc}
+                                      alt=""
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <Music2
+                                      size={10}
+                                      className="m-auto text-white/30"
+                                    />
+                                  )}
+                                </div>
+                                <span className="max-w-25 truncate text-xs text-white/80">
+                                  {track.name}
+                                </span>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleSelect(track, i);
+                                  }}
+                                  className="ml-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white/80 hover:text-white transition-colors cursor-pointer"
+                                >
+                                  <X size={20} />
+                                </button>
+                              </div>
+                            );
+                          })}
+                      </div>
                     </ScrollArea>
                   </div>
                 )}
