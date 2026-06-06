@@ -27,6 +27,8 @@ import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
+import { Profile } from "@/components/Profile";
+import Image from "next/image";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -1021,10 +1023,56 @@ export default function RoomPage() {
               </div>
             )}
 
-            <div className="relative z-10 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
+            <div className="relative z-10 gap-2 py-2 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
+              <div className="h-[10vh] md:border border-white/10 flex items-center  md:h-[12%] w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] px-4 py-3 2xl:w-[60%] rounded-xl md:bg-white/10">
+                <Image
+                  alt="logo"
+                  src={"/logo/blu3.svg"}
+                  width={300}
+                  height={400}
+                  className="h-full w-fit"
+                />
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openSearchOverlay();
+                  }}
+                  className="flex-1 max-w-md flex items-center gap-3 rounded-full border border-white/[0.08] bg-white/[0.06] hover:bg-white/[0.1] px-3 sm:px-5 py-2 sm:py-2.5 transition-all text-left min-w-0"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-white/60 flex-shrink-0"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                  <span className="flex-1 text-[13px] text-white/60 truncate">
+                    <span className="hidden sm:inline">
+                      What do you want to play next?
+                    </span>
+                    <span className="sm:hidden">Search next...</span>
+                  </span>
+                  <span className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-md border border-white/[0.06] text-[10px] text-white/30">
+                    <kbd className="text-white/40">⌘</kbd>
+                    <kbd>K</kbd>
+                  </span>
+                </button>
+
+                <div className="border">
+                  <Profile size="md" />
+                </div>
+              </div>
+
               <div
-                className="mx-auto flex h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
-              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[65%] 2xl:w-[60%]
+                className="mx-auto flex md:border border-white/10 h-full md:h-[76%] flex-col pb-0  px-0 md:rounded-xl
+              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%]
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
@@ -1048,7 +1096,7 @@ export default function RoomPage() {
                 "
                     >
                       {chatOpen ? (
-                        <div className="absolute inset-0 animate-in fade-in duration-300">
+                        <div className="absolute inset-0 animate-in p-3 md:p-0 fade-in duration-300">
                           <ChatPanel
                             messages={messages}
                             chatInput={chatInput}
@@ -1157,6 +1205,7 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
+              <div className="h-full md:h-[9%] border border-white/20 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl bg-white/10"></div>
             </div>
 
             {/* Queue toast */}

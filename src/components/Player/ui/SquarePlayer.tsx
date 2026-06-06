@@ -254,7 +254,7 @@ export function SquarePlayer({
         style={{ zIndex: 0 }}
       />
       <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white">
-        <div className="p-0.5 w-fit border-2 rounded-full border-white">
+        {/*<div className="p-0.5 w-fit border-2 rounded-full border-white">
           <Image
             width={400}
             height={400}
@@ -267,7 +267,7 @@ export function SquarePlayer({
               " aspect-square  "
             }
           />
-        </div>
+        </div>*/}
       </div>
 
       <div

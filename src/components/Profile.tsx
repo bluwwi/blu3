@@ -16,10 +16,10 @@ export function Profile({ size = "sm" }: ProfileProps) {
   const avatarSize = size === "md" ? "w-9 h-9" : "w-7 h-7";
 
   return (
-    <div className="relative">
+    <div className="flex">
       <button
         onClick={() => setOpen(!open)}
-        className="focus:outline-none"
+        className={`${avatarSize}`}
         aria-label="Open profile menu"
       >
         {user.avatar ? (
@@ -39,10 +39,7 @@ export function Profile({ size = "sm" }: ProfileProps) {
 
       {open && (
         <>
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 mt-2 w-44 rounded-xl bg-black/85 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl z-50">
             <div className="flex items-center gap-3 px-3 py-2.5 border-b border-white/10">
               {user.avatar ? (
