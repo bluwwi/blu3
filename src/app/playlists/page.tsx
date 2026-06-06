@@ -3,22 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import Link from "next/link";
-import {
-  Plus,
-  Heart,
-  Play,
-  X,
-  Music2,
-  Loader2,
-  GripVertical,
-  Search,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
 import { cachedFetch } from "@/lib/fetchCache";
 import { SkeletonCard } from "./SkeletonCard";
 import { PlaylistCard } from "./PlaylistCard";
+import CreateImportPlaylistModal from "./CreateImportPlaylistModal";
+import PlaylistDetailModal from "./PlaylistDetailModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -46,11 +38,8 @@ export default function PlaylistsPage() {
   const [loadingPlaylists, setLoadingPlaylists] = useState(true);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [modalTab, setModalTab] = useState<"create" | "import">("create");
-  const [newPlaylistName, setNewPlaylistName] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
 
@@ -102,8 +91,8 @@ export default function PlaylistsPage() {
     setLastRoomCode(localStorage.getItem("blu3_last_room"));
   }, [authLoading, user]);
 
-  const handleCreate = async () => {
-    if (!newPlaylistName.trim()) return;
+  const handleCreate = async (name: string) => {
+    if (!name.trim()) return;
     setCreating(true);
     const token = localStorage.getItem("blu3_token");
     try {
@@ -113,14 +102,12 @@ export default function PlaylistsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ name: newPlaylistName.trim() }),
+        body: JSON.stringify({ name: name.trim() }),
       });
       const data = await res.json();
       if (data.playlist) {
         setPlaylists((p) => [...p, data.playlist]);
         setShowCreateModal(false);
-        setNewPlaylistName("");
-        setModalTab("create");
       }
     } catch (err) {
       console.error(err);
@@ -129,8 +116,8 @@ export default function PlaylistsPage() {
     }
   };
 
-  const handleImport = async () => {
-    if (!importUrl.trim()) return;
+  const handleImport = async (url: string) => {
+    if (!url.trim()) return;
     setImporting(true);
     setImportError("");
     const token = localStorage.getItem("blu3_token");
@@ -141,14 +128,12 @@ export default function PlaylistsPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ url: importUrl.trim() }),
+        body: JSON.stringify({ url: url.trim() }),
       });
       const data = await res.json();
       if (res.ok && data.playlist) {
         setPlaylists((p) => [...p, data.playlist]);
         setShowCreateModal(false);
-        setImportUrl("");
-        setModalTab("create");
       } else
         setImportError(
           data.error || "Failed to import. Check the URL and try again.",
@@ -354,9 +339,15 @@ export default function PlaylistsPage() {
       clearTimeout(modalSearchTimeoutRef.current);
   };
 
-  const openAddSearch = () => {
-    setShowAddSearch(true);
-    handleModalSearch("trending");
+  const handleToggleAddSearch = () => {
+    if (showAddSearch) {
+      setShowAddSearch(false);
+      setModalSearchResults([]);
+      setModalSearchQuery("");
+    } else {
+      setShowAddSearch(true);
+      handleModalSearch("trending");
+    }
   };
 
   return (
@@ -406,400 +397,43 @@ export default function PlaylistsPage() {
         </div>
       </div>
 
-      {/* ── UNIFIED CREATE / IMPORT MODAL ── */}
-      {showCreateModal && (
-        <div
-          className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !importing && !creating) {
-              setShowCreateModal(false);
-              setNewPlaylistName("");
-              setImportUrl("");
-              setImportError("");
-              setModalTab("create");
-            }
-          }}
-        >
-          <div className="modal-box w-full max-w-sm mx-4 rounded-[24px] p-6 bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] relative overflow-hidden before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent">
-            {/* Tab switcher */}
-            <div className="flex items-center gap-1 mb-5 p-1 rounded-xl bg-white/[0.04] border border-white/[0.06] relative z-10">
-              <button
-                onClick={() => {
-                  setModalTab("create");
-                  setImportError("");
-                }}
-                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all cursor-pointer ${
-                  modalTab === "create"
-                    ? "bg-white text-black"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                create
-              </button>
-              <button
-                onClick={() => {
-                  setModalTab("import");
-                  setNewPlaylistName("");
-                }}
-                className={`flex-1 py-1.5 rounded-lg text-[10px] font-bold tracking-widest uppercase transition-all cursor-pointer ${
-                  modalTab === "import"
-                    ? "bg-white text-black"
-                    : "text-zinc-500 hover:text-zinc-300"
-                }`}
-              >
-                import
-              </button>
-            </div>
+      <CreateImportPlaylistModal
+        open={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setImportError("");
+        }}
+        onCreate={handleCreate}
+        onImport={handleImport}
+        creating={creating}
+        importing={importing}
+        importError={importError}
+      />
 
-            {/* CREATE tab */}
-            {modalTab === "create" && (
-              <>
-                <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
-                  give it a name
-                </p>
-                <input
-                  autoFocus
-                  value={newPlaylistName}
-                  onChange={(e) => setNewPlaylistName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreate();
-                    if (e.key === "Escape") {
-                      setShowCreateModal(false);
-                      setNewPlaylistName("");
-                      setModalTab("create");
-                    }
-                  }}
-                  placeholder="playlist name..."
-                  maxLength={40}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors relative z-10"
-                />
-                <div className="flex gap-2 relative z-10">
-                  <button
-                    onClick={() => {
-                      setShowCreateModal(false);
-                      setNewPlaylistName("");
-                      setModalTab("create");
-                    }}
-                    className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all cursor-pointer"
-                  >
-                    cancel
-                  </button>
-                  <button
-                    onClick={handleCreate}
-                    disabled={!newPlaylistName.trim() || creating}
-                    className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {creating ? "creating..." : "create"}
-                  </button>
-                </div>
-              </>
-            )}
-
-            {/* IMPORT tab */}
-            {modalTab === "import" && (
-              <>
-                <p className="text-[11px] text-zinc-500 tracking-widest mb-4 relative z-10 uppercase">
-                  spotify · youtube · apple music
-                </p>
-                <input
-                  autoFocus
-                  value={importUrl}
-                  onChange={(e) => setImportUrl(e.target.value)}
-                  disabled={importing}
-                  onKeyDown={(e) => e.key === "Enter" && handleImport()}
-                  placeholder="paste playlist link..."
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 tracking-wide mb-4 focus:outline-none focus:border-white/25 transition-colors disabled:opacity-40 relative z-10"
-                />
-                {importError && (
-                  <p className="text-[10px] text-red-400 bg-red-950/20 border border-red-900/20 rounded-lg px-3 py-2 mb-4 leading-relaxed relative z-10">
-                    {importError}
-                  </p>
-                )}
-                {importing && (
-                  <div className="flex items-center gap-2 mb-4 px-1 relative z-10">
-                    <Loader2
-                      size={13}
-                      className="animate-spin text-zinc-500 shrink-0"
-                    />
-                    <p className="text-[9px] text-zinc-500 uppercase tracking-widest">
-                      importing tracks...
-                    </p>
-                  </div>
-                )}
-                <div className="flex gap-2 relative z-10">
-                  <button
-                    onClick={() => {
-                      setShowCreateModal(false);
-                      setImportUrl("");
-                      setImportError("");
-                      setModalTab("create");
-                    }}
-                    disabled={importing}
-                    className="flex-1 py-2.5 rounded-lg border border-white/10 text-zinc-500 text-[11px] tracking-widest uppercase font-bold hover:border-white/20 hover:text-zinc-300 transition-all disabled:opacity-30 cursor-pointer"
-                  >
-                    cancel
-                  </button>
-                  <button
-                    onClick={handleImport}
-                    disabled={!importUrl.trim() || importing}
-                    className="flex-1 py-2.5 rounded-lg bg-white text-black text-[11px] font-bold tracking-widest uppercase hover:bg-zinc-200 transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    {importing ? "importing..." : "import"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── PLAYLIST DETAIL MODAL ── */}
       {activePlaylist && (
-        <div
-          className="modal-backdrop fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) handleCloseDetailsModal();
-          }}
-        >
-          <div
-            className="modal-box w-full max-w-2xl mx-auto rounded-[24px] flex flex-col bg-white/[0.05] backdrop-blur-2xl border border-white/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] overflow-hidden relative before:absolute before:inset-0 before:rounded-[24px] before:pointer-events-none before:bg-gradient-to-b before:from-white/[0.04] before:to-transparent h-[85vh]"
-          >
-            {/* Header */}
-            <div className="flex items-center gap-4 px-5 py-4 border-b border-white/[0.06] shrink-0 relative z-10">
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.08] shrink-0">
-                {activePlaylist.coverImage ? (
-                  <img
-                    src={activePlaylist.coverImage}
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                ) : activePlaylist.isLiked ? (
-                  <img
-                    src="/queue/finalheart.jpg"
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Music2 size={16} className="text-white/20" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-base font-black text-white truncate tracking-tight">
-                  {activePlaylist.name}
-                </h2>
-                <p className="text-[9px] text-zinc-500 uppercase tracking-widest mt-0.5">
-                  {activeTracks.length} song{activeTracks.length !== 1 && "s"}
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {!activePlaylist.isLiked && (
-                  <button
-                    onClick={openAddSearch}
-                    className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-                    title="Add tracks"
-                  >
-                    <Plus size={12} />
-                  </button>
-                )}
-                {activeTracks.length > 0 && (
-                  <button
-                    onClick={handleQueueAll}
-                    className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-                    title="Queue all"
-                  >
-                    <Play size={12} className="fill-current ml-0.5" />
-                  </button>
-                )}
-                <button
-                  onClick={handleCloseDetailsModal}
-                  className="w-7 h-7 rounded-lg border border-white/10 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white/20 transition-all cursor-pointer"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            </div>
-
-            {/* Track list */}
-            <ScrollArea className="flex-1 min-h-0 relative z-10">
-              {loadingTracks ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="animate-spin text-zinc-500" size={20} />
-                </div>
-              ) : activeTracks.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-zinc-600 py-12">
-                  <Music2 size={30} className="text-zinc-700 mb-3" />
-                  <p className="text-xs font-bold text-zinc-500">
-                    No tracks yet
-                  </p>
-                  <p className="text-[10px] text-zinc-600 mt-1 max-w-xs text-center leading-relaxed">
-                    {activePlaylist.isLiked
-                      ? "Heart tracks in rooms to populate this."
-                      : "Hit + to search and add tracks."}
-                  </p>
-                </div>
-              ) : (
-                <div className="px-3 py-2">
-                  {activeTracks.map((track, idx) => (
-                    <div
-                      key={track.id}
-                      draggable={!activePlaylist.isLiked ? "true" : "false"}
-                      onDragStart={(e) => handleDragStart(e, idx)}
-                      onDragOver={(e) => handleDragOver(e, idx)}
-                      onDragEnd={handleDragEnd}
-                      onDrop={(e) => handleDrop(e, idx)}
-                      className={`group/track flex items-center gap-3 px-3 py-2 rounded-xl transition-colors
-                        ${!activePlaylist.isLiked ? "cursor-grab active:cursor-grabbing" : ""}
-                        ${draggedIdx === idx ? "opacity-20" : ""}
-                        ${
-                          dragOverIdx === idx && draggedIdx !== idx
-                            ? "bg-white/[0.08] border border-white/10"
-                            : "border border-transparent hover:bg-white/[0.04]"
-                        }`}
-                    >
-                      {!activePlaylist.isLiked && (
-                        <GripVertical
-                          size={12}
-                          className="text-zinc-600 shrink-0"
-                        />
-                      )}
-                      <span className="text-[10px] text-zinc-600 w-4 text-right font-bold shrink-0">
-                        {idx + 1}
-                      </span>
-                      <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-white/[0.05] border border-white/[0.06]">
-                        {track.image ? (
-                          <img
-                            src={track.image}
-                            className="w-full h-full object-cover"
-                            alt=""
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Music2 size={14} className="text-white/15" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-bold text-white truncate leading-snug">
-                          {track.trackName}
-                        </p>
-                        <p className="text-[11px] text-zinc-500 truncate mt-0.5">
-                          {track.artistName}
-                        </p>
-                      </div>
-                      {!activePlaylist.isLiked && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteTrack(track.id);
-                          }}
-                          className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center text-zinc-600 opacity-0 group-hover/track:opacity-100 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400 transition-all cursor-pointer"
-                        >
-                          <X size={10} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-
-            {/* Add track search panel */}
-            {!activePlaylist.isLiked && showAddSearch && (
-              <div className="shrink-0 border-t border-white/[0.06] relative z-10">
-                <div className="flex flex-col max-h-[280px]">
-                  <div className="flex items-center gap-2 px-4 py-3 border-b border-white/[0.06]">
-                    <Search size={12} className="text-zinc-500 shrink-0" />
-                    <input
-                      autoFocus
-                      value={modalSearchQuery}
-                      onChange={(e) => handleModalSearchChange(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && handleModalSearch(modalSearchQuery)
-                      }
-                      placeholder="search songs to add..."
-                      className="flex-1 bg-transparent text-sm text-white placeholder-zinc-600 focus:outline-none"
-                    />
-                    {isSearchingModal ? (
-                      <Loader2
-                        size={12}
-                        className="animate-spin text-zinc-500 shrink-0"
-                      />
-                    ) : (
-                      <button
-                        onClick={() => {
-                          setShowAddSearch(false);
-                          setModalSearchResults([]);
-                          setModalSearchQuery("");
-                        }}
-                        className="text-zinc-500 hover:text-white transition-colors cursor-pointer shrink-0"
-                      >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </div>
-                  <ScrollArea className="flex flex-col px-2 py-1.5">
-                    {modalSearchResults.length === 0 && !isSearchingModal && (
-                      <div className="flex items-center justify-center py-6">
-                        <p className="text-[9px] text-zinc-700 uppercase tracking-widest">
-                          type to search...
-                        </p>
-                      </div>
-                    )}
-                    {modalSearchResults.map((track) => {
-                      const alreadyAdded = activeTracks.some(
-                        (t) => t.videoId === track.videoId,
-                      );
-                      return (
-                        <div
-                          key={track.id}
-                          className="flex items-center gap-3 px-3 py-2 rounded-xl border border-transparent hover:bg-white/[0.04] transition-colors"
-                        >
-                          <img
-                            src={
-                              track.image || "https://via.placeholder.com/150"
-                            }
-                            alt=""
-                            className="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/[0.06]"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-bold text-white truncate leading-snug">
-                              {track.name}
-                            </p>
-                            <p className="text-[10px] text-zinc-500 truncate mt-0.5">
-                              {track.artists
-                                ?.map((a: any) => a.name)
-                                .join(", ") || "Unknown Artist"}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => handleAddTrackToPlaylist(track)}
-                            disabled={
-                              addingTrackId === track.id || alreadyAdded
-                            }
-                            className={`shrink-0 px-3 py-1.5 rounded-lg text-[9px] font-bold tracking-widest uppercase transition-all cursor-pointer
-                              ${
-                                alreadyAdded
-                                  ? "border border-white/[0.08] text-zinc-600 cursor-default"
-                                  : "bg-white text-black hover:bg-zinc-200 disabled:opacity-30"
-                              }`}
-                          >
-                            {alreadyAdded
-                              ? "added"
-                              : addingTrackId === track.id
-                                ? "..."
-                                : "+ add"}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </ScrollArea>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        <PlaylistDetailModal
+          playlist={activePlaylist}
+          tracks={activeTracks}
+          loading={loadingTracks}
+          showAddSearch={showAddSearch}
+          searchQuery={modalSearchQuery}
+          searchResults={modalSearchResults}
+          isSearching={isSearchingModal}
+          addingTrackId={addingTrackId}
+          onClose={handleCloseDetailsModal}
+          onQueueAll={handleQueueAll}
+          onDeleteTrack={handleDeleteTrack}
+          onToggleAddSearch={handleToggleAddSearch}
+          onSearchChange={handleModalSearchChange}
+          onSearch={handleModalSearch}
+          onAddTrack={handleAddTrackToPlaylist}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDrop={handleDrop}
+          draggedIdx={draggedIdx}
+          dragOverIdx={dragOverIdx}
+        />
       )}
     </div>
   );
