@@ -105,8 +105,11 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [showPopup, setShowPopup] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -171,7 +174,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {showPopup && <LoginPopup />}
+      {mounted && showPopup && <LoginPopup />}
     </>
   );
 }
