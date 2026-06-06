@@ -4,13 +4,6 @@ import { Track } from "@/utils/types";
 import { resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
 
-const CACHE_MAX = 10;
-
-interface CacheEntry {
-  blobUrl: string;
-  size: number;
-}
-
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
   isPlaying: boolean;
@@ -32,56 +25,6 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
-  const blobCacheRef = useRef<Map<string, CacheEntry>>(new Map());
-  const downloadRef = useRef<Map<string, boolean>>(new Map());
-  const switchingRef = useRef(false);
-  const downloadAbortRef = useRef<AbortController | null>(null);
-
-  const getCachedBlobUrl = useCallback((videoId: string): string | null => {
-    const map = blobCacheRef.current;
-    const entry = map.get(videoId);
-    if (!entry) return null;
-    map.delete(videoId);
-    map.set(videoId, entry);
-    return entry.blobUrl;
-  }, []);
-
-  const cacheBlob = useCallback((videoId: string, blob: Blob) => {
-    const map = blobCacheRef.current;
-    if (map.has(videoId)) {
-      URL.revokeObjectURL(map.get(videoId)!.blobUrl);
-      map.delete(videoId);
-    }
-    if (map.size >= CACHE_MAX) {
-      const first = map.entries().next().value;
-      if (first) {
-        URL.revokeObjectURL(first[1].blobUrl);
-        map.delete(first[0]);
-      }
-    }
-    const blobUrl = URL.createObjectURL(blob);
-    map.set(videoId, { blobUrl, size: blob.size });
-  }, []);
-
-  const startBackgroundDownload = useCallback((url: string, videoId: string) => {
-    if (downloadRef.current.get(videoId)) return;
-    downloadRef.current.set(videoId, true);
-
-    downloadAbortRef.current?.abort();
-    const controller = new AbortController();
-    downloadAbortRef.current = controller;
-
-    fetch(url, { signal: controller.signal })
-      .then((res) => {
-        const contentType = res.headers.get("content-type") || "audio/mpeg";
-        return res.arrayBuffer().then((buf) => ({ buf, contentType }));
-      })
-      .then(({ buf, contentType }) => {
-        const blob = new Blob([buf], { type: contentType });
-        cacheBlob(videoId, blob);
-      })
-      .catch(() => {});
-  }, [cacheBlob]);
 
   const retryPlay = useCallback(() => {
     const audio = audioRef.current;
@@ -112,30 +55,13 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     document.body.appendChild(audio);
 
     audio.onplay = () => configRef.current.onPlay();
-
     audio.onpause = () => {
-      if (switchingRef.current) return;
-      if (typeof document !== "undefined" && document.hidden) return;
       const cfg = configRef.current;
       if (cfg.manualPauseRef?.current) {
         cfg.manualPauseRef.current = false;
-        cfg.onPause();
-        return;
-      }
-      const currentId = cfg.nowPlaying?.videoId;
-      if (currentId) {
-        const cachedUrl = getCachedBlobUrl(currentId);
-        if (cachedUrl && audioRef.current) {
-          const savedTime = audioRef.current.currentTime;
-          audioRef.current.src = cachedUrl;
-          audioRef.current.currentTime = savedTime;
-          audioRef.current.play().catch(() => cfg.onPause());
-          return;
-        }
       }
       cfg.onPause();
     };
-
     audio.onended = () => configRef.current.onTrackEnd();
     audio.onerror = () => {
       audio.pause();
@@ -153,7 +79,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       document.body.removeChild(audio);
       audioRef.current = null;
     };
-  }, [getCachedBlobUrl]);
+  }, []);
 
   useEffect(() => {
     const track = config.nowPlaying;
@@ -161,22 +87,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     const fetchId = ++fetchIdRef.current;
     const audio = audioRef.current;
-    if (audio) {
-      switchingRef.current = true;
-      audio.pause();
-      audio.src = "";
-      switchingRef.current = false;
-    }
-
-    const cachedUrl = getCachedBlobUrl(track.videoId);
-    if (cachedUrl && audio) {
-      const start = config.pendingStartTimeRef?.current ?? 0;
-      audio.src = cachedUrl;
-      audio.currentTime = start;
-      if (configRef.current.isPlaying)
-        audio.play().catch(() => {});
-      return;
-    }
+    if (audio) { audio.pause(); audio.src = ""; }
 
     const resolved = config.resolvedUrlsRef?.current.get(track.videoId);
 
@@ -189,7 +100,6 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         audio.currentTime = start;
         if (configRef.current.isPlaying)
           audio.play().catch(() => {});
-        startBackgroundDownload(streamingUrl, track.videoId);
       }
       return;
     }
@@ -197,20 +107,17 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     resolveTrackSource(track.videoId, track.name, track.artists?.[0]?.name, config.token)
       .then((result) => {
         if (fetchIdRef.current !== fetchId) return;
-        if (result.audioUrl) {
-          const audio = audioRef.current;
-          if (!audio) return;
+        if (result.audioUrl && audioRef.current) {
           const start = config.pendingStartTimeRef?.current ?? 0;
           const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
           const streamingUrl = `${API_URL}${result.audioUrl}${tokenParam}`;
-          audio.src = streamingUrl;
-          audio.currentTime = start;
+          audioRef.current.src = streamingUrl;
+          audioRef.current.currentTime = start;
           if (configRef.current.isPlaying)
-            audio.play().catch(() => {});
-          startBackgroundDownload(streamingUrl, track.videoId);
+            audioRef.current.play().catch(() => {});
         }
       });
-  }, [config.nowPlaying?.videoId, config.token, getCachedBlobUrl, startBackgroundDownload]);
+  }, [config.nowPlaying?.videoId, config.token]);
 
   useEffect(() => {
     const audio = audioRef.current;
