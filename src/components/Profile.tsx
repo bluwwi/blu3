@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface ProfileProps {
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg" | "xl" | "2xl";
 }
 
 export function Profile({ size = "sm" }: ProfileProps) {
@@ -13,24 +13,31 @@ export function Profile({ size = "sm" }: ProfileProps) {
 
   if (!user) return null;
 
-  const avatarSize = size === "md" ? "w-9 h-9" : "w-7 h-7";
+  const sizeClasses = {
+    sm: "w-7 h-7 text-xs",
+    md: "w-9 h-9 text-sm",
+    lg: "w-10 h-10 md:w-12 md:h-12 text-base",
+    xl: "w-16 h-16 text-lg",
+    "2xl": "w-24 h-24 text-xl",
+  };
 
+  const containerClass = sizeClasses[size] || sizeClasses.sm;
   return (
     <div className="flex">
       <button
         onClick={() => setOpen(!open)}
-        className={`${avatarSize}`}
+        className={`${containerClass}`}
         aria-label="Open profile menu"
       >
         {user.avatar ? (
           <img
             src={user.avatar}
             alt=""
-            className={`${avatarSize} rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer`}
+            className={`${containerClass} rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors cursor-pointer`}
           />
         ) : (
           <div
-            className={`${avatarSize} rounded-full bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] font-bold text-white uppercase`}
+            className={`${containerClass} rounded-full bg-zinc-700 border border-zinc-600 flex items-center justify-center text-[10px] font-bold text-white uppercase`}
           >
             {user.name?.[0] || "U"}
           </div>
