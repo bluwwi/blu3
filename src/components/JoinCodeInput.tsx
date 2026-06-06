@@ -74,7 +74,7 @@ export default function JoinCodeInput({ handleJoin }: Props) {
 
   if (!showInput) {
     return (
-      <div className="fixed bottom-0 right-0 flex justify-center pb-8 pointer-events-none z-20">
+      <div className="fixed bottom-0 right-0 flex justify-center pb-4 pr-4 pointer-events-none z-20">
         <div className="pointer-events-auto">
           <button
             onClick={() => setShowInput(true)}
@@ -90,7 +90,7 @@ export default function JoinCodeInput({ handleJoin }: Props) {
   return (
     <div className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none z-20">
       <div className="flex items-center gap-3 pointer-events-auto">
-        <div className="flex items-center gap-3 border border-white/[0.08] rounded-2xl overflow-hidden px-4 py-3 bg-white/[0.05] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+        <div className="flex items-center gap-3 rounded-2xl bg-black/60 backdrop-blur-xl overflow-hidden px-4 py-3  ">
           <div className="flex gap-2">
             {code.map((digit, index) => (
               <input
@@ -105,7 +105,7 @@ export default function JoinCodeInput({ handleJoin }: Props) {
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={handlePaste}
-                className="w-12 h-14 text-center text-xl font-bold bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 outline-none transition-all duration-200 focus:border-white/40 focus:bg-white/10 focus:shadow-[0_0_15px_rgba(255,255,255,0.1)]"
+                className="w-12 h-12 text-center text-xl font-bold  border-2 border-white/30 rounded-lg text-white placeholder-white/20 outline-none transition-all duration-200 focus:border-white/90 "
                 aria-label={`Character ${index + 1} of 6`}
               />
             ))}
