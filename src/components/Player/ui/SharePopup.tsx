@@ -10,11 +10,18 @@ interface SharePopupProps {
   onClose: () => void;
 }
 
-export function SharePopup({ isVisible, roomCode, onClose }: SharePopupProps) {
+export function SharePopup({
+  isVisible,
+  roomCode,
+  onClose,
+}: SharePopupProps) {
   const [copied, setCopied] = useState(false);
 
+  const url = roomCode
+    ? `${window.location.origin}/room/${roomCode}`
+    : window.location.origin;
+
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/room/${roomCode}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
@@ -23,46 +30,38 @@ export function SharePopup({ isVisible, roomCode, onClose }: SharePopupProps) {
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${isVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       onClick={onClose}
     >
       <div
-        className="w-80 p-4 text-center items-center flex flex-col border border-white/30 bg-black/35 backdrop-blur-sm rounded-[24px]"
+        className="w-[360px] p-5 text-center flex flex-col items-center border border-white/20 bg-black/55 backdrop-blur-3xl rounded-[24px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-white text-lg font-semibold mb-5">
+        <p className="text-white text-lg font-semibold mb-3">
           Share Room
         </p>
 
-        <div className="flex justify-center mb-4 border-2 w-fit border-white">
-          <QRCode
-            value={`${window.location.origin}/room/${roomCode}`}
-            size={200}
-          />
+        <div className="border-2 border-white rounded-lg p-1 mb-4">
+          <QRCode value={url} size={160} />
         </div>
 
-        <p className="text-white/60 text-sm mb-3 truncate px-2">
-          {window.location.origin}/room/{roomCode}
-        </p>
-
-        <button
-          onClick={handleCopyLink}
-          className="flex items-center rounded-lg justify-center gap-2 w-full py-1.5 mb-2 text-black text-sm font-semibold transition-all duration-500 cursor-pointer bg-white hover:bg-[#e8e8e8]"
-        >
-          {copied ? (
-            <>
-              <Check size={14} /> Copied!
-            </>
-          ) : (
-            <>
-              <Copy size={14} /> Copy Link
-            </>
-          )}
-        </button>
+        <div className="w-full flex items-center gap-2">
+          <input
+            readOnly
+            value={url}
+            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/70 outline-none"
+          />
+          <button
+            onClick={handleCopyLink}
+            className="shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-lg px-3 py-2 transition-colors cursor-pointer"
+          >
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+          </button>
+        </div>
 
         <button
           onClick={onClose}
-          className="block w-full bg-[#c0392b] hover:bg-[#c0392b]/80  py-1.5 rounded-lg text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+          className="w-full bg-[#c0392b] hover:bg-[#c0392b]/80 py-1.5 rounded-lg text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer mt-3"
         >
           Close
         </button>

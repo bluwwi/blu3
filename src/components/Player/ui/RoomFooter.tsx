@@ -15,7 +15,7 @@ export function RoomFooter() {
       />
 
       <div className="h-full flex font-bold items-center gap-2">
-        <div className="text-xl font-bold">Built by</div>
+        <div className="text-lg font-bold">Built by</div>
         <Link
           href={"https://www.instagram.com/realblue07/?"}
           className="h-full items-center flex"
@@ -26,7 +26,7 @@ export function RoomFooter() {
             src={"/me.jpg"}
             width={300}
             height={400}
-            className="h-[80%] border-2 cursor-pointer border-white w-fit rounded-full"
+            className="h-[75%] border-2 cursor-pointer border-white w-fit rounded-full"
           />
         </Link>
       </div>
