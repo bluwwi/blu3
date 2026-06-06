@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 
 interface ProfileProps {
   size?: "sm" | "md" | "lg" | "xl" | "2xl";
@@ -65,71 +66,76 @@ export function Profile({ size = "sm" }: ProfileProps) {
         )}
       </button>
 
-      {open && createPortal(
-        <div
-          className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
-          style={{ background: "rgba(0,0,0,0.55)" }}
-          onClick={close}
-        >
+      {open &&
+        createPortal(
           <div
-            className="w-80 p-6 text-center border border-white/30"
-            style={{
-              background: "rgba(0,0,0,0.35)",
-              backdropFilter: "blur(6px)",
-              borderRadius: "24px",
-            }}
-            onClick={(e) => e.stopPropagation()}
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-200 ease-in-out ${visible ? "opacity-100" : "opacity-0"}`}
+            style={{ background: "rgba(0,0,0,0.55)" }}
+            onClick={close}
           >
-            {user.avatar ? (
-              <img
-                src={user.avatar}
-                alt=""
-                className="w-16 h-16 rounded-full border-2 border-white/20 object-cover mx-auto mb-3"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-zinc-700 border-2 border-white/20 flex items-center justify-center text-xl font-bold text-white uppercase mx-auto mb-3">
-                {user.name?.[0] || "U"}
-              </div>
-            )}
-
-            <p className="text-white text-lg font-semibold leading-snug">
-              {user.name}
-            </p>
-            <p className="text-zinc-500 text-sm mt-1 mb-6">
-              {user.email}
-            </p>
-
-            <button
-              onClick={handleLogout}
-              className="block w-full py-3 mb-2 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-              style={{ background: "#c0392b", borderRadius: "12px" }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.background = "#a93226")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.background = "#c0392b")
-              }
+            <div
+              className="w-80 p-4 text-center border border-white/30"
+              style={{
+                background: "rgba(0,0,0,0.35)",
+                backdropFilter: "blur(6px)",
+                borderRadius: "24px",
+              }}
+              onClick={(e) => e.stopPropagation()}
             >
-              Log out
-            </button>
+              {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt=""
+                  className="w-40 h-40 rounded-full border-2 border-white/20 object-cover mx-auto mb-3"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-zinc-700 border-2 border-white/20 flex items-center justify-center text-xl font-bold text-white uppercase mx-auto mb-3">
+                  {user.name?.[0] || "U"}
+                </div>
+              )}
 
-            <button
-              onClick={close}
-              className="block w-full py-3 text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 cursor-pointer"
-              style={{ background: "#ffffff", borderRadius: "12px" }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.background = "#e8e8e8")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.background = "#ffffff")
-              }
-            >
-              Cancel
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
+              <p className="text-white text-lg font-semibold leading-snug">
+                {user.name}
+              </p>
+              <p className="text-white/60 text-sm mt-0.5 mb-6">{user.email}</p>
+
+              <Link
+                href={"/playlists"}
+                className="block w-full rounded-lg py-1.5 bg-blue-200 hover:bg-blue-300  mb-2 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+              >
+                Manage Playlist
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="block w-full rounded-lg py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+                style={{ background: "#c0392b" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#a93226")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#c0392b")
+                }
+              >
+                Log out
+              </button>
+
+              <button
+                onClick={close}
+                className="block w-full rounded-lg py-1.5 text-[#1a1a1a] text-[15px] font-medium transition-all duration-500 cursor-pointer"
+                style={{ background: "#ffffff" }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "#e8e8e8")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "#ffffff")
+                }
+              >
+                Cancel
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </div>
   );
 }
