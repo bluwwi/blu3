@@ -27,7 +27,7 @@ function GoogleLogo() {
 
 function DiscordLogo() {
   return (
-    <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="#ffffff">
+    <svg width="20" height="20" viewBox="0 0 127.14 96.36" fill="#000000">
       <path d="M107.7 8.07A105.15 105.15 0 0 0 81.47 0a72.06 72.06 0 0 0-3.36 6.83 97.68 97.68 0 0 0-29.11 0A72.37 72.37 0 0 0 45.64 0a105.89 105.89 0 0 0-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0 0 32.17 16.15 77.7 77.7 0 0 0 6.89-11.11 68.42 68.42 0 0 1-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0 0 64.32 0c.87.71 1.76 1.39 2.66 2a68.75 68.75 0 0 1-10.87 5.19 77 77 0 0 0 6.89 11.1 105.25 105.25 0 0 0 32.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15ZM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69Zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69Z" />
     </svg>
   );
@@ -54,40 +54,32 @@ export default function LoginPage() {
           border: "1px solid rgba(255,255,255,0.3)",
         }}
       >
-        <div className="flex flex-col mb-16 gap-2">
+        <div className="flex flex-col mb-16 gap-1">
           <p className="text-white text-3xl text-left leading-snug">
             Login Or SignUp
           </p>
-          <p className="text-white/60 text-2xl text-left leading-snug">
+          <p className="text-white/60 text-xl text-left leading-snug">
             Let's get to know <br /> each other.
           </p>
         </div>
 
         <button
-          onClick={() => handleLogin("google")}
-          className="flex items-center justify-center gap-3 w-full rounded-lg py-3 mb-3 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
+          onClick={() => onLogin("google")}
+          className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 mb-3 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
           style={{ background: "#ffffff" }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.background = "#e8e8e8")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.background = "#ffffff")
-          }
+          onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
         >
           <GoogleLogo />
           continue with Google
         </button>
 
         <button
-          onClick={() => handleLogin("discord")}
-          className="flex items-center justify-center gap-3 w-full rounded-lg py-3 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-          style={{ background: "#5865F2" }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.background = "#4752C4")
-          }
-          onMouseOut={(e) =>
-            (e.currentTarget.style.background = "#5865F2")
-          }
+          onClick={() => onLogin("discord")}
+          className="flex items-center justify-center gap-2 w-full rounded-lg py-1.5 text-black text-sm font-semibold transition-all duration-500 cursor-pointer"
+          style={{ background: "#ffffff" }}
+          onMouseOver={(e) => (e.currentTarget.style.background = "#e8e8e8")}
+          onMouseOut={(e) => (e.currentTarget.style.background = "#ffffff")}
         >
           <DiscordLogo />
           continue with Discord
