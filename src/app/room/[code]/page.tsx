@@ -54,7 +54,7 @@ export default function RoomPage() {
     typeof window !== "undefined"
       ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
-  const { audioRef } = useBackgroundAudio({
+  const { audioRef, retryPlay } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
     volume: player.volume,
@@ -64,6 +64,7 @@ export default function RoomPage() {
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
     pendingStartTimeRef: player.pendingStartTimeRef,
+    manualPauseRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -88,6 +89,7 @@ export default function RoomPage() {
   } | null>(null);
   const [joinErrorMessage, setJoinErrorMessage] = useState<string | null>(null);
   const [starsMounted, setStarsMounted] = useState(false);
+  const manualPauseRef = useRef(false);
 
   useEffect(() => {
     setStarsMounted(true);
@@ -567,6 +569,7 @@ export default function RoomPage() {
       return;
     }
     if (player.playerState === "playing") {
+      manualPauseRef.current = true;
       player.pause?.();
       sendPause(progress.currentTime);
       return;

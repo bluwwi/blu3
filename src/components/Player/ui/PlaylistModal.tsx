@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Icon } from "@/hooks/useIcon";
 import { ImportStatus } from "./ImportToast";
 import { PlaylistIcon } from "@phosphor-icons/react";
+import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -247,15 +248,14 @@ export function PlaylistModal({
             <Plus size={14} />
             Import Playlist
           </button>
-          <button
-            onClick={() => {
-              window.location.href = "/playlists";
-            }}
+          <Link
+            href={"/playlists"}
+            target="_blank"
             className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-blue-200 text-black hover:bg-blue-100/70 cursor-pointer duration-200 transition-colors"
           >
             <PlaylistIcon size={16} weight="regular" />
             Manage
-          </button>
+          </Link>
         </div>
       </div>
     </div>,
