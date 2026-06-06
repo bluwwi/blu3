@@ -1041,7 +1041,7 @@ export default function RoomPage() {
                     e.stopPropagation();
                     openSearchOverlay();
                   }}
-                  className="flex-1 cursor-pointer max-w-lg flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/5 hover:bg-white/10 px-3 sm:px-5 py-2 sm:py-4 transition-all text-left min-w-0"
+                  className="flex-1 cursor-text max-w-lg flex items-center gap-3 rounded-xl border border-white/20 bg-white/5  px-3 sm:px-5 py-2 sm:py-4 transition-all text-left min-w-0"
                 >
                   <Icon name="search" className="text-white/80 " />
                   <span className="flex-1 text-sm text-white/80 truncate">
@@ -1068,7 +1068,7 @@ export default function RoomPage() {
                       className="
                   w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 lg:min-h-0
                   max-md:rounded-none md:rounded-xl
-                  max-md:border-0 md:border md:border-white/8
+                  max-md:border-0 md:border md:border-white/10
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
 
@@ -1139,7 +1139,7 @@ export default function RoomPage() {
                       className="
                   flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 lg:min-h-0
                   max-md:rounded-none md:rounded-xl
-                  max-md:border-0 md:border-2 md:border-white/25
+                  max-md:border-0 md:border-2 md:border-white/8
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
 

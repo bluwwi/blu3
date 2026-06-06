@@ -118,7 +118,7 @@ export function QueueAndHistory({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-2 p-1">
+    <div className="flex h-full min-h-0 flex-col gap-2 py-1 ">
       <div className="flex items-center gap-2 px-2">
         <span className="text-lg text-white">
           Queue {"("}
@@ -279,7 +279,7 @@ export function QueueAndHistory({
       </div>
 
       {manageMode && queue.length > 0 && (
-        <div className="flex pl-2.5 py-0 pr-5.5 md:pr-5.5 items-center justify-between">
+        <div className="flex pl-2.5 py-0 pr-6 md:pr-6 items-center justify-between">
           <div className="flex  items-center gap-2">
             <button
               onClick={() => {
