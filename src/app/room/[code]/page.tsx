@@ -27,10 +27,9 @@ import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
-import { Profile } from "@/components/Profile";
-import Image from "next/image";
-import Icon from "@/hooks/useIcon";
-import Link from "next/link";
+import { RoomStars } from "@/components/Player/ui/RoomStars";
+import { RoomTopSection } from "@/components/Player/ui/RoomTopSection";
+import { RoomFooter } from "@/components/Player/ui/RoomFooter";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 type RepeatMode = "off" | "all" | "one";
@@ -1001,58 +1000,10 @@ export default function RoomPage() {
               />
             </div>
 
-            {starsMounted && queue.length === 0 && (
-              <div
-                className="fixed inset-0 overflow-hidden pointer-events-none z-[5]"
-              >
-                {Array.from({ length: 500 }).map((_, i) => (
-                  <span
-                    key={i}
-                    className="absolute rounded-full bg-white"
-                    style={{
-                      width: `${Math.random() * 2.5 + 1}px`,
-                      height: `${Math.random() * 2.5 + 1}px`,
-                      left: `${Math.random() * 100}%`,
-                      top: `${Math.random() * 100}%`,
-                      opacity: Math.random() * 0.6 + 0.2,
-                      animation: `starTwinkle ${Math.random() * 4 + 2}s ease-in-out infinite`,
-                      animationDelay: `${Math.random() * 4}s`,
-                    }}
-                  />
-                ))}
-              </div>
-            )}
+            {starsMounted && queue.length === 0 && <RoomStars />}
 
             <div className="relative z-10 gap-2 py-2 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
-              <div className="h-[10vh] gap-3 md:border border-white/10 flex items-center justify-between  md:h-[12%] w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] px-4 py-3 2xl:w-[60%] rounded-xl md:bg-white/10">
-                <Image
-                  alt="logo"
-                  src={"/logo/blu3.svg"}
-                  width={300}
-                  height={400}
-                  className="h-full w-fit"
-                />
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openSearchOverlay();
-                  }}
-                  className="flex-1 cursor-text max-w-lg flex items-center gap-3 rounded-xl border border-white/20 bg-white/5  px-3 sm:px-5 py-2 sm:py-4 transition-all text-left min-w-0"
-                >
-                  <Icon name="search" className="text-white/80 " />
-                  <span className="flex-1 text-sm text-white/80 truncate">
-                    <span className="hidden sm:inline">
-                      What do you want to play next?
-                    </span>
-                    <span className="sm:hidden">Search next...</span>
-                  </span>
-                  <Icon name="heart" className="text-white/80 " />
-                </button>
-
-                <Profile size="lg" />
-              </div>
+              <RoomTopSection onSearchClick={openSearchOverlay} />
 
               <div
                 className="mx-auto flex md:border border-white/10 h-full md:h-[76%] flex-col pb-0  px-0 md:rounded-xl
@@ -1189,32 +1140,7 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
-              <div className="h-full  hidden md:flex justify-between items-center px-4 md:h-[9%] border border-white/10 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
-                <Image
-                  alt="logo"
-                  src={"/logo/quote.svg"}
-                  width={300}
-                  height={400}
-                  className="h-full w-fit"
-                />
-
-                <div className="h-full flex font-bold items-center gap-2">
-                  <div className="text-xl font-bold">Built by</div>
-                  <Link
-                    href={"https://www.instagram.com/realblue07/?"}
-                    className="h-full items-center flex"
-                    target="_blank"
-                  >
-                    <Image
-                      alt="logo"
-                      src={"/me.jpg"}
-                      width={300}
-                      height={400}
-                      className="h-[80%] border-2 cursor-pointer border-white w-fit rounded-full"
-                    />
-                  </Link>
-                </div>
-              </div>
+              <RoomFooter />
             </div>
 
             {/* Queue toast */}
