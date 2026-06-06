@@ -24,108 +24,109 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get("code") || "blu3";
 
-    const [inter700, inter500] = await Promise.all([
-      loadGoogleFont("Inter", 700),
+    const [inter500, inter700] = await Promise.all([
       loadGoogleFont("Inter", 500),
+      loadGoogleFont("Inter", 700),
     ]);
 
     return new ImageResponse(
       (
         <div
           style={{
-            width: "100%",
-            height: "100%",
+            width: 600,
+            height: 315,
+            background:
+              "linear-gradient(180deg, #1e3a5f 0%, #0f172a 50%, #000000 100%)",
+            fontFamily: "Inter",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            background:
-              "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-            fontFamily: "Inter",
-            padding: "60px",
+            justifyContent: "space-between",
+            padding: "28px",
+            position: "relative",
           }}
         >
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "16px",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
             }}
           >
             <div
               style={{
-                width: "80px",
-                height: "80px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "2px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 42,
+                  fontWeight: 700,
+                  color: "white",
+                }}
+              >
+                You,
+              </span>
+              <span
+                style={{
+                  fontSize: 18,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                invited you to
+              </span>
+              <span
+                style={{
+                  fontSize: 18,
+                  fontWeight: 500,
+                  color: "rgba(255,255,255,0.7)",
+                }}
+              >
+                Blu3.in
+              </span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
                 background: "#5865F2",
-                borderRadius: "20px",
+                borderRadius: 12,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "40px",
+                fontSize: 24,
                 fontWeight: 700,
                 color: "white",
               }}
             >
               B
             </div>
-
             <span
               style={{
-                fontSize: "56px",
-                fontWeight: 700,
-                color: "white",
-                letterSpacing: "-1px",
-              }}
-            >
-              Join me on Blu3
-            </span>
-
-            <span
-              style={{
-                fontSize: "24px",
-                color: "rgba(255,255,255,0.5)",
+                fontSize: 13,
                 fontWeight: 500,
+                color: "rgba(255,255,255,0.4)",
               }}
             >
-              Listening to music together in real-time
+              blu3.in
             </span>
-
-            <div
-              style={{
-                marginTop: "20px",
-                padding: "12px 32px",
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: "12px",
-                border: "1px solid rgba(255,255,255,0.2)",
-                fontSize: "32px",
-                fontWeight: 600,
-                color: "rgba(255,255,255,0.8)",
-              }}
-            >
-              blu3.in/room/{code}
-            </div>
-          </div>
-
-          <div
-            style={{
-              position: "absolute",
-              bottom: "40px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              fontSize: "18px",
-              color: "rgba(255,255,255,0.3)",
-              fontWeight: 500,
-            }}
-          >
-            blu3.in
           </div>
         </div>
       ),
       {
-        width: 1200,
-        height: 630,
+        width: 600,
+        height: 315,
         fonts: [
           {
             name: "Inter",

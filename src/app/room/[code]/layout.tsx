@@ -7,7 +7,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
     openGraph: {
       title: `Join me on Blu3 — Room ${code}`,
       description: "Listening to music together in real-time",
-      images: [{ url: ogUrl, width: 1200, height: 630 }],
+      images: [{ url: ogUrl, width: 600, height: 315 }],
     },
     twitter: {
       card: "summary_large_image",
