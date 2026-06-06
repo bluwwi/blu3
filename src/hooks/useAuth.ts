@@ -13,10 +13,7 @@ export interface AuthUser {
 }
 
 export function useAuth() {
-  const { data: session, isPending } = authClient.useSession({
-    staleTime: 60_000,
-    refetchInterval: 120_000,
-  });
+  const { data: session, isPending } = authClient.useSession();
 
   useEffect(() => {
     if (session?.session?.token) {
