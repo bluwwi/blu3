@@ -1078,7 +1078,7 @@ export default function RoomPage() {
                   overflow-visible
 
                   relative transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-xl md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
                 "
                     >
                       {chatOpen ? (
@@ -1139,7 +1139,7 @@ export default function RoomPage() {
                       className="
                   flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 lg:min-h-0
                   max-md:rounded-none md:rounded-xl
-                  max-md:border-0 md:border md:border-white/8
+                  max-md:border-0 md:border-2 md:border-white/25
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
 
@@ -1149,7 +1149,7 @@ export default function RoomPage() {
                   overflow-visible
 
                   transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-[24px] md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-xl md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
                   flex flex-col
                 "
                     >

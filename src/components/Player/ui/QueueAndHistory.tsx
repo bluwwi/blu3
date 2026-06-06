@@ -352,7 +352,7 @@ export function QueueAndHistory({
       <section className="flex min-h-0 flex-1 flex-col">
         {queue.length > 0 ? (
           <>
-            <div className="flex-1 space-y-1 pr-1 overflow-y-auto hide-scrollbar">
+            <div className="flex-1 space-y-1 pr-1 overflow-y-auto">
               {queue.map((track, i) => {
                 const isActive = activeVideoId
                   ? activeVideoId === track.videoId
@@ -734,15 +734,11 @@ export function QueueAndHistory({
           background: none;
         }
         ::-webkit-scrollbar-thumb {
-          background-color: gray;
+          background-color: rgba(255, 255, 255, 0.5);
           border-radius: 2rem;
         }
         ::-webkit-scrollbar-thumb:hover {
-          background: #b2b2b2;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-          width: 0;
-          height: 0;
+          background: rgba(255, 255, 255, 0.7);
         }
       `}</style>
     </div>
