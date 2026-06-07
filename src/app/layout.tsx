@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: "Listen to music together in real-time with friends",
     url: "https://blu3.in",
     siteName: "Blu3",
-    images: [{ url: "/hero.png", width: 1200, height: 630 }],
+    images: [{ url: "/api/og?home=1", width: 600, height: 315 }],
     locale: "en_US",
     type: "website",
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Blu3 — Music Rooms",
     description: "Listen to music together in real-time with friends",
-    images: ["/hero.png"],
+    images: ["/api/og?home=1"],
   },
 };
 
