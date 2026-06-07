@@ -247,7 +247,7 @@ export default function RoomPage() {
   }, [connected, joined, queuePlaylistId, code, addToQueue, router]);
 
   const isHost = room?.hostId === user?.id || socketIsHost;
-  const canControlPlayback = isHost || !isHostActive;
+  const canControlPlayback = isHost || !isHostActive || user?.role === "admin";
   const queueAdvanceLockRef = useRef<string | null>(null);
   const syncHandledRef = useRef(false);
   const joinedRef = useRef(joined);

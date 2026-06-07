@@ -26,7 +26,7 @@ export function useAuth() {
   const sessionUser = session?.user ?? null;
   const user = useMemo(() => {
     return sessionUser
-      ? { ...sessionUser, avatar: sessionUser.image }
+      ? { ...sessionUser, avatar: sessionUser.image } as AuthUser
       : null;
   }, [sessionUser]);
   const loading = isPending;
