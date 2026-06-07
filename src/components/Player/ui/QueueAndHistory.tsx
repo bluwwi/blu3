@@ -166,10 +166,11 @@ export function QueueAndHistory({
         <div className="ml-auto relative flex gap-1 items-center">
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
+            className="flex h-9 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
             title="Search songs"
           >
-            <Icon name="search" size={20} className="text-current" />
+            <Icon name="search" size={20} className="-ml-1 text-current" />{" "}
+            {"Search"}
           </button>
 
           <button
@@ -202,7 +203,7 @@ export function QueueAndHistory({
             </button>
           )}
 
-          <QueueMenu
+          {/*<QueueMenu
             showMenu={showMenu}
             shuffleEnabled={shuffleEnabled}
             repeatMode={repeatMode}
@@ -211,7 +212,7 @@ export function QueueAndHistory({
             onToggle={() => setShowMenu(!showMenu)}
             onClose={() => setShowMenu(false)}
             menuRef={menuRef}
-          />
+          />*/}
         </div>
       </div>
 
@@ -291,10 +292,7 @@ export function QueueAndHistory({
             </div>
           </div>
         ) : (
-          <EmptyQueue
-            userName={userName}
-            onSearchClick={onSearchClick}
-          />
+          <EmptyQueue userName={userName} onSearchClick={onSearchClick} />
         )}
       </section>
 
