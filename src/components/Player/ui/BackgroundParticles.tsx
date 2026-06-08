@@ -36,7 +36,9 @@ export function BackgroundParticles({ isPlaying, image }: Props) {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.src = image;
-    img.onload = () => { imgRef.current = img; };
+    img.onload = () => {
+      imgRef.current = img;
+    };
   }, [image]);
 
   useEffect(() => {
@@ -112,7 +114,13 @@ export function BackgroundParticles({ isPlaying, image }: Props) {
 
         if (p.size > 3) {
           ctx!.beginPath();
-          ctx!.arc(p.x - p.size * 0.3, p.y - p.size * 0.3, p.size * 0.3, 0, Math.PI * 2);
+          ctx!.arc(
+            p.x - p.size * 0.3,
+            p.y - p.size * 0.3,
+            p.size * 0.3,
+            0,
+            Math.PI * 2,
+          );
           ctx!.fillStyle = `hsla(${p.hue}, 80%, 80%, ${alpha * 0.4})`;
           ctx!.fill();
         }
@@ -132,7 +140,7 @@ export function BackgroundParticles({ isPlaying, image }: Props) {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 pointer-events-none z-[1]"
+      className="absolute inset-0 pointer-events-none z-1"
     />
   );
 }
