@@ -16,7 +16,7 @@ export function QueueManageBar({
   onSelectAll,
 }: Props) {
   return (
-    <div className="flex pl-2.5 py-0 pr-6 md:pr-6 items-center justify-between">
+    <div className="flex pl-2.5  py-0 pr-5.5 md:pr-6 items-center justify-between">
       <div className="flex  items-center gap-2">
         <button
           onClick={onDeleteSelected}

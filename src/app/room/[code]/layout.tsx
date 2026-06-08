@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { RoomMetadata } from "@/components/RoomMetadata";
 
 export async function generateMetadata({ params }: { params: Promise<{ code: string }> }): Promise<Metadata> {
   const { code } = await params;
@@ -42,5 +43,10 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
 }
 
 export default function RoomLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <RoomMetadata />
+      {children}
+    </>
+  );
 }

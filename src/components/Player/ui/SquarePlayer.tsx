@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { Profiler, useEffect, useRef } from "react";
 import { Track } from "@/utils/types";
 import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Slider } from "@/components/ui/slider";
+import { Profile } from "@/components/Profile";
 
 function hashStr(s: string): number {
   let h = 0;
@@ -252,7 +253,7 @@ export function SquarePlayer({
         className="absolute inset-0 pointer-events-none z-0"
       />
       {/*<div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full "></div>*/}
-      <div className="w-full 46 px-4 md:p-0 md:pb-6  ">
+      <div className="w-full flex items-center justify-between py-4 px-8 md:p-0 md:pb-6  ">
         <Image
           width={1200}
           height={1200}
@@ -261,11 +262,12 @@ export function SquarePlayer({
           priority
           className="w-15 md:w-13"
         />
+        <Profile size="lg" />
       </div>
-      <div className="w-full flex  flex-col justify-center items-center h-fit">
+      <div className="w-full flex flex-col justify-center items-center h-fit">
         <div
           ref={wrapRef}
-          className="w-[80%] aspect-square md:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
+          className="w-[85%] aspect-square md:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
           <Image
             width={1200}
