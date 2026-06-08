@@ -10,7 +10,8 @@ export function RoomMetadata() {
     const user = session?.user;
     if (!user) return;
 
-    document.title = `Blu3 x ${user.name}`;
+    const firstName = user.name?.split(" ")[0]?.toUpperCase() || "You";
+    document.title = `Blu3 x ${firstName}`;
 
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
     if (link && user.image) {
