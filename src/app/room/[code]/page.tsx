@@ -1011,11 +1011,11 @@ export default function RoomPage() {
             {starsMounted && queue.length === 0 && <RoomStars />}
 
             <div className="relative z-10 gap-2 py-1.5 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
-              <RoomTopSection onSearchClick={openSearchOverlay} />
+              {/*<RoomTopSection onSearchClick={openSearchOverlay} />*/}
 
               <div
-                className="mx-auto flex md:border border-white/10 h-full md:h-[76%] flex-col pb-0  px-0 md:rounded-xl
-              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%]
+                className="mx-auto flex md:border border-white/10 h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
+              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[66%] 2xl:w-[65%]
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
@@ -1024,7 +1024,7 @@ export default function RoomPage() {
                     <aside
                       className="
                   w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 lg:min-h-0
-                  max-md:rounded-none md:rounded-xl
+                  max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border md:border-white/10
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
@@ -1035,7 +1035,7 @@ export default function RoomPage() {
                   overflow-visible
 
                   relative transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-xl md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-3xl md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
                 "
                     >
                       {chatOpen ? (
@@ -1095,7 +1095,7 @@ export default function RoomPage() {
                     <aside
                       className="
                   flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 lg:min-h-0
-                  max-md:rounded-none md:rounded-xl
+                  max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border-2 md:border-white/8
                   max-md:bg-transparent md:bg-white/5
                   max-md:backdrop-blur-none md:backdrop-blur-2xl
@@ -1106,7 +1106,7 @@ export default function RoomPage() {
                   overflow-visible
 
                   transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-xl md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
+                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-3xl md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
                   flex flex-col
                 "
                     >
@@ -1148,7 +1148,7 @@ export default function RoomPage() {
                   </div>
                 </div>
               </div>
-              <RoomFooter />
+              {/*<RoomFooter />*/}
             </div>
 
             {queueToast && <QueueToast data={queueToast} />}

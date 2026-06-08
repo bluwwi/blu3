@@ -245,139 +245,160 @@ export function SquarePlayer({
   return (
     <div
       ref={frameRef}
-      className="flex flex-col text-white items-center justify-center   md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full relative"
+      className="flex flex-col text-white items-center justify-between   md:rounded-[28px] max-md:p-0 md:p-4 sm:p-5 h-full  md:h-full overflow-hidden w-full relative"
     >
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none z-0"
       />
       <div className=" w-full py-4 px-4.5 md:p-0 md:absolute top-3 left-3 md:rounded-full border-white"></div>
-
-      <div
-        ref={wrapRef}
-        className="w-[80%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
-      >
+      <div className="w-full pb-6  ">
         <Image
           width={1200}
           height={1200}
-          src={albumArt}
-          alt={title}
+          src={"/logo/blu3.svg"}
+          alt={"logo"}
           priority
-          className="w-full h-full object-cover"
+          className="w-13"
         />
       </div>
-
-      <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
-        <div className="text-center w-fit flex-1">
-          <p className="text-white text-lg  sm:text-base truncate tracking-wide">
-            {displayTitle}
-          </p>
-          {subtitle && (
-            <p className="text-white/70 text-[10px] sm:text-xs truncate">
-              {subtitle}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center justify-center gap-2 sm:gap-2 mb-3 flex-nowrap w-full select-none">
-        <button
-          onClick={onSkipBack}
-          disabled={!onSkipBack}
-          className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
-          aria-label="Previous"
+      <div className="w-full flex  flex-col justify-center items-center h-fit">
+        <div
+          ref={wrapRef}
+          className="w-[80%] aspect-square md:w-auto md:h-[50%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
-          <Icon name="skip-back" size={22} className="text-current" />
-        </button>
-        <button
-          onClick={onPlayPause}
-          disabled={!onPlayPause}
-          className="flex h-13 w-13 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
-          aria-label={isPlaying ? "Pause" : "Play"}
-        >
-          {isPlaying ? (
-            <Icon name="pause" size={18} className="text-black" />
-          ) : (
-            <Icon name="play" size={18} className="text-black " />
-          )}
-        </button>
-        <button
-          onClick={onSkipForward}
-          disabled={!onSkipForward}
-          className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
-          aria-label="Next"
-        >
-          <Icon name="skip-forward" size={22} className="text-current" />
-        </button>
-        <button
-          onClick={onMute}
-          className="s ml-2 text-white hover:text-white rounded-full transition-all cursor-pointer shrink-0"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-        >
-          {isMuted || volume === 0 ? (
-            <Icon name="vol-none" size={20} className="text-white/80" />
-          ) : volume < 50 ? (
-            <Icon name="vol-mid" size={20} className="text-white/80" />
-          ) : (
-            <Icon name="vol-full" size={20} className="text-white/80" />
-          )}
-        </button>
-        <div className="w-16 sm:w-22 shrink-0">
-          <Slider
-            value={isMuted ? 0 : volume}
-            onValueChange={onVolume}
-            min={0}
-            max={100}
-            step={1}
-            className="cursor-pointer"
-            trackClassName="h-1.25 -mb-0.75 bg-white/20"
-            rangeClassName="bg-white -mb-0.75"
-            thumbClassName="bg-white -mb-0.75"
+          <Image
+            width={1200}
+            height={1200}
+            src={albumArt}
+            alt={title}
+            priority
+            className="w-full h-full object-cover"
           />
         </div>
 
-        {onToggleLike && (
-          <button
-            onClick={onToggleLike}
-            className={`rounded-full ml-2 transition-all cursor-pointer shrink-0 ${
-              isLiked
-                ? "text-rose-500 "
-                : "text-white/50 hover:text-white hover:bg-white/10 hover:scale-105 "
-            }`}
-            aria-label={isLiked ? "Unlike track" : "Like track"}
-            title={isLiked ? "Unlike track" : "Like track"}
-          >
-            <Icon
-              name={isLiked ? "favorite" : "heart"}
-              size={25}
-              className={isLiked ? "text-rose-500" : "text-current"}
-            />
-          </button>
-        )}
-      </div>
+        <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
+          <div className="text-center w-fit flex-1">
+            <p className="text-white text-lg  sm:text-base truncate tracking-wide">
+              {displayTitle}
+            </p>
+            {subtitle && (
+              <p className="text-white/70 text-[10px] sm:text-xs truncate">
+                {subtitle}
+              </p>
+            )}
+          </div>
+        </div>
 
-      <div className="w-[80%] px-2 my-2 shrink-0">
-        <div className="flex  items-center gap-2">
-          <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
-            {fmtSec(currentTime)}
-          </span>
-          <div className="flex-1">
+        <div className="flex items-center justify-center gap-2 sm:gap-2 mb-3 flex-nowrap w-full select-none">
+          <button
+            onClick={onSkipBack}
+            disabled={!onSkipBack}
+            className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+            aria-label="Previous"
+          >
+            <Icon name="skip-back" size={22} className="text-current" />
+          </button>
+          <button
+            onClick={onPlayPause}
+            disabled={!onPlayPause}
+            className="flex h-13 w-13 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
+            aria-label={isPlaying ? "Pause" : "Play"}
+          >
+            {isPlaying ? (
+              <Icon name="pause" size={18} className="text-black" />
+            ) : (
+              <Icon name="play" size={18} className="text-black " />
+            )}
+          </button>
+          <button
+            onClick={onSkipForward}
+            disabled={!onSkipForward}
+            className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+            aria-label="Next"
+          >
+            <Icon name="skip-forward" size={22} className="text-current" />
+          </button>
+          <button
+            onClick={onMute}
+            className="s ml-2 text-white hover:text-white rounded-full transition-all cursor-pointer shrink-0"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+          >
+            {isMuted || volume === 0 ? (
+              <Icon name="vol-none" size={20} className="text-white/80" />
+            ) : volume < 50 ? (
+              <Icon name="vol-mid" size={20} className="text-white/80" />
+            ) : (
+              <Icon name="vol-full" size={20} className="text-white/80" />
+            )}
+          </button>
+          <div className="w-16 sm:w-22 shrink-0">
             <Slider
-              value={currentTime}
-              onValueChange={(v) => onSeek?.(v)}
+              value={isMuted ? 0 : volume}
+              onValueChange={onVolume}
               min={0}
-              max={Math.max(duration, 1)}
-              step={0.5}
+              max={100}
+              step={1}
               className="cursor-pointer"
-              trackClassName="h-1.25  bg-white/10"
-              rangeClassName="bg-gradient-to-r  from-white/60 to-white"
-              thumbClassName="bg-white"
+              trackClassName="h-1.25 -mb-0.75 bg-white/20"
+              rangeClassName="bg-white -mb-0.75"
+              thumbClassName="bg-white -mb-0.75"
             />
           </div>
-          <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
-            {fmtSec(duration)}
-          </span>
+
+          {onToggleLike && (
+            <button
+              onClick={onToggleLike}
+              className={`rounded-full ml-2 transition-all cursor-pointer shrink-0 ${
+                isLiked
+                  ? "text-rose-500 "
+                  : "text-white/50 hover:text-white hover:bg-white/10 hover:scale-105 "
+              }`}
+              aria-label={isLiked ? "Unlike track" : "Like track"}
+              title={isLiked ? "Unlike track" : "Like track"}
+            >
+              <Icon
+                name={isLiked ? "favorite" : "heart"}
+                size={25}
+                className={isLiked ? "text-rose-500" : "text-current"}
+              />
+            </button>
+          )}
         </div>
+
+        <div className="w-[80%] px-2 my-2 shrink-0">
+          <div className="flex  items-center gap-2">
+            <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
+              {fmtSec(currentTime)}
+            </span>
+            <div className="flex-1">
+              <Slider
+                value={currentTime}
+                onValueChange={(v) => onSeek?.(v)}
+                min={0}
+                max={Math.max(duration, 1)}
+                step={0.5}
+                className="cursor-pointer"
+                trackClassName="h-1.25  bg-white/10"
+                rangeClassName="bg-gradient-to-r  from-white/60 to-white"
+                thumbClassName="bg-white"
+              />
+            </div>
+            <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
+              {fmtSec(duration)}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div className="w-full pt-6  ">
+        <Image
+          width={1200}
+          height={1200}
+          src={"/logo/blu3.svg"}
+          alt={"logo"}
+          priority
+          className="w-13"
+        />
       </div>
     </div>
   );
