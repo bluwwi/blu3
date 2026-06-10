@@ -1,27 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKENDS = [
-  "https://api.blu3.in",
-  process.env.API_URL,
-  "http://localhost:8000",
-].filter(Boolean) as string[];
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q");
-  if (!q) return NextResponse.json({ tracks: [] });
+  if (!q?.trim()) return NextResponse.json({ tracks: [] });
 
-  for (const url of BACKENDS) {
-    try {
-      const res = await fetch(
-        `${url}/api/search?q=${encodeURIComponent(q)}`,
-        { signal: AbortSignal.timeout(5000) },
-      );
-      if (res.ok) {
-        const data = await res.json();
-        return NextResponse.json(data);
-      }
-    } catch {}
-  }
+  try {
+    const res = await fetch(
+      `${API_URL}/api/search?q=${encodeURIComponent(q)}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (res.ok) return NextResponse.json(await res.json());
+  } catch {}
 
-  return NextResponse.json({ error: "Backend unreachable" }, { status: 502 });
+  return NextResponse.json({ tracks: [] });
 }
