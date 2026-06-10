@@ -71,9 +71,7 @@ export function QueueTrackItem({
                 <div
                   key={b}
                   className={`w-[3px] rounded-full bg-white ${
-                    playerState === "playing"
-                      ? "animate-bounce"
-                      : ""
+                    playerState === "playing" ? "animate-bounce" : ""
                   }`}
                   style={{
                     height: `${[50, 100, 70][b - 1]}%`,
@@ -88,15 +86,9 @@ export function QueueTrackItem({
         {canControlPlayback && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 transition-opacity duration-200 group-hover/img:opacity-100">
             {isActive ? (
-              <span className="text-[20px] font-bold text-white">
-                ||
-              </span>
+              <span className="text-[20px] font-bold text-white">||</span>
             ) : (
-              <Icon
-                name="playmusic"
-                size={16}
-                className="text-white"
-              />
+              <Icon name="playmusic" size={16} className="text-white" />
             )}
           </div>
         )}
@@ -149,31 +141,25 @@ export function QueueTrackItem({
         </div>
       )}
       {!manageMode && (
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onToggleLike(track);
             }}
-            className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+            className={`flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
               likedTrackIds.has(track.videoId)
                 ? "text-rose-500 fill-rose-500 hover:text-rose-450"
                 : "text-white/55  hover:text-white"
             }`}
             title={
-              likedTrackIds.has(track.videoId)
-                ? "Unlike track"
-                : "Like track"
+              likedTrackIds.has(track.videoId) ? "Unlike track" : "Like track"
             }
           >
             <Icon
-              name={
-                likedTrackIds.has(track.videoId)
-                  ? "favorite"
-                  : "heart"
-              }
-              size={25}
+              name={likedTrackIds.has(track.videoId) ? "favorite" : "heart"}
+              size={28}
               className="text-current cursor-pointer"
             />
           </button>
