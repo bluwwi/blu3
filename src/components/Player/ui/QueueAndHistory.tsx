@@ -166,7 +166,7 @@ export function QueueAndHistory({
         <div className="ml-auto relative flex gap-1 items-center">
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
+            className="flex h-9 md:h-11 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="-ml-1 text-current" />{" "}
