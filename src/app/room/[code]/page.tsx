@@ -1125,7 +1125,7 @@ export default function RoomPage() {
 
                     <aside
                       className="
-                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 lg:min-h-0
+                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 md:min-h-0 lg:min-h-0
                   max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border-2 md:border-white/8
                   max-md:bg-transparent md:bg-white/5
