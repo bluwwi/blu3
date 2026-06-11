@@ -173,14 +173,6 @@ export function useRoomSocket({
     [],
   );
 
-  const safeSend = useCallback((data: string) => {
-    const ws = wsRef.current;
-    if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(data);
-    } else {
-    }
-  }, []);
-
   useEffect(() => {
     onPlayRef.current = onPlay;
     onPauseRef.current = onPause;
@@ -193,10 +185,20 @@ export function useRoomSocket({
     chatOpenRef.current = chatOpen;
   }, [chatOpen]);
 
+  const pendingMessagesRef = useRef<string[]>([]);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptRef = useRef(0);
   const roomCodeRef = useRef(roomCode);
   roomCodeRef.current = roomCode;
+
+  const safeSend = useCallback((data: string) => {
+    const ws = wsRef.current;
+    if (ws?.readyState === WebSocket.OPEN) {
+      ws.send(data);
+    } else {
+      pendingMessagesRef.current.push(data);
+    }
+  }, []);
 
   const connectWs = useCallback(() => {
     const code = roomCodeRef.current;
@@ -211,6 +213,11 @@ export function useRoomSocket({
     ws.onopen = () => {
       setConnected(true);
       reconnectAttemptRef.current = 0;
+      const pending = pendingMessagesRef.current;
+      pendingMessagesRef.current = [];
+      for (const msg of pending) {
+        ws.send(msg);
+      }
     };
     ws.onclose = () => {
       setConnected(false);
@@ -344,6 +351,14 @@ export function useRoomSocket({
       wsRef.current?.close();
     };
   }, [connectWs, roomCode]);
+
+  useEffect(() => {
+    if (!roomCode) return;
+    const interval = setInterval(() => {
+      safeSend(JSON.stringify({ type: "clock_sync_request" }));
+    }, 300000);
+    return () => clearInterval(interval);
+  }, [roomCode, safeSend]);
 
   const sendChat = useCallback(
     (text: string) => {

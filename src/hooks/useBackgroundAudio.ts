@@ -4,6 +4,9 @@ import { Track } from "@/utils/types";
 import { resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
 
+const STALE_THRESHOLD_MS = 30 * 60 * 1000;
+const MAX_ERROR_RETRIES = 3;
+
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
   isPlaying: boolean;
@@ -16,6 +19,7 @@ interface BackgroundAudioConfig {
   pendingStartTimeRef?: React.MutableRefObject<number>;
   manualPauseRef?: React.MutableRefObject<boolean>;
   resolvedUrlsRef?: React.MutableRefObject<Map<string, string>>;
+  resolvedTimestampsRef?: React.MutableRefObject<Map<string, number>>;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -25,6 +29,29 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const errorRetryRef = useRef<Map<string, number>>(new Map());
+
+  const setupAudioSource = useCallback((fetchId: number, videoId: string, audioUrl: string, startTime: number, shouldPlay: boolean) => {
+    const audio = audioRef.current;
+    if (!audio || fetchIdRef.current !== fetchId) return;
+    const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
+    const streamingUrl = `${API_URL}${audioUrl}${tokenParam}`;
+    audio.src = streamingUrl;
+    audio.currentTime = startTime;
+    if (shouldPlay) audio.play().catch(() => {});
+  }, [config.token]);
+
+  const resolveAndPlay = useCallback((fetchId: number, videoId: string, name: string, artists: string | undefined, startTime: number, shouldPlay: boolean) => {
+    resolveTrackSource(videoId, name, artists, config.token)
+      .then((result) => {
+        if (fetchIdRef.current !== fetchId) return;
+        if (result.audioUrl) {
+          config.resolvedUrlsRef?.current.set(videoId, result.audioUrl);
+          config.resolvedTimestampsRef?.current.set(videoId, Date.now());
+          setupAudioSource(fetchId, videoId, result.audioUrl, startTime, shouldPlay);
+        }
+      });
+  }, [config.token, config.resolvedUrlsRef, config.resolvedTimestampsRef, setupAudioSource]);
 
   const retryPlay = useCallback(() => {
     const audio = audioRef.current;
@@ -64,8 +91,24 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     };
     audio.onended = () => configRef.current.onTrackEnd();
     audio.onerror = () => {
-      audio.pause();
-      audio.src = "";
+      const cfg = configRef.current;
+      const track = cfg.nowPlaying;
+      if (!track?.videoId) {
+        audio.pause();
+        audio.src = "";
+        return;
+      }
+      const retries = errorRetryRef.current.get(track.videoId) ?? 0;
+      if (retries >= MAX_ERROR_RETRIES) {
+        errorRetryRef.current.delete(track.videoId);
+        audio.pause();
+        audio.src = "";
+        return;
+      }
+      errorRetryRef.current.set(track.videoId, retries + 1);
+      const fetchId = ++fetchIdRef.current;
+      const start = cfg.pendingStartTimeRef?.current ?? 0;
+      resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, cfg.isPlaying);
     };
 
     audioRef.current = audio;
@@ -79,45 +122,37 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       document.body.removeChild(audio);
       audioRef.current = null;
     };
-  }, []);
+  }, [resolveAndPlay]);
 
   useEffect(() => {
     const track = config.nowPlaying;
     if (!track?.videoId) return;
 
+    errorRetryRef.current.delete(track.videoId);
     const fetchId = ++fetchIdRef.current;
     const audio = audioRef.current;
     if (audio) { audio.pause(); audio.src = ""; }
 
-    const resolved = config.resolvedUrlsRef?.current.get(track.videoId);
+    const start = config.pendingStartTimeRef?.current ?? 0;
+    const shouldPlay = configRef.current.isPlaying;
 
-    if (resolved) {
-      const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
-      const streamingUrl = `${API_URL}${resolved}${tokenParam}`;
-      if (audio) {
-        const start = config.pendingStartTimeRef?.current ?? 0;
-        audio.src = streamingUrl;
-        audio.currentTime = start;
-        if (configRef.current.isPlaying)
-          audio.play().catch(() => {});
+    const urls = config.resolvedUrlsRef;
+    const resolved = urls?.current.get(track.videoId);
+
+    if (resolved && urls) {
+      const timestamps = config.resolvedTimestampsRef;
+      const ts = timestamps?.current.get(track.videoId) ?? 0;
+      const isStale = Date.now() - ts > STALE_THRESHOLD_MS;
+      if (!isStale) {
+        setupAudioSource(fetchId, track.videoId, resolved, start, shouldPlay);
+        return;
       }
-      return;
+      urls.current.delete(track.videoId);
+      timestamps?.current.delete(track.videoId);
     }
 
-    resolveTrackSource(track.videoId, track.name, track.artists?.[0]?.name, config.token)
-      .then((result) => {
-        if (fetchIdRef.current !== fetchId) return;
-        if (result.audioUrl && audioRef.current) {
-          const start = config.pendingStartTimeRef?.current ?? 0;
-          const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
-          const streamingUrl = `${API_URL}${result.audioUrl}${tokenParam}`;
-          audioRef.current.src = streamingUrl;
-          audioRef.current.currentTime = start;
-          if (configRef.current.isPlaying)
-            audioRef.current.play().catch(() => {});
-        }
-      });
-  }, [config.nowPlaying?.videoId, config.token]);
+    resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, shouldPlay);
+  }, [config.nowPlaying?.videoId, config.token, setupAudioSource, resolveAndPlay]);
 
   useEffect(() => {
     const audio = audioRef.current;

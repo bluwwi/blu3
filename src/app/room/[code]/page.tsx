@@ -57,6 +57,7 @@ export default function RoomPage() {
       ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
   const resolvedUrlsRef = useRef(new Map<string, string>());
+  const resolvedTimestampsRef = useRef(new Map<string, number>());
   const resolvingRef = useRef(new Set<string>());
 
   const { audioRef, retryPlay } = useBackgroundAudio({
@@ -71,6 +72,7 @@ export default function RoomPage() {
     pendingStartTimeRef: player.pendingStartTimeRef,
     manualPauseRef,
     resolvedUrlsRef,
+    resolvedTimestampsRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -123,6 +125,8 @@ export default function RoomPage() {
     sendProgress,
     sendTrackEnded,
     getSyncedTime,
+    getSyncedPosition,
+    requestSync,
     addToQueue,
     removeFromQueue,
     cycleQueueCurrent,
@@ -199,6 +203,7 @@ export default function RoomPage() {
           .then((result) => {
             if (result.audioUrl) {
               resolvedUrlsRef.current.set(videoId, result.audioUrl);
+              resolvedTimestampsRef.current.set(videoId, Date.now());
             }
           })
           .catch(() => {})
@@ -832,18 +837,15 @@ export default function RoomPage() {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
-        wasPlayingRef.current = player.playerState === "playing";
-      } else if (wasPlayingRef.current) {
-        wasPlayingRef.current = false;
-        const a = audioRef.current;
-        if (a && a.paused) a.play().catch(() => {});
-        player.play?.();
+        wasPlayingRef.current = player.playerState === "playing" || player.playerState === "loading";
+      } else {
+        requestSync();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [player.play, audioRef]);
+  }, [requestSync, player.playerState]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
