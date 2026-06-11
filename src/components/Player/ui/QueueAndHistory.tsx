@@ -166,7 +166,7 @@ export function QueueAndHistory({
         <div className="ml-auto relative flex gap-1 items-center">
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 md:h-11 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
+            className="flex h-9 lg:h-11 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="-ml-1 text-current" />{" "}
@@ -175,7 +175,7 @@ export function QueueAndHistory({
 
           <button
             onClick={() => setShowPlaylistModal(true)}
-            className="flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
+            className="flex h-9 lg:h-11 lg:w-11 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Add playlist to queue"
           >
             <Plus size={20} />
@@ -187,7 +187,7 @@ export function QueueAndHistory({
                 setManageMode(!manageMode);
                 if (manageMode) setSelectedIds(new Set());
               }}
-              className={`flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
+              className={`flex h-9 lg:h-11 lg:w-11 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
                 manageMode
                   ? "bg-[#C0392B]/80 text-white"
                   : "bg-white/30 hover:bg-white/40"

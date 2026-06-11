@@ -162,7 +162,7 @@ export function RightSidebar({
                 {onChatToggle && (
                   <button
                     onClick={onChatToggle}
-                    className="relative flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
+                    className="relative flex h-9 lg:h-11 lg:w-11 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
                     title="Toggle chat"
                   >
                     <Icon name="Chat" size={20} className="text-current" />
@@ -180,14 +180,14 @@ export function RightSidebar({
                   <>
                     <button
                       onClick={openShare}
-                      className="flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
+                      className="flex h-9 lg:h-11 lg:w-11 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
                       title="Share invite link"
                     >
                       <Icon name="share" size={20} className="text-current" />
                     </button>
                     <button
                       onClick={openLeave}
-                      className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 md:px-4 py-1.5 md:py-2 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 lg:px-4 py-1.5 lg:py-2 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
                       title="Room options"
                     >
                       Rooms

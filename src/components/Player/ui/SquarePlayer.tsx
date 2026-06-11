@@ -267,7 +267,7 @@ export function SquarePlayer({
       <div className="w-full flex flex-col justify-center items-center h-fit">
         <div
           ref={wrapRef}
-          className="w-[85%] aspect-square md:w-[75%] lg:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
+          className="w-[85%] aspect-square lg:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
           <Image
             width={1200}
@@ -334,7 +334,7 @@ export function SquarePlayer({
               <Icon name="vol-full" size={20} className="text-white/80" />
             )}
           </button>
-          <div className="w-16 sm:w-20 md:w-22 shrink-0">
+          <div className="w-16 sm:w-20 lg:w-32 shrink-0">
             <Slider
               value={isMuted ? 0 : volume}
               onValueChange={onVolume}
