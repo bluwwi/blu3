@@ -119,7 +119,7 @@ export function SquarePlayer({
   const isLoading = playerState === "loading";
   const title =
     track?.name ?? (activeVideoId ? "Playing from URL" : "Nothing playing yet");
-  const displayTitle = title;
+  const displayTitle = title.length > 30 ? title.slice(0, 30) + "..." : title;
   const artist = track?.artists?.map((a) => a.name).join(", ") ?? "";
   const albumName = track?.album?.name ?? "";
   const subtitle = [artist, albumName].filter(Boolean).join(" · ");
@@ -267,7 +267,7 @@ export function SquarePlayer({
       <div className="w-full flex flex-col justify-center items-center h-fit">
         <div
           ref={wrapRef}
-          className="w-[85%] aspect-square lg:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
+          className="w-[85%] aspect-square md:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
           <Image
             width={1200}
@@ -281,7 +281,7 @@ export function SquarePlayer({
 
         <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
           <div className="text-center w-fit flex-1">
-            <p className="text-white text-lg sm:text-base truncate tracking-wide">
+            <p className="text-white text-lg  sm:text-base truncate tracking-wide">
               {displayTitle}
             </p>
             {subtitle && (
@@ -334,7 +334,7 @@ export function SquarePlayer({
               <Icon name="vol-full" size={20} className="text-white/80" />
             )}
           </button>
-          <div className="w-16 sm:w-20 lg:w-32 shrink-0">
+          <div className="w-16 sm:w-22 shrink-0">
             <Slider
               value={isMuted ? 0 : volume}
               onValueChange={onVolume}

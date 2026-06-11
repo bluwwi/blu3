@@ -52,7 +52,7 @@ export function QueueTrackItem({
           }
         }}
         style={{
-          width: "clamp(3.5rem,3vw,199rem)",
+          width: "clamp(3.75rem,3vw,199rem)",
         }}
         className="relative group/img shrink-0 aspect-square rounded-lg"
       >

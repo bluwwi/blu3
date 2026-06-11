@@ -54,7 +54,7 @@ export function HistoryTrackItem({
           }
         }}
         style={{
-          width: "clamp(3rem,3.5vw,199rem)",
+          width: "clamp(3.75rem,3vw,199rem)",
         }}
         className="relative group/img shrink-0 aspect-square cursor-pointer rounded-lg"
       >
@@ -73,9 +73,7 @@ export function HistoryTrackItem({
                 <div
                   key={b}
                   className={`w-[2.5px] rounded-full bg-violet-300 ${
-                    playerState === "playing"
-                      ? "animate-bounce"
-                      : ""
+                    playerState === "playing" ? "animate-bounce" : ""
                   }`}
                   style={{
                     height: `${[50, 100, 70][b - 1]}%`,
@@ -90,15 +88,9 @@ export function HistoryTrackItem({
         {canControlPlayback && (
           <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 opacity-0 transition-opacity duration-200 group-hover/img:opacity-100">
             {isActive ? (
-              <span className="text-[10px] font-semibold text-white">
-                ||
-              </span>
+              <span className="text-[10px] font-semibold text-white">||</span>
             ) : (
-              <Icon
-                name="play"
-                size={12}
-                className="text-white"
-              />
+              <Icon name="play" size={12} className="text-white" />
             )}
           </div>
         )}
@@ -108,9 +100,7 @@ export function HistoryTrackItem({
         <p className="truncate text-[13px] font-medium text-white">
           {track.trackName}
         </p>
-        <p className="truncate text-[11px] text-white/60">
-          {track.artistName}
-        </p>
+        <p className="truncate text-[11px] text-white/60">{track.artistName}</p>
       </div>
 
       {!manageMode && (
@@ -134,9 +124,7 @@ export function HistoryTrackItem({
           >
             <Icon
               name={
-                likedTrackIds.has(historyTrack.videoId)
-                  ? "favorite"
-                  : "heart"
+                likedTrackIds.has(historyTrack.videoId) ? "favorite" : "heart"
               }
               size={12}
               className="text-current"
@@ -151,11 +139,7 @@ export function HistoryTrackItem({
             className="flex h-7 w-7 items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Add track to queue"
           >
-            <Icon
-              name="plus"
-              size={12}
-              className="text-current"
-            />
+            <Icon name="plus" size={12} className="text-current" />
           </button>
         </div>
       )}
