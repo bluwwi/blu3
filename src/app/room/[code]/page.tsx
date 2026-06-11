@@ -180,25 +180,37 @@ export default function RoomPage() {
     }, []),
   });
 
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
-    for (const track of queue) {
-      const videoId = track.videoId;
-      if (!videoId) continue;
-      if (resolvedUrlsRef.current.has(videoId)) continue;
-      if (resolvingRef.current.has(videoId)) continue;
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      const MAX_PREFETCH = 5;
+      let resolved = 0;
+      for (const track of queue) {
+        if (resolved >= MAX_PREFETCH) break;
+        const videoId = track.videoId;
+        if (!videoId) continue;
+        if (resolvedUrlsRef.current.has(videoId)) continue;
+        if (resolvingRef.current.has(videoId)) continue;
 
-      resolvingRef.current.add(videoId);
-      resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
-        .then((result) => {
-          if (result.audioUrl) {
-            resolvedUrlsRef.current.set(videoId, result.audioUrl);
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          resolvingRef.current.delete(videoId);
-        });
-    }
+        resolvingRef.current.add(videoId);
+        resolved++;
+        resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
+          .then((result) => {
+            if (result.audioUrl) {
+              resolvedUrlsRef.current.set(videoId, result.audioUrl);
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            resolvingRef.current.delete(videoId);
+          });
+      }
+    }, 500);
+
+    return () => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    };
   }, [queue, token]);
 
   const playbackRef = useRef(playback);

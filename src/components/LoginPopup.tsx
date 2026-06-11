@@ -88,7 +88,11 @@ function LoginPopup() {
 
   const handleLogin = (provider: "google" | "discord") => {
     sessionStorage.setItem("returnUrl", window.location.pathname);
-    authClient.signIn.social({ provider, callbackURL: window.location.origin });
+    const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
+    const callbackURL = isElectron
+      ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/desktop-redirect`
+      : window.location.origin;
+    authClient.signIn.social({ provider, callbackURL });
   };
 
   return createPortal(
