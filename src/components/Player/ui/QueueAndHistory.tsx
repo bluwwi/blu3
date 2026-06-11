@@ -55,6 +55,14 @@ export function QueueAndHistory({
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
 
+  const nowPlayingTrack = useMemo(() => {
+    if (!activeVideoId || playerState === "idle" || playerState === "ended") return null;
+    const fromQueue = queue.find((t) => t.videoId === activeVideoId);
+    if (fromQueue) return fromQueue;
+    if (queue.length > 0) return queue[0];
+    return null;
+  }, [queue, activeVideoId, playerState]);
+
   const recentToShow = useMemo(() => {
     const filtered = recentTracks.filter((t) => t.videoId !== activeVideoId);
     return filtered.slice(0, 5);
@@ -219,12 +227,32 @@ export function QueueAndHistory({
       )}
 
       <section className="flex min-h-0 flex-1 flex-col">
+        {nowPlayingTrack && (
+          <div className="flex flex-col shrink-0 border-b border-white/10 pb-2 mb-2">
+            <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-green-400/80 font-semibold">
+              Now playing
+            </div>
+            <QueueTrackItem
+              track={nowPlayingTrack}
+              index={0}
+              isActive={true}
+              playerState={playerState}
+              canControlPlayback={canControlPlayback}
+              manageMode={false}
+              selectedIds={new Set()}
+              likedTrackIds={likedTrackIds}
+              onPlay={() => handlePlayTrack(nowPlayingTrack)}
+              onToggleSelect={() => {}}
+              onToggleLike={toggleLike}
+            />
+          </div>
+        )}
         {recentToShow.length > 0 && (
           <div className="flex flex-col shrink-0">
             <div className="px-2.5 pb-2 pt-1 text-[10px] uppercase tracking-wider text-white/40 font-semibold">
               Recently played
             </div>
-            <div className="space-y-1 pr-1 max-h-[200px] overflow-y-auto">
+            <div className="space-y-1 pr-1 max-h-[160px] overflow-y-auto">
               {recentToShow.map((track, i) => {
                 const historyTrack: Track = {
                   id: track.videoId,
@@ -237,14 +265,13 @@ export function QueueAndHistory({
                   duration_ms: 0,
                   explicit: false,
                 };
-                const isActive = activeVideoId === track.videoId;
 
                 return (
                   <HistoryTrackItem
                     key={`${track.videoId}-${i}`}
                     track={track}
                     historyTrack={historyTrack}
-                    isActive={isActive}
+                    isActive={false}
                     playerState={playerState}
                     canControlPlayback={canControlPlayback}
                     manageMode={manageMode}
@@ -260,10 +287,10 @@ export function QueueAndHistory({
         )}
         {queue.length > 0 ? (
           <div className="flex-1 space-y-1 pr-1 overflow-y-auto mt-1">
-            {queue.map((track, i) => {
-              const isActive = activeVideoId
-                ? activeVideoId === track.videoId
-                : i === 0;
+            {queue
+              .filter((t) => !nowPlayingTrack || t.videoId !== nowPlayingTrack.videoId || t.id !== nowPlayingTrack.id)
+              .map((track, i) => {
+              const isActive = false;
 
               return (
                 <QueueTrackItem
