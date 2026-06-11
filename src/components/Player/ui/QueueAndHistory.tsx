@@ -55,13 +55,6 @@ export function QueueAndHistory({
 }: Props) {
   const { likedTrackIds, toggleLike } = usePlaylists();
 
-  const nowPlayingTrack = useMemo(() => {
-    if (!activeVideoId || playerState === "idle" || playerState === "ended") return null;
-    const fromQueue = queue.find((t) => t.videoId === activeVideoId);
-    if (fromQueue) return fromQueue;
-    return null;
-  }, [queue, activeVideoId, playerState]);
-
   const showRecent = useMemo(() => {
     if (queue.length > 0 || recentTracks.length === 0) return false;
     const newestPlayedAt = Math.max(...recentTracks.map((t) => t.playedAt));
@@ -233,30 +226,10 @@ export function QueueAndHistory({
       )}
 
       <section className="flex min-h-0 flex-1 flex-col">
-        {nowPlayingTrack && (
-          <div className="flex flex-col shrink-0 border-b border-white/10 pb-2 mb-2">
-            <div className="px-2.5 pb-2 text-[10px] uppercase tracking-wider text-green-400/80 font-semibold">
-              Now playing
-            </div>
-            <QueueTrackItem
-              track={nowPlayingTrack}
-              index={0}
-              isActive={true}
-              playerState={playerState}
-              canControlPlayback={canControlPlayback}
-              manageMode={false}
-              selectedIds={new Set()}
-              likedTrackIds={likedTrackIds}
-              onPlay={() => handlePlayTrack(nowPlayingTrack)}
-              onToggleSelect={() => {}}
-              onToggleLike={toggleLike}
-            />
-          </div>
-        )}
         {queue.length > 0 ? (
           <>
             <div className="flex-1 space-y-1 pr-1 overflow-y-auto">
-              {queue.map((track, i) => {
+              {[...queue].sort((a) => a.videoId === activeVideoId ? -1 : 0).map((track, i) => {
                 const isActive = activeVideoId
                   ? activeVideoId === track.videoId
                   : i === 0;
