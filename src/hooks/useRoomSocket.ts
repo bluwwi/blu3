@@ -112,7 +112,7 @@ type RoomSocketMessage =
       queue?: Track[];
     }
   | { type: "room:playback_mode"; playbackMode: PlaybackMode }
-  | { type: "room:queue_update"; queue?: Track[] };
+  | { type: "room:queue_update"; queue?: Track[]; recentTracks?: RecentTrack[] };
 
 interface UseRoomSocketProps {
   roomCode: string | null;
@@ -339,6 +339,7 @@ export function useRoomSocket({
           break;
         case "room:queue_update":
           if (msg.queue) setQueue(msg.queue);
+          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           break;
       }
     };
