@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PlaylistsProvider } from "@/hooks/usePlaylists";
 import { AuthGate } from "@/components/LoginPopup";
@@ -33,7 +33,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+};
   children,
 }: Readonly<{
   children: React.ReactNode;

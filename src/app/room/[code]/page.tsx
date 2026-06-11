@@ -1014,7 +1014,7 @@ export default function RoomPage() {
 
   return (
     <>
-      <div className="relative min-h-screen">
+      <div className="relative min-h-dvh safe-area-top safe-area-bottom">
         <div
           className={`absolute inset-0 z-50 transition-opacity duration-500 ${
             authLoading || !joined || !initialDataLoaded
@@ -1041,7 +1041,7 @@ export default function RoomPage() {
 
             {starsMounted && queue.length === 0 && <RoomStars />}
 
-            <div className="relative z-10 gap-2 md:h-screen items-center justify-center flex flex-col h-full w-full overflow-hidden">
+            <div className="relative z-10 gap-2 md:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
               {/*<RoomTopSection onSearchClick={openSearchOverlay} />*/}
 
               <div
@@ -1054,7 +1054,7 @@ export default function RoomPage() {
                   <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 md:gap-3 pb-0  lg:pb-0">
                     <aside
                       className="
-                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 lg:min-h-0
+                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 md:min-h-0 lg:min-h-0
                   max-md:rounded-none md:rounded-3xl
                   max-md:border-0 md:border md:border-white/10
                   max-md:bg-transparent md:bg-white/5
