@@ -175,7 +175,7 @@ export function QueueAndHistory({
 
           <button
             onClick={() => setShowPlaylistModal(true)}
-            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
+            className="flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 cursor-pointer transition-all"
             title="Add playlist to queue"
           >
             <Plus size={20} />
@@ -187,7 +187,7 @@ export function QueueAndHistory({
                 setManageMode(!manageMode);
                 if (manageMode) setSelectedIds(new Set());
               }}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
+              className={`flex h-9 md:h-11 md:w-11 w-9 items-center justify-center rounded-lg backdrop-blur-md text-white cursor-pointer transition-all ${
                 manageMode
                   ? "bg-[#C0392B]/80 text-white"
                   : "bg-white/30 hover:bg-white/40"
