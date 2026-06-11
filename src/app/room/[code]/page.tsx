@@ -716,8 +716,9 @@ export default function RoomPage() {
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
 
+    const currentTrack = player.nowPlaying;
+
     if (progress.currentTime > 3) {
-      const currentTrack = player.nowPlaying;
       if (!currentTrack?.videoId) return;
       progress.seekTo(0);
       sendSeek(0);
@@ -726,8 +727,8 @@ export default function RoomPage() {
 
     const currentIdx = queue.findIndex(
       (t) =>
-        t.videoId === player.nowPlaying?.videoId ||
-        t.id === player.nowPlaying?.id,
+        t.videoId === currentTrack?.videoId ||
+        t.id === currentTrack?.id,
     );
     const prevIdx =
       currentIdx > 0
@@ -735,7 +736,12 @@ export default function RoomPage() {
         : playbackMode.repeatMode === "all"
           ? queue.length - 1
           : -1;
-    if (prevIdx < 0 || !queue[prevIdx]) return;
+    if (prevIdx < 0 || !queue[prevIdx]) {
+      if (!currentTrack?.videoId) return;
+      progress.seekTo(0);
+      sendSeek(0);
+      return;
+    }
     const prevTrack = queue[prevIdx];
     player.playTrack(prevTrack, 0, true);
     sendPlay({
