@@ -851,18 +851,25 @@ export default function RoomPage() {
   }, [authLoading, user, code]);
 
   const wasPlayingRef = useRef(false);
+  const hiddenAtRef = useRef({ time: 0, ts: 0 });
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
         wasPlayingRef.current = player.playerState === "playing" || player.playerState === "loading";
+        hiddenAtRef.current = { time: progress.currentTime, ts: Date.now() };
       } else {
+        const { time, ts } = hiddenAtRef.current;
+        if (wasPlayingRef.current && player.nowPlaying?.videoId && ts > 0) {
+          const elapsed = (Date.now() - ts) / 1000;
+          progressRef_fix.current.seekTo(time + elapsed);
+        }
         requestSync();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [requestSync, player.playerState]);
+  }, [requestSync, player.playerState, player.nowPlaying?.videoId, progress]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
