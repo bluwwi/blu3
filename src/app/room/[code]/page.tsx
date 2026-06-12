@@ -662,22 +662,27 @@ export default function RoomPage() {
 
   const handleSkipForward = useCallback(() => {
     if (!canControlPlayback || !joined) return;
-    const currentIdx = queue.findIndex(
-      (t) =>
-        t.videoId === player.nowPlaying?.videoId ||
-        t.id === player.nowPlaying?.id,
+    const playingId = player.nowPlaying?.videoId || player.nowPlaying?.id;
+    if (!playingId) return;
+    const sortedQueue = [...queue].sort((a) =>
+      a.videoId === playingId || a.id === playingId ? -1 : 0,
+    );
+    const currentIdx = sortedQueue.findIndex(
+      (t) => t.videoId === playingId || t.id === playingId,
     );
     if (currentIdx === -1) return;
-    const currentTrack = queue[currentIdx];
+    const currentTrack = queue.find(
+      (t) => t.videoId === playingId || t.id === playingId,
+    );
     if (currentTrack) cycleQueueCurrent(currentTrack.id);
-    const upcomingTracks = queue.slice(currentIdx + 1);
+    const upcomingTracks = sortedQueue.slice(currentIdx + 1);
     const nextTrack =
       upcomingTracks.length > 0
         ? playbackMode.shuffle
           ? upcomingTracks[Math.floor(Math.random() * upcomingTracks.length)]
           : upcomingTracks[0]
         : playbackMode.repeatMode === "all"
-          ? queue[0]
+          ? sortedQueue[0]
           : null;
     if (!nextTrack) return;
     player.playTrack(nextTrack, 0, true);
