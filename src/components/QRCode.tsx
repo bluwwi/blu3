@@ -39,29 +39,29 @@ export function QRCode({ value, size = 200 }: Props) {
           const x = (size - logoSize) / 2;
           const y = (size - logoSize) / 2;
 
-          ctx.beginPath();
-          ctx.arc(
-            x + logoSize / 2,
-            y + logoSize / 2,
-            logoSize / 2 + 6,
-            0,
-            Math.PI * 2,
-          );
-          ctx.fillStyle = "#fff";
-          ctx.fill();
+          // ctx.beginPath();
+          // ctx.arc(
+          //   x + logoSize / 2,
+          //   y + logoSize / 2,
+          //   logoSize / 2 + 6,
+          //   0,
+          //   Math.PI * 2,
+          // );
+          // ctx.fillStyle = "#fff";
+          // ctx.fill();
 
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(
-            x + logoSize / 2,
-            y + logoSize / 2,
-            logoSize / 2,
-            0,
-            Math.PI * 2,
-          );
-          ctx.clip();
-          ctx.drawImage(logo, x, y, logoSize, logoSize);
-          ctx.restore();
+          // ctx.save();
+          // ctx.beginPath();
+          // ctx.arc(
+          //   x + logoSize / 2,
+          //   y + logoSize / 2,
+          //   logoSize / 2,
+          //   0,
+          //   Math.PI * 2,
+          // );
+          // ctx.clip();
+          // ctx.drawImage(logo, x, y, logoSize, logoSize);
+          // ctx.restore();
         },
       );
     };

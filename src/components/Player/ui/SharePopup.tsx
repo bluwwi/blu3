@@ -10,11 +10,7 @@ interface SharePopupProps {
   onClose: () => void;
 }
 
-export function SharePopup({
-  isVisible,
-  roomCode,
-  onClose,
-}: SharePopupProps) {
+export function SharePopup({ isVisible, roomCode, onClose }: SharePopupProps) {
   const [copied, setCopied] = useState(false);
 
   const url = roomCode
@@ -37,12 +33,10 @@ export function SharePopup({
         className="w-[360px] p-5 text-center flex flex-col items-center border border-white/20 bg-black/55 backdrop-blur-3xl rounded-[24px]"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-white text-lg font-semibold mb-3">
-          Share Room
-        </p>
+        <p className="text-white text-lg font-semibold mb-3">Share Room</p>
 
         <div className="border-2 border-white rounded-lg p-1 mb-4">
-          <QRCode value={url} size={160} />
+          <QRCode value={url} size={240} />
         </div>
 
         <div className="w-full flex items-center gap-2">
