@@ -166,7 +166,7 @@ export function QueueAndHistory({
         <div className="ml-auto relative flex gap-1 items-center">
           <button
             onClick={() => onSearchClick?.()}
-            className="flex h-9 w-fit px-4 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
+            className="flex h-9 w-fit px-5 gap-1 text-sm items-center justify-center rounded-lg bg-white/30 backdrop-blur-md text-white hover:bg-white/40 font-normal cursor-pointer transition-all"
             title="Search songs"
           >
             <Icon name="search" size={20} className="-ml-1 text-current" />{" "}
@@ -229,28 +229,30 @@ export function QueueAndHistory({
         {queue.length > 0 ? (
           <>
             <div className="flex-1 space-y-1 pr-1 overflow-y-auto">
-              {[...queue].sort((a) => a.videoId === activeVideoId ? -1 : 0).map((track, i) => {
-                const isActive = activeVideoId
-                  ? activeVideoId === track.videoId
-                  : i === 0;
+              {[...queue]
+                .sort((a) => (a.videoId === activeVideoId ? -1 : 0))
+                .map((track, i) => {
+                  const isActive = activeVideoId
+                    ? activeVideoId === track.videoId
+                    : i === 0;
 
-                return (
-                  <QueueTrackItem
-                    key={`${track.id}-${i}`}
-                    track={track}
-                    index={i}
-                    isActive={isActive}
-                    playerState={playerState}
-                    canControlPlayback={canControlPlayback}
-                    manageMode={manageMode}
-                    selectedIds={selectedIds}
-                    likedTrackIds={likedTrackIds}
-                    onPlay={() => handlePlayTrack(track)}
-                    onToggleSelect={handleToggleSelect}
-                    onToggleLike={toggleLike}
-                  />
-                );
-              })}
+                  return (
+                    <QueueTrackItem
+                      key={`${track.id}-${i}`}
+                      track={track}
+                      index={i}
+                      isActive={isActive}
+                      playerState={playerState}
+                      canControlPlayback={canControlPlayback}
+                      manageMode={manageMode}
+                      selectedIds={selectedIds}
+                      likedTrackIds={likedTrackIds}
+                      onPlay={() => handlePlayTrack(track)}
+                      onToggleSelect={handleToggleSelect}
+                      onToggleLike={toggleLike}
+                    />
+                  );
+                })}
             </div>
           </>
         ) : showRecent && recentToShow.length > 0 ? (
