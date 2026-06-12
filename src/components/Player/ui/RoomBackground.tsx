@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface RoomBackgroundProps {
   isPlaying: boolean;
@@ -16,10 +16,36 @@ export function RoomBackground({
   const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const isPlayingRef = useRef(isPlaying);
+  const currentImgRef = useRef(trackImage || "/queue/sunflower.jpg");
+  const [crossfadePrev, setCrossfadePrev] = useState<string | null>(null);
 
   useEffect(() => {
     isPlayingRef.current = isPlaying;
   }, [isPlaying]);
+
+  useEffect(() => {
+    const next = trackImage || "/queue/sunflower.jpg";
+    if (next !== currentImgRef.current) {
+      setCrossfadePrev(currentImgRef.current);
+      currentImgRef.current = next;
+    }
+  }, [trackImage]);
+
+  const [fadeOut, setFadeOut] = useState(false);
+  useEffect(() => {
+    if (crossfadePrev) {
+      setFadeOut(false);
+      const raf = requestAnimationFrame(() => setFadeOut(true));
+      const timer = setTimeout(() => {
+        setCrossfadePrev(null);
+        setFadeOut(false);
+      }, 500);
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+      };
+    }
+  }, [crossfadePrev]);
 
   const syncSize = () => {
     const canvas = canvasRef.current;
@@ -97,6 +123,20 @@ export function RoomBackground({
       ref={wrapRef}
       className="absolute inset-0 overflow-hidden z-0"
     >
+      {crossfadePrev && (
+        <img
+          src={crossfadePrev}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+          style={{
+            filter: "blur(50px) brightness(0.7) saturate(2.75)",
+            transform: "scale(1.35)",
+            transformOrigin: "center center",
+            opacity: fadeOut ? 0 : 1,
+          }}
+        />
+      )}
+
       <img
         src={trackImage ? trackImage : "/queue/sunflower.jpg"}
         alt=""

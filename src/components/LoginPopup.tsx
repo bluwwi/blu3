@@ -179,7 +179,7 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
-      {mounted && showPopup && <LoginPopup />}
+      {mounted && !loading && showPopup && <LoginPopup />}
     </>
   );
 }
