@@ -269,12 +269,12 @@ export function SquarePlayer({
           ref={wrapRef}
           className="w-[85%] aspect-square md:w-[60%] rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
-          <Image
-            width={1200}
-            height={1200}
+          <img
+            // width={1200}
+            // height={1200}
             src={albumArt}
             alt={title}
-            priority
+            // priority
             className="w-full h-full object-cover"
           />
         </div>
