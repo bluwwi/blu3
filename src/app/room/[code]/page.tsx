@@ -149,9 +149,9 @@ export default function RoomPage() {
       }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
+        progressRef_fix.current.seekTo(actualCurrentTime);
         if (state.isPlaying) p.play?.();
         else p.pause?.();
-        progressRef_fix.current.seekTo(actualCurrentTime);
       } else {
         p.playTrack(
           {
@@ -168,8 +168,8 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
-        if (state.isPlaying) p.play?.();
         progressRef_fix.current.seekTo(actualCurrentTime);
+        if (state.isPlaying) p.play?.();
       }
     },
     onMemberJoined: useCallback((user: { name: string; avatar?: string }) => {
