@@ -33,7 +33,7 @@ export function QueueTrackItem({
   return (
     <div
       onClick={onPlay}
-      className={`group flex items-center gap-2.5 rounded-xl px-2.5 py-1.5 transition-all ${
+      className={`group flex items-center gap-2.5 rounded-xl px-2 ml-1 py-1.5 transition-all ${
         isActive ? "bg-white/15" : "hover:bg-white/[0.06]"
       } ${canControlPlayback && !manageMode ? "cursor-pointer" : "cursor-default"}`}
     >

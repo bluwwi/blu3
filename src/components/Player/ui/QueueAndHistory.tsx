@@ -100,7 +100,7 @@ export function QueueAndHistory({
       });
       const data = await res.json();
       if (data.tracks && data.tracks.length > 0) {
-        data.tracks.forEach((t: any) => {
+        [...data.tracks].reverse().forEach((t: any) => {
           addToQueue({
             id: t.id,
             source: "youtube",

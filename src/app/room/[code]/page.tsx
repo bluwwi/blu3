@@ -235,7 +235,7 @@ export default function RoomPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
-          data.tracks.forEach((t: any) => {
+          [...data.tracks].reverse().forEach((t: any) => {
             addToQueue({
               id: t.id,
               source: "youtube",
@@ -731,9 +731,7 @@ export default function RoomPage() {
     }
 
     const currentIdx = queue.findIndex(
-      (t) =>
-        t.videoId === currentTrack?.videoId ||
-        t.id === currentTrack?.id,
+      (t) => t.videoId === currentTrack?.videoId || t.id === currentTrack?.id,
     );
     const prevIdx =
       currentIdx > 0
@@ -860,7 +858,8 @@ export default function RoomPage() {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.hidden) {
-        wasPlayingRef.current = player.playerState === "playing" || player.playerState === "loading";
+        wasPlayingRef.current =
+          player.playerState === "playing" || player.playerState === "loading";
         hiddenAtRef.current = { time: progress.currentTime, ts: Date.now() };
       } else {
         const { time, ts } = hiddenAtRef.current;
@@ -1058,7 +1057,7 @@ export default function RoomPage() {
 
               <div
                 className="mx-auto flex md:border border-white/10 h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
-              w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[66%] 2xl:w-[65%]
+              w-full sm:w-full md:w-[90%] lg:w-[70%] xl:w-[66%] 2xl:w-[65%]
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
