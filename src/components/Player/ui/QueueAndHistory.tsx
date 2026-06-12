@@ -229,7 +229,7 @@ export function QueueAndHistory({
         {queue.length > 0 ? (
           <>
             <div className="flex-1 space-y-1 pr-1 overflow-y-auto">
-              {queue.map((track, i) => {
+              {[...queue].sort((a) => a.videoId === activeVideoId ? -1 : 0).map((track, i) => {
                 const isActive = activeVideoId
                   ? activeVideoId === track.videoId
                   : i === 0;
