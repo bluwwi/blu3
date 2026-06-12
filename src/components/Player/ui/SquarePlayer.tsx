@@ -269,23 +269,15 @@ export function SquarePlayer({
           ref={wrapRef}
           className="w-[85%] aspect-square md:w-[clamp(4rem,39vh,1000rem)]  rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
-          <div
-            key={track?.id || track?.videoId || "no-track"}
-            className="w-full h-full animate-[fadeSlideIn_0.4s_ease-out]"
-          >
-            <img
-              src={albumArt}
-              alt={title}
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <img
+            src={albumArt}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
         </div>
 
         <div className="w-[90%] flex justify-center overflow-hidden items-center mb-3 shrink-0">
-          <div
-            key={track?.id || track?.videoId || "no-track"}
-            className="text-center w-fit flex-1 animate-[fadeSlideIn_0.4s_ease-out]"
-          >
+          <div className="text-center w-fit flex-1">
             <p className="text-white text-lg  sm:text-base truncate tracking-wide">
               {displayTitle}
             </p>
