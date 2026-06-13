@@ -60,19 +60,55 @@ export default function Home() {
         </div>
       )}
 
-      <div className="hidden lg:flex w-[40%] flex-col items-center justify-center p-8 gap-6">
+      <div className="hidden lg:flex w-[40%] flex-col items-center justify-center p-8 gap-8">
         <img
           src="/logo/bg.svg"
           alt="Blu3"
           className="w-64 h-auto object-contain select-none pointer-events-none"
           draggable={false}
         />
+        <p className="text-white/60 text-center text-sm max-w-xs leading-relaxed">
+          Listen together in real-time with friends. Create rooms, share music, and discover new sounds.
+        </p>
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="px-8 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
+        >
+          Get Started
+        </button>
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="text-white/40 hover:text-white/70 text-xs transition-colors cursor-pointer bg-transparent border-none"
+        >
+          Already have an account? Sign In
+        </button>
       </div>
 
       <div className="hidden lg:flex w-[60%] items-center justify-center p-8">
       </div>
 
-      <div className="flex lg:hidden w-full flex-col items-center justify-center min-h-screen p-6 gap-4">
+      <div className="flex lg:hidden w-full flex-col items-center justify-center min-h-screen p-6 gap-6">
+        <img
+          src="/logo/bg.svg"
+          alt="Blu3"
+          className="w-48 h-auto object-contain select-none pointer-events-none"
+          draggable={false}
+        />
+        <p className="text-white/60 text-center text-sm max-w-xs leading-relaxed">
+          Listen together in real-time with friends. Create rooms, share music, and discover new sounds.
+        </p>
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="px-8 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
+        >
+          Get Started
+        </button>
+        <button
+          onClick={() => (window.location.href = "/login")}
+          className="text-white/40 hover:text-white/70 text-xs transition-colors cursor-pointer bg-transparent border-none"
+        >
+          Already have an account? Sign In
+        </button>
       </div>
     </div>
   );
