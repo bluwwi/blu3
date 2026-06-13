@@ -203,3 +203,13 @@ body {
     100% { transform: translate(0,0) }
 }
 
+@keyframes gradientShift {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    33%      { transform: scale(1.1) rotate(1.5deg); }
+    66%      { transform: scale(0.95) rotate(-0.75deg); }
+}
+
+.animate-gradient {
+    animation: gradientShift 20s ease-in-out infinite;
+}
+
