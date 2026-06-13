@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
 import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
+import { WaveformVisualizer } from "@/components/Player/ui/WaveformVisualizer";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -158,6 +159,9 @@ export default function Home() {
         >
           Already have an account? Sign In
         </button>
+        <div className="flex-1 w-full max-w-sm">
+          <WaveformVisualizer />
+        </div>
       </div>
 
       <div className="hidden lg:flex w-[60%] items-center justify-center p-8">
