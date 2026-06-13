@@ -155,7 +155,7 @@ export default function Home() {
         </button>
         <button
           onClick={() => (window.location.href = "/login")}
-          className="text-white/40 hover:text-white/70 text-xs transition-colors cursor-pointer bg-transparent border-none"
+          className="px-5 py-2 bg-white/30 backdrop-blur-md text-white/80 hover:bg-white/40 hover:text-white rounded-lg text-xs font-medium transition-all cursor-pointer border-none"
         >
           Already have an account? Sign In
         </button>
@@ -204,7 +204,7 @@ export default function Home() {
           </button>
           <button
             onClick={() => (window.location.href = "/login")}
-            className="text-white/40 hover:text-white/70 text-xs transition-colors cursor-pointer bg-transparent border-none"
+            className="px-5 py-2 bg-white/30 backdrop-blur-md text-white/80 hover:bg-white/40 hover:text-white rounded-lg text-xs font-medium transition-all cursor-pointer border-none"
           >
             Already have an account? Sign In
           </button>
