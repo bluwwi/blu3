@@ -95,6 +95,7 @@ interface Props {
   onSkipForward?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
+  frequencyBands?: readonly number[];
 }
 
 export function SquarePlayer({
@@ -114,6 +115,7 @@ export function SquarePlayer({
   onSkipForward,
   isLiked = false,
   onToggleLike,
+  frequencyBands,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -137,6 +139,8 @@ export function SquarePlayer({
   const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
+  const bandsRef = useRef(frequencyBands);
+  bandsRef.current = frequencyBands;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -197,15 +201,17 @@ export function SquarePlayer({
         (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
       );
 
-      WAVE_LINES.forEach((cfg) => {
-        const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
+      WAVE_LINES.forEach((cfg, idx) => {
+        const baseY = baseYs[idx];
         const scroll =
           scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
         const freq = ((2 * Math.PI) / W) * 1.5;
         const breath =
           1 +
           0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const amp = H * cfg.amp * mt * breath;
+        const liveBands = bandsRef.current;
+        const bandMod = liveBands?.[idx] ?? 1;
+        const amp = H * cfg.amp * mt * breath * bandMod;
 
         ctx.strokeStyle = "rgba(255,255,255,0.07)";
         ctx.lineWidth = 11;
