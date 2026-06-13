@@ -23,8 +23,6 @@ const DEMO_RECENT = [
 export default function Home() {
   const router = useRouter();
   const { user, loading } = useAuth();
-  const [current, setCurrent] = useState(0);
-  const [prev, setPrev] = useState<number | null>(null);
   const [oauthError, setOauthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,54 +50,30 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrent((c) => {
-        setPrev(c);
-        return (c + 1) % TOTAL;
-      });
-    }, 1800);
-    return () => clearInterval(timer);
-  }, []);
-
   return (
-    <>
+    <div className="relative w-full min-h-screen overflow-hidden bg-[#0D0D14] flex">
+      <div className="grain" />
 
-
-      <div className="page">
-        <div className="grain" />
-
-        {oauthError && (
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600/90 text-white px-5 py-3 rounded-xl text-sm max-w-md text-center shadow-lg backdrop-blur-sm">
-            {oauthError}
-          </div>
-        )}
-
-        <img src="/logo/bg.svg" alt="Blu3" className="logo" draggable={false} />
-
-        <div className="frame">
-          <div
-            key={`enter-${current}`}
-            className="slide slide-enter"
-            onAnimationEnd={() => setPrev(null)}
-          >
-            <img src={`/photos/${current + 1}.jpg`} alt="" draggable={false} />
-          </div>
-
-          {prev !== null && (
-            <div key={`exit-${prev}`} className="slide slide-exit">
-              <img src={`/photos/${prev + 1}.jpg`} alt="" draggable={false} />
-            </div>
-          )}
+      {oauthError && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-600/90 text-white px-5 py-3 rounded-xl text-sm max-w-md text-center shadow-lg backdrop-blur-sm">
+          {oauthError}
         </div>
+      )}
 
-        <button
-          className="btn"
-          onClick={() => (window.location.href = "/login")}
-        >
-          <span>get started</span>
-        </button>
+      <div className="hidden lg:flex w-[40%] flex-col items-center justify-center p-8 gap-6">
+        <img
+          src="/logo/bg.svg"
+          alt="Blu3"
+          className="w-64 h-auto object-contain select-none pointer-events-none"
+          draggable={false}
+        />
       </div>
-    </>
+
+      <div className="hidden lg:flex w-[60%] items-center justify-center p-8">
+      </div>
+
+      <div className="flex lg:hidden w-full flex-col items-center justify-center min-h-screen p-6 gap-4">
+      </div>
+    </div>
   );
 }
