@@ -209,7 +209,7 @@ export default function Home() {
             Already have an account? Sign In
           </button>
         </div>
-        <div className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden flex flex-col min-h-0">
+        <div className="relative flex-1 rounded-2xl md:rounded-3xl border border-white/10 md:border-2 md:border-white/8 bg-white/[0.04] md:bg-white/5 backdrop-blur-2xl md:backdrop-blur-2xl filter drop-shadow-[0_0_40px_rgba(0,0,0,1)] md:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)] overflow-hidden flex flex-col min-h-0 md:before:absolute md:before:inset-0 md:before:rounded-3xl md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent">
           <QueueAndHistory
             queue={DEMO_TRACKS}
             recentTracks={getDemoRecent()}
