@@ -89,15 +89,6 @@ export function useProgressTracking(
     return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
   }, [audioRef]);
 
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.hidden) return;
-      tick();
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [tick]);
-
   return {
     progress,
     currentTime,

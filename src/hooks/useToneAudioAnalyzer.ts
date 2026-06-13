@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect } from "react";
 import * as Tone from "tone";
 
 const DEFAULT_BANDS: readonly number[] = [0.5, 0.5, 0.5, 0.5, 0.5];
@@ -14,50 +14,29 @@ interface UseToneAudioAnalyzerOptions {
 
 export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false }: UseToneAudioAnalyzerOptions) {
   const bandsRef = useRef<readonly number[]>(DEFAULT_BANDS);
-  const sourceClaimedRef = useRef(false);
-  const rafRef = useRef(0);
   const smoothRef = useRef<number[]>([0.5, 0.5, 0.5, 0.5, 0.5]);
+  const rafRef = useRef(0);
+  const startedRef = useRef(false);
   const ctxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-
-  const cleanup = useCallback(() => {
-    cancelAnimationFrame(rafRef.current);
-    rafRef.current = 0;
-    const ctx = ctxRef.current;
-    if (ctx && ctx.state !== "closed") {
-      ctx.close();
-    }
-    ctxRef.current = null;
-    analyserRef.current = null;
-    sourceClaimedRef.current = false;
-    bandsRef.current = DEFAULT_BANDS;
-    smoothRef.current = [0.5, 0.5, 0.5, 0.5, 0.5];
-  }, []);
+  const cancellationRef = useRef(false);
 
   useEffect(() => {
-    if (!enabled || !playing) {
-      cleanup();
-      return;
-    }
+    if (!enabled) return;
 
     const audio = audioRef.current;
     if (!audio) return;
 
-    let cancelled = false;
+    cancellationRef.current = false;
 
     const setup = async () => {
-      if (sourceClaimedRef.current) {
-        readLoop();
-        return;
-      }
+      if (startedRef.current) return;
       try {
         await Tone.start();
         const ctx = Tone.getContext().rawContext as AudioContext;
         ctxRef.current = ctx;
 
         const source = ctx.createMediaElementSource(audio);
-        sourceClaimedRef.current = true;
-
         const analyser = ctx.createAnalyser();
         analyser.fftSize = FFT_SIZE;
         analyserRef.current = analyser;
@@ -65,19 +44,30 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
         source.connect(analyser);
         analyser.connect(ctx.destination);
 
-        readLoop();
+        startedRef.current = true;
       } catch {
-        cleanup();
+        // Audio element already claimed by another context
       }
     };
 
+    setup();
+
+    return () => {
+      cancellationRef.current = true;
+    };
+  }, [enabled, audioRef]);
+
+  useEffect(() => {
     const dataArray = new Uint8Array(FFT_SIZE / 2);
     const binSize = (FFT_SIZE / 2) / NUM_BANDS;
 
     const readLoop = () => {
-      if (cancelled) return;
+      if (cancellationRef.current) return;
       const analyser = analyserRef.current;
-      if (!analyser) return;
+      if (!analyser) {
+        rafRef.current = requestAnimationFrame(readLoop);
+        return;
+      }
       analyser.getByteFrequencyData(dataArray);
       const bands: number[] = [];
       for (let i = 0; i < NUM_BANDS; i++) {
@@ -93,13 +83,30 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
       rafRef.current = requestAnimationFrame(readLoop);
     };
 
-    setup();
+    if (playing && startedRef.current) {
+      readLoop();
+    } else {
+      bandsRef.current = DEFAULT_BANDS;
+      smoothRef.current = [0.5, 0.5, 0.5, 0.5, 0.5];
+    }
 
     return () => {
-      cancelled = true;
-      cleanup();
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = 0;
     };
-  }, [enabled, playing, audioRef, cleanup]);
+  }, [playing]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.hidden) return;
+      const ctx = ctxRef.current;
+      if (ctx && ctx.state === "suspended") {
+        ctx.resume();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
 
   return { bandsRef };
 }
