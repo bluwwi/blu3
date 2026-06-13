@@ -169,5 +169,18 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     else releaseWakeLock();
   }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, releaseWakeLock]);
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) return;
+      const cfg = configRef.current;
+      if (!cfg.isPlaying) return;
+      const audio = audioRef.current;
+      if (!audio || audio.src === "" || !audio.paused) return;
+      audio.play().catch(() => {});
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, []);
+
   return { audioRef, retryPlay };
 }
