@@ -14,11 +14,14 @@ const DEMO_TRACKS: Track[] = [
   { id: "demo-5", source: "youtube", videoId: "d5", name: "Rose Gold", duration_ms: 0, explicit: false, artists: [{ name: "The Blaze" }], album: { name: "Dancehall" }, image: "/queue/rose.jpg" },
 ];
 
-const DEMO_RECENT = [
-  { videoId: "r1", trackName: "Heartbeat", artistName: "TheXX", image: "/queue/heart.jpg", playedAt: Date.now() - 300000 },
-  { videoId: "r2", trackName: "Redbone", artistName: "Childish Gambino", image: "/queue/red.jpg", playedAt: Date.now() - 600000 },
-  { videoId: "r3", trackName: "Hiatus", artistName: "Tycho", image: "/queue/hi.jpg", playedAt: Date.now() - 900000 },
-];
+function getDemoRecent() {
+  const now = Date.now();
+  return [
+    { videoId: "r1", trackName: "Heartbeat", artistName: "TheXX", image: "/queue/heart.jpg", playedAt: now - 300000 },
+    { videoId: "r2", trackName: "Redbone", artistName: "Childish Gambino", image: "/queue/red.jpg", playedAt: now - 600000 },
+    { videoId: "r3", trackName: "Hiatus", artistName: "Tycho", image: "/queue/hi.jpg", playedAt: now - 900000 },
+  ];
+}
 
 export default function Home() {
   const router = useRouter();
@@ -88,7 +91,7 @@ export default function Home() {
         <div className="w-full max-w-lg h-[70vh] rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden flex flex-col">
           <QueueAndHistory
             queue={DEMO_TRACKS}
-            recentTracks={DEMO_RECENT}
+            recentTracks={getDemoRecent()}
             canControlPlayback={false}
             handleAdminPlayTrack={() => {}}
             removeFromQueue={() => {}}
@@ -132,7 +135,7 @@ export default function Home() {
         <div className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden flex flex-col min-h-0">
           <QueueAndHistory
             queue={DEMO_TRACKS}
-            recentTracks={DEMO_RECENT}
+            recentTracks={getDemoRecent()}
             canControlPlayback={false}
             handleAdminPlayTrack={() => {}}
             removeFromQueue={() => {}}
