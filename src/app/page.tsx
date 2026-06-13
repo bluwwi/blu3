@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
@@ -86,6 +86,22 @@ export default function Home() {
 
       <div className="hidden lg:flex w-[60%] items-center justify-center p-8">
         <div className="w-full max-w-lg h-[70vh] rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden flex flex-col">
+          <QueueAndHistory
+            queue={DEMO_TRACKS}
+            recentTracks={DEMO_RECENT}
+            canControlPlayback={false}
+            handleAdminPlayTrack={() => {}}
+            removeFromQueue={() => {}}
+            addToQueue={() => {}}
+            clearQueue={() => {}}
+            activeVideoId={null}
+            playerState="idle"
+            shuffleEnabled={false}
+            repeatMode="off"
+            onToggleShuffle={() => {}}
+            onCycleRepeat={() => {}}
+            onSearchClick={() => {}}
+          />
         </div>
       </div>
 
@@ -114,6 +130,22 @@ export default function Home() {
           </button>
         </div>
         <div className="flex-1 rounded-2xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl overflow-hidden flex flex-col min-h-0">
+          <QueueAndHistory
+            queue={DEMO_TRACKS}
+            recentTracks={DEMO_RECENT}
+            canControlPlayback={false}
+            handleAdminPlayTrack={() => {}}
+            removeFromQueue={() => {}}
+            addToQueue={() => {}}
+            clearQueue={() => {}}
+            activeVideoId={null}
+            playerState="idle"
+            shuffleEnabled={false}
+            repeatMode="off"
+            onToggleShuffle={() => {}}
+            onCycleRepeat={() => {}}
+            onSearchClick={() => {}}
+          />
         </div>
       </div>
     </div>
