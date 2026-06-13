@@ -7,19 +7,87 @@ import type { Track } from "@/utils/types";
 import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
 
 const DEMO_TRACKS: Track[] = [
-  { id: "demo-1", source: "youtube", videoId: "d1", name: "Sunflower", duration_ms: 0, explicit: false, artists: [{ name: "Post Malone & Swae Lee" }], album: { name: "Spider-Man: Into the Spider-Verse" }, image: "/queue/sunflower.jpg" },
-  { id: "demo-2", source: "youtube", videoId: "d2", name: "Blu3 Dreams", duration_ms: 0, explicit: false, artists: [{ name: "Luna Ray" }], album: { name: "Night Visions" }, image: "/queue/cat.jpg" },
-  { id: "demo-3", source: "youtube", videoId: "d3", name: "Midnight City", duration_ms: 0, explicit: false, artists: [{ name: "M83" }], album: { name: "Hurry Up, We're Dreaming" }, image: "/queue/camera.jpg" },
-  { id: "demo-4", source: "youtube", videoId: "d4", name: "Vibes", duration_ms: 0, explicit: false, artists: [{ name: "Kyle Dixon" }], album: { name: "Stranger Things" }, image: "/queue/vibe.jpg" },
-  { id: "demo-5", source: "youtube", videoId: "d5", name: "Rose Gold", duration_ms: 0, explicit: false, artists: [{ name: "The Blaze" }], album: { name: "Dancehall" }, image: "/queue/rose.jpg" },
+  {
+    id: "demo-1",
+    source: "youtube",
+    videoId: "d1",
+    name: "Sunflower",
+    duration_ms: 0,
+    explicit: false,
+    artists: [{ name: "Post Malone & Swae Lee" }],
+    album: { name: "Spider-Man: Into the Spider-Verse" },
+    image: "/queue/sunflower.jpg",
+  },
+  {
+    id: "demo-2",
+    source: "youtube",
+    videoId: "d2",
+    name: "Blu3 Dreams",
+    duration_ms: 0,
+    explicit: false,
+    artists: [{ name: "Luna Ray" }],
+    album: { name: "Night Visions" },
+    image: "/queue/cat.jpg",
+  },
+  {
+    id: "demo-3",
+    source: "youtube",
+    videoId: "d3",
+    name: "Midnight City",
+    duration_ms: 0,
+    explicit: false,
+    artists: [{ name: "M83" }],
+    album: { name: "Hurry Up, We're Dreaming" },
+    image: "/queue/camera.jpg",
+  },
+  {
+    id: "demo-4",
+    source: "youtube",
+    videoId: "d4",
+    name: "Vibes",
+    duration_ms: 0,
+    explicit: false,
+    artists: [{ name: "Kyle Dixon" }],
+    album: { name: "Stranger Things" },
+    image: "/queue/vibe.jpg",
+  },
+  {
+    id: "demo-5",
+    source: "youtube",
+    videoId: "d5",
+    name: "Rose Gold",
+    duration_ms: 0,
+    explicit: false,
+    artists: [{ name: "The Blaze" }],
+    album: { name: "Dancehall" },
+    image: "/queue/rose.jpg",
+  },
 ];
 
 function getDemoRecent() {
   const now = Date.now();
   return [
-    { videoId: "r1", trackName: "Heartbeat", artistName: "TheXX", image: "/queue/heart.jpg", playedAt: now - 300000 },
-    { videoId: "r2", trackName: "Redbone", artistName: "Childish Gambino", image: "/queue/red.jpg", playedAt: now - 600000 },
-    { videoId: "r3", trackName: "Hiatus", artistName: "Tycho", image: "/queue/hi.jpg", playedAt: now - 900000 },
+    {
+      videoId: "r1",
+      trackName: "Heartbeat",
+      artistName: "TheXX",
+      image: "/queue/heart.jpg",
+      playedAt: now - 300000,
+    },
+    {
+      videoId: "r2",
+      trackName: "Redbone",
+      artistName: "Childish Gambino",
+      image: "/queue/red.jpg",
+      playedAt: now - 600000,
+    },
+    {
+      videoId: "r3",
+      trackName: "Hiatus",
+      artistName: "Tycho",
+      image: "/queue/hi.jpg",
+      playedAt: now - 900000,
+    },
   ];
 }
 
@@ -32,7 +100,9 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search);
     const err = params.get("error");
     if (err === "account_not_linked") {
-      setOauthError("Sign-in failed because an account already exists with this email. Try a different sign-in method.");
+      setOauthError(
+        "Sign-in failed because an account already exists with this email. Try a different sign-in method.",
+      );
     } else if (err) {
       setOauthError("Sign-in failed. Please try again.");
     }
@@ -67,13 +137,14 @@ export default function Home() {
 
       <div className="hidden lg:flex w-[40%] flex-col items-center justify-center p-8 gap-8">
         <img
-          src="/logo/bg.svg"
+          src="/logo/blu3.svg"
           alt="Blu3"
           className="w-64 h-auto object-contain select-none pointer-events-none"
           draggable={false}
         />
         <p className="text-white/60 text-center text-sm max-w-xs leading-relaxed">
-          Listen together in real-time with friends. Create rooms, share music, and discover new sounds.
+          Listen together in real-time with friends. Create rooms, share music,
+          and discover new sounds.
         </p>
         <button
           onClick={() => (window.location.href = "/login")}
@@ -113,7 +184,7 @@ export default function Home() {
       <div className="flex lg:hidden w-full flex-col min-h-screen p-4 gap-4">
         <div className="flex flex-col items-center justify-center pt-8 pb-4 gap-4">
           <img
-            src="/logo/bg.svg"
+            src="/logo/blu3.svg"
             alt="Blu3"
             className="w-36 h-auto object-contain select-none pointer-events-none"
             draggable={false}
