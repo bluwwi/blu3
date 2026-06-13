@@ -12,7 +12,7 @@ import { resolveTrackSource } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
-import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
+import { useToneAudioAnalyzer } from "@/hooks/useToneAudioAnalyzer";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track, PlayerState } from "@/utils/types";
@@ -1039,15 +1039,11 @@ export default function RoomPage() {
     "EDM",
   ];
 
-  const audioAnalyzer = useAudioAnalyzer();
-
-  useEffect(() => {
-    if (player.playerState === "playing") {
-      audioAnalyzer.start();
-    } else {
-      audioAnalyzer.stop();
-    }
-  }, [player.playerState, audioAnalyzer]);
+  const { bandsRef: audioBandsRef } = useToneAudioAnalyzer({
+    audioRef,
+    enabled: true,
+    playing: player.playerState === "playing",
+  });
 
   useEffect(() => {
     if (!joined) return;
