@@ -136,7 +136,7 @@ export default function Home() {
         </div>
       )}
 
-      <div className="hidden lg:flex w-[40%] flex-col items-center justify-center p-8 gap-8">
+      <div className="hidden lg:flex w-[40%] flex-col items-center p-8 gap-6">
         <img
           src="/logo/blu3.svg"
           alt="Blu3"
@@ -159,7 +159,7 @@ export default function Home() {
         >
           Already have an account? Sign In
         </button>
-        <div className="flex-1 w-full max-w-sm">
+        <div className="flex-1 w-full max-w-sm min-h-[120px]">
           <WaveformVisualizer />
         </div>
       </div>
