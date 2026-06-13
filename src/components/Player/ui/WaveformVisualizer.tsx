@@ -72,7 +72,7 @@ export function WaveformVisualizer({ className }: { className?: string }) {
         const breath = 1 + 0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
         const amp = H * cfg.amp * mt * breath;
 
-        ctx.strokeStyle = "rgba(99,102,241,0.12)";
+        ctx.strokeStyle = "rgba(106,90,205,0.12)";
         ctx.lineWidth = 11;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
@@ -83,7 +83,7 @@ export function WaveformVisualizer({ className }: { className?: string }) {
         }
         ctx.stroke();
 
-        ctx.strokeStyle = "rgba(129,140,248,0.6)";
+        ctx.strokeStyle = "rgba(199,187,255,0.5)";
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         for (let x = 0; x <= W; x += 2) {

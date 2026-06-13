@@ -149,7 +149,7 @@ export default function Home() {
         </p>
         <button
           onClick={() => (window.location.href = "/login")}
-          className="px-8 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
+          className="px-8 py-3 bg-[#6A5ACD] hover:bg-[#7B6AD0] text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
         >
           Get Started
         </button>
@@ -159,7 +159,7 @@ export default function Home() {
         >
           Already have an account? Sign In
         </button>
-        <div className="flex-1 w-full max-w-sm min-h-[120px]">
+        <div className="flex-1 w-full max-w-sm min-h-[120px] max-h-[280px]">
           <WaveformVisualizer />
         </div>
       </div>
@@ -198,7 +198,7 @@ export default function Home() {
           </p>
           <button
             onClick={() => (window.location.href = "/login")}
-            className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
+            className="px-6 py-2.5 bg-[#6A5ACD] hover:bg-[#7B6AD0] text-white rounded-xl text-sm font-medium transition-all cursor-pointer"
           >
             Get Started
           </button>
