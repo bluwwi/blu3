@@ -59,6 +59,8 @@ export default function RoomPage() {
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
   const resolvingRef = useRef(new Set<string>());
+  const [retryKey, setRetryKey] = useState(0);
+  const forceRetry = useCallback(() => setRetryKey((k) => k + 1), []);
 
   const { audioRef, retryPlay } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
@@ -73,6 +75,7 @@ export default function RoomPage() {
     manualPauseRef,
     resolvedUrlsRef,
     resolvedTimestampsRef,
+    retryKey,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -140,7 +143,15 @@ export default function RoomPage() {
     onPause: () => handlePause(),
     onSeek: (state) => handleSeek(state),
     onPlaybackSync: (state, syncedTime) => {
-      if (!state.videoId) return;
+      if (!state.videoId) {
+        if (playerRef_fix.current.playerState !== "idle") {
+          playerRef_fix.current.setPlayerState("idle");
+          playerRef_fix.current.setNowPlaying(null);
+          playerRef_fix.current.pause?.();
+        }
+        syncHandledRef.current = true;
+        return;
+      }
       syncHandledRef.current = true;
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.updatedAt) {
@@ -150,8 +161,15 @@ export default function RoomPage() {
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
         progressRef_fix.current.seekTo(actualCurrentTime);
-        if (state.isPlaying) p.play?.();
-        else p.pause?.();
+        if (state.isPlaying) {
+          if (p.playerState === "ended" || p.playerState === "loading") {
+            forceRetry();
+          } else {
+            p.play?.();
+          }
+        } else {
+          p.pause?.();
+        }
       } else {
         p.playTrack(
           {

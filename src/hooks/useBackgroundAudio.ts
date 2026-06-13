@@ -20,6 +20,7 @@ interface BackgroundAudioConfig {
   manualPauseRef?: React.MutableRefObject<boolean>;
   resolvedUrlsRef?: React.MutableRefObject<Map<string, string>>;
   resolvedTimestampsRef?: React.MutableRefObject<Map<string, number>>;
+  retryKey?: number;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -181,6 +182,15 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     document.addEventListener("visibilitychange", handleVisibility);
     return () => document.removeEventListener("visibilitychange", handleVisibility);
   }, []);
+
+  useEffect(() => {
+    if (!config.retryKey) return;
+    const audio = audioRef.current;
+    if (audio && !audio.paused) return;
+    if (audio && audio.src && configRef.current.isPlaying) {
+      audio.play().catch(() => {});
+    }
+  }, [config.retryKey]);
 
   return { audioRef, retryPlay };
 }
