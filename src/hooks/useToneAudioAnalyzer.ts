@@ -63,6 +63,7 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
         analyserRef.current = analyser;
 
         source.connect(analyser);
+        analyser.connect(ctx.destination);
 
         readLoop();
       } catch {
