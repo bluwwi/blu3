@@ -54,7 +54,7 @@ export default function Home() {
   }, [user, loading, router]);
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden bg-[#0D0D14] flex">
+    <div className="relative w-full min-h-dvh overflow-y-auto lg:overflow-hidden bg-[#0D0D14] flex flex-col lg:flex-row">
       <div className="grain" />
 
       {oauthError && (
