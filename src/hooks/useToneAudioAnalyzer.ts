@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import * as Tone from "tone";
 
 const DEFAULT_BANDS: readonly number[] = [0.5, 0.5, 0.5, 0.5, 0.5];
@@ -14,58 +14,48 @@ interface UseToneAudioAnalyzerOptions {
 
 export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false }: UseToneAudioAnalyzerOptions) {
   const bandsRef = useRef<readonly number[]>(DEFAULT_BANDS);
-  const ctxRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
+  const sourceClaimedRef = useRef(false);
   const rafRef = useRef(0);
   const smoothRef = useRef<number[]>([0.5, 0.5, 0.5, 0.5, 0.5]);
-  const sourceClaimedRef = useRef(false);
-  const mountedRef = useRef(true);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
 
   const cleanup = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = 0;
-    sourceRef.current?.disconnect();
-    sourceRef.current = null;
-    analyserRef.current = null;
-    if (ctxRef.current && ctxRef.current.state !== "closed") {
-      ctxRef.current.close();
+    const ctx = ctxRef.current;
+    if (ctx && ctx.state !== "closed") {
+      ctx.close();
     }
     ctxRef.current = null;
+    analyserRef.current = null;
     sourceClaimedRef.current = false;
     bandsRef.current = DEFAULT_BANDS;
     smoothRef.current = [0.5, 0.5, 0.5, 0.5, 0.5];
   }, []);
 
   useEffect(() => {
-    mountedRef.current = true;
-    return () => { mountedRef.current = false; };
-  }, []);
-
-  useEffect(() => {
-    if (!enabled) {
+    if (!enabled || !playing) {
       cleanup();
       return;
     }
-
-    if (!playing) return;
 
     const audio = audioRef.current;
     if (!audio) return;
 
     let cancelled = false;
 
-    const setup = () => {
+    const setup = async () => {
       if (sourceClaimedRef.current) {
         readLoop();
         return;
       }
       try {
-        const ctx = new AudioContext();
+        await Tone.start();
+        const ctx = Tone.getContext().rawContext;
         ctxRef.current = ctx;
 
         const source = ctx.createMediaElementSource(audio);
-        sourceRef.current = source;
         sourceClaimedRef.current = true;
 
         const analyser = ctx.createAnalyser();
@@ -74,10 +64,9 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
 
         source.connect(analyser);
 
-        startedRef.current = true;
         readLoop();
       } catch {
-        // MediaElementAudioSourceNode already claimed
+        cleanup();
       }
     };
 
@@ -85,7 +74,7 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
     const binSize = (FFT_SIZE / 2) / NUM_BANDS;
 
     const readLoop = () => {
-      if (cancelled || !mountedRef.current) return;
+      if (cancelled) return;
       const analyser = analyserRef.current;
       if (!analyser) return;
       analyser.getByteFrequencyData(dataArray);
@@ -109,7 +98,7 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
       cancelled = true;
       cleanup();
     };
-  }, [enabled, playing, cleanup]);
+  }, [enabled, playing, audioRef, cleanup]);
 
   return { bandsRef };
 }
