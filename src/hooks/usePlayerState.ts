@@ -132,7 +132,6 @@ export function usePlayerState(): UsePlayerStateReturn {
   }, []);
 
   const handlePauseEvent = useCallback(() => {
-    if (typeof document !== "undefined" && document.hidden) return;
     setPlayerState("paused");
   }, []);
 
