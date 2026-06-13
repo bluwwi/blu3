@@ -425,6 +425,21 @@ export default function RoomPage() {
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
+        p.playTrack(
+          {
+            id: activeTrack.id,
+            source: activeTrack.source ?? "youtube",
+            videoId: activeTrack.videoId,
+            name: activeTrack.name,
+            duration_ms: activeTrack.duration_ms,
+            explicit: false,
+            artists: activeTrack.artists ?? [{ name: "" }],
+            album: activeTrack.album ?? { name: "" },
+            image: activeTrack.image ?? "",
+          },
+          0,
+          true,
+        );
         sendPlay({
           id: activeTrack.id,
           source: activeTrack.source ?? "youtube",
@@ -455,6 +470,21 @@ export default function RoomPage() {
       }
 
       if (nextTrack) {
+        p.playTrack(
+          {
+            id: nextTrack.id,
+            source: nextTrack.source ?? "youtube",
+            videoId: nextTrack.videoId,
+            name: nextTrack.name,
+            duration_ms: nextTrack.duration_ms,
+            explicit: false,
+            artists: nextTrack.artists ?? [{ name: "" }],
+            album: nextTrack.album ?? { name: "" },
+            image: nextTrack.image ?? "",
+          },
+          0,
+          true,
+        );
         sendPlay({
           id: nextTrack.id,
           source: nextTrack.source ?? "youtube",
@@ -467,6 +497,21 @@ export default function RoomPage() {
         });
       }
     } else {
+      p.playTrack(
+        {
+          id: currentQueueTrack.id,
+          source: currentQueueTrack.source ?? "youtube",
+          videoId: currentQueueTrack.videoId,
+          name: currentQueueTrack.name,
+          duration_ms: currentQueueTrack.duration_ms,
+          explicit: false,
+          artists: currentQueueTrack.artists ?? [{ name: "" }],
+          album: currentQueueTrack.album ?? { name: "" },
+          image: currentQueueTrack.image ?? "",
+        },
+        0,
+        true,
+      );
       sendPlay({
         id: currentQueueTrack.id,
         source: currentQueueTrack.source ?? "youtube",
