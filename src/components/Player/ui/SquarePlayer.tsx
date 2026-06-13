@@ -95,7 +95,7 @@ interface Props {
   onSkipForward?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
-  frequencyBands?: readonly number[];
+  bandsRef?: React.RefObject<readonly number[] | null>;
 }
 
 export function SquarePlayer({
@@ -115,7 +115,7 @@ export function SquarePlayer({
   onSkipForward,
   isLiked = false,
   onToggleLike,
-  frequencyBands,
+  bandsRef: bandsRefProp,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -139,8 +139,6 @@ export function SquarePlayer({
   const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
-  const bandsRef = useRef(frequencyBands);
-  bandsRef.current = frequencyBands;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -209,7 +207,7 @@ export function SquarePlayer({
         const breath =
           1 +
           0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const liveBands = bandsRef.current;
+        const liveBands = bandsRefProp?.current;
         const bandMod = liveBands?.[idx] ?? 1;
         const amp = H * cfg.amp * mt * breath * bandMod;
 

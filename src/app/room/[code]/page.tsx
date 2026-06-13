@@ -1189,6 +1189,7 @@ export default function RoomPage() {
                           onSkipForward={
                             canControlPlayback ? handleSkipForward : undefined
                           }
+                          bandsRef={audioBandsRef}
                         />
                       )}
                     </aside>
