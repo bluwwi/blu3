@@ -125,8 +125,8 @@ export default function Home() {
 
   return (
     <div className="relative w-full min-h-dvh overflow-y-auto lg:overflow-hidden bg-[#0D0D14] flex flex-col lg:flex-row">
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.08),transparent_50%)] pointer-events-none z-0" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.06),transparent_50%)] pointer-events-none z-0" />
+      <div className="animate-gradient fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(99,102,241,0.08),transparent_50%)] pointer-events-none z-0" />
+      <div className="animate-gradient fixed inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(168,85,247,0.06),transparent_50%)] pointer-events-none z-0" style={{ animationDelay: "-10s" }} />
       <div className="grain" />
 
       {oauthError && (
