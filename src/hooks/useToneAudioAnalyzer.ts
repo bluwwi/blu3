@@ -52,7 +52,7 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
       }
       try {
         await Tone.start();
-        const ctx = Tone.getContext().rawContext;
+        const ctx = Tone.getContext().rawContext as AudioContext;
         ctxRef.current = ctx;
 
         const source = ctx.createMediaElementSource(audio);
