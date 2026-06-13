@@ -1,10 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import type { Track } from "@/utils/types";
+import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
 
-const TOTAL = 16;
+const DEMO_TRACKS: Track[] = [
+  { id: "demo-1", source: "youtube", videoId: "d1", name: "Sunflower", duration_ms: 0, explicit: false, artists: [{ name: "Post Malone & Swae Lee" }], album: { name: "Spider-Man: Into the Spider-Verse" }, image: "/queue/sunflower.jpg" },
+  { id: "demo-2", source: "youtube", videoId: "d2", name: "Blu3 Dreams", duration_ms: 0, explicit: false, artists: [{ name: "Luna Ray" }], album: { name: "Night Visions" }, image: "/queue/cat.jpg" },
+  { id: "demo-3", source: "youtube", videoId: "d3", name: "Midnight City", duration_ms: 0, explicit: false, artists: [{ name: "M83" }], album: { name: "Hurry Up, We're Dreaming" }, image: "/queue/camera.jpg" },
+  { id: "demo-4", source: "youtube", videoId: "d4", name: "Vibes", duration_ms: 0, explicit: false, artists: [{ name: "Kyle Dixon" }], album: { name: "Stranger Things" }, image: "/queue/vibe.jpg" },
+  { id: "demo-5", source: "youtube", videoId: "d5", name: "Rose Gold", duration_ms: 0, explicit: false, artists: [{ name: "The Blaze" }], album: { name: "Dancehall" }, image: "/queue/rose.jpg" },
+];
+
+const DEMO_RECENT = [
+  { videoId: "r1", trackName: "Heartbeat", artistName: "TheXX", image: "/queue/heart.jpg", playedAt: Date.now() - 300000 },
+  { videoId: "r2", trackName: "Redbone", artistName: "Childish Gambino", image: "/queue/red.jpg", playedAt: Date.now() - 600000 },
+  { videoId: "r3", trackName: "Hiatus", artistName: "Tycho", image: "/queue/hi.jpg", playedAt: Date.now() - 900000 },
+];
 
 export default function Home() {
   const router = useRouter();
