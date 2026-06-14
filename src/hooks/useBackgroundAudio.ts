@@ -7,7 +7,7 @@ import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000;
 const MAX_ERROR_RETRIES = 3;
-const ABORT_THRESHOLD_MS = 30000;
+const LOAD_TIMEOUT_MS = 15000;
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
@@ -48,14 +48,32 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     });
   }, []);
 
+  const loadTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const setupAudioSource = useCallback((fetchId: number, videoId: string, audioUrl: string, startTime: number, shouldPlay: boolean) => {
     const audio = audioRef.current;
     if (!audio || fetchIdRef.current !== fetchId) return;
     const tokenParam = config.token ? `?token=${encodeURIComponent(config.token)}` : "";
     const streamingUrl = `${API_URL}${audioUrl}${tokenParam}`;
+    if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
     audio.src = streamingUrl;
     audio.currentTime = startTime;
     if (shouldPlay) safePlay(audio);
+    loadTimerRef.current = setTimeout(() => {
+      if (fetchIdRef.current !== fetchId) return;
+      if (audio.readyState === 0 || audio.readyState === 1) {
+        const cfg = configRef.current;
+        const track = cfg.nowPlaying;
+        if (track?.videoId) {
+          const retries = errorRetryRef.current.get(track.videoId) ?? 0;
+          if (retries < MAX_ERROR_RETRIES) {
+            errorRetryRef.current.set(track.videoId, retries + 1);
+            const newFetchId = ++fetchIdRef.current;
+            const start = cfg.pendingStartTimeRef?.current ?? 0;
+            resolveRef.current(newFetchId, track.videoId, track.name, track.artists?.[0]?.name, start, cfg.isPlaying);
+          }
+        }
+      }
+    }, LOAD_TIMEOUT_MS);
   }, [config.token, safePlay]);
 
   const resolveAndPlay = useCallback((fetchId: number, videoId: string, name: string, artists: string | undefined, startTime: number, shouldPlay: boolean) => {
@@ -145,6 +163,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
 
     audioRef.current = audio;
     return () => {
+      if (loadTimerRef.current) clearTimeout(loadTimerRef.current);
       audio.onplay = null;
       audio.onpause = null;
       audio.onended = null;
