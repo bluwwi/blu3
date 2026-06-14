@@ -3,6 +3,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { Track } from "@/utils/types";
 import { resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
+import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000;
 const MAX_ERROR_RETRIES = 3;
@@ -171,16 +172,15 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, releaseWakeLock]);
 
   useEffect(() => {
-    const handleVisibility = () => {
-      if (document.hidden) return;
+    const unsub = onVisibilityChange((visible) => {
+      if (!visible) return;
       const cfg = configRef.current;
       if (!cfg.isPlaying) return;
       const audio = audioRef.current;
       if (!audio || audio.src === "" || !audio.paused) return;
       audio.play().catch(() => {});
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
+    });
+    return unsub;
   }, []);
 
   useEffect(() => {
