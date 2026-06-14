@@ -191,8 +191,14 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       const cfg = configRef.current;
       if (!cfg.isPlaying) return;
       const audio = audioRef.current;
-      if (!audio || audio.src === "" || !audio.paused) return;
-      audio.play().catch(() => {});
+      if (!audio || audio.src === "") return;
+      if (audio.ended) {
+        cfg.onTrackEnd();
+        return;
+      }
+      if (audio.paused) {
+        audio.play().catch(() => {});
+      }
     });
     return unsub;
   }, []);
