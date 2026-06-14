@@ -7,6 +7,7 @@ import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000;
 const MAX_ERROR_RETRIES = 3;
+const ABORT_THRESHOLD_MS = 30000;
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
@@ -32,6 +33,20 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const fetchIdRef = useRef(0);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const errorRetryRef = useRef<Map<string, number>>(new Map());
+  const abortCountRef = useRef(0);
+
+  const safePlay = useCallback((audio: HTMLAudioElement) => {
+    audio.play().catch((err: DOMException) => {
+      if (err.name === "AbortError") {
+        abortCountRef.current++;
+        if (abortCountRef.current > 5) return;
+      } else if (err.name === "NotAllowedError") {
+        return;
+      } else {
+        abortCountRef.current = 0;
+      }
+    });
+  }, []);
 
   const setupAudioSource = useCallback((fetchId: number, videoId: string, audioUrl: string, startTime: number, shouldPlay: boolean) => {
     const audio = audioRef.current;
@@ -40,8 +55,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const streamingUrl = `${API_URL}${audioUrl}${tokenParam}`;
     audio.src = streamingUrl;
     audio.currentTime = startTime;
-    if (shouldPlay) audio.play().catch(() => {});
-  }, [config.token]);
+    if (shouldPlay) safePlay(audio);
+  }, [config.token, safePlay]);
 
   const resolveAndPlay = useCallback((fetchId: number, videoId: string, name: string, artists: string | undefined, startTime: number, shouldPlay: boolean) => {
     resolveTrackSource(videoId, name, artists, config.token)
@@ -118,12 +133,12 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const onStalled = () => {
       const cfg = configRef.current;
       if (!audio.paused || !cfg.isPlaying || !audio.src) return;
-      audio.play().catch(() => {});
+      safePlay(audio);
     };
     const onSuspend = () => {
       const cfg = configRef.current;
       if (!audio.paused || !cfg.isPlaying || !audio.src) return;
-      audio.play().catch(() => {});
+      safePlay(audio);
     };
     audio.addEventListener("stalled", onStalled);
     audio.addEventListener("suspend", onSuspend);
@@ -148,6 +163,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (!track?.videoId) return;
 
     errorRetryRef.current.delete(track.videoId);
+    abortCountRef.current = 0;
     const fetchId = ++fetchIdRef.current;
     const audio = audioRef.current;
     if (audio) { audio.pause(); audio.src = ""; }
@@ -178,7 +194,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (audio) {
       audio.volume = config.isMuted ? 0 : config.volume / 100;
       if (config.isPlaying) {
-        if (audio.paused) audio.play().catch(() => {});
+        if (audio.paused) safePlay(audio);
       } else {
         if (!audio.paused) audio.pause();
       }
@@ -207,20 +223,20 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
         return;
       }
       if (audio.paused) {
-        audio.play().catch(() => {});
+        safePlay(audio);
       }
     });
     return unsub;
-  }, []);
+  }, [safePlay]);
 
   useEffect(() => {
     if (!config.retryKey) return;
     const audio = audioRef.current;
     if (audio && !audio.paused) return;
     if (audio && audio.src && configRef.current.isPlaying) {
-      audio.play().catch(() => {});
+      safePlay(audio);
     }
-  }, [config.retryKey]);
+  }, [config.retryKey, safePlay]);
 
   return { audioRef, retryPlay };
 }
