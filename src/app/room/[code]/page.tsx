@@ -922,17 +922,21 @@ export default function RoomPage() {
 
   useEffect(() => {
     const wasPlayingRef = { current: false };
+    let syncTimer: ReturnType<typeof setTimeout> | null = null;
     const handleVisibility = () => {
       if (document.hidden) {
         wasPlayingRef.current =
           player.playerState === "playing" || player.playerState === "loading";
       } else {
-        requestSync();
+        if (syncTimer) clearTimeout(syncTimer);
+        syncTimer = setTimeout(() => requestSync(), 300);
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
-    return () =>
+    return () => {
+      if (syncTimer) clearTimeout(syncTimer);
       document.removeEventListener("visibilitychange", handleVisibility);
+    };
   }, [requestSync, player.playerState]);
 
   useEffect(() => {
