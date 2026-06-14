@@ -160,7 +160,11 @@ export default function RoomPage() {
       }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
-        progressRef_fix.current.seekTo(actualCurrentTime);
+        const actualTime = audioRef.current?.currentTime ?? 0;
+        const drift = Math.abs(actualTime - actualCurrentTime);
+        if (drift > 1.5) {
+          progressRef_fix.current.seekTo(actualCurrentTime);
+        }
         if (state.isPlaying) {
           if (p.playerState === "ended" || p.playerState === "loading") {
             forceRetry();
