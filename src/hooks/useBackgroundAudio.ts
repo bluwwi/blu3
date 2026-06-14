@@ -112,6 +112,18 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       const start = cfg.pendingStartTimeRef?.current ?? 0;
       resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, cfg.isPlaying);
     };
+    const onStalled = () => {
+      const cfg = configRef.current;
+      if (!audio.paused || !cfg.isPlaying || !audio.src) return;
+      audio.play().catch(() => {});
+    };
+    const onSuspend = () => {
+      const cfg = configRef.current;
+      if (!audio.paused || !cfg.isPlaying || !audio.src) return;
+      audio.play().catch(() => {});
+    };
+    audio.addEventListener("stalled", onStalled);
+    audio.addEventListener("suspend", onSuspend);
 
     audioRef.current = audio;
     return () => {
@@ -119,6 +131,8 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.onpause = null;
       audio.onended = null;
       audio.onerror = null;
+      audio.removeEventListener("stalled", onStalled);
+      audio.removeEventListener("suspend", onSuspend);
       audio.pause();
       audio.src = "";
       document.body.removeChild(audio);
