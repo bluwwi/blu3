@@ -39,8 +39,12 @@ export function useProgressTracking(
     }
   }, []);
 
+  const lastSeekRef = useRef(0);
   const seekTo = useCallback(
     (time: number) => {
+      const now = Date.now();
+      if (now - lastSeekRef.current < 200) return;
+      lastSeekRef.current = now;
       setCurrentTime(time);
       try {
         if (audioRef?.current) {
