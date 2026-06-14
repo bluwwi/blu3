@@ -161,9 +161,9 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (audio) {
       audio.volume = config.isMuted ? 0 : config.volume / 100;
       if (config.isPlaying) {
-        audio.play().catch(() => {});
+        if (audio.paused) audio.play().catch(() => {});
       } else {
-        audio.pause();
+        if (!audio.paused) audio.pause();
       }
     }
 
