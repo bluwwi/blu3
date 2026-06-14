@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect } from "react";
 import * as Tone from "tone";
+import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 const DEFAULT_BANDS: readonly number[] = [0.5, 0.5, 0.5, 0.5, 0.5];
 const FFT_SIZE = 256;
@@ -97,15 +98,14 @@ export function useToneAudioAnalyzer({ audioRef, enabled = true, playing = false
   }, [playing]);
 
   useEffect(() => {
-    const onVisible = () => {
-      if (document.hidden) return;
+    const unsub = onVisibilityChange((visible) => {
+      if (!visible) return;
       const ctx = ctxRef.current;
       if (ctx && ctx.state === "suspended") {
         ctx.resume();
       }
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    return () => document.removeEventListener("visibilitychange", onVisible);
+    });
+    return unsub;
   }, []);
 
   return { bandsRef };
