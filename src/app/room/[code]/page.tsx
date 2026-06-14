@@ -13,6 +13,7 @@ import { resolveTrackSource } from "@/utils/ytdl";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useToneAudioAnalyzer } from "@/hooks/useToneAudioAnalyzer";
+import { fadeSeek } from "@/utils/audioFade";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
@@ -164,7 +165,7 @@ export default function RoomPage() {
         const actualTime = audioRef.current?.currentTime ?? 0;
         const drift = Math.abs(actualTime - actualCurrentTime);
         if (drift > 1.5) {
-          progressRef_fix.current.seekTo(actualCurrentTime);
+          seekWithFade(actualCurrentTime);
         }
         if (state.isPlaying) {
           if (p.playerState === "ended" || p.playerState === "loading") {
@@ -325,6 +326,14 @@ export default function RoomPage() {
   const handleToggleLike = useCallback(() => {
     if (player.nowPlaying) toggleLike(player.nowPlaying);
   }, [player.nowPlaying, toggleLike]);
+
+  const seekWithFade = useCallback((time: number) => {
+    const audio = audioRef.current;
+    if (audio && !audio.paused) {
+      fadeSeek(audio, time);
+    }
+    progressRef_fix.current.seekTo(time);
+  }, []);
 
   const handlePlay = useCallback(
     (state: {
