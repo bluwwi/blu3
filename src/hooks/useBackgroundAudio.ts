@@ -55,6 +55,9 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       });
   }, [config.token, config.resolvedUrlsRef, config.resolvedTimestampsRef, setupAudioSource]);
 
+  const resolveRef = useRef(resolveAndPlay);
+  resolveRef.current = resolveAndPlay;
+
   const retryPlay = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !audio.src) return Promise.reject(new Error("No audio source"));
@@ -110,7 +113,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       errorRetryRef.current.set(track.videoId, retries + 1);
       const fetchId = ++fetchIdRef.current;
       const start = cfg.pendingStartTimeRef?.current ?? 0;
-      resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, cfg.isPlaying);
+      resolveRef.current(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, cfg.isPlaying);
     };
     const onStalled = () => {
       const cfg = configRef.current;
@@ -138,7 +141,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       document.body.removeChild(audio);
       audioRef.current = null;
     };
-  }, [resolveAndPlay]);
+  }, []);
 
   useEffect(() => {
     const track = config.nowPlaying;
