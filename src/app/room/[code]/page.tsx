@@ -938,8 +938,9 @@ export default function RoomPage() {
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
+      if (document.hidden) return;
       if (player.playerState === "playing") sendProgress(progress.currentTime);
-    }, 2000);
+    }, 3000);
     return () => window.clearInterval(heartbeatId);
   }, [
     canControlPlayback,
