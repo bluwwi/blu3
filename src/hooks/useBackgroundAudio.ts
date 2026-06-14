@@ -181,9 +181,16 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       }
     }
 
-    if (config.isPlaying) acquireWakeLock();
-    else releaseWakeLock();
-  }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, releaseWakeLock]);
+    if (config.isPlaying) {
+      acquireWakeLock();
+    }
+  }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock]);
+
+  useEffect(() => {
+    if (config.isPlaying) return;
+    const timer = setTimeout(() => releaseWakeLock(), 5000);
+    return () => clearTimeout(timer);
+  }, [config.isPlaying, releaseWakeLock]);
 
   useEffect(() => {
     const unsub = onVisibilityChange((visible) => {
