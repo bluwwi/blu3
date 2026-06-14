@@ -1068,15 +1068,14 @@ export default function RoomPage() {
     rafId = requestAnimationFrame(tick);
     video.addEventListener("ended", handleEnded);
     video.addEventListener("pause", forcePlay);
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") forcePlay();
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
+    const unsub = onVisibilityChange((visible) => {
+      if (visible) forcePlay();
+    });
     return () => {
       cancelAnimationFrame(rafId);
       video.removeEventListener("ended", handleEnded);
       video.removeEventListener("pause", forcePlay);
-      document.removeEventListener("visibilitychange", handleVisibility);
+      unsub();
     };
   }, [joined]);
 
