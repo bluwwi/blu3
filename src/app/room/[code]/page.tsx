@@ -13,6 +13,7 @@ import { resolveTrackSource } from "@/utils/ytdl";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { useToneAudioAnalyzer } from "@/hooks/useToneAudioAnalyzer";
+import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track, PlayerState } from "@/utils/types";
@@ -921,23 +922,18 @@ export default function RoomPage() {
   }, [authLoading, user, code]);
 
   useEffect(() => {
-    const wasPlayingRef = { current: false };
     let syncTimer: ReturnType<typeof setTimeout> | null = null;
-    const handleVisibility = () => {
-      if (document.hidden) {
-        wasPlayingRef.current =
-          player.playerState === "playing" || player.playerState === "loading";
-      } else {
+    const unsub = onVisibilityChange((visible) => {
+      if (visible) {
         if (syncTimer) clearTimeout(syncTimer);
         syncTimer = setTimeout(() => requestSync(), 300);
       }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
+    });
     return () => {
       if (syncTimer) clearTimeout(syncTimer);
-      document.removeEventListener("visibilitychange", handleVisibility);
+      unsub();
     };
-  }, [requestSync, player.playerState]);
+  }, [requestSync]);
 
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
