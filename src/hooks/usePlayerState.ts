@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
+import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 interface UsePlayerStateReturn {
   playerState: PlayerStateType;
@@ -81,11 +82,17 @@ export function usePlayerState(): UsePlayerStateReturn {
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState =
-      playerState === "playing" ? "playing" : "paused";
+      playerState === "playing" ? "playing"
+      : playerState === "paused" ? "paused"
+      : "none";
   }, [playerState]);
 
   useEffect(() => {
-    if (!("mediaSession" in navigator) || !nowPlaying) return;
+    if (!("mediaSession" in navigator)) return;
+    if (!nowPlaying) {
+      navigator.mediaSession.metadata = null;
+      return;
+    }
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: nowPlaying.name || "Unknown",
@@ -144,6 +151,18 @@ export function usePlayerState(): UsePlayerStateReturn {
     setError(`Player error`);
     setPlayerState("error");
   }, []);
+
+  useEffect(() => {
+    const unsub = onVisibilityChange((visible) => {
+      if (!visible) return;
+      if (!("mediaSession" in navigator)) return;
+      navigator.mediaSession.playbackState =
+        playerState === "playing" ? "playing"
+        : playerState === "paused" ? "paused"
+        : "none";
+    });
+    return unsub;
+  }, [playerState]);
 
   return {
     playerState,
