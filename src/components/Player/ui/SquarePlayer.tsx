@@ -34,6 +34,8 @@ function getPersonality(seed: number): TrackPersonality {
 
 const NUM_LINES = 5;
 const GAP = 28;
+const SPEED = 0.45;
+
 const WAVE_LINES = [
   {
     amp: 0.025,
@@ -71,6 +73,10 @@ const WAVE_LINES = [
     scrollPhase: 3.2,
   },
 ];
+
+function ease(x: number) {
+  return x < 0.5 ? 4 * x * x * x : (x - 1) * (2 * x - 2) * (2 * x - 2) + 1;
+}
 
 interface Props {
   track: Track | null;
