@@ -134,6 +134,7 @@ export function SquarePlayer({
   const frameRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
+  const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
 
@@ -167,10 +168,14 @@ export function SquarePlayer({
       const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
       lastTsRef.current = ts;
 
-      if (isPlaying) {
-        tRef.current += dt * 0.45;
-      }
+      if (isPlaying)
+        morphTRef.current = Math.min(morphTRef.current + dt * SPEED * 0.9, 1);
+      else
+        morphTRef.current = Math.max(morphTRef.current - dt * SPEED * 1.4, 0);
 
+      if (isPlaying || morphTRef.current > 0) tRef.current += dt * SPEED;
+
+      const mt = ease(morphTRef.current);
       ctx.clearRect(0, 0, W, H);
 
       const seed = track?.id
@@ -200,7 +205,7 @@ export function SquarePlayer({
         const breath =
           1 +
           0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const amp = isPlaying ? H * cfg.amp * breath : 0;
+        const amp = H * cfg.amp * mt * breath;
 
         ctx.strokeStyle = "rgba(255,255,255,0.07)";
         ctx.lineWidth = 11;
