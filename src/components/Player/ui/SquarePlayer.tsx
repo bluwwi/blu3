@@ -36,38 +36,38 @@ const NUM_LINES = 5;
 const GAP = 28;
 const WAVE_LINES = [
   {
-    amp: 0.038,
-    wlSpeed: 0.11,
+    amp: 0.025,
+    wlSpeed: 0.04,
     wlPhase: 0.0,
-    scrollSpeed: 0.7,
+    scrollSpeed: 0.3,
     scrollPhase: 0.0,
   },
   {
-    amp: 0.055,
-    wlSpeed: 0.08,
+    amp: 0.06,
+    wlSpeed: 0.10,
     wlPhase: 1.3,
-    scrollSpeed: 0.55,
+    scrollSpeed: 0.8,
     scrollPhase: 0.8,
   },
   {
-    amp: 0.07,
-    wlSpeed: 0.13,
+    amp: 0.08,
+    wlSpeed: 0.18,
     wlPhase: 2.6,
-    scrollSpeed: 0.65,
+    scrollSpeed: 0.5,
     scrollPhase: 1.6,
   },
   {
-    amp: 0.055,
-    wlSpeed: 0.09,
+    amp: 0.045,
+    wlSpeed: 0.06,
     wlPhase: 3.9,
-    scrollSpeed: 0.58,
+    scrollSpeed: 1.0,
     scrollPhase: 2.4,
   },
   {
-    amp: 0.038,
-    wlSpeed: 0.12,
+    amp: 0.035,
+    wlSpeed: 0.15,
     wlPhase: 5.2,
-    scrollSpeed: 0.72,
+    scrollSpeed: 0.4,
     scrollPhase: 3.2,
   },
 ];
@@ -194,7 +194,7 @@ export function SquarePlayer({
         const breath =
           1 +
           0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const amp = H * cfg.amp * breath;
+        const amp = isPlaying ? H * cfg.amp * breath : 0;
 
         ctx.strokeStyle = "rgba(255,255,255,0.07)";
         ctx.lineWidth = 11;
