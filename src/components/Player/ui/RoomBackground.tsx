@@ -6,22 +6,35 @@ interface RoomBackgroundProps {
   trackImage?: string;
 }
 
+interface Dot {
+  x: number;
+  y: number;
+  vx: number;
+  size: number;
+}
+
+const DOT_COUNT = 25;
+const DOT_SPEED = 20;
+
+function initDot(w: number, h: number): Dot {
+  return {
+    x: Math.random() * w,
+    y: Math.random() * h,
+    vx: (Math.random() - 0.5) * 4,
+    size: 1 + Math.random() * 1.5,
+  };
+}
+
 export function RoomBackground({
-  isPlaying,
   trackImage,
 }: RoomBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
-  const morphTRef = useRef(1);
+  const dotsRef = useRef<Dot[]>([]);
   const lastTsRef = useRef<number | null>(null);
-  const isPlayingRef = useRef(isPlaying);
   const currentImgRef = useRef(trackImage || "/queue/sunflower.jpg");
   const [crossfadePrev, setCrossfadePrev] = useState<string | null>(null);
-
-  useEffect(() => {
-    isPlayingRef.current = isPlaying;
-  }, [isPlaying]);
 
   useEffect(() => {
     const next = trackImage || "/queue/sunflower.jpg";
@@ -61,62 +74,77 @@ export function RoomBackground({
     }
   };
 
-  const loop = (ts: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    syncSize();
-
-    const ctx = canvas.getContext("2d")!;
-    const W = canvas.width;
-    const H = canvas.height;
-    if (!W || !H) {
-      rafRef.current = requestAnimationFrame(loop);
-      return;
-    }
-
-    const playing = isPlayingRef.current;
-
-    if (!lastTsRef.current) lastTsRef.current = ts;
-    const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
-    lastTsRef.current = ts;
-
-    if (playing)
-      morphTRef.current = Math.min(morphTRef.current + dt * 0.45 * 0.9, 1);
-    else morphTRef.current = Math.max(morphTRef.current - dt * 0.45 * 1.4, 0);
-
-    ctx.clearRect(0, 0, W, H);
-    const needsLoop = playing || morphTRef.current > 0;
-
-    rafRef.current = needsLoop ? requestAnimationFrame(loop) : 0;
-  };
-
-  const startLoop = () => {
-    cancelAnimationFrame(rafRef.current);
-    lastTsRef.current = null;
-    rafRef.current = requestAnimationFrame(loop);
-  };
-
   useEffect(() => {
     syncSize();
-
-    const ro = new ResizeObserver(() => {
-      syncSize();
-      const canvas = canvasRef.current;
-      if (canvas && !rafRef.current) {
-        canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
-      }
-    });
-
+    const ro = new ResizeObserver(() => syncSize());
     if (wrapRef.current) ro.observe(wrapRef.current);
     return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
     syncSize();
-    startLoop();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    dotsRef.current = [];
+    lastTsRef.current = null;
+    cancelAnimationFrame(rafRef.current);
+
+    const loop = (ts: number) => {
+      if (!canvas) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      syncSize();
+
+      const ctx = canvas.getContext("2d")!;
+      const W = canvas.width;
+      const H = canvas.height;
+      if (!W || !H) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
+      if (!lastTsRef.current) lastTsRef.current = ts;
+      const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
+      lastTsRef.current = ts;
+
+      if (dotsRef.current.length === 0) {
+        dotsRef.current = Array.from({ length: DOT_COUNT }, () => initDot(W, H));
+      }
+
+      ctx.clearRect(0, 0, W, H);
+
+      const dots = dotsRef.current;
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
+        d.y -= DOT_SPEED * dt;
+        d.x += d.vx * dt;
+        if (d.y < -4) {
+          d.y = H + 4;
+          d.x = Math.random() * W;
+          d.vx = (Math.random() - 0.5) * 4;
+        }
+        if (d.x < -4) d.x = W + 4;
+        if (d.x > W + 4) d.x = -4;
+      }
+
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.beginPath();
+      for (let i = 0; i < dots.length; i++) {
+        const d = dots[i];
+        ctx.moveTo(d.x, d.y);
+        ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2);
+      }
+      ctx.fill();
+
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [isPlaying]);
+  }, []);
 
   return (
     <div

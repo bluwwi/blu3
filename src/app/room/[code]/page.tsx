@@ -12,7 +12,6 @@ import { resolveTrackSource } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
-import { useToneAudioAnalyzer } from "@/hooks/useToneAudioAnalyzer";
 import { fadeSeek } from "@/utils/audioFade";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
@@ -29,7 +28,6 @@ import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 import { ChatPanel } from "@/components/Player/ui/ChatPanel";
-import { BackgroundParticles } from "@/components/Player/ui/BackgroundParticles";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { RoomTopSection } from "@/components/Player/ui/RoomTopSection";
 import { RoomFooter } from "@/components/Player/ui/RoomFooter";
@@ -1046,12 +1044,6 @@ export default function RoomPage() {
     "EDM",
   ];
 
-  const { bandsRef: audioBandsRef } = useToneAudioAnalyzer({
-    audioRef,
-    enabled: true,
-    playing: player.playerState === "playing",
-  });
-
   useEffect(() => {
     if (!joined) return;
     const video = videoRef.current;
@@ -1195,7 +1187,6 @@ export default function RoomPage() {
                           onSkipForward={
                             canControlPlayback ? handleSkipForward : undefined
                           }
-                          bandsRef={audioBandsRef}
                         />
                       )}
                     </aside>

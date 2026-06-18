@@ -1,5 +1,5 @@
 "use client";
-import { Profiler, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Track } from "@/utils/types";
 import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
@@ -34,8 +34,6 @@ function getPersonality(seed: number): TrackPersonality {
 
 const NUM_LINES = 5;
 const GAP = 28;
-const SPEED = 0.45;
-
 const WAVE_LINES = [
   {
     amp: 0.038,
@@ -74,10 +72,6 @@ const WAVE_LINES = [
   },
 ];
 
-function ease(x: number) {
-  return x < 0.5 ? 4 * x * x * x : (x - 1) * (2 * x - 2) * (2 * x - 2) + 1;
-}
-
 interface Props {
   track: Track | null;
   activeVideoId: string | null;
@@ -95,7 +89,6 @@ interface Props {
   onSkipForward?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
-  bandsRef?: React.RefObject<readonly number[] | null>;
 }
 
 export function SquarePlayer({
@@ -115,7 +108,6 @@ export function SquarePlayer({
   onSkipForward,
   isLiked = false,
   onToggleLike,
-  bandsRef: bandsRefProp,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -136,7 +128,6 @@ export function SquarePlayer({
   const frameRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
-  const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
 
@@ -170,14 +161,10 @@ export function SquarePlayer({
       const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
       lastTsRef.current = ts;
 
-      if (isPlaying)
-        morphTRef.current = Math.min(morphTRef.current + dt * SPEED * 0.9, 1);
-      else
-        morphTRef.current = Math.max(morphTRef.current - dt * SPEED * 1.4, 0);
+      if (isPlaying) {
+        tRef.current += dt * 0.45;
+      }
 
-      if (isPlaying || morphTRef.current > 0) tRef.current += dt * SPEED;
-
-      const mt = ease(morphTRef.current);
       ctx.clearRect(0, 0, W, H);
 
       const seed = track?.id
@@ -199,17 +186,15 @@ export function SquarePlayer({
         (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
       );
 
-      WAVE_LINES.forEach((cfg, idx) => {
-        const baseY = baseYs[idx];
+      WAVE_LINES.forEach((cfg) => {
+        const baseY = baseYs[WAVE_LINES.indexOf(cfg)];
         const scroll =
           scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
         const freq = ((2 * Math.PI) / W) * 1.5;
         const breath =
           1 +
           0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const liveBands = bandsRefProp?.current;
-        const bandMod = liveBands?.[idx] ?? 1;
-        const amp = H * cfg.amp * mt * breath * bandMod;
+        const amp = H * cfg.amp * breath;
 
         ctx.strokeStyle = "rgba(255,255,255,0.07)";
         ctx.lineWidth = 11;
