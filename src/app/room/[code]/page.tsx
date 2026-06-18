@@ -1109,36 +1109,35 @@ export default function RoomPage() {
 
             {starsMounted && <RoomStars />}
 
-            <div className="relative z-10 gap-2 md:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
-              {/*<RoomTopSection onSearchClick={openSearchOverlay} />*/}
+            <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
 
               <div
-                className="mx-auto flex md:border border-white/10 h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
-              w-[65%] max-2xl:w-[75%] max-xl:w-[85%] max-lg:w-[92%] max-md:w-full
+                className="mx-auto flex sm:border border-white/10 h-full sm:h-[85%] flex-col pb-0  px-0 sm:rounded-3xl
+              w-[60%] max-2xl:w-[75%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
-              md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
+              sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
-                <div className="flex h-full mt-0  gap-0 md:gap-2 pt-0  min-h-0">
-                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 md:gap-3 pb-0  lg:pb-0">
+                <div className="flex h-full mt-0  gap-0 sm:gap-2 pt-0  min-h-0">
+                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 sm:gap-3 pb-0  lg:pb-0">
                     <aside
                       className="
-                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 md:min-h-0 lg:min-h-0
-                  max-md:rounded-none md:rounded-3xl
-                  max-md:border-0 md:border md:border-white/10
-                  max-md:bg-transparent md:bg-white/5
-                  max-md:backdrop-blur-none md:backdrop-blur-2xl
+                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
+                  max-sm:rounded-none sm:rounded-3xl
+                  max-sm:border-0 sm:border sm:border-white/10
+                  max-sm:bg-transparent sm:bg-white/5
+                  max-sm:backdrop-blur-none sm:backdrop-blur-2xl
 
                   filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
-                  md:filter md:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
+                  sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
 
                   overflow-visible
 
                   relative transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-3xl md:before:pointer-events-none md:before:bg-linear-to-b md:before:from-white/4 md:before:to-transparent
+                  max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent
                 "
                     >
                       {chatOpen ? (
-                        <div className="absolute inset-0 animate-in p-3 md:p-0 fade-in duration-300">
+                        <div className="absolute inset-0 animate-in p-3 sm:p-0 fade-in duration-300">
                           <ChatPanel
                             messages={messages}
                             chatInput={chatInput}
@@ -1193,19 +1192,19 @@ export default function RoomPage() {
 
                     <aside
                       className="
-                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 md:min-h-0 lg:min-h-0
-                  max-md:rounded-none md:rounded-3xl
-                  max-md:border-0 md:border-2 md:border-white/8
-                  max-md:bg-transparent md:bg-white/5
-                  max-md:backdrop-blur-none md:backdrop-blur-2xl
+                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
+                  max-sm:rounded-none sm:rounded-3xl
+                  max-sm:border-0 sm:border-2 sm:border-white/8
+                  max-sm:bg-transparent sm:bg-white/5
+                  max-sm:backdrop-blur-none sm:backdrop-blur-2xl
 
                   filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
-                  md:filter md:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
+                  sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
 
                   overflow-visible
 
                   transition-all duration-300
-                  max-md:before:hidden md:before:absolute md:before:inset-0 md:before:rounded-3xl md:before:pointer-events-none md:before:bg-gradient-to-b md:before:from-white/[0.04] md:before:to-transparent
+                  max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-gradient-to-b sm:before:from-white/[0.04] sm:before:to-transparent
                   flex flex-col
                 "
                     >
