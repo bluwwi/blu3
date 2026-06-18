@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export function RoomFooter() {
   return (
-    <div className="h-full hidden md:flex justify-between items-center px-4 md:h-[9%] border border-white/10 w-full sm:w-full md:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
+    <div className="h-full hidden sm:flex justify-between items-center px-4 sm:h-[9%] border border-white/10 w-full sm:w-full sm:w-[90%] lg:w-[75%] xl:w-[60%] 2xl:w-[60%] rounded-xl py-2 bg-white/10">
       <Image
         alt="logo"
         src={"/logo/quote.svg"}

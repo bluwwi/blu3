@@ -133,7 +133,7 @@ export function RightSidebar({
         style={getRoomThemeVars(roomTheme)}
       >
         <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">
-          <div className=" px-3 max-md:pt-0 md:pt-3 pb-2  shrink-0">
+          <div className=" px-3 max-sm:pt-0 sm:pt-3 pb-2  shrink-0">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center">
                 <button

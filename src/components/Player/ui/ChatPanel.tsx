@@ -50,7 +50,7 @@ export function ChatPanel({
   return (
     <div className="flex flex-col h-full bg-transparent overflow-hidden text-white w-full">
       {track && (
-        <div className="flex items-center justify-between max-md:p-0 md:p-3 border-b border-white/10 bg-transparent">
+        <div className="flex items-center justify-between max-sm:p-0 sm:p-3 border-b border-white/10 bg-transparent">
           <div className="flex items-center gap-3 overflow-hidden">
             <img
               src={track.image || "https://via.placeholder.com/150"}
@@ -96,7 +96,7 @@ export function ChatPanel({
         </div>
       )}
 
-      <div className="flex items-center justify-between max-md:px-2 md:px-4 max-md:py-2 md:py-3 border-b border-white/10 bg-transparent">
+      <div className="flex items-center justify-between max-sm:px-2 sm:px-4 max-sm:py-2 sm:py-3 border-b border-white/10 bg-transparent">
         <h2 className="text-lg font-bold w-20">Chat</h2>
 
         <div className="flex-1 flex justify-center">
@@ -123,7 +123,7 @@ export function ChatPanel({
         </div>
       </div>
 
-      <ScrollArea className="flex-1 max-md:px-2 md:px-4 max-md:py-2 md:py-3 flex flex-col gap-3">
+      <ScrollArea className="flex-1 max-sm:px-2 sm:px-4 max-sm:py-2 sm:py-3 flex flex-col gap-3">
         {messages.length === 0 && (
           <p className="text-[11px] text-white/35 text-center mt-8">
             no messages yet
@@ -155,7 +155,7 @@ export function ChatPanel({
         <div ref={chatEndRef} />
       </ScrollArea>
 
-      <div className="max-md:p-2 md:p-3 border-t border-white/10 bg-transparent">
+      <div className="max-sm:p-2 sm:p-3 border-t border-white/10 bg-transparent">
         <div className="relative flex items-center">
           <div className="absolute left-3 text-white/40 flex items-center gap-2">
             <div className="w-6 h-5 border border-white/40 rounded flex items-center justify-center text-[8px] font-bold">

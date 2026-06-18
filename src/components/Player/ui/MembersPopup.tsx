@@ -16,7 +16,7 @@ export function MembersPopup({ members, isVisible, onClose, userId }: MembersPop
       onClick={onClose}
     >
       <div
-        className="w-72 md:w-96 rounded-3xl border border-white/30 py-3 px-4 bg-black/60 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+        className="w-72 sm:w-96 rounded-3xl border border-white/30 py-3 px-4 bg-black/60 backdrop-blur-sm shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-3">

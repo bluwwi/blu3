@@ -134,7 +134,7 @@ export function PlaylistModal({
     >
       <div
         ref={modalRef}
-        className="w-[90%] md:w-[35vw] border border-white/40 max-w-[90vw] max-h-[80vh] flex flex-col rounded-4xl border backdrop-blur-2xl overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)]"
+        className="w-[90%] sm:w-[35vw] border border-white/40 max-w-[90vw] max-h-[80vh] flex flex-col rounded-4xl border backdrop-blur-2xl overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.4)]"
         style={{
           background: "var(--room-surface, rgba(0,0,0,0.4))",
           borderColor: "var(--room-border, rgba(255,255,255,0.08))",
