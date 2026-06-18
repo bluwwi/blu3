@@ -173,20 +173,19 @@ export function SquarePlayer({
       else
         morphTRef.current = Math.max(morphTRef.current - dt * SPEED * 1.4, 0);
 
-      if (isPlaying || morphTRef.current > 0) tRef.current += dt * SPEED;
+      if (isPlaying) {
+        tRef.current += dt * SPEED;
+        const seed = track?.id
+          ? hashStr(track.id)
+          : track?.videoId
+            ? hashStr(track.videoId)
+            : 0;
+        const p = getPersonality(seed);
+        scrollOffsetRef.current += dt * p.tempoFactor;
+      }
 
       const mt = ease(morphTRef.current);
       ctx.clearRect(0, 0, W, H);
-
-      const seed = track?.id
-        ? hashStr(track.id)
-        : track?.videoId
-          ? hashStr(track.videoId)
-          : 0;
-      const p = getPersonality(seed);
-      if (isPlaying) {
-        scrollOffsetRef.current += dt * p.tempoFactor;
-      }
 
       const aRect = artWrap.getBoundingClientRect();
       const fRect = frame.getBoundingClientRect();
