@@ -1114,7 +1114,7 @@ export default function RoomPage() {
 
               <div
                 className="mx-auto flex md:border border-white/10 h-full md:h-[85%] flex-col pb-0  px-0 md:rounded-3xl
-              w-full md:w-[85%]
+              w-[65%] max-2xl:w-[75%] max-xl:w-[85%] max-lg:w-[92%] max-md:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               md:filter md:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
