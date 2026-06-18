@@ -1107,7 +1107,7 @@ export default function RoomPage() {
               />
             </div>
 
-            {starsMounted && queue.length === 0 && <RoomStars />}
+            {starsMounted && <RoomStars />}
 
             <div className="relative z-10 gap-2 md:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
               {/*<RoomTopSection onSearchClick={openSearchOverlay} />*/}
