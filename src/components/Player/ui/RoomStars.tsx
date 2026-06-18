@@ -4,7 +4,7 @@ import { useMemo } from "react";
 export function RoomStars() {
   const stars = useMemo(
     () =>
-      Array.from({ length: 300 }, () => ({
+      Array.from({ length: 200 }, () => ({
         size: Math.random() * 2.5 + 1,
         left: Math.random() * 100,
         top: Math.random() * 100,
