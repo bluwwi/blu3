@@ -129,6 +129,14 @@ export default function Home() {
     <div className="relative w-full min-h-screen h-full  overflow-y-auto lg:overflow-hidden bg-[#131313] flex flex-col lg:flex-row">
       <div className="flex flex-col items-center justify-center w-full h-full min-h-screen">
         <Image
+          src={"/bg2.png"}
+          width={2000}
+          height={2000}
+          alt={"hello"}
+          className="w-[70%] opacity-50 rounded-3xl h-fit"
+        />
+
+        <Image
           src={"/logo/blu3.svg"}
           width={2000}
           height={2000}
