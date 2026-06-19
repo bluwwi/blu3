@@ -135,6 +135,7 @@ export default function Home() {
           alt={"hello"}
           className="w-[70%] opacity-50 rounded-3xl h-fit"
         />
+        blu3 logo
         <Image
           src={"/logo/blu3.svg"}
           width={2000}
