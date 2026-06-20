@@ -95,6 +95,7 @@ interface Props {
   onSkipForward?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
+  hideWaves?: boolean;
 }
 
 export function SquarePlayer({
@@ -114,6 +115,7 @@ export function SquarePlayer({
   onSkipForward,
   isLiked = false,
   onToggleLike,
+  hideWaves = false,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -139,6 +141,7 @@ export function SquarePlayer({
   const scrollOffsetRef = useRef(0);
 
   useEffect(() => {
+    if (hideWaves) return;
     const canvas = canvasRef.current;
     const frame = frameRef.current;
     const artWrap = wrapRef.current;
@@ -240,17 +243,19 @@ export function SquarePlayer({
       cancelAnimationFrame(rafRef.current);
       ro.disconnect();
     };
-  }, [isPlaying, track?.id, track?.videoId]);
+  }, [isPlaying, track?.id, track?.videoId, hideWaves]);
 
   return (
     <div
       ref={frameRef}
       className="flex flex-col text-white items-center justify-between   sm:rounded-[28px] max-sm:p-0 sm:p-4 sm:p-5 h-full  sm:h-full overflow-hidden w-full relative"
     >
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 pointer-events-none z-0"
-      />
+      {!hideWaves && (
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 pointer-events-none z-0"
+        />
+      )}
       {/*<div className=" w-full py-4 px-4.5 sm:p-0 sm:absolute top-3 left-3 sm:rounded-full "></div>*/}
       <div className="w-full flex items-center justify-between py-4 px-8 sm:p-0 sm:pb-6  ">
         <Image

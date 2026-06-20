@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
-import { QueueAndHistory } from "@/components/Player/ui/QueueAndHistory";
-import { WaveformVisualizer } from "@/components/Player/ui/WaveformVisualizer";
-import Image from "next/image";
+import { RightSidebar } from "@/components/Player/ui/RightSidebar";
+import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
+import { ChatPanel } from "@/components/Player/ui/ChatPanel";
+import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
+import { RoomStars } from "@/components/Player/ui/RoomStars";
+import { WaveBackground } from "@/components/Player/ui/WaveBackground";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -14,7 +16,7 @@ const DEMO_TRACKS: Track[] = [
     source: "youtube",
     videoId: "d1",
     name: "Sunflower",
-    duration_ms: 0,
+    duration_ms: 210000,
     explicit: false,
     artists: [{ name: "Post Malone & Swae Lee" }],
     album: { name: "Spider-Man: Into the Spider-Verse" },
@@ -25,7 +27,7 @@ const DEMO_TRACKS: Track[] = [
     source: "youtube",
     videoId: "d2",
     name: "Blu3 Dreams",
-    duration_ms: 0,
+    duration_ms: 240000,
     explicit: false,
     artists: [{ name: "Luna Ray" }],
     album: { name: "Night Visions" },
@@ -36,7 +38,7 @@ const DEMO_TRACKS: Track[] = [
     source: "youtube",
     videoId: "d3",
     name: "Midnight City",
-    duration_ms: 0,
+    duration_ms: 260000,
     explicit: false,
     artists: [{ name: "M83" }],
     album: { name: "Hurry Up, We're Dreaming" },
@@ -47,7 +49,7 @@ const DEMO_TRACKS: Track[] = [
     source: "youtube",
     videoId: "d4",
     name: "Vibes",
-    duration_ms: 0,
+    duration_ms: 200000,
     explicit: false,
     artists: [{ name: "Kyle Dixon" }],
     album: { name: "Stranger Things" },
@@ -58,12 +60,25 @@ const DEMO_TRACKS: Track[] = [
     source: "youtube",
     videoId: "d5",
     name: "Rose Gold",
-    duration_ms: 0,
+    duration_ms: 230000,
     explicit: false,
     artists: [{ name: "The Blaze" }],
     album: { name: "Dancehall" },
     image: "/queue/rose.jpg",
   },
+];
+
+const DEMO_MEMBERS = [
+  { userId: "1", name: "Alice", avatar: "/queue/cat.jpg" },
+  { userId: "2", name: "Bob" },
+  { userId: "3", name: "Charlie", avatar: "/queue/sunflower.jpg" },
+];
+
+const DEMO_MESSAGES = [
+  { id: "m1", name: "Alice", text: "Hey everyone!" },
+  { id: "m2", name: "Bob", text: "Love this track" },
+  { id: "m3", name: "Charlie", text: "What's next?" },
+  { id: "m4", name: "Alice", text: "How about some lo-fi?" },
 ];
 
 function getDemoRecent() {
@@ -93,56 +108,282 @@ function getDemoRecent() {
   ];
 }
 
+type PlayerState = "idle" | "loading" | "playing" | "paused" | "ended" | "error";
+
 export default function Home() {
   const router = useRouter();
-  const { user, loading } = useAuth();
-  const [oauthError, setOauthError] = useState<string | null>(null);
+
+  const [queue, setQueue] = useState<Track[]>(DEMO_TRACKS);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [playerState, setPlayerState] = useState<PlayerState>("playing");
+  const [currentTime, setCurrentTime] = useState(0);
+  const [volume, setVolume] = useState(70);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [shuffleEnabled, setShuffleEnabled] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<"off" | "all" | "one">("off");
+  const [starsMounted, setStarsMounted] = useState(false);
+  const [chatInput, setChatInput] = useState("");
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const err = params.get("error");
-    if (err === "account_not_linked") {
-      setOauthError(
-        "Sign-in failed because an account already exists with this email. Try a different sign-in method.",
-      );
-    } else if (err) {
-      setOauthError("Sign-in failed");
-    }
-    if (err) {
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    setStarsMounted(true);
   }, []);
 
+  const currentTrack = queue[currentIndex];
+
   useEffect(() => {
-    if (!loading && user) {
-      const returnUrl = sessionStorage.getItem("returnUrl");
-      if (returnUrl) {
-        sessionStorage.removeItem("returnUrl");
-        router.replace(returnUrl);
-      } else {
-        router.replace("/browse");
+    if (playerState !== "playing") return;
+    const interval = setInterval(() => {
+      setCurrentTime((prev) => {
+        const dur = currentTrack?.duration_ms ? currentTrack.duration_ms / 1000 : 240;
+        if (prev >= dur - 1) return 0;
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [playerState, currentTrack?.duration_ms]);
+
+  const duration = currentTrack?.duration_ms ? currentTrack.duration_ms / 1000 : 240;
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  const handlePlayPause = useCallback(() => {
+    setPlayerState((prev) => (prev === "playing" ? "paused" : "playing"));
+  }, []);
+
+  const handleSkipForward = useCallback(() => {
+    setCurrentIndex((prev) => {
+      if (shuffleEnabled) {
+        return Math.floor(Math.random() * DEMO_TRACKS.length);
       }
+      return (prev + 1) % DEMO_TRACKS.length;
+    });
+    setCurrentTime(0);
+    setPlayerState("playing");
+  }, [shuffleEnabled]);
+
+  const handleSkipBack = useCallback(() => {
+    if (currentTime > 3) {
+      setCurrentTime(0);
+      return;
     }
-  }, [user, loading, router]);
+    setCurrentIndex((prev) => {
+      if (prev === 0) return DEMO_TRACKS.length - 1;
+      return prev - 1;
+    });
+    setCurrentTime(0);
+    setPlayerState("playing");
+  }, [currentTime]);
+
+  const handleSeek = useCallback((time: number) => {
+    setCurrentTime(time);
+  }, []);
+
+  const handleVolume = useCallback((val: number) => {
+    setVolume(val);
+    if (isMuted) setIsMuted(false);
+  }, [isMuted]);
+
+  const handleMute = useCallback(() => {
+    setIsMuted((prev) => !prev);
+  }, []);
+
+  const handleToggleLike = useCallback(() => {
+    setIsLiked((prev) => !prev);
+  }, []);
+
+  const handleToggleShuffle = useCallback(() => {
+    setShuffleEnabled((prev) => !prev);
+  }, []);
+
+  const handleCycleRepeat = useCallback(() => {
+    setRepeatMode((prev) =>
+      prev === "off" ? "all" : prev === "all" ? "one" : "off",
+    );
+  }, []);
+
+  const handleRemoveFromQueue = useCallback((id: string) => {
+    setQueue((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const handleAddToQueue = useCallback((track: Track) => {
+    setQueue((prev) => [...prev, track]);
+  }, []);
+
+  const handleClearQueue = useCallback(() => {
+    setQueue(DEMO_TRACKS);
+  }, []);
+
+  const handleAdminPlayTrack = useCallback(
+    (track: Track) => {
+      const idx = queue.findIndex((t) => t.id === track.id);
+      if (idx >= 0) setCurrentIndex(idx);
+      setCurrentTime(0);
+      setPlayerState("playing");
+    },
+    [queue],
+  );
+
+  const handleSendChat = useCallback(() => {
+    if (!chatInput.trim()) return;
+    setChatInput("");
+  }, [chatInput]);
+
+  const popularGenres = [
+    "Pop hits",
+    "Hip hop",
+    "Lo-fi",
+    "Rock classics",
+    "Bollywood",
+    "EDM",
+  ];
 
   return (
-    <div className="relative w-full min-h-screen h-full  overflow-y-auto lg:overflow-hidden bg-[#131313] flex flex-col lg:flex-row">
-      <div className="flex flex-col items-center justify-center w-full h-full min-h-screen">
-        <Image
-          src={"/bg2.png"}
-          width={2000}
-          height={2000}
-          alt={"hello"}
-          className="w-[70%] opacity-50 rounded-3xl h-fit"
-        />
+    <div className="relative min-h-dvh safe-area-top safe-area-bottom">
+      <div className="transition-opacity duration-500 opacity-100 pointer-events-auto">
+        <div className="w-full h-full bg-[#334EAC] relative">
+          <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+            <WaveBackground />
+          </div>
 
-        <Image
-          src={"/logo/blu3.svg"}
-          width={2000}
-          height={2000}
-          alt={"hello"}
-          className="w-[10%] absolute rounded-3xl h-fit"
-        />
+          {starsMounted && <RoomStars />}
+
+          <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
+            <div
+              className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0 px-0 sm:rounded-3xl
+              w-[55%] max-2xl:w-[65%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
+              filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
+              sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)]"
+            >
+              <div className="flex h-full mt-0 gap-0 sm:gap-2 pt-0 min-h-0">
+                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 sm:gap-3 pb-0 lg:pb-0">
+                  <aside
+                    className="
+                    w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
+                    max-sm:rounded-none sm:rounded-3xl
+                    max-sm:border-0 sm:border sm:border-white/10
+                    max-sm:bg-transparent sm:bg-white/5
+                    max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                    filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
+                    sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
+                    overflow-visible
+                    relative transition-all duration-300
+                    max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
+                  >
+                    {chatOpen ? (
+                      <div className="absolute inset-0 animate-in p-3 sm:p-0 fade-in duration-300">
+                        <ChatPanel
+                          messages={DEMO_MESSAGES}
+                          chatInput={chatInput}
+                          setChatInput={setChatInput}
+                          handleSendChat={handleSendChat}
+                          onClose={() => setChatOpen(false)}
+                          track={currentTrack}
+                          isPlaying={playerState === "playing"}
+                          canControlPlayback={true}
+                          onPlayPause={handlePlayPause}
+                          onSkipBack={handleSkipBack}
+                          onSkipForward={handleSkipForward}
+                          userProfile={{ name: "You", avatar: undefined }}
+                        />
+                      </div>
+                    ) : (
+                      <SquarePlayer
+                        track={currentTrack}
+                        activeVideoId={currentTrack?.videoId ?? null}
+                        playerState={playerState}
+                        isLiked={isLiked}
+                        onToggleLike={handleToggleLike}
+                        progress={progress}
+                        currentTime={currentTime}
+                        duration={duration}
+                        volume={isMuted ? 0 : volume}
+                        isMuted={isMuted}
+                        onPlayPause={handlePlayPause}
+                        onMute={handleMute}
+                        onVolume={handleVolume}
+                        onSeek={handleSeek}
+                        onSkipBack={handleSkipBack}
+                        onSkipForward={handleSkipForward}
+                        hideWaves
+                      />
+                    )}
+                  </aside>
+
+                  <aside
+                    className="
+                    flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
+                    max-sm:rounded-none sm:rounded-3xl
+                    max-sm:border-0 sm:border-2 sm:border-white/8
+                    max-sm:bg-transparent sm:bg-white/5
+                    max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                    filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
+                    sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
+                    overflow-visible
+                    transition-all duration-300
+                    max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-gradient-to-b sm:before:from-white/[0.04] sm:before:to-transparent
+                    flex flex-col"
+                  >
+                    <RightSidebar
+                      members={DEMO_MEMBERS}
+                      messages={DEMO_MESSAGES}
+                      queue={queue}
+                      recentTracks={getDemoRecent()}
+                      canControlPlayback={true}
+                      handleAdminPlayTrack={handleAdminPlayTrack}
+                      removeFromQueue={handleRemoveFromQueue}
+                      addToQueue={handleAddToQueue}
+                      activeVideoId={currentTrack?.videoId ?? null}
+                      roomTheme="purple"
+                      onThemeChange={() => {}}
+                      playerState={playerState}
+                      shuffleEnabled={shuffleEnabled}
+                      repeatMode={repeatMode}
+                      onToggleShuffle={handleToggleShuffle}
+                      onCycleRepeat={handleCycleRepeat}
+                      onChatToggle={() => setChatOpen(!chatOpen)}
+                      onSearchClick={() => setSearchOpen(true)}
+                      clearQueue={handleClearQueue}
+                      user={{ id: "demo", email: "demo@blu3.app", name: "You" }}
+                      onLogout={() => router.push("/")}
+                      onLeave={() => router.push("/browse")}
+                      roomCode="DEMO"
+                    />
+                  </aside>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <SearchOverlay
+            isOpen={searchOpen}
+            onClose={() => setSearchOpen(false)}
+            searchQuery=""
+            suggestions={[]}
+            showSuggestions={false}
+            results={[]}
+            isSearching={false}
+            searchError=""
+            recentTracks={queue}
+            activeTrackId={currentTrack?.id ?? null}
+            loadingTrackId={null}
+            isPlaying={playerState === "playing"}
+            onSearchInput={() => {}}
+            onSearch={() => {}}
+            onSuggestionSelect={() => {}}
+            onTrackSelect={(track) => {
+              const idx = queue.findIndex((t) => t.id === track.id);
+              if (idx >= 0) setCurrentIndex(idx);
+              setCurrentTime(0);
+              setPlayerState("playing");
+            }}
+            onAddToQueue={handleAddToQueue}
+            avatarUrl={undefined}
+            avatarLabel="You"
+            popularGenres={popularGenres}
+          />
+        </div>
       </div>
     </div>
   );
