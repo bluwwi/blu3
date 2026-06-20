@@ -8,7 +8,7 @@ import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
 import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
-import { WaveBackground } from "@/components/Player/ui/WaveBackground";
+import { VideoBackground } from "@/components/Player/ui/VideoBackground";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -257,7 +257,7 @@ export default function Home() {
       <div className="transition-opacity duration-500 opacity-100 pointer-events-auto">
         <div className="w-full h-full bg-[#334EAC] relative">
           <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-            <WaveBackground />
+            <VideoBackground />
           </div>
 
           {starsMounted && <RoomStars />}
@@ -273,7 +273,7 @@ export default function Home() {
                 <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 sm:gap-3 pb-0 lg:pb-0">
                   <aside
                     className="
-                    w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
+                    w-full lg:w-[50%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border sm:border-white/10
                     max-sm:bg-transparent sm:bg-white/5
@@ -284,24 +284,18 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="w-full flex flex-col justify-center items-center h-fit">
-                      <div className="w-[85%] aspect-square sm:w-[clamp(4rem,39vh,1000rem)]  rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
-                        <video
-                          autoPlay
-                          loop
-                          muted
-                          playsInline
-                          className="w-full h-full object-cover"
-                        >
-                          <source src="/music.mp4" type="video/mp4" />
-                        </video>
-                      </div>
+                    <div className="flex flex-col h-full w-full justify-center items-center">
+                      <img
+                        src={"/logo/blu3.svg"}
+                        alt={"gif"}
+                        className="w-30 rounded-3xl h-fit "
+                      />
                     </div>
                   </aside>
 
                   <aside
                     className="
-                    flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
+                    flex-1 min-w-0 w-full lg:w-[50%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border-2 sm:border-white/8
                     max-sm:bg-transparent sm:bg-white/5
@@ -312,7 +306,13 @@ export default function Home() {
                     transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-gradient-to-b sm:before:from-white/[0.04] sm:before:to-transparent
                     flex flex-col"
-                  ></aside>
+                  >
+                    <img
+                      src={"/listen.gif"}
+                      alt={"gif"}
+                      className="w-full rounded-3xl h-full object-cover"
+                    />
+                  </aside>
                 </div>
               </div>
             </div>
