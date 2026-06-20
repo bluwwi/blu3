@@ -316,7 +316,7 @@ export default function Home() {
                             size={32}
                           />
                         </div>
-                        <div className="text-sm sm:text-xl text-white font-normal leading-relaxed">
+                        <div className="text-sm sm:text-xl text-white font-normal">
                           Invite friends, stream together, and enjoy millions of
                           songs in perfect sync.🥂
                         </div>
