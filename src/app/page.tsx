@@ -301,14 +301,14 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="flex gap-10  px-6 py-8 flex-col h-full w-full justify-between items-start">
+                    <div className="flex gap-10  px-6 py-8 flex-col h-full w-full justify-between items-center sm:items-start">
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
-                        className="w-20 h-fit "
+                        className="w-20 h-fit mx-auto sm:mx-0"
                       />
-                      <div className="flex flex-col gap-3">
-                        <div className="text-3xl sm:text-5xl text-white leading-tight">
+                      <div className="flex flex-col gap-3 text-center sm:text-left">
+                        <div className="text-4xl font-bold sm:text-5xl text-white">
                           Listen Together <br /> Feel Together
                           <StarIcon
                             className="inline-block -mt-1"
@@ -317,23 +317,23 @@ export default function Home() {
                           />
                         </div>
                         <div className="text-sm sm:text-xl text-white font-normal leading-relaxed">
-                          Invite friends, stream together, and enjoy
-                          millions of songs in perfect sync.🥂
+                          Invite friends, stream together, and enjoy millions of
+                          songs in perfect sync.🥂
                         </div>
                       </div>
-                      <div className="flex flex-col gap-2.5">
-                        <div className="px-4 cursor-pointer hover:bg-purple-500 hover:text-white hover:scale-105 transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-base sm:text-xl w-fit">
+                      <div className="flex flex-col w-full gap-2.5">
+                        <div className="px-4 cursor-pointer hover:bg-purple-500 hover:text-white hover:scale-105 transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-lg sm:text-xl w-full sm:w-fit justify-center">
                           Get Started
                           <MusicNotesIcon className="inline-block" size={22} />
                         </div>
-                        <div className="text-xs sm:text-sm underline underline-offset-4 text-white/80 font-normal hover:text-white transition-all duration-300 cursor-pointer">
+                        <div className="text-xs sm:text-sm underline underline-offset-4 text-white/80 font-normal hover:text-white transition-all duration-300 cursor-pointer text-center sm:text-left">
                           Already logged in?
                         </div>
                       </div>
 
                       <hr className="border-t border-white/60 text-white/80 w-full" />
-                      <div className="flex flex-wrap justify-between w-full text-sm sm:text-lg font-normal gap-2">
-                        <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap">
+                      <div className="flex flex-wrap justify-center sm:justify-between w-full text-sm sm:text-lg font-normal gap-2">
+                        <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap justify-center sm:justify-start">
                           <Link
                             href={"/terms"}
                             className="underline underline-offset-4 hover:text-white transition-all duration-300"
