@@ -108,7 +108,13 @@ function getDemoRecent() {
   ];
 }
 
-type PlayerState = "idle" | "loading" | "playing" | "paused" | "ended" | "error";
+type PlayerState =
+  | "idle"
+  | "loading"
+  | "playing"
+  | "paused"
+  | "ended"
+  | "error";
 
 export default function Home() {
   const router = useRouter();
@@ -137,7 +143,9 @@ export default function Home() {
     if (playerState !== "playing") return;
     const interval = setInterval(() => {
       setCurrentTime((prev) => {
-        const dur = currentTrack?.duration_ms ? currentTrack.duration_ms / 1000 : 240;
+        const dur = currentTrack?.duration_ms
+          ? currentTrack.duration_ms / 1000
+          : 240;
         if (prev >= dur - 1) return 0;
         return prev + 1;
       });
@@ -145,7 +153,9 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [playerState, currentTrack?.duration_ms]);
 
-  const duration = currentTrack?.duration_ms ? currentTrack.duration_ms / 1000 : 240;
+  const duration = currentTrack?.duration_ms
+    ? currentTrack.duration_ms / 1000
+    : 240;
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   const handlePlayPause = useCallback(() => {
@@ -180,10 +190,13 @@ export default function Home() {
     setCurrentTime(time);
   }, []);
 
-  const handleVolume = useCallback((val: number) => {
-    setVolume(val);
-    if (isMuted) setIsMuted(false);
-  }, [isMuted]);
+  const handleVolume = useCallback(
+    (val: number) => {
+      setVolume(val);
+      if (isMuted) setIsMuted(false);
+    },
+    [isMuted],
+  );
 
   const handleMute = useCallback(() => {
     setIsMuted((prev) => !prev);
@@ -271,44 +284,19 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    {chatOpen ? (
-                      <div className="absolute inset-0 animate-in p-3 sm:p-0 fade-in duration-300">
-                        <ChatPanel
-                          messages={DEMO_MESSAGES}
-                          chatInput={chatInput}
-                          setChatInput={setChatInput}
-                          handleSendChat={handleSendChat}
-                          onClose={() => setChatOpen(false)}
-                          track={currentTrack}
-                          isPlaying={playerState === "playing"}
-                          canControlPlayback={true}
-                          onPlayPause={handlePlayPause}
-                          onSkipBack={handleSkipBack}
-                          onSkipForward={handleSkipForward}
-                          userProfile={{ name: "You", avatar: undefined }}
-                        />
+                    <div className="w-full flex flex-col justify-center items-center h-fit">
+                      <div className="w-[85%] aspect-square sm:w-[clamp(4rem,39vh,1000rem)]  rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto">
+                        <video
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          className="w-full h-full object-cover"
+                        >
+                          <source src="/music.mp4" type="video/mp4" />
+                        </video>
                       </div>
-                    ) : (
-                      <SquarePlayer
-                        track={currentTrack}
-                        activeVideoId={currentTrack?.videoId ?? null}
-                        playerState={playerState}
-                        isLiked={isLiked}
-                        onToggleLike={handleToggleLike}
-                        progress={progress}
-                        currentTime={currentTime}
-                        duration={duration}
-                        volume={isMuted ? 0 : volume}
-                        isMuted={isMuted}
-                        onPlayPause={handlePlayPause}
-                        onMute={handleMute}
-                        onVolume={handleVolume}
-                        onSeek={handleSeek}
-                        onSkipBack={handleSkipBack}
-                        onSkipForward={handleSkipForward}
-                        hideWaves
-                      />
-                    )}
+                    </div>
                   </aside>
 
                   <aside
@@ -324,33 +312,7 @@ export default function Home() {
                     transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-gradient-to-b sm:before:from-white/[0.04] sm:before:to-transparent
                     flex flex-col"
-                  >
-                    <RightSidebar
-                      members={DEMO_MEMBERS}
-                      messages={DEMO_MESSAGES}
-                      queue={queue}
-                      recentTracks={getDemoRecent()}
-                      canControlPlayback={true}
-                      handleAdminPlayTrack={handleAdminPlayTrack}
-                      removeFromQueue={handleRemoveFromQueue}
-                      addToQueue={handleAddToQueue}
-                      activeVideoId={currentTrack?.videoId ?? null}
-                      roomTheme="purple"
-                      onThemeChange={() => {}}
-                      playerState={playerState}
-                      shuffleEnabled={shuffleEnabled}
-                      repeatMode={repeatMode}
-                      onToggleShuffle={handleToggleShuffle}
-                      onCycleRepeat={handleCycleRepeat}
-                      onChatToggle={() => setChatOpen(!chatOpen)}
-                      onSearchClick={() => setSearchOpen(true)}
-                      clearQueue={handleClearQueue}
-                      user={{ id: "demo", email: "demo@blu3.app", name: "You" }}
-                      onLogout={() => router.push("/")}
-                      onLeave={() => router.push("/browse")}
-                      roomCode="DEMO"
-                    />
-                  </aside>
+                  ></aside>
                 </div>
               </div>
             </div>
