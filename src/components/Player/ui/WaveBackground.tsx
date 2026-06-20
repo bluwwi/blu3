@@ -23,6 +23,7 @@ export function WaveBackground({ overlay = true }: WaveBackgroundProps) {
   const tRef = useRef(0);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
+  const frameCountRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,6 +39,11 @@ export function WaveBackground({ overlay = true }: WaveBackgroundProps) {
     };
 
     const loop = (ts: number) => {
+      frameCountRef.current++;
+      if (frameCountRef.current % 2 !== 0) {
+        rafRef.current = requestAnimationFrame(loop);
+        return;
+      }
       syncSize();
       const ctx = canvas.getContext("2d");
       if (!ctx) {
