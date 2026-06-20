@@ -293,8 +293,8 @@ export default function Home() {
                     w-full lg:w-[50%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border sm:border-white/10
-                    max-sm:bg-transparent sm:bg-white/5
-                    max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                    bg-white/5
+                    backdrop-blur-2xl
                     filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
                     sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
                     overflow-visible
