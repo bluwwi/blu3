@@ -43,7 +43,7 @@ export default function LoginPage() {
     const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
     const callbackURL = isElectron
       ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/desktop-redirect`
-      : window.location.origin;
+      : window.location.origin + "/browse";
     authClient.signIn.social({ provider, callbackURL });
   };
 

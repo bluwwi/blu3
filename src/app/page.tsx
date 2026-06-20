@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
 import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
@@ -134,6 +135,13 @@ type PlayerState =
 
 export default function Home() {
   const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/browse");
+    }
+  }, [user, loading, router]);
 
   const [queue, setQueue] = useState<Track[]>(DEMO_TRACKS);
   const [currentIndex, setCurrentIndex] = useState(0);
