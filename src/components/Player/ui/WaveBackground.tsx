@@ -39,6 +39,13 @@ export function WaveBackground({ overlay = true }: WaveBackgroundProps) {
     };
 
     const loop = (ts: number) => {
+      if (!lastTsRef.current) lastTsRef.current = ts;
+      const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
+      lastTsRef.current = ts;
+
+      tRef.current += dt * SPEED;
+      scrollOffsetRef.current += dt * 0.8;
+
       frameCountRef.current++;
       if (frameCountRef.current % 2 !== 0) {
         rafRef.current = requestAnimationFrame(loop);
@@ -52,13 +59,6 @@ export function WaveBackground({ overlay = true }: WaveBackgroundProps) {
       }
       const W = canvas.width;
       const H = canvas.height;
-
-      if (!lastTsRef.current) lastTsRef.current = ts;
-      const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
-      lastTsRef.current = ts;
-
-      tRef.current += dt * SPEED;
-      scrollOffsetRef.current += dt * 0.8;
 
       ctx.clearRect(0, 0, W, H);
 
