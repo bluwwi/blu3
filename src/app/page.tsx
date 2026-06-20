@@ -281,16 +281,16 @@ export default function Home() {
 
           <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
             <div
-              className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0 px-0 sm:rounded-3xl
+              className="mx-auto flex sm:border border-white/10 h-full sm:h-fit flex-col pb-0 px-0 sm:rounded-3xl
               w-[55%] max-2xl:w-[75%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)]"
             >
               <div className="flex h-full mt-0 gap-0 sm:gap-2 pt-0 min-h-0">
-                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 sm:gap-3 pb-0 lg:pb-0">
+                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1  sm:gap-3 pb-0 lg:pb-0">
                   <aside
                     className="
-                    w-full lg:w-[50%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
+                    w-full lg:w-[50%] h-fit lg:h-fit shrink-0 sm:min-h-125 sm:min-h-0 lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border sm:border-white/10
                     bg-white/5
@@ -301,11 +301,11 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="flex gap-10  px-6 py-8 flex-col h-full w-full justify-between items-center sm:items-start">
+                    <div className="flex gap-5 md:gap-10  px-6 pt-16 py-8 md:py-8 flex-col h-full w-full justify-start items-center sm:items-start">
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
-                        className="w-20 h-fit mx-auto sm:mx-0"
+                        className="w-26 md:w-20 h-fit mx-auto sm:mx-0"
                       />
                       <div className="flex flex-col gap-3 text-center sm:text-left">
                         <div className="text-4xl font-bold sm:text-5xl text-white">
@@ -332,7 +332,7 @@ export default function Home() {
                       </div>
 
                       <hr className="border-t border-white/60 text-white/80 w-full" />
-                      <div className="flex flex-wrap justify-center sm:justify-between w-full text-sm sm:text-lg font-normal gap-2">
+                      <div className="flex flex-wrap justify-center  sm:justify-between w-full text-sm sm:text-lg font-normal gap-8">
                         <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap justify-center sm:justify-start">
                           <Link
                             href={"/terms"}
@@ -386,8 +386,8 @@ export default function Home() {
                     flex-1 min-w-0 w-full lg:w-[50%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border-2 sm:border-white/8
-                    max-sm:bg-transparent sm:bg-white/5
-                    max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                    bg-white/5
+                    backdrop-blur-2xl
                     filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
                     sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
                     overflow-visible
@@ -398,7 +398,7 @@ export default function Home() {
                     <img
                       src={"/listen.gif"}
                       alt={"gif"}
-                      className="w-full rounded-3xl h-full object-cover max-sm:max-h-[40vh]"
+                      className="w-full px-2 md:p-0 rounded-3xl h-full object-cover "
                     />
                   </aside>
                 </div>
