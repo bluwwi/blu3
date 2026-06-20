@@ -12,10 +12,15 @@ import { VideoBackground } from "@/components/Player/ui/VideoBackground";
 import { WaveBackground } from "@/components/Player/ui/WaveBackground";
 import {
   ArrowSquareUpRightIcon,
+  InstagramLogoIcon,
+  LinkedinLogoIcon,
   NavigationArrowIcon,
   ShuffleAngularIcon,
+  TwitterLogoIcon,
+  XLogoIcon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
+import { GithubLogoIcon } from "@phosphor-icons/react/dist/ssr";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -265,7 +270,7 @@ export default function Home() {
         <div className="w-full h-full bg-[#334EAC] relative">
           <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
             <VideoBackground />
-            <WaveBackground overlay={false} />
+            {/*<WaveBackground overlay={false} />*/}
           </div>
 
           {starsMounted && <RoomStars />}
@@ -315,17 +320,50 @@ export default function Home() {
                             size={24}
                           />
                         </div>
-                        <div className="text-sm underline underline-offset-2 text-white/80 font-normal">
+                        <div className="text-sm underline underline-offset-4 text-white/80 font-normal">
                           Already logged in?
                         </div>
                       </div>
 
-                      <hr className="border-t border-white/60 w-full" />
+                      <hr className="border-t border-white/60 text-white/80 w-full" />
+                      <div className="flex justify-between w-full text-lg font-normal">
+                        <div className="flex gap-2 text-lg font-normal">
+                          <Link
+                            href={"/"}
+                            className="underline underline-offset-4"
+                          >
+                            Terms
+                          </Link>
+                          |
+                          <Link
+                            href={"/"}
+                            className="underline underline-offset-4"
+                          >
+                            Privacy
+                          </Link>
+                          |
+                          <Link
+                            href={"/"}
+                            className="underline underline-offset-4"
+                          >
+                            Github
+                          </Link>
+                        </div>
 
-                      <div className="flex tex">
-                        <Link href={"/"} className="">
-                          Terms
-                        </Link>
+                        <div className="flex text-lg gap-1 items-center">
+                          <XLogoIcon className="inline-block " size={25} />
+                          |
+                          <InstagramLogoIcon
+                            className="inline-block "
+                            size={25}
+                          />
+                          {/*|
+                          <LinkedinLogoIcon
+                            className="inline-block "
+
+                            size={25}
+                          />*/}
+                        </div>
                       </div>
                     </div>
                   </aside>
