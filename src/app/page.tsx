@@ -332,7 +332,7 @@ export default function Home() {
                       <div className="flex flex-col w-full gap-2.5">
                         <Link
                           href="/login"
-                          className="px-4 hover:bg-purple-500 hover:text-white hover:scale-105 transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-md md:text-lg  w-full sm:w-fit justify-center"
+                          className="px-4 hover:bg-purple-600 hover:text-white  transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-md md:text-lg  w-full sm:w-fit justify-center"
                         >
                           Get Started
                           <MusicNotesIcon className="inline-block" size={22} />
