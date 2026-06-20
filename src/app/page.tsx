@@ -295,10 +295,10 @@ export default function Home() {
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)]"
             >
               <div className="flex h-full mt-0 gap-0 sm:gap-2 pt-0 min-h-0">
-                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1  sm:gap-3 pb-0 lg:pb-0">
+                <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1  gap-0 sm:gap-3 pb-0 lg:pb-0">
                   <aside
                     className="
-                    w-full lg:w-[50%] h-fit lg:h-fit shrink-0 sm:min-h-125 sm:min-h-0 lg:min-h-0
+                    w-full lg:w-[50%] h-fit lg:h-full shrink-0 sm:min-h-125  lg:min-h-0
                     max-sm:rounded-none sm:rounded-3xl
                     max-sm:border-0 sm:border sm:border-white/10
                     bg-white/5
@@ -309,7 +309,7 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="flex gap-5 md:gap-10  px-6 pt-16 py-8 md:py-8 flex-col h-full w-full justify-start items-center sm:items-start">
+                    <div className="flex gap-5 md:gap-10  px-6 pt-16 py-8 md:py-8 flex-col h-full w-full justify-evenly items-center sm:items-start">
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
@@ -345,7 +345,7 @@ export default function Home() {
                         </Link>
                       </div>
 
-                      <hr className="border-t border-white/60 text-white/80 w-full" />
+                      <hr className="border-t border-white/60 text-white/80 my-3 md:my-0 w-full" />
                       <div className="flex flex-wrap justify-center  sm:justify-between w-full text-sm sm:text-lg font-normal gap-8">
                         <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap justify-center sm:justify-start">
                           <Link
