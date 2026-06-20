@@ -286,12 +286,19 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="flex flex-col h-full w-full justify-center items-center">
+                    <div className="flex gap-10  p-6 flex-col h-full w-full justify-start items-start">
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
-                        className="w-30 h-fit "
+                        className="w-20 h-fit "
                       />
+                      <div className="text-5xl text-white">
+                        Listen Together, <br /> Feel Together★
+                      </div>
+
+                      <div className="px-4 py-1.5 text-black bg-white rounded-md text-xl">
+                        Get Started ↺
+                      </div>
                     </div>
                   </aside>
 
