@@ -345,7 +345,7 @@ export default function Home() {
                         </Link>
                       </div>
 
-                      <hr className="border-t border-white/60 text-white/80 my-3 md:my-0 w-full" />
+                      <hr className="border-t border-white/50 text-white/80 my-3 md:my-0 w-full" />
                       <div className="flex flex-wrap justify-center  sm:justify-between w-full text-sm sm:text-lg font-normal gap-8">
                         <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap justify-center sm:justify-start">
                           <Link
