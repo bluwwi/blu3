@@ -10,6 +10,12 @@ import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { VideoBackground } from "@/components/Player/ui/VideoBackground";
 import { WaveBackground } from "@/components/Player/ui/WaveBackground";
+import {
+  ArrowSquareUpRightIcon,
+  NavigationArrowIcon,
+  ShuffleAngularIcon,
+} from "@phosphor-icons/react";
+import Link from "next/link";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -292,12 +298,34 @@ export default function Home() {
                         alt={"gif"}
                         className="w-20 h-fit "
                       />
-                      <div className="text-5xl text-white">
-                        Listen Together, <br /> Feel Together★
+                      <div className="flex flex-col gap-3">
+                        <div className="text-5xl text-white">
+                          Listen Together <br /> Feel Together★
+                        </div>
+                        <div className="text-xl text-white font-normal">
+                          Invite friends, stream together, and <br /> enjoy
+                          millions of songs in perfect sync.🥂
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-3">
+                        <div className="px-4 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-xl">
+                          Get Started
+                          <ShuffleAngularIcon
+                            className="inline-block "
+                            size={24}
+                          />
+                        </div>
+                        <div className="text-sm underline underline-offset-2 text-white/80 font-normal">
+                          Already logged in?
+                        </div>
                       </div>
 
-                      <div className="px-4 py-1.5 text-black bg-white rounded-md text-xl">
-                        Get Started ↺
+                      <hr className="border-t border-white/60 w-full" />
+
+                      <div className="flex tex">
+                        <Link href={"/"} className="">
+                          Terms
+                        </Link>
                       </div>
                     </div>
                   </aside>
