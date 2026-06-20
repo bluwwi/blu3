@@ -13,7 +13,11 @@ const WAVE_LINES = [
   { amp: 0.035, wlSpeed: 0.15, wlPhase: 5.2, scrollSpeed: 0.4, scrollPhase: 3.2 },
 ];
 
-export function WaveBackground() {
+interface WaveBackgroundProps {
+  overlay?: boolean;
+}
+
+export function WaveBackground({ overlay = true }: WaveBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
@@ -68,7 +72,7 @@ export function WaveBackground() {
         const amp = H * cfg.amp * breath;
 
         ctx.strokeStyle = "rgba(255,255,255,1)";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.beginPath();
         for (let x = 0; x <= W; x += 2) {
           const y = baseY + Math.sin(freq * x - scroll) * amp;
@@ -92,10 +96,11 @@ export function WaveBackground() {
 
   return (
     <div className="absolute inset-0 overflow-hidden z-0">
-      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/10 z-[2]" />
+      {overlay && <div className="absolute inset-0 bg-linear-to-b from-black/5 via-black/15 to-black/5 z-[2]" />}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none z-[3] block"
+        style={{ transform: "translateZ(0)" }}
       />
     </div>
   );

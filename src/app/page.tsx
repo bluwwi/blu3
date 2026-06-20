@@ -9,6 +9,7 @@ import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { VideoBackground } from "@/components/Player/ui/VideoBackground";
+import { WaveBackground } from "@/components/Player/ui/WaveBackground";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -258,6 +259,7 @@ export default function Home() {
         <div className="w-full h-full bg-[#334EAC] relative">
           <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
             <VideoBackground />
+            <WaveBackground overlay={false} />
           </div>
 
           {starsMounted && <RoomStars />}
@@ -265,7 +267,7 @@ export default function Home() {
           <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
             <div
               className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0 px-0 sm:rounded-3xl
-              w-[55%] max-2xl:w-[65%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
+              w-[55%] max-2xl:w-[75%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)]"
             >
@@ -288,7 +290,7 @@ export default function Home() {
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
-                        className="w-30 rounded-3xl h-fit "
+                        className="w-30 h-fit "
                       />
                     </div>
                   </aside>
