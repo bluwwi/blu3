@@ -14,8 +14,12 @@ import {
   ArrowSquareUpRightIcon,
   InstagramLogoIcon,
   LinkedinLogoIcon,
+  MusicNoteIcon,
+  MusicNotesIcon,
   NavigationArrowIcon,
   ShuffleAngularIcon,
+  StarFourIcon,
+  StarIcon,
   TwitterLogoIcon,
   XLogoIcon,
 } from "@phosphor-icons/react";
@@ -297,7 +301,7 @@ export default function Home() {
                     relative transition-all duration-300
                     max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent"
                   >
-                    <div className="flex gap-10  p-6 flex-col h-full w-full justify-start items-start">
+                    <div className="flex gap-10  px-6 py-8 flex-col h-full w-full justify-between items-start">
                       <img
                         src={"/logo/blu3.svg"}
                         alt={"gif"}
@@ -305,20 +309,22 @@ export default function Home() {
                       />
                       <div className="flex flex-col gap-3">
                         <div className="text-5xl text-white">
-                          Listen Together <br /> Feel Together★
+                          Listen Together <br /> Feel Together
+                          <StarIcon
+                            className="inline-block -mt-1"
+                            weight="fill"
+                            size={42}
+                          />
                         </div>
                         <div className="text-xl text-white font-normal">
                           Invite friends, stream together, and <br /> enjoy
                           millions of songs in perfect sync.🥂
                         </div>
                       </div>
-                      <div className="flex flex-col gap-3">
-                        <div className="px-4 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-xl">
+                      <div className="flex flex-col gap-2.5">
+                        <div className="px-4 cursor-pointer hover:bg-white/80 transition-all duration-500 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-xl">
                           Get Started
-                          <ShuffleAngularIcon
-                            className="inline-block "
-                            size={24}
-                          />
+                          <MusicNotesIcon className="inline-block " size={24} />
                         </div>
                         <div className="text-sm underline underline-offset-4 text-white/80 font-normal">
                           Already logged in?
