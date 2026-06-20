@@ -67,19 +67,8 @@ export function WaveBackground() {
           1 + 0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
         const amp = H * cfg.amp * breath;
 
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        ctx.lineWidth = 14;
-        ctx.lineJoin = "round";
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 6) {
-          const y = baseY + Math.sin(freq * x - scroll) * amp;
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-
         ctx.strokeStyle = "rgba(255,255,255,1)";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2;
         ctx.beginPath();
         for (let x = 0; x <= W; x += 2) {
           const y = baseY + Math.sin(freq * x - scroll) * amp;
@@ -103,11 +92,11 @@ export function WaveBackground() {
 
   return (
     <div className="absolute inset-0 overflow-hidden z-0">
+      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/10 z-[2]" />
       <canvas
         ref={canvasRef}
         className="absolute inset-0 pointer-events-none z-[3] block"
       />
-      <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/30 to-black/10 z-[4]" />
     </div>
   );
 }
