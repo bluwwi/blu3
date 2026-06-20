@@ -308,67 +308,74 @@ export default function Home() {
                         className="w-20 h-fit "
                       />
                       <div className="flex flex-col gap-3">
-                        <div className="text-5xl text-white">
+                        <div className="text-3xl sm:text-5xl text-white leading-tight">
                           Listen Together <br /> Feel Together
                           <StarIcon
                             className="inline-block -mt-1"
                             weight="fill"
-                            size={42}
+                            size={32}
                           />
                         </div>
-                        <div className="text-xl text-white font-normal">
-                          Invite friends, stream together, and <br /> enjoy
+                        <div className="text-sm sm:text-xl text-white font-normal leading-relaxed">
+                          Invite friends, stream together, and enjoy
                           millions of songs in perfect sync.🥂
                         </div>
                       </div>
                       <div className="flex flex-col gap-2.5">
-                        <div className="px-4 cursor-pointer hover:bg-white/80 transition-all duration-500 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-xl">
+                        <div className="px-4 cursor-pointer hover:bg-purple-500 hover:text-white hover:scale-105 transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-base sm:text-xl w-fit">
                           Get Started
-                          <MusicNotesIcon className="inline-block " size={24} />
+                          <MusicNotesIcon className="inline-block" size={22} />
                         </div>
-                        <div className="text-sm underline underline-offset-4 text-white/80 font-normal">
+                        <div className="text-xs sm:text-sm underline underline-offset-4 text-white/80 font-normal hover:text-white transition-all duration-300 cursor-pointer">
                           Already logged in?
                         </div>
                       </div>
 
                       <hr className="border-t border-white/60 text-white/80 w-full" />
-                      <div className="flex justify-between w-full text-lg font-normal">
-                        <div className="flex gap-2 text-lg font-normal">
+                      <div className="flex flex-wrap justify-between w-full text-sm sm:text-lg font-normal gap-2">
+                        <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap">
                           <Link
-                            href={"/"}
-                            className="underline underline-offset-4"
+                            href={"/terms"}
+                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
                           >
                             Terms
                           </Link>
-                          |
+                          <span className="text-white/40">|</span>
                           <Link
-                            href={"/"}
-                            className="underline underline-offset-4"
+                            href={"/privacy"}
+                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
                           >
                             Privacy
                           </Link>
-                          |
-                          <Link
-                            href={"/"}
-                            className="underline underline-offset-4"
+                          <span className="text-white/40">|</span>
+                          <a
+                            href="https://github.com/xrealblue"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
                           >
                             Github
-                          </Link>
+                          </a>
                         </div>
 
-                        <div className="flex text-lg gap-1 items-center">
-                          <XLogoIcon className="inline-block " size={25} />
-                          |
-                          <InstagramLogoIcon
-                            className="inline-block "
-                            size={25}
-                          />
-                          {/*|
-                          <LinkedinLogoIcon
-                            className="inline-block "
-
-                            size={25}
-                          />*/}
+                        <div className="flex gap-2 items-center">
+                          <a
+                            href="https://x.com/realbluex"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
+                          >
+                            <XLogoIcon size={22} />
+                          </a>
+                          <span className="text-white/40">|</span>
+                          <a
+                            href="https://www.instagram.com/realblue07/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
+                          >
+                            <InstagramLogoIcon size={22} />
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -391,7 +398,7 @@ export default function Home() {
                     <img
                       src={"/listen.gif"}
                       alt={"gif"}
-                      className="w-full rounded-3xl h-full object-cover"
+                      className="w-full rounded-3xl h-full object-cover max-sm:max-h-[40vh]"
                     />
                   </aside>
                 </div>
