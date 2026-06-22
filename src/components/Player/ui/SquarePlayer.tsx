@@ -46,7 +46,7 @@ const WAVE_LINES = [
   },
   {
     amp: 0.06,
-    wlSpeed: 0.10,
+    wlSpeed: 0.1,
     wlPhase: 1.3,
     scrollSpeed: 0.8,
     scrollPhase: 0.8,
