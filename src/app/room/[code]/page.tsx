@@ -613,25 +613,22 @@ export default function RoomPage() {
         currentQueueTrack.id !== activeTrack.id)
     )
       return;
-    const remainingMs = Math.max(
-      activeTrack.duration_ms - progress.currentTime * 1000,
-      0,
-    );
-    const timeoutId = window.setTimeout(() => {
-      const currentTime = progress.currentTime;
-      const duration = activeTrack.duration_ms / 1000;
-      const isNearEnd =
-        duration > 0 && currentTime >= Math.max(duration - 2, 0);
-      if (player.playerState === "ended" || isNearEnd) maybeAdvanceQueue();
-    }, remainingMs + 2500);
-    return () => window.clearTimeout(timeoutId);
+    const intervalId = window.setInterval(() => {
+      const ct = progress.currentTime;
+      const dur = player.nowPlaying?.duration_ms
+        ? player.nowPlaying.duration_ms / 1000
+        : 0;
+      if (dur > 0 && ct >= Math.max(dur - 2, 0)) {
+        maybeAdvanceQueue();
+      }
+    }, 1000);
+    return () => window.clearInterval(intervalId);
   }, [
     canControlPlayback,
     joined,
     maybeAdvanceQueue,
     player.nowPlaying,
     player.playerState,
-    progress.currentTime,
     queue,
   ]);
 
@@ -893,6 +890,26 @@ export default function RoomPage() {
         progress.seekTo(newTime);
         if (canControlPlayback) sendSeek(newTime);
       });
+      navigator.mediaSession.setActionHandler("play", () => {
+        const audio = audioRef.current;
+        if (audio) {
+          manualPauseRef.current = false;
+          audio.play().catch(() => {});
+        }
+      });
+      navigator.mediaSession.setActionHandler("pause", () => {
+        const audio = audioRef.current;
+        if (audio) {
+          manualPauseRef.current = true;
+          audio.pause();
+        }
+      });
+      navigator.mediaSession.setActionHandler("seekto", (details) => {
+        if (details.seekTime != null) {
+          progress.seekTo(details.seekTime);
+          if (canControlPlayback) sendSeek(details.seekTime);
+        }
+      });
     } catch {}
   }, [
     handleSkipBack,
@@ -900,6 +917,8 @@ export default function RoomPage() {
     progress,
     canControlPlayback,
     sendSeek,
+    audioRef,
+    manualPauseRef,
   ]);
 
   useEffect(() => {
