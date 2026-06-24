@@ -722,6 +722,7 @@ export default function RoomPage() {
     if (!player.nowPlaying?.videoId) {
       const firstTrack = queue[0];
       if (!firstTrack) return;
+      setResolvedAudioUrl(null);
       player.playTrack(firstTrack, 0, true);
       sendPlay({
         id: firstTrack.id,
@@ -763,6 +764,7 @@ export default function RoomPage() {
     sendPause,
     sendPlay,
     player.playTrack,
+    setResolvedAudioUrl,
   ]);
 
   const handleListenerPlay = useCallback(() => {
@@ -872,6 +874,7 @@ export default function RoomPage() {
       return;
     }
     const prevTrack = queue[prevIdx];
+    setResolvedAudioUrl(null);
     player.playTrack(prevTrack, 0, true);
     sendPlay({
       id: prevTrack.id,
@@ -892,6 +895,7 @@ export default function RoomPage() {
     playbackMode.repeatMode,
     sendSeek,
     sendPlay,
+    setResolvedAudioUrl,
   ]);
 
   const handleToggleShuffle = useCallback(() => {
