@@ -1003,10 +1003,14 @@ export default function RoomPage() {
         closeSearchOverlay();
         closeChatOverlay();
       }
+      if (event.code === "Space" && event.target === document.body) {
+        event.preventDefault();
+        onPlayPauseAction?.();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeChatOverlay, closeSearchOverlay, openSearchOverlay]);
+  }, [closeChatOverlay, closeSearchOverlay, openSearchOverlay, onPlayPauseAction]);
 
   const handleLeave = () => {
     leaveRoom();
