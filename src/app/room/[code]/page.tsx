@@ -91,6 +91,37 @@ export default function RoomPage() {
     ytSeekRef.current = ytPlayback.seekTo;
   }, [ytPlayback.seekTo]);
 
+  const STALE_THRESHOLD_MS = 30 * 60 * 1000;
+  const resolveForTrack = useCallback((track: Track | null) => {
+    const videoId = track?.videoId;
+    if (!videoId) {
+      setResolvedAudioUrl(null);
+      return;
+    }
+    const cached = resolvedUrlsRef.current.get(videoId);
+    const ts = resolvedTimestampsRef.current.get(videoId) ?? 0;
+    const isStale = Date.now() - ts > STALE_THRESHOLD_MS;
+    if (cached && !isStale) {
+      setResolvedAudioUrl(cached);
+      return;
+    }
+    resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
+      .then((result) => {
+        if (result.audioUrl) {
+          resolvedUrlsRef.current.set(videoId, result.audioUrl);
+          resolvedTimestampsRef.current.set(videoId, Date.now());
+          setResolvedAudioUrl(result.audioUrl);
+        } else {
+          setResolvedAudioUrl(null);
+        }
+      })
+      .catch(() => setResolvedAudioUrl(null));
+  }, [token]);
+
+  useEffect(() => {
+    resolveForTrack(player.nowPlaying);
+  }, [player.nowPlaying?.videoId, resolveForTrack]);
+
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -178,7 +209,7 @@ export default function RoomPage() {
         }
         if (state.isPlaying) {
           if (p.playerState === "ended" || p.playerState === "loading") {
-            forceRetry();
+            p.play?.();
           } else {
             p.play?.();
           }
