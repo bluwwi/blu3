@@ -3,8 +3,6 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Track } from "@/utils/types";
 
 const POLL_INTERVAL = 250;
-const RESOLVE_POLL_MS = 100;
-const RESOLVE_TIMEOUT_MS = 15000;
 
 declare global {
   interface Window {
@@ -26,11 +24,11 @@ let playerCounter = 0;
 
 export function useYoutubePlayback(
   nowPlaying: Track | null,
+  audioUrl: string | null | undefined,
   isPlaying: boolean,
   volume: number,
   isMuted: boolean,
   onTrackEnd?: () => void,
-  resolveResultRef?: React.MutableRefObject<Map<string, { audioUrl?: string; image?: string }>>,
 ): YoutubePlaybackResult {
   const [isActive, setIsActive] = useState(false);
   const [ytProgress, setProgress] = useState(0);
@@ -43,6 +41,9 @@ export function useYoutubePlayback(
   const progressInt = useRef<ReturnType<typeof setInterval> | null>(null);
   const endedSent = useRef(false);
   const containerId = useRef(`yt-player-${++playerCounter}`);
+  const pendingSeekRef = useRef<number | null>(null);
+  const lastVideoIdRef = useRef<string | null>(null);
+  const lastAudioUrlRef = useRef<string | null | undefined>(null);
 
   useEffect(() => {
     if (window.YT?.Player) {
@@ -76,20 +77,31 @@ export function useYoutubePlayback(
     }
   }, []);
 
-  const initPlayer = useCallback((videoId: string) => {
+  const destroyPlayer = useCallback(() => {
     if (playerRef.current) {
-      playerRef.current.destroy();
+      try { playerRef.current.destroy(); } catch {}
       playerRef.current = null;
     }
+    isActiveRef.current = false;
+    setIsActive(false);
+    stopTracking();
     setProgress(0);
     setCurrentTime(0);
     setDuration(0);
+    endedSent.current = false;
+  }, [stopTracking]);
+
+  const initPlayer = useCallback((videoId: string, startTime?: number) => {
+    destroyPlayer();
 
     const tryInit = () => {
       if (!apiReady.current || !window.YT?.Player) {
         setTimeout(tryInit, 100);
         return;
       }
+
+      pendingSeekRef.current = startTime ?? null;
+
       playerRef.current = new window.YT.Player(containerId.current, {
         videoId,
         height: 1,
@@ -104,7 +116,12 @@ export function useYoutubePlayback(
           rel: 0,
         },
         events: {
-          onReady: () => {},
+          onReady: () => {
+            if (pendingSeekRef.current != null && pendingSeekRef.current > 0) {
+              playerRef.current?.seekTo?.(pendingSeekRef.current, true);
+              pendingSeekRef.current = null;
+            }
+          },
           onStateChange: (e: any) => {
             const S = window.YT.PlayerState;
             if (e.data === S.PLAYING) {
@@ -117,7 +134,6 @@ export function useYoutubePlayback(
                 endedSent.current = true;
                 onTrackEnd?.();
               }
-            } else if (e.data === S.BUFFERING) {
             }
           },
           onError: () => {},
@@ -125,73 +141,37 @@ export function useYoutubePlayback(
       });
     };
     tryInit();
-  }, [startTracking, stopTracking, onTrackEnd]);
+  }, [destroyPlayer, startTracking, stopTracking, onTrackEnd]);
 
   useEffect(() => {
-    if (!nowPlaying?.videoId) {
-      if (isActiveRef.current) {
-        setIsActive(false);
-        isActiveRef.current = false;
-        stopTracking();
-        if (playerRef.current) {
-          playerRef.current.destroy();
-          playerRef.current = null;
-        }
+    const videoId = nowPlaying?.videoId ?? null;
+
+    if (!videoId) {
+      if (isActiveRef.current || playerRef.current) {
+        destroyPlayer();
       }
-      setProgress(0);
-      setCurrentTime(0);
-      setDuration(0);
-      endedSent.current = false;
+      lastVideoIdRef.current = null;
+      lastAudioUrlRef.current = null;
       return;
     }
 
-    const videoId = nowPlaying.videoId;
-    let destroyed = false;
-    let pollTimer: ReturnType<typeof setInterval> | null = null;
-    let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
+    const useYt = !audioUrl;
 
-    const onResult = () => {
-      if (destroyed) return;
-      const result = resolveResultRef?.current.get(videoId);
-      if (!result) return;
-
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
-
-      if (result.audioUrl) {
-        if (isActiveRef.current) {
-          setIsActive(false);
-          isActiveRef.current = false;
-          stopTracking();
-          if (playerRef.current) {
-            playerRef.current.destroy();
-            playerRef.current = null;
-          }
-        }
-      } else {
-        setIsActive(true);
+    if (useYt) {
+      if (videoId !== lastVideoIdRef.current || lastAudioUrlRef.current != null) {
         isActiveRef.current = true;
-        endedSent.current = false;
+        setIsActive(true);
         initPlayer(videoId);
       }
-    };
-
-    const existing = resolveResultRef?.current.get(videoId);
-    if (existing) {
-      onResult();
     } else {
-      pollTimer = setInterval(onResult, RESOLVE_POLL_MS);
-      timeoutTimer = setTimeout(() => {
-        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-      }, RESOLVE_TIMEOUT_MS);
+      if (isActiveRef.current || playerRef.current) {
+        destroyPlayer();
+      }
     }
 
-    return () => {
-      destroyed = true;
-      if (pollTimer) clearInterval(pollTimer);
-      if (timeoutTimer) clearTimeout(timeoutTimer);
-    };
-  }, [nowPlaying?.videoId, initPlayer, resolveResultRef, stopTracking]);
+    lastVideoIdRef.current = videoId;
+    lastAudioUrlRef.current = audioUrl;
+  }, [nowPlaying?.videoId, audioUrl, destroyPlayer, initPlayer]);
 
   useEffect(() => {
     if (!isActive || !playerRef.current) return;
@@ -217,7 +197,7 @@ export function useYoutubePlayback(
     return () => {
       stopTracking();
       if (playerRef.current) {
-        playerRef.current.destroy();
+        try { playerRef.current.destroy(); } catch {}
         playerRef.current = null;
       }
     };

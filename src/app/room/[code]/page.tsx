@@ -59,13 +59,12 @@ export default function RoomPage() {
       : undefined;
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
-  const resolveResultRef = useRef(new Map<string, { audioUrl?: string; image?: string }>());
   const resolvingRef = useRef(new Set<string>());
-  const [retryKey, setRetryKey] = useState(0);
-  const forceRetry = useCallback(() => setRetryKey((k) => k + 1), []);
+  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string | null>(null);
 
-  const { audioRef, retryPlay } = useBackgroundAudio({
+  const { audioRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
+    audioUrl: resolvedAudioUrl,
     isPlaying: player.playing,
     volume: player.volume,
     isMuted: player.isMuted,
@@ -73,23 +72,18 @@ export default function RoomPage() {
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
-    pendingStartTimeRef: player.pendingStartTimeRef,
     manualPauseRef,
-    resolvedUrlsRef,
-    resolvedTimestampsRef,
-    retryKey,
-    resolveResultRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
 
   const ytPlayback = useYoutubePlayback(
     player.nowPlaying,
+    resolvedAudioUrl,
     player.playing,
     player.volume,
     player.isMuted,
     () => player.setPlayerState("ended"),
-    resolveResultRef,
   );
 
   const ytSeekRef = useRef<(time: number) => void>(() => {});
