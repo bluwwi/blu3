@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Track } from "@/utils/types";
-import { resolveTrackSource } from "@/utils/ytdl";
 
 const POLL_INTERVAL = 250;
+const RESOLVE_POLL_MS = 100;
+const RESOLVE_TIMEOUT_MS = 15000;
 
 declare global {
   interface Window {
@@ -26,8 +27,8 @@ export function useYoutubePlayback(
   isPlaying: boolean,
   volume: number,
   isMuted: boolean,
-  token?: string,
   onTrackEnd?: () => void,
+  resolveResultRef?: React.MutableRefObject<Map<string, { audioUrl?: string; image?: string }>>,
 ): YoutubePlaybackResult {
   const [isActive, setIsActive] = useState(false);
   const [ytProgress, setProgress] = useState(0);
@@ -103,34 +104,66 @@ export function useYoutubePlayback(
       setProgress(0);
       setCurrentTime(0);
       setDuration(0);
+      if (playerRef.current) {
+        playerRef.current.destroy();
+        playerRef.current = null;
+        playerReady.current = false;
+      }
       return;
     }
 
-    let cancelled = false;
-    resolveTrackSource(nowPlaying.videoId, nowPlaying.name, nowPlaying.artists?.[0]?.name, token)
-      .then((result) => {
-        if (cancelled) return;
-        if (result.audioUrl) {
-          setIsActive(false);
-          isActiveRef.current = false;
-          setProgress(0);
-          setCurrentTime(0);
-          setDuration(0);
-          if (playerRef.current) {
-            playerRef.current.destroy();
-            playerRef.current = null;
-            playerReady.current = false;
-          }
-          return;
+    const videoId = nowPlaying.videoId;
+    let destroyed = false;
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const checkResult = () => {
+      if (destroyed) return;
+      const result = resolveResultRef?.current.get(videoId);
+      if (!result) return;
+
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
+
+      if (result.audioUrl) {
+        setIsActive(false);
+        isActiveRef.current = false;
+        setProgress(0);
+        setCurrentTime(0);
+        setDuration(0);
+        if (playerRef.current) {
+          playerRef.current.destroy();
+          playerRef.current = null;
+          playerReady.current = false;
         }
+      } else {
         setIsActive(true);
         isActiveRef.current = true;
         endedSent.current = false;
-        initPlayer(nowPlaying.videoId);
-      });
+        initPlayer(videoId);
+      }
+    };
 
-    return () => { cancelled = true; };
-  }, [nowPlaying?.videoId, token, initPlayer]);
+    const existing = resolveResultRef?.current.get(videoId);
+    if (existing) {
+      checkResult();
+    } else {
+      pollTimer = setInterval(checkResult, RESOLVE_POLL_MS);
+      timeoutTimer = setTimeout(() => {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+        if (!destroyed) {
+          setIsActive(false);
+          isActiveRef.current = false;
+        }
+      }, RESOLVE_TIMEOUT_MS);
+    }
+
+    return () => {
+      destroyed = true;
+      if (pollTimer) clearInterval(pollTimer);
+      if (timeoutTimer) clearTimeout(timeoutTimer);
+    };
+  }, [nowPlaying?.videoId, initPlayer, resolveResultRef]);
 
   useEffect(() => {
     if (!isActive) {

@@ -59,6 +59,7 @@ export default function RoomPage() {
       : undefined;
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
+  const resolveResultRef = useRef(new Map<string, { audioUrl?: string; image?: string }>());
   const resolvingRef = useRef(new Set<string>());
   const [retryKey, setRetryKey] = useState(0);
   const forceRetry = useCallback(() => setRetryKey((k) => k + 1), []);
@@ -77,6 +78,7 @@ export default function RoomPage() {
     resolvedUrlsRef,
     resolvedTimestampsRef,
     retryKey,
+    resolveResultRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -86,8 +88,8 @@ export default function RoomPage() {
     player.playing,
     player.volume,
     player.isMuted,
-    token,
     () => player.setPlayerState("ended"),
+    resolveResultRef,
   );
 
   const ytSeekRef = useRef<(time: number) => void>(() => {});
@@ -225,7 +227,7 @@ export default function RoomPage() {
   useEffect(() => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     debounceTimerRef.current = setTimeout(() => {
-      const MAX_PREFETCH = 5;
+      const MAX_PREFETCH = 2;
       let resolved = 0;
       for (const track of queue) {
         if (resolved >= MAX_PREFETCH) break;
