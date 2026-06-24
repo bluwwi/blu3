@@ -19,8 +19,10 @@ interface YoutubePlaybackResult {
   ytDuration: number;
   isActive: boolean;
   seekTo: (time: number) => void;
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  playerContainerId: string;
 }
+
+let playerCounter = 0;
 
 export function useYoutubePlayback(
   nowPlaying: Track | null,
@@ -36,79 +38,110 @@ export function useYoutubePlayback(
   const [ytDuration, setDuration] = useState(0);
 
   const playerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
   const apiReady = useRef(false);
-  const playerReady = useRef(false);
   const isActiveRef = useRef(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const progressInt = useRef<ReturnType<typeof setInterval> | null>(null);
   const endedSent = useRef(false);
+  const containerId = useRef(`yt-player-${++playerCounter}`);
 
   useEffect(() => {
-    if (window.YT && window.YT.Player) { apiReady.current = true; return; }
-    if (window.onYouTubeIframeAPIReady) return;
-    window.onYouTubeIframeAPIReady = () => {
+    if (window.YT?.Player) {
       apiReady.current = true;
-      if (pendingVideoId.current) {
-        initPlayer(pendingVideoId.current);
-        pendingVideoId.current = null;
-      }
-    };
+      return;
+    }
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
+    window.onYouTubeIframeAPIReady = () => {
+      apiReady.current = true;
+    };
   }, []);
 
-  const pendingVideoId = useRef<string | null>(null);
+  const startTracking = useCallback(() => {
+    if (progressInt.current) clearInterval(progressInt.current);
+    progressInt.current = setInterval(() => {
+      if (!playerRef.current || !isActiveRef.current) return;
+      const cur = playerRef.current.getCurrentTime?.() ?? 0;
+      const dur = playerRef.current.getDuration?.() ?? 0;
+      setCurrentTime(cur);
+      setDuration(dur);
+      setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+    }, POLL_INTERVAL);
+  }, []);
+
+  const stopTracking = useCallback(() => {
+    if (progressInt.current) {
+      clearInterval(progressInt.current);
+      progressInt.current = null;
+    }
+  }, []);
 
   const initPlayer = useCallback((videoId: string) => {
-    if (!apiReady.current) {
-      pendingVideoId.current = videoId;
-      return;
-    }
     if (playerRef.current) {
-      playerRef.current.loadVideoById(videoId);
-      playerReady.current = true;
-      return;
+      playerRef.current.destroy();
+      playerRef.current = null;
     }
-    if (!containerRef.current) return;
-    playerRef.current = new window.YT.Player(containerRef.current, {
-      height: 1,
-      width: 1,
-      videoId,
-      playerVars: {
-        autoplay: 1,
-        controls: 0,
-        disablekb: 1,
-        fs: 0,
-        iv_load_policy: 3,
-        modestbranding: 1,
-        rel: 0,
-      },
-      events: {
-        onReady: () => { playerReady.current = true; },
-        onStateChange: (e: any) => {
-          if (e.data === 0 && isActiveRef.current && !endedSent.current) {
-            endedSent.current = true;
-            onTrackEnd?.();
-          }
+    setProgress(0);
+    setCurrentTime(0);
+    setDuration(0);
+
+    const tryInit = () => {
+      if (!apiReady.current || !window.YT?.Player) {
+        setTimeout(tryInit, 100);
+        return;
+      }
+      playerRef.current = new window.YT.Player(containerId.current, {
+        videoId,
+        height: 1,
+        width: 1,
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          iv_load_policy: 3,
+          modestbranding: 1,
+          rel: 0,
         },
-        onError: () => {},
-      },
-    });
-  }, [onTrackEnd]);
+        events: {
+          onReady: () => {},
+          onStateChange: (e: any) => {
+            const S = window.YT.PlayerState;
+            if (e.data === S.PLAYING) {
+              startTracking();
+            } else if (e.data === S.PAUSED) {
+              stopTracking();
+            } else if (e.data === S.ENDED) {
+              stopTracking();
+              if (!endedSent.current) {
+                endedSent.current = true;
+                onTrackEnd?.();
+              }
+            } else if (e.data === S.BUFFERING) {
+            }
+          },
+          onError: () => {},
+        },
+      });
+    };
+    tryInit();
+  }, [startTracking, stopTracking, onTrackEnd]);
 
   useEffect(() => {
     if (!nowPlaying?.videoId) {
-      setIsActive(false);
-      isActiveRef.current = false;
+      if (isActiveRef.current) {
+        setIsActive(false);
+        isActiveRef.current = false;
+        stopTracking();
+        if (playerRef.current) {
+          playerRef.current.destroy();
+          playerRef.current = null;
+        }
+      }
       setProgress(0);
       setCurrentTime(0);
       setDuration(0);
-      if (playerRef.current) {
-        playerRef.current.destroy();
-        playerRef.current = null;
-        playerReady.current = false;
-      }
+      endedSent.current = false;
       return;
     }
 
@@ -117,7 +150,7 @@ export function useYoutubePlayback(
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     let timeoutTimer: ReturnType<typeof setTimeout> | null = null;
 
-    const checkResult = () => {
+    const onResult = () => {
       if (destroyed) return;
       const result = resolveResultRef?.current.get(videoId);
       if (!result) return;
@@ -126,15 +159,14 @@ export function useYoutubePlayback(
       if (timeoutTimer) { clearTimeout(timeoutTimer); timeoutTimer = null; }
 
       if (result.audioUrl) {
-        setIsActive(false);
-        isActiveRef.current = false;
-        setProgress(0);
-        setCurrentTime(0);
-        setDuration(0);
-        if (playerRef.current) {
-          playerRef.current.destroy();
-          playerRef.current = null;
-          playerReady.current = false;
+        if (isActiveRef.current) {
+          setIsActive(false);
+          isActiveRef.current = false;
+          stopTracking();
+          if (playerRef.current) {
+            playerRef.current.destroy();
+            playerRef.current = null;
+          }
         }
       } else {
         setIsActive(true);
@@ -146,15 +178,11 @@ export function useYoutubePlayback(
 
     const existing = resolveResultRef?.current.get(videoId);
     if (existing) {
-      checkResult();
+      onResult();
     } else {
-      pollTimer = setInterval(checkResult, RESOLVE_POLL_MS);
+      pollTimer = setInterval(onResult, RESOLVE_POLL_MS);
       timeoutTimer = setTimeout(() => {
         if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-        if (!destroyed) {
-          setIsActive(false);
-          isActiveRef.current = false;
-        }
       }, RESOLVE_TIMEOUT_MS);
     }
 
@@ -163,56 +191,37 @@ export function useYoutubePlayback(
       if (pollTimer) clearInterval(pollTimer);
       if (timeoutTimer) clearTimeout(timeoutTimer);
     };
-  }, [nowPlaying?.videoId, initPlayer, resolveResultRef]);
+  }, [nowPlaying?.videoId, initPlayer, resolveResultRef, stopTracking]);
 
   useEffect(() => {
-    if (!isActive) {
-      if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
-      return;
-    }
-    pollRef.current = setInterval(() => {
-      try {
-        const p = playerRef.current;
-        if (!p || !isActiveRef.current) return;
-        const cur = p.getCurrentTime() ?? 0;
-        const dur = p.getDuration() || 0;
-        setCurrentTime(cur);
-        setDuration(dur);
-        setProgress(dur > 0 ? (cur / dur) * 100 : 0);
-      } catch {}
-    }, POLL_INTERVAL);
-    return () => { if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; } };
-  }, [isActive]);
-
-  useEffect(() => {
-    if (!isActive || !playerRef.current || !playerReady.current) return;
+    if (!isActive || !playerRef.current) return;
     if (isPlaying) {
-      playerRef.current.playVideo();
+      playerRef.current.playVideo?.();
     } else {
-      playerRef.current.pauseVideo();
+      playerRef.current.pauseVideo?.();
     }
   }, [isPlaying, isActive]);
 
   useEffect(() => {
-    if (!isActive || !playerRef.current || !playerReady.current) return;
-    playerRef.current.setVolume(isMuted ? 0 : volume);
+    if (!isActive || !playerRef.current) return;
+    playerRef.current.setVolume?.(isMuted ? 0 : volume);
   }, [volume, isMuted, isActive]);
 
   const seekTo = useCallback((time: number) => {
     if (isActive && playerRef.current) {
-      playerRef.current.seekTo(time, true);
+      playerRef.current.seekTo?.(time, true);
     }
   }, [isActive]);
 
   useEffect(() => {
     return () => {
+      stopTracking();
       if (playerRef.current) {
         playerRef.current.destroy();
         playerRef.current = null;
-        playerReady.current = false;
       }
     };
-  }, []);
+  }, [stopTracking]);
 
-  return { ytProgress, ytCurrentTime, ytDuration, isActive, seekTo, containerRef };
+  return { ytProgress, ytCurrentTime, ytDuration, isActive, seekTo, playerContainerId: containerId.current };
 }

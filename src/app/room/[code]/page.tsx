@@ -1203,7 +1203,7 @@ export default function RoomPage() {
                         </div>
                       ) : (
                         <>
-                        <div ref={ytPlayback.containerRef} style={{ position: "fixed", top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
+                        <div id={ytPlayback.playerContainerId} style={{ position: "fixed", top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
                         <SquarePlayer
                           track={footerTrack}
                           activeVideoId={
