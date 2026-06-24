@@ -216,9 +216,9 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, shouldPlay);
   }, [config.nowPlaying?.videoId, config.token, setupAudioSource, resolveAndPlay]);
 
-  useEffect(() => {
+yt-audio  useEffect(() => {
     const yt = config.ytPlayerRef?.current;
-    if (yt && yt.isReady && !audioRef.current?.src) {
+    if (yt && typeof yt.isReady === "function" && yt.isReady() && !audioRef.current?.src) {
       yt.setVolume(config.isMuted ? 0 : config.volume);
       if (config.isPlaying) {
         yt.play();

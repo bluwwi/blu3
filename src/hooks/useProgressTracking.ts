@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export function useProgressTracking(
   playerState: string,
   audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
-  ytPlayerRef?: React.MutableRefObject<{ getCurrentTime: () => number; getDuration: () => number } | null>,
+  ytPlayerRef?: React.MutableRefObject<{ getCurrentTime: () => number; getDuration: () => number; seekTo: (s: number) => void } | null>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
