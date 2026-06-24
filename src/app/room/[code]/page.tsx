@@ -217,6 +217,7 @@ export default function RoomPage() {
           p.pause?.();
         }
       } else {
+        setResolvedAudioUrl(null);
         p.playTrack(
           {
             id: `room-${state.videoId}`,
@@ -407,6 +408,7 @@ export default function RoomPage() {
         progress.seekTo(adjustedSeek);
         player.play?.();
       } else {
+        setResolvedAudioUrl(null);
         player.playTrack(track, adjustedSeek, true);
       }
     },
@@ -416,6 +418,7 @@ export default function RoomPage() {
       player.play,
       player.playTrack,
       progress,
+      setResolvedAudioUrl,
     ],
   );
 
@@ -455,6 +458,7 @@ export default function RoomPage() {
         if (elapsed > 0 && elapsed < 3600) time += elapsed;
       }
       if (!player.isMuted) player.toggleMute();
+      setResolvedAudioUrl(null);
       p.playTrack(
         {
           id: `room-${playback.videoId}`,
@@ -498,6 +502,7 @@ export default function RoomPage() {
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
+        setResolvedAudioUrl(null);
         p.playTrack(
           {
             id: activeTrack.id,
@@ -543,6 +548,7 @@ export default function RoomPage() {
       }
 
       if (nextTrack) {
+        setResolvedAudioUrl(null);
         p.playTrack(
           {
             id: nextTrack.id,
@@ -570,6 +576,7 @@ export default function RoomPage() {
         });
       }
     } else {
+      setResolvedAudioUrl(null);
       p.playTrack(
         {
           id: currentQueueTrack.id,
@@ -684,6 +691,7 @@ export default function RoomPage() {
         );
         return [track, ...filtered];
       });
+      setResolvedAudioUrl(null);
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
@@ -696,7 +704,7 @@ export default function RoomPage() {
         duration_ms: track.duration_ms,
       });
     },
-    [canControlPlayback, player.playTrack, sendPlay, setQueue],
+    [canControlPlayback, player.playTrack, sendPlay, setQueue, setResolvedAudioUrl],
   );
 
   const handleSeekAction = useCallback(
@@ -801,6 +809,7 @@ export default function RoomPage() {
           ? sortedQueue[0]
           : null;
     if (!nextTrack) return;
+    setResolvedAudioUrl(null);
     player.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
@@ -821,6 +830,7 @@ export default function RoomPage() {
     queue,
     sendPlay,
     cycleQueueCurrent,
+    setResolvedAudioUrl,
   ]);
 
   const handleVolumeWrapped = useCallback(
