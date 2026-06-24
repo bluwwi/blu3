@@ -29,6 +29,7 @@ export function useYoutubePlayback(
   volume: number,
   isMuted: boolean,
   onTrackEnd?: () => void,
+  pendingStartTimeRef?: React.MutableRefObject<number>,
 ): YoutubePlaybackResult {
   const [isActive, setIsActive] = useState(false);
   const [ytProgress, setProgress] = useState(0);
@@ -161,7 +162,8 @@ export function useYoutubePlayback(
       if (videoId !== lastVideoIdRef.current || lastAudioUrlRef.current != null) {
         isActiveRef.current = true;
         setIsActive(true);
-        initPlayer(videoId);
+        const startTime = pendingStartTimeRef?.current ?? 0;
+        initPlayer(videoId, startTime);
       }
     } else {
       if (isActiveRef.current || playerRef.current) {

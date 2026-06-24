@@ -15,6 +15,7 @@ interface BackgroundAudioConfig {
   onPause: () => void;
   onTrackEnd: () => void;
   manualPauseRef?: React.MutableRefObject<boolean>;
+  pendingStartTimeRef?: React.MutableRefObject<number>;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -137,7 +138,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
       audio.src = "";
       abortCountRef.current = 0;
 
-      const start = config.isPlaying ? 0 : 0;
+      const start = config.pendingStartTimeRef?.current ?? 0;
       playUrl(audio, url, start);
     }
 

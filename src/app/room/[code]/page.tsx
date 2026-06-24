@@ -73,6 +73,7 @@ export default function RoomPage() {
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
     manualPauseRef,
+    pendingStartTimeRef: player.pendingStartTimeRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
@@ -84,6 +85,7 @@ export default function RoomPage() {
     player.volume,
     player.isMuted,
     () => player.setPlayerState("ended"),
+    player.pendingStartTimeRef,
   );
 
   const ytSeekRef = useRef<(time: number) => void>(() => {});
@@ -614,6 +616,7 @@ export default function RoomPage() {
     sendTrackEnded,
     sendPlay,
     removeFromQueue,
+    setResolvedAudioUrl,
   ]);
 
   useEffect(() => {
