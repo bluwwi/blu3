@@ -164,7 +164,7 @@ export function useYoutubePlayback(
         destroyPlayer();
       }
     } else if (useYt) {
-      if (videoId !== lastVideoIdRef.current || lastAudioUrlRef.current != null) {
+      if (videoId !== lastVideoIdRef.current || lastAudioUrlRef.current !== null) {
         isActiveRef.current = true;
         setIsActive(true);
         const startTime = pendingStartTimeRef?.current ?? 0;
