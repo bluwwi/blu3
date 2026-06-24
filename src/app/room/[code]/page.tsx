@@ -1187,6 +1187,8 @@ export default function RoomPage() {
                           />
                         </div>
                       ) : (
+                        <>
+                        <YouTubePlayer ref={ytPlayerRef} />
                         <SquarePlayer
                           track={footerTrack}
                           activeVideoId={
@@ -1213,6 +1215,7 @@ export default function RoomPage() {
                             canControlPlayback ? handleSkipForward : undefined
                           }
                         />
+                      </>
                       )}
                     </aside>
 
