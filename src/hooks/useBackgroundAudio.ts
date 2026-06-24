@@ -4,6 +4,7 @@ import { Track } from "@/utils/types";
 import { resolveTrackSource } from "@/utils/ytdl";
 import { API_URL } from "@/utils/ytdl";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
+import { YouTubePlayerHandle } from "@/components/Player/YouTubePlayer";
 
 const STALE_THRESHOLD_MS = 30 * 60 * 1000;
 const MAX_ERROR_RETRIES = 3;
@@ -23,6 +24,7 @@ interface BackgroundAudioConfig {
   resolvedUrlsRef?: React.MutableRefObject<Map<string, string>>;
   resolvedTimestampsRef?: React.MutableRefObject<Map<string, number>>;
   retryKey?: number;
+  ytPlayerRef?: React.MutableRefObject<YouTubePlayerHandle | null>;
 }
 
 export function useBackgroundAudio(config: BackgroundAudioConfig) {
@@ -84,6 +86,12 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
           config.resolvedUrlsRef?.current.set(videoId, result.audioUrl);
           config.resolvedTimestampsRef?.current.set(videoId, Date.now());
           setupAudioSource(fetchId, videoId, result.audioUrl, startTime, shouldPlay);
+        } else {
+          const yt = config.ytPlayerRef?.current;
+          if (yt) {
+            yt.setVolume(configRef.current.isMuted ? 0 : configRef.current.volume);
+            yt.loadVideo(videoId);
+          }
         }
       });
   }, [config.token, config.resolvedUrlsRef, config.resolvedTimestampsRef, setupAudioSource]);
@@ -209,6 +217,17 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   }, [config.nowPlaying?.videoId, config.token, setupAudioSource, resolveAndPlay]);
 
   useEffect(() => {
+    const yt = config.ytPlayerRef?.current;
+    if (yt && yt.isReady && !audioRef.current?.src) {
+      yt.setVolume(config.isMuted ? 0 : config.volume);
+      if (config.isPlaying) {
+        yt.play();
+      } else {
+        yt.pause();
+      }
+      if (config.isPlaying) acquireWakeLock();
+      return;
+    }
     const audio = audioRef.current;
     if (audio) {
       audio.volume = config.isMuted ? 0 : config.volume / 100;
@@ -222,7 +241,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     if (config.isPlaying) {
       acquireWakeLock();
     }
-  }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock]);
+  }, [config.isPlaying, config.volume, config.isMuted, acquireWakeLock, safePlay]);
 
   useEffect(() => {
     if (config.isPlaying) return;

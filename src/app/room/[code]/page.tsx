@@ -9,6 +9,7 @@ import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { resolveTrackSource } from "@/utils/ytdl";
+import YouTubePlayer, { YouTubePlayerHandle } from "@/components/Player/YouTubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -61,6 +62,8 @@ export default function RoomPage() {
   const resolvingRef = useRef(new Set<string>());
   const [retryKey, setRetryKey] = useState(0);
   const forceRetry = useCallback(() => setRetryKey((k) => k + 1), []);
+
+  const ytPlayerRef = useRef<YouTubePlayerHandle | null>(null);
 
   const { audioRef, retryPlay } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,

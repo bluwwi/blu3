@@ -1,4 +1,4 @@
-const CACHE = "blu3-mqq2mo4n";
+const CACHE = "blu3-mqryyf1k";
 
 const PRECACHE_URLS = ["/", "/browse", "/manifest.json"];
 

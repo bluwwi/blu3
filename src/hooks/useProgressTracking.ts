@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export function useProgressTracking(
   playerState: string,
   audioRef?: React.MutableRefObject<HTMLAudioElement | null>,
+  ytPlayerRef?: React.MutableRefObject<{ getCurrentTime: () => number; getDuration: () => number } | null>,
 ) {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -17,6 +18,15 @@ export function useProgressTracking(
 
   const tick = useCallback(() => {
     try {
+      const yt = ytPlayerRef?.current;
+      if (yt) {
+        const cur = yt.getCurrentTime() ?? 0;
+        const dur = yt.getDuration() || 0;
+        setCurrentTime(cur);
+        setDuration(dur);
+        setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+        return;
+      }
       const audio = audioRef?.current;
       if (!audio) return;
       const cur = audio.currentTime ?? 0;
@@ -25,7 +35,7 @@ export function useProgressTracking(
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
     } catch {}
-  }, [audioRef]);
+  }, [audioRef, ytPlayerRef]);
 
   const startTracking = useCallback(() => {
     if (progressInt.current) clearInterval(progressInt.current);
@@ -47,14 +57,17 @@ export function useProgressTracking(
       lastSeekRef.current = now;
       setCurrentTime(time);
       try {
-        if (audioRef?.current) {
+        const yt = ytPlayerRef?.current;
+        if (yt) {
+          yt.seekTo(time);
+        } else if (audioRef?.current) {
           audioRef.current.currentTime = time;
         }
       } catch {}
       const tot = duration;
       if (tot > 0) setProgress((time / tot) * 100);
     },
-    [duration, audioRef],
+    [duration, audioRef, ytPlayerRef],
   );
 
   const handleSeek = useCallback(
@@ -78,6 +91,7 @@ export function useProgressTracking(
   }, [playerState, startTracking, stopTracking]);
 
   useEffect(() => {
+    if (ytPlayerRef?.current) return;
     const audio = audioRef?.current;
     if (!audio) return;
     const handleTimeUpdate = () => {
@@ -91,7 +105,7 @@ export function useProgressTracking(
     };
     audio.addEventListener("timeupdate", handleTimeUpdate);
     return () => audio.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [audioRef]);
+  }, [audioRef, ytPlayerRef]);
 
   return {
     progress,
