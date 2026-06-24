@@ -32,7 +32,7 @@ export async function resolveTrackSource(
   name: string,
   artists?: string,
   token?: string,
-): Promise<{ source: string; audioUrl?: string; videoId: string }> {
+): Promise<{ source: string; audioUrl?: string; videoId: string; image?: string }> {
   return withLimit(async () => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -57,6 +57,7 @@ export async function resolveTrackSource(
           source: data.source ?? "youtube",
           audioUrl: data.audioUrl,
           videoId: data.videoId,
+          image: data.image,
         };
       } catch {
         if (attempt < 3) {

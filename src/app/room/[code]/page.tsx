@@ -8,8 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
+import { useYoutubePlayback } from "@/hooks/useYoutubePlayback";
 import { resolveTrackSource } from "@/utils/ytdl";
-import YouTubePlayer, { YouTubePlayerHandle } from "@/components/Player/YouTubePlayer";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -63,8 +63,6 @@ export default function RoomPage() {
   const [retryKey, setRetryKey] = useState(0);
   const forceRetry = useCallback(() => setRetryKey((k) => k + 1), []);
 
-  const ytPlayerRef = useRef<YouTubePlayerHandle | null>(null);
-
   const { audioRef, retryPlay } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
     isPlaying: player.playing,
@@ -79,10 +77,23 @@ export default function RoomPage() {
     resolvedUrlsRef,
     resolvedTimestampsRef,
     retryKey,
-    ytPlayerRef,
   });
 
-  const progress = useProgressTracking(player.playerState, audioRef, ytPlayerRef);
+  const progress = useProgressTracking(player.playerState, audioRef);
+
+  const ytPlayback = useYoutubePlayback(
+    player.nowPlaying,
+    player.playing,
+    player.volume,
+    player.isMuted,
+    token,
+    () => player.setPlayerState("ended"),
+  );
+
+  const ytSeekRef = useRef<(time: number) => void>(() => {});
+  useEffect(() => {
+    ytSeekRef.current = ytPlayback.seekTo;
+  }, [ytPlayback.seekTo]);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -318,9 +329,9 @@ export default function RoomPage() {
         : "paused"
       : player.playerState;
 
-  const displayProgress = progress.progress;
-  const displayCurrentTime = progress.currentTime;
-  const displayDuration = progress.duration;
+  const displayProgress = ytPlayback.isActive ? ytPlayback.ytProgress : progress.progress;
+  const displayCurrentTime = ytPlayback.isActive ? ytPlayback.ytCurrentTime : progress.currentTime;
+  const displayDuration = ytPlayback.isActive ? ytPlayback.ytDuration : progress.duration;
 
   const isLiked = player.nowPlaying?.videoId
     ? likedTrackIds.has(player.nowPlaying.videoId)
@@ -335,6 +346,7 @@ export default function RoomPage() {
       fadeSeek(audio, time);
     }
     progressRef_fix.current.seekTo(time);
+    ytSeekRef.current(time);
   }, []);
 
   const handlePlay = useCallback(
@@ -664,6 +676,7 @@ export default function RoomPage() {
     (seekToTime: number) => {
       if (!canControlPlayback || !player.nowPlaying?.videoId) return;
       progress.seekTo(seekToTime);
+      ytSeekRef.current(seekToTime);
       sendSeek(seekToTime);
     },
     [canControlPlayback, player.nowPlaying?.videoId, progress, sendSeek],
@@ -1188,7 +1201,7 @@ export default function RoomPage() {
                         </div>
                       ) : (
                         <>
-                        <YouTubePlayer ref={ytPlayerRef} />
+                        <div ref={ytPlayback.containerRef} style={{ position: "fixed", top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
                         <SquarePlayer
                           track={footerTrack}
                           activeVideoId={

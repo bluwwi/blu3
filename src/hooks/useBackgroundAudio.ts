@@ -214,7 +214,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     }
 
     resolveAndPlay(fetchId, track.videoId, track.name, track.artists?.[0]?.name, start, shouldPlay);
-  }, [config.nowPlaying?.videoId, config.token, setupAudioSource, resolveAndPlay]);
+      }, [config.nowPlaying?.videoId, config.token, setupAudioSource, resolveAndPlay]);
 
   useEffect(() => {
     const yt = config.ytPlayerRef?.current;
