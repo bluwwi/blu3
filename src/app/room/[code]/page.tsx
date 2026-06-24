@@ -79,6 +79,7 @@ export default function RoomPage() {
     resolvedUrlsRef,
     resolvedTimestampsRef,
     retryKey,
+    ytPlayerRef,
   });
 
   const progress = useProgressTracking(player.playerState, audioRef);
