@@ -82,7 +82,7 @@ export default function RoomPage() {
     ytPlayerRef,
   });
 
-  const progress = useProgressTracking(player.playerState, audioRef);
+  const progress = useProgressTracking(player.playerState, audioRef, ytPlayerRef);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
