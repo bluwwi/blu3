@@ -60,7 +60,7 @@ export default function RoomPage() {
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
   const resolvingRef = useRef(new Set<string>());
-  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string | null>(null);
+  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string | null | undefined>(null);
 
   const { audioRef } = useBackgroundAudio({
     nowPlaying: player.nowPlaying,
@@ -100,6 +100,7 @@ export default function RoomPage() {
       setResolvedAudioUrl(null);
       return;
     }
+    setResolvedAudioUrl(undefined);
     const cached = resolvedUrlsRef.current.get(videoId);
     const ts = resolvedTimestampsRef.current.get(videoId) ?? 0;
     const isStale = Date.now() - ts > STALE_THRESHOLD_MS;
@@ -219,7 +220,7 @@ export default function RoomPage() {
           p.pause?.();
         }
       } else {
-        setResolvedAudioUrl(null);
+        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: `room-${state.videoId}`,
@@ -410,7 +411,7 @@ export default function RoomPage() {
         progress.seekTo(adjustedSeek);
         player.play?.();
       } else {
-        setResolvedAudioUrl(null);
+        setResolvedAudioUrl(undefined);
         player.playTrack(track, adjustedSeek, true);
       }
     },
@@ -460,7 +461,7 @@ export default function RoomPage() {
         if (elapsed > 0 && elapsed < 3600) time += elapsed;
       }
       if (!player.isMuted) player.toggleMute();
-      setResolvedAudioUrl(null);
+      setResolvedAudioUrl(undefined);
       p.playTrack(
         {
           id: `room-${playback.videoId}`,
@@ -504,7 +505,7 @@ export default function RoomPage() {
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
-        setResolvedAudioUrl(null);
+        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: activeTrack.id,
@@ -550,7 +551,7 @@ export default function RoomPage() {
       }
 
       if (nextTrack) {
-        setResolvedAudioUrl(null);
+        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: nextTrack.id,
@@ -578,7 +579,7 @@ export default function RoomPage() {
         });
       }
     } else {
-      setResolvedAudioUrl(null);
+      setResolvedAudioUrl(undefined);
       p.playTrack(
         {
           id: currentQueueTrack.id,
@@ -694,7 +695,7 @@ export default function RoomPage() {
         );
         return [track, ...filtered];
       });
-      setResolvedAudioUrl(null);
+      setResolvedAudioUrl(undefined);
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
@@ -725,7 +726,7 @@ export default function RoomPage() {
     if (!player.nowPlaying?.videoId) {
       const firstTrack = queue[0];
       if (!firstTrack) return;
-      setResolvedAudioUrl(null);
+      setResolvedAudioUrl(undefined);
       player.playTrack(firstTrack, 0, true);
       sendPlay({
         id: firstTrack.id,
@@ -814,7 +815,7 @@ export default function RoomPage() {
           ? sortedQueue[0]
           : null;
     if (!nextTrack) return;
-    setResolvedAudioUrl(null);
+    setResolvedAudioUrl(undefined);
     player.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
@@ -877,7 +878,7 @@ export default function RoomPage() {
       return;
     }
     const prevTrack = queue[prevIdx];
-    setResolvedAudioUrl(null);
+    setResolvedAudioUrl(undefined);
     player.playTrack(prevTrack, 0, true);
     sendPlay({
       id: prevTrack.id,

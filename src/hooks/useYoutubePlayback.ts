@@ -156,9 +156,14 @@ export function useYoutubePlayback(
       return;
     }
 
-    const useYt = !audioUrl;
+    const isResolving = audioUrl === undefined;
+    const useYt = audioUrl === null;
 
-    if (useYt) {
+    if (isResolving) {
+      if (isActiveRef.current || playerRef.current) {
+        destroyPlayer();
+      }
+    } else if (useYt) {
       if (videoId !== lastVideoIdRef.current || lastAudioUrlRef.current != null) {
         isActiveRef.current = true;
         setIsActive(true);
