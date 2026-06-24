@@ -22,7 +22,7 @@ export interface YouTubePlayerHandle {
   isReady: () => boolean;
 }
 
-const YouTubePlayer = forwardRef<YouTubePlayerHandle, Record<string, never>>(function YouTubePlayer(_, ref) {
+const YouTubePlayer = forwardRef<YouTubePlayerHandle, object>(function YouTubePlayer(_props: object, ref) {
   const playerRef = useRef<any>(null);
   const apiReady = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
