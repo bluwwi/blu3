@@ -9,7 +9,7 @@ import { usePlayerState } from "@/hooks/usePlayerState";
 import { useProgressTracking } from "@/hooks/useProgressTracking";
 import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
 import { useYoutubePlayback } from "@/hooks/useYoutubePlayback";
-import { resolveTrackSource } from "@/utils/ytdl";
+import { resolveTrackSource, resolveLink } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -1120,6 +1120,11 @@ export default function RoomPage() {
     [closeSearchOverlay, handleAdminPlayTrack],
   );
 
+  const handleResolveLink = useCallback(
+    (url: string) => resolveLink(url, token),
+    [token],
+  );
+
   const popularGenres = [
     "Pop hits",
     "Hip hop",
@@ -1328,6 +1333,7 @@ export default function RoomPage() {
                         }}
                         onLeave={handleLeave}
                         roomCode={code}
+                        resolveLink={handleResolveLink}
                       />
                     </aside>
                   </div>

@@ -45,7 +45,6 @@ export function useYoutubePlayback(
   const pendingSeekRef = useRef<number | null>(null);
   const lastVideoIdRef = useRef<string | null>(null);
   const lastAudioUrlRef = useRef<string | null | undefined>(null);
-
   useEffect(() => {
     if (window.YT?.Player) {
       apiReady.current = true;

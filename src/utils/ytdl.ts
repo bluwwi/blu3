@@ -70,3 +70,25 @@ export async function resolveTrackSource(
     return { source: "youtube", videoId };
   });
 }
+
+export async function resolveLink(
+  url: string,
+  token?: string,
+): Promise<{ videoId: string; name: string; artist: string; image: string; source: string } | null> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  try {
+    const res = await fetch(`${API_URL}/api/resolve-link`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ url }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}

@@ -6,7 +6,7 @@ import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
 interface BackgroundAudioConfig {
   nowPlaying: Track | null;
-  audioUrl: string | null;
+  audioUrl: string | null | undefined;
   isPlaying: boolean;
   volume: number;
   isMuted: boolean;
@@ -26,7 +26,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const abortCountRef = useRef(0);
   const lastVideoIdRef = useRef<string | null>(null);
-  const lastAudioUrlRef = useRef<string | null>(null);
+  const lastAudioUrlRef = useRef<string | null | undefined>(null);
 
   const safePlay = useCallback((audio: HTMLAudioElement) => {
     audio.play().catch((err: DOMException) => {

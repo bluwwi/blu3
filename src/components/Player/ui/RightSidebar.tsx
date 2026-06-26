@@ -4,6 +4,7 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { MembersPopup } from "./MembersPopup";
 import { LeavePopup } from "./LeavePopup";
 import { SharePopup } from "./SharePopup";
+import { ImportLinkPopup } from "./ImportLinkPopup";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
@@ -57,6 +58,13 @@ interface Props {
   onLogout?: () => void;
   onLeave?: () => void;
   roomCode?: string;
+  resolveLink: (url: string) => Promise<{
+    videoId: string;
+    name: string;
+    artist: string;
+    image: string;
+    source: string;
+  } | null>;
 }
 
 export function RightSidebar({
@@ -84,6 +92,7 @@ export function RightSidebar({
   onLogout,
   onLeave,
   roomCode,
+  resolveLink,
 }: Props) {
   const [showMembersPopup, setShowMembersPopup] = useState(false);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
@@ -124,6 +133,18 @@ export function RightSidebar({
   const closeShare = () => {
     setIsShareVisible(false);
     setTimeout(() => setShowSharePopup(false), 200);
+  };
+
+  const [showImportPopup, setShowImportPopup] = useState(false);
+  const [isImportVisible, setIsImportVisible] = useState(false);
+
+  const openImport = () => {
+    setShowImportPopup(true);
+    requestAnimationFrame(() => setIsImportVisible(true));
+  };
+  const closeImport = () => {
+    setIsImportVisible(false);
+    setTimeout(() => setShowImportPopup(false), 200);
   };
 
   return (
@@ -186,6 +207,13 @@ export function RightSidebar({
                       <Icon name="share" size={20} className="text-current" />
                     </button>
                     <button
+                      onClick={openImport}
+                      className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
+                      title="Import link (YouTube, Spotify, Apple Music)"
+                    >
+                      <Icon name="link" size={20} className="text-current" />
+                    </button>
+                    <button
                       onClick={openLeave}
                       className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
                       title="Room options"
@@ -244,6 +272,15 @@ export function RightSidebar({
           isVisible={isShareVisible}
           roomCode={roomCode}
           onClose={closeShare}
+        />
+      )}
+
+      {showImportPopup && (
+        <ImportLinkPopup
+          isVisible={isImportVisible}
+          onClose={closeImport}
+          resolveLink={resolveLink}
+          addToQueue={addToQueue}
         />
       )}
     </>
