@@ -108,7 +108,7 @@ export default function RoomPage() {
       setResolvedAudioUrl(cached);
       return;
     }
-    resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
+    resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token, track.duration_ms)
       .then((result) => {
         if (result.audioUrl) {
           resolvedUrlsRef.current.set(videoId, result.audioUrl);
@@ -267,7 +267,7 @@ export default function RoomPage() {
 
         resolvingRef.current.add(videoId);
         resolved++;
-        resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token)
+        resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token, track.duration_ms)
           .then((result) => {
             if (result.audioUrl) {
               resolvedUrlsRef.current.set(videoId, result.audioUrl);
