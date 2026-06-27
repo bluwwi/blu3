@@ -86,6 +86,8 @@ export default function RoomPage() {
     player.isMuted,
     () => player.setPlayerState("ended"),
     player.pendingStartTimeRef,
+    () => player.handlePlayEvent(),
+    () => player.handlePauseEvent(),
   );
 
   const ytSeekRef = useRef<(time: number) => void>(() => {});

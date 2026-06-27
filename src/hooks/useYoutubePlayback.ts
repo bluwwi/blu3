@@ -30,6 +30,8 @@ export function useYoutubePlayback(
   isMuted: boolean,
   onTrackEnd?: () => void,
   pendingStartTimeRef?: React.MutableRefObject<number>,
+  onPlay?: () => void,
+  onPause?: () => void,
 ): YoutubePlaybackResult {
   const [isActive, setIsActive] = useState(false);
   const [ytProgress, setProgress] = useState(0);
@@ -126,10 +128,13 @@ export function useYoutubePlayback(
             const S = window.YT.PlayerState;
             if (e.data === S.PLAYING) {
               startTracking();
+              onPlay?.();
             } else if (e.data === S.PAUSED) {
               stopTracking();
+              onPause?.();
             } else if (e.data === S.ENDED) {
               stopTracking();
+              onPause?.();
               if (!endedSent.current) {
                 endedSent.current = true;
                 onTrackEnd?.();
@@ -141,7 +146,7 @@ export function useYoutubePlayback(
       });
     };
     tryInit();
-  }, [destroyPlayer, startTracking, stopTracking, onTrackEnd]);
+  }, [destroyPlayer, startTracking, stopTracking, onTrackEnd, onPlay, onPause]);
 
   useEffect(() => {
     const videoId = nowPlaying?.videoId ?? null;
