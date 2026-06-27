@@ -206,13 +206,13 @@ export function RightSidebar({
                     >
                       <Icon name="share" size={20} className="text-current" />
                     </button>
-                    {/*<button
+                    <button
                       onClick={openImport}
                       className="flex h-9 w-9 items-center justify-center rounded-lg text-white/80 hover:text-white transition-colors cursor-pointer"
                       title="Import link (YouTube, Spotify, Apple Music)"
                     >
                       <Icon name="link" size={20} className="text-current" />
-                    </button>*/}
+                    </button>
                     <button
                       onClick={openLeave}
                       className="flex items-center gap-1.5 rounded-lg bg-white text-black px-3 py-1.5 text-sm font-semibold hover:bg-white/80 transition-all cursor-pointer"
