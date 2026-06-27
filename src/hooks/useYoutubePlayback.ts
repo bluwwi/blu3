@@ -28,7 +28,7 @@ export function useYoutubePlayback(
   isPlaying: boolean,
   volume: number,
   isMuted: boolean,
-fi  onTrackEnd?: () => void,
+  onTrackEnd?: () => void,
   pendingStartTimeRef?: React.MutableRefObject<number>,
   onPlay?: () => void,
   onPause?: () => void,
