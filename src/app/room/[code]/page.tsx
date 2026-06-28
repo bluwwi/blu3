@@ -6,10 +6,8 @@ import { useRoom } from "@/hooks/useRoom";
 import { useRoomSocket } from "@/hooks/useRoomSocket";
 import { useAuth } from "@/hooks/useAuth";
 import { usePlayerState } from "@/hooks/usePlayerState";
-import { useProgressTracking } from "@/hooks/useProgressTracking";
-import { useBackgroundAudio } from "@/hooks/useBackgroundAudio";
-import { useYoutubePlayback } from "@/hooks/useYoutubePlayback";
-import { resolveTrackSource, resolveLink } from "@/utils/ytdl";
+import { usePlayerEngine } from "@/hooks/usePlayerEngine";
+import { resolveLink } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
@@ -57,75 +55,23 @@ export default function RoomPage() {
     typeof window !== "undefined"
       ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
-  const resolvedUrlsRef = useRef(new Map<string, string>());
-  const resolvedTimestampsRef = useRef(new Map<string, number>());
-  const resolvingRef = useRef(new Set<string>());
-  const [resolvedAudioUrl, setResolvedAudioUrl] = useState<string | null | undefined>(null);
 
-  const { audioRef } = useBackgroundAudio({
+
+  const engine = usePlayerEngine({
+    token,
     nowPlaying: player.nowPlaying,
-    audioUrl: resolvedAudioUrl,
     isPlaying: player.playing,
     volume: player.volume,
     isMuted: player.isMuted,
-    token,
+    pendingStartTimeRef: player.pendingStartTimeRef,
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => player.setPlayerState("ended"),
-    manualPauseRef,
-    pendingStartTimeRef: player.pendingStartTimeRef,
   });
+  const engineRef = useRef(engine);
+  useEffect(() => { engineRef.current = engine; }, [engine]);
 
-  const progress = useProgressTracking(player.playerState, audioRef);
 
-  const ytPlayback = useYoutubePlayback(
-    player.nowPlaying,
-    resolvedAudioUrl,
-    player.playing,
-    player.volume,
-    player.isMuted,
-    () => player.setPlayerState("ended"),
-    player.pendingStartTimeRef,
-    () => player.handlePlayEvent(),
-    () => player.handlePauseEvent(),
-  );
-
-  const ytSeekRef = useRef<(time: number) => void>(() => {});
-  useEffect(() => {
-    ytSeekRef.current = ytPlayback.seekTo;
-  }, [ytPlayback.seekTo]);
-
-  const STALE_THRESHOLD_MS = 30 * 60 * 1000;
-  const resolveForTrack = useCallback((track: Track | null) => {
-    const videoId = track?.videoId;
-    if (!videoId) {
-      setResolvedAudioUrl(null);
-      return;
-    }
-    setResolvedAudioUrl(undefined);
-    const cached = resolvedUrlsRef.current.get(videoId);
-    const ts = resolvedTimestampsRef.current.get(videoId) ?? 0;
-    const isStale = Date.now() - ts > STALE_THRESHOLD_MS;
-    if (cached && !isStale) {
-      setResolvedAudioUrl(cached);
-      return;
-    }
-    resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token, track.duration_ms)
-      .then((result) => {
-        if (result.audioUrl) {
-          resolvedUrlsRef.current.set(videoId, result.audioUrl);
-          resolvedTimestampsRef.current.set(videoId, Date.now());
-          setResolvedAudioUrl(result.audioUrl);
-        } else {
-          setResolvedAudioUrl(null);
-        }
-      })
-      .catch(() => setResolvedAudioUrl(null));
-  }, [token]);
-
-  useEffect(() => {
-    resolveForTrack(player.nowPlaying);
-  }, [player.nowPlaying?.videoId, resolveForTrack]);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -207,7 +153,7 @@ export default function RoomPage() {
       }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
-        const actualTime = audioRef.current?.currentTime ?? 0;
+        const actualTime = engineRef.current.audioRef.current?.currentTime ?? 0;
         const drift = Math.abs(actualTime - actualCurrentTime);
         if (drift > 1.5) {
           seekWithFade(actualCurrentTime);
@@ -222,7 +168,6 @@ export default function RoomPage() {
           p.pause?.();
         }
       } else {
-        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: `room-${state.videoId}`,
@@ -238,7 +183,7 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
-        progressRef_fix.current.seekTo(actualCurrentTime);
+        engineRef.current.seekTo(actualCurrentTime);
         if (state.isPlaying) p.play?.();
       }
     },
@@ -254,39 +199,7 @@ export default function RoomPage() {
     }, []),
   });
 
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    debounceTimerRef.current = setTimeout(() => {
-      const MAX_PREFETCH = 2;
-      let resolved = 0;
-      for (const track of queue) {
-        if (resolved >= MAX_PREFETCH) break;
-        const videoId = track.videoId;
-        if (!videoId) continue;
-        if (resolvedUrlsRef.current.has(videoId)) continue;
-        if (resolvingRef.current.has(videoId)) continue;
 
-        resolvingRef.current.add(videoId);
-        resolved++;
-        resolveTrackSource(videoId, track.name, track.artists?.[0]?.name, token, track.duration_ms)
-          .then((result) => {
-            if (result.audioUrl) {
-              resolvedUrlsRef.current.set(videoId, result.audioUrl);
-              resolvedTimestampsRef.current.set(videoId, Date.now());
-            }
-          })
-          .catch(() => {})
-          .finally(() => {
-            resolvingRef.current.delete(videoId);
-          });
-      }
-    }, 500);
-
-    return () => {
-      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-    };
-  }, [queue, token]);
 
   const playbackRef = useRef(playback);
   useEffect(() => {
@@ -341,16 +254,12 @@ export default function RoomPage() {
   joinedRef.current = joined;
   const canControlPlaybackRef = useRef(canControlPlayback);
   const playerRef_fix = useRef(player);
-  const progressRef_fix = useRef(progress);
   useEffect(() => {
     canControlPlaybackRef.current = canControlPlayback;
   }, [canControlPlayback]);
   useEffect(() => {
     playerRef_fix.current = player;
   }, [player]);
-  useEffect(() => {
-    progressRef_fix.current = progress;
-  }, [progress]);
 
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
@@ -362,10 +271,6 @@ export default function RoomPage() {
         : "paused"
       : player.playerState;
 
-  const displayProgress = ytPlayback.isActive ? ytPlayback.ytProgress : progress.progress;
-  const displayCurrentTime = ytPlayback.isActive ? ytPlayback.ytCurrentTime : progress.currentTime;
-  const displayDuration = ytPlayback.isActive ? ytPlayback.ytDuration : progress.duration;
-
   const isLiked = player.nowPlaying?.videoId
     ? likedTrackIds.has(player.nowPlaying.videoId)
     : false;
@@ -374,12 +279,11 @@ export default function RoomPage() {
   }, [player.nowPlaying, toggleLike]);
 
   const seekWithFade = useCallback((time: number) => {
-    const audio = audioRef.current;
+    const audio = engineRef.current.audioRef.current;
     if (audio && !audio.paused) {
       fadeSeek(audio, time);
     }
-    progressRef_fix.current.seekTo(time);
-    ytSeekRef.current(time);
+    engineRef.current.seekTo(time);
   }, []);
 
   const handlePlay = useCallback(
@@ -410,10 +314,9 @@ export default function RoomPage() {
       };
 
       if (player.nowPlaying?.videoId === state.videoId) {
-        progress.seekTo(adjustedSeek);
+        engineRef.current.seekTo(adjustedSeek);
         player.play?.();
       } else {
-        setResolvedAudioUrl(undefined);
         player.playTrack(track, adjustedSeek, true);
       }
     },
@@ -422,8 +325,7 @@ export default function RoomPage() {
       player.nowPlaying?.videoId,
       player.play,
       player.playTrack,
-      progress,
-      setResolvedAudioUrl,
+
     ],
   );
 
@@ -433,9 +335,9 @@ export default function RoomPage() {
 
   const handleSeek = useCallback(
     (state: { seekTo: number; serverTime: number }) => {
-      progress.seekTo(state.seekTo);
+      engineRef.current.seekTo(state.seekTo);
     },
-    [progress],
+    [],
   );
 
   const prevConnected = useRef(connected);
@@ -463,7 +365,6 @@ export default function RoomPage() {
         if (elapsed > 0 && elapsed < 3600) time += elapsed;
       }
       if (!player.isMuted) player.toggleMute();
-      setResolvedAudioUrl(undefined);
       p.playTrack(
         {
           id: `room-${playback.videoId}`,
@@ -507,7 +408,6 @@ export default function RoomPage() {
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
-        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: activeTrack.id,
@@ -553,7 +453,6 @@ export default function RoomPage() {
       }
 
       if (nextTrack) {
-        setResolvedAudioUrl(undefined);
         p.playTrack(
           {
             id: nextTrack.id,
@@ -581,7 +480,6 @@ export default function RoomPage() {
         });
       }
     } else {
-      setResolvedAudioUrl(undefined);
       p.playTrack(
         {
           id: currentQueueTrack.id,
@@ -619,7 +517,6 @@ export default function RoomPage() {
     sendTrackEnded,
     sendPlay,
     removeFromQueue,
-    setResolvedAudioUrl,
   ]);
 
   useEffect(() => {
@@ -636,7 +533,7 @@ export default function RoomPage() {
     if (
       queueAdvanceLockRef.current === activeKey &&
       ["loading", "playing"].includes(player.playerState) &&
-      progress.currentTime < 2
+      engineRef.current.currentTime < 2
     ) {
       queueAdvanceLockRef.current = null;
       return;
@@ -650,7 +547,7 @@ export default function RoomPage() {
     player.nowPlaying?.id,
     player.nowPlaying?.videoId,
     player.playerState,
-    progress.currentTime,
+    engineRef.current.currentTime,
   ]);
 
   useEffect(() => {
@@ -670,7 +567,7 @@ export default function RoomPage() {
     )
       return;
     const intervalId = window.setInterval(() => {
-      const ct = progress.currentTime;
+      const ct = engineRef.current.currentTime;
       const dur = player.nowPlaying?.duration_ms
         ? player.nowPlaying.duration_ms / 1000
         : 0;
@@ -697,7 +594,6 @@ export default function RoomPage() {
         );
         return [track, ...filtered];
       });
-      setResolvedAudioUrl(undefined);
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
@@ -710,17 +606,16 @@ export default function RoomPage() {
         duration_ms: track.duration_ms,
       });
     },
-    [canControlPlayback, player.playTrack, sendPlay, setQueue, setResolvedAudioUrl],
+    [canControlPlayback, player.playTrack, sendPlay, setQueue],
   );
 
   const handleSeekAction = useCallback(
     (seekToTime: number) => {
       if (!canControlPlayback || !player.nowPlaying?.videoId) return;
-      progress.seekTo(seekToTime);
-      ytSeekRef.current(seekToTime);
+      engineRef.current.seekTo(seekToTime);
       sendSeek(seekToTime);
     },
-    [canControlPlayback, player.nowPlaying?.videoId, progress, sendSeek],
+    [canControlPlayback, player.nowPlaying?.videoId, sendSeek],
   );
 
   const handlePlayPauseAction = useCallback(() => {
@@ -728,7 +623,6 @@ export default function RoomPage() {
     if (!player.nowPlaying?.videoId) {
       const firstTrack = queue[0];
       if (!firstTrack) return;
-      setResolvedAudioUrl(undefined);
       player.playTrack(firstTrack, 0, true);
       sendPlay({
         id: firstTrack.id,
@@ -745,7 +639,7 @@ export default function RoomPage() {
     if (player.playerState === "playing") {
       manualPauseRef.current = true;
       player.pause?.();
-      sendPause(progress.currentTime);
+      sendPause(engineRef.current.currentTime);
       return;
     }
     player.play?.();
@@ -756,7 +650,7 @@ export default function RoomPage() {
       trackName: player.nowPlaying.name,
       artistName: player.nowPlaying.artists?.[0]?.name ?? "",
       image: player.nowPlaying.image ?? "",
-      currentTime: progress.currentTime,
+      currentTime: engineRef.current.currentTime,
       duration_ms: player.nowPlaying.duration_ms,
     });
   }, [
@@ -765,12 +659,11 @@ export default function RoomPage() {
     player.playerState,
     player.pause,
     player.play,
-    progress.currentTime,
+    engineRef.current.currentTime,
     queue,
     sendPause,
     sendPlay,
     player.playTrack,
-    setResolvedAudioUrl,
   ]);
 
   const handleListenerPlay = useCallback(() => {
@@ -781,10 +674,10 @@ export default function RoomPage() {
       if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
     }
     if (player.isMuted) player.toggleMute();
-    progress.seekTo(actualCurrentTime);
+    engineRef.current.seekTo(actualCurrentTime);
     player.play?.();
     setListenerMuted(false);
-  }, [playback, getSyncedTime, progress, player]);
+  }, [playback, getSyncedTime, player]);
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
@@ -816,8 +709,7 @@ export default function RoomPage() {
         : playbackMode.repeatMode === "all"
           ? sortedQueue[0]
           : null;
-    if (!nextTrack) return;
-    setResolvedAudioUrl(undefined);
+      if (!nextTrack) return;
     player.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
@@ -838,7 +730,6 @@ export default function RoomPage() {
     queue,
     sendPlay,
     cycleQueueCurrent,
-    setResolvedAudioUrl,
   ]);
 
   const handleVolumeWrapped = useCallback(
@@ -857,9 +748,9 @@ export default function RoomPage() {
 
     const currentTrack = player.nowPlaying;
 
-    if (progress.currentTime > 3) {
+    if (engineRef.current.currentTime > 3) {
       if (!currentTrack?.videoId) return;
-      progress.seekTo(0);
+      engineRef.current.seekTo(0);
       sendSeek(0);
       return;
     }
@@ -875,12 +766,11 @@ export default function RoomPage() {
           : -1;
     if (prevIdx < 0 || !queue[prevIdx]) {
       if (!currentTrack?.videoId) return;
-      progress.seekTo(0);
+      engineRef.current.seekTo(0);
       sendSeek(0);
       return;
     }
     const prevTrack = queue[prevIdx];
-    setResolvedAudioUrl(undefined);
     player.playTrack(prevTrack, 0, true);
     sendPlay({
       id: prevTrack.id,
@@ -895,13 +785,11 @@ export default function RoomPage() {
   }, [
     canControlPlayback,
     joined,
-    progress,
     player.nowPlaying,
     queue,
     playbackMode.repeatMode,
     sendSeek,
     sendPlay,
-    setResolvedAudioUrl,
   ]);
 
   const handleToggleShuffle = useCallback(() => {
@@ -945,24 +833,24 @@ export default function RoomPage() {
         handleSkipForward(),
       );
       navigator.mediaSession.setActionHandler("seekbackward", () => {
-        const newTime = Math.max(0, progress.currentTime - 10);
-        progress.seekTo(newTime);
+        const newTime = Math.max(0, engineRef.current.currentTime - 10);
+        engineRef.current.seekTo(newTime);
         if (canControlPlayback) sendSeek(newTime);
       });
       navigator.mediaSession.setActionHandler("seekforward", () => {
-        const newTime = Math.min(progress.duration, progress.currentTime + 10);
-        progress.seekTo(newTime);
+        const newTime = Math.min(engineRef.current.duration, engineRef.current.currentTime + 10);
+        engineRef.current.seekTo(newTime);
         if (canControlPlayback) sendSeek(newTime);
       });
       navigator.mediaSession.setActionHandler("play", () => {
-        const audio = audioRef.current;
+        const audio = engineRef.current.audioRef.current;
         if (audio) {
           manualPauseRef.current = false;
           audio.play().catch(() => {});
         }
       });
       navigator.mediaSession.setActionHandler("pause", () => {
-        const audio = audioRef.current;
+        const audio = engineRef.current.audioRef.current;
         if (audio) {
           manualPauseRef.current = true;
           audio.pause();
@@ -970,7 +858,7 @@ export default function RoomPage() {
       });
       navigator.mediaSession.setActionHandler("seekto", (details) => {
         if (details.seekTime != null) {
-          progress.seekTo(details.seekTime);
+          engineRef.current.seekTo(details.seekTime);
           if (canControlPlayback) sendSeek(details.seekTime);
         }
       });
@@ -978,10 +866,8 @@ export default function RoomPage() {
   }, [
     handleSkipBack,
     handleSkipForward,
-    progress,
     canControlPlayback,
     sendSeek,
-    audioRef,
     manualPauseRef,
   ]);
 
@@ -1029,7 +915,7 @@ export default function RoomPage() {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       if (document.hidden) return;
-      if (player.playerState === "playing") sendProgress(progress.currentTime);
+      if (player.playerState === "playing") sendProgress(engineRef.current.currentTime);
     }, 3000);
     return () => window.clearInterval(heartbeatId);
   }, [
@@ -1037,7 +923,7 @@ export default function RoomPage() {
     joined,
     player.nowPlaying?.videoId,
     player.playerState,
-    progress.currentTime,
+    engineRef.current.currentTime,
     sendProgress,
   ]);
 
@@ -1253,7 +1139,6 @@ export default function RoomPage() {
                         </div>
                       ) : (
                         <>
-                        <div id={ytPlayback.playerContainerId} style={{ position: "fixed", top: -9999, left: -9999, width: 1, height: 1, opacity: 0, pointerEvents: "none" }} />
                         <SquarePlayer
                           track={footerTrack}
                           activeVideoId={
@@ -1262,9 +1147,9 @@ export default function RoomPage() {
                           playerState={footerPlayerState}
                           isLiked={isLiked}
                           onToggleLike={handleToggleLike}
-                          progress={displayProgress}
-                          currentTime={displayCurrentTime}
-                          duration={displayDuration}
+                          progress={engine.progress}
+                          currentTime={engine.currentTime}
+                          duration={engine.duration}
                           volume={player.volume}
                           isMuted={player.isMuted}
                           onPlayPause={onPlayPauseAction}
