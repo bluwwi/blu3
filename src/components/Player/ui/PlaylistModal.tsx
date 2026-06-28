@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2, BugPlay, Plus } from "lucide-react";
+import { X, Loader2, BugPlay, Plus, Music2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Icon } from "@/hooks/useIcon";
 import { ImportStatus } from "./ImportToast";
-import { PlaylistIcon } from "@phosphor-icons/react";
+import { PlaylistIcon, Link as LinkIcon } from "@phosphor-icons/react";
 import Link from "next/link";
+import { Track } from "@/utils/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -24,6 +25,14 @@ interface Props {
   onClose: () => void;
   onQueuePlaylist: (playlistId: string) => Promise<void>;
   onImportStatus: (status: ImportStatus) => void;
+  resolveLink: (url: string) => Promise<{
+    videoId: string;
+    name: string;
+    artist: string;
+    image: string;
+    source: string;
+  } | null>;
+  addToQueue: (track: Track) => void;
 }
 
 export function PlaylistModal({

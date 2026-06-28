@@ -38,7 +38,7 @@ const ICON_MAP: Record<string, string> = {
   import: "Import.svg",
   "archive-import": "Arhive_import.svg",
   basket: "Basket_alt.svg",
-  link: "link_alt.svg",
+  link: "link.svg",
   setting: "setting-2.svg",
 
   comment: "comment.svg",

@@ -34,6 +34,13 @@ interface Props {
   onCycleRepeat?: () => void;
   onSearchClick?: () => void;
   userName?: string;
+  resolveLink: (url: string) => Promise<{
+    videoId: string;
+    name: string;
+    artist: string;
+    image: string;
+    source: string;
+  } | null>;
 }
 
 export function QueueAndHistory({
@@ -48,6 +55,7 @@ export function QueueAndHistory({
   shuffleEnabled = false,
   repeatMode = "off",
   onToggleShuffle,
+  resolveLink,
   onCycleRepeat,
   onSearchClick,
   clearQueue,
@@ -303,6 +311,8 @@ export function QueueAndHistory({
         onClose={() => setShowPlaylistModal(false)}
         onQueuePlaylist={handleQueuePlaylist}
         onImportStatus={setImportStatus}
+        resolveLink={resolveLink}
+        addToQueue={addToQueue}
       />
       <ImportToast
         status={importStatus}
