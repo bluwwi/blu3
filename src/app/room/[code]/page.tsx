@@ -11,7 +11,6 @@ import { resolveLink } from "@/utils/ytdl";
 
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
-import { fadeSeek } from "@/utils/audioFade";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
@@ -153,11 +152,6 @@ export default function RoomPage() {
       }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
-        const actualTime = engineRef.current.audioRef.current?.currentTime ?? 0;
-        const drift = Math.abs(actualTime - actualCurrentTime);
-        if (drift > 1.5) {
-          seekWithFade(actualCurrentTime);
-        }
         if (state.isPlaying) {
           if (p.playerState === "ended" || p.playerState === "loading") {
             p.play?.();
@@ -183,7 +177,6 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
-        engineRef.current.seekTo(actualCurrentTime);
         if (state.isPlaying) p.play?.();
       }
     },
@@ -277,14 +270,6 @@ export default function RoomPage() {
   const handleToggleLike = useCallback(() => {
     if (player.nowPlaying) toggleLike(player.nowPlaying);
   }, [player.nowPlaying, toggleLike]);
-
-  const seekWithFade = useCallback((time: number) => {
-    const audio = engineRef.current.audioRef.current;
-    if (audio && !audio.paused) {
-      fadeSeek(audio, time);
-    }
-    engineRef.current.seekTo(time);
-  }, []);
 
   const handlePlay = useCallback(
     (state: {
