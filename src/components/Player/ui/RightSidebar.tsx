@@ -4,7 +4,6 @@ import { QueueAndHistory } from "./QueueAndHistory";
 import { MembersPopup } from "./MembersPopup";
 import { LeavePopup } from "./LeavePopup";
 import { SharePopup } from "./SharePopup";
-import { ImportLinkPopup } from "./ImportLinkPopup";
 import { Track } from "@/utils/types";
 import { RoomTheme, getRoomThemeVars } from "@/utils/roomHelpers";
 import { Icon } from "@/hooks/useIcon";
@@ -135,18 +134,6 @@ export function RightSidebar({
     setTimeout(() => setShowSharePopup(false), 200);
   };
 
-  const [showImportPopup, setShowImportPopup] = useState(false);
-  const [isImportVisible, setIsImportVisible] = useState(false);
-
-  const openImport = () => {
-    setShowImportPopup(true);
-    requestAnimationFrame(() => setIsImportVisible(true));
-  };
-  const closeImport = () => {
-    setIsImportVisible(false);
-    setTimeout(() => setShowImportPopup(false), 200);
-  };
-
   return (
     <>
       <div
@@ -238,6 +225,7 @@ export function RightSidebar({
                 onSearchClick={onSearchClick}
                 clearQueue={clearQueue}
                 userName={user?.name}
+                resolveLink={resolveLink}
               />
             </div>
           </div>
@@ -266,15 +254,6 @@ export function RightSidebar({
           isVisible={isShareVisible}
           roomCode={roomCode}
           onClose={closeShare}
-        />
-      )}
-
-      {showImportPopup && (
-        <ImportLinkPopup
-          isVisible={isImportVisible}
-          onClose={closeImport}
-          resolveLink={resolveLink}
-          addToQueue={addToQueue}
         />
       )}
     </>
