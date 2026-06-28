@@ -121,7 +121,7 @@ export function useBackgroundAudio(config: BackgroundAudioConfig) {
     const videoId = track?.videoId ?? null;
 
     if (!videoId || !url) {
-      if (lastVideoIdRef.current && videoId !== lastVideoIdRef.current) {
+      if (lastAudioUrlRef.current !== url) {
         audio.pause();
         audio.src = "";
       }
