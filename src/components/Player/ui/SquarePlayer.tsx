@@ -309,8 +309,9 @@ export function SquarePlayer({
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isLoading ? (
-              <svg className="animate-spin h-5 w-5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" strokeDasharray="50" strokeDashoffset="35" strokeLinecap="round" />
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" className="stroke-black/20" />
+                <circle cx="12" cy="12" r="10" className="stroke-black" strokeDasharray="50" strokeDashoffset="35" strokeLinecap="round" />
               </svg>
             ) : isPlaying ? (
               <Icon name="pause" size={18} className="text-black" />
