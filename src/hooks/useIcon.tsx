@@ -3,8 +3,8 @@
 import React from "react";
 
 const ICON_MAP: Record<string, string> = {
-  play: "Play.svg",
-  pause: "Pause.svg",
+  play: "play.svg",
+  pause: "pause.svg",
   "skip-next": "Skip-next.svg",
   "skip-forward": "Skip-next.svg",
   "skip-prev": "Skip-prev.svg",
@@ -21,7 +21,7 @@ const ICON_MAP: Record<string, string> = {
   "vol-full": "vol-full.svg",
   "sound-fill": "Sound_fill.svg",
   chat: "Chat.svg",
-  heart: "Heart.svg",
+  heart: "heart.svg",
   favorite: "Favorite.svg",
 
   search: "Search.svg",

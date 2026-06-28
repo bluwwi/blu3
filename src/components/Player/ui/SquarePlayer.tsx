@@ -308,7 +308,12 @@ export function SquarePlayer({
             className="flex h-13 w-13 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
             aria-label={isPlaying ? "Pause" : "Play"}
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <svg className="animate-spin h-5 w-5 text-black" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : isPlaying ? (
               <Icon name="pause" size={18} className="text-black" />
             ) : (
               <Icon name="play" size={18} className="text-black " />
