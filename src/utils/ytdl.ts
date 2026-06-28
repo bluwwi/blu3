@@ -33,7 +33,12 @@ export async function resolveTrackSource(
   artists?: string,
   token?: string,
   duration?: number,
+  source?: string,
 ): Promise<{ source: string; audioUrl?: string; videoId: string; image?: string }> {
+  if (source === "youtube") {
+    return { source: "youtube", videoId };
+  }
+
   return withLimit(async () => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -45,7 +50,7 @@ export async function resolveTrackSource(
         const res = await fetch(`${API_URL}/api/resolve`, {
           method: "POST",
           headers,
-          body: JSON.stringify({ videoId, name, artists, duration }),
+          body: JSON.stringify({ videoId, name, artists, duration, source }),
         });
         if (res.status === 429 && attempt < 3) {
           const delay = Math.min(1000 * Math.pow(2, attempt), 8000);

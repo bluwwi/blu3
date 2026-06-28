@@ -266,17 +266,23 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     setMode("resolving");
     stopBothRef.current();
     endedSentRef.current = false;
+    const cfg1 = configRef.current;
+    const startTime = cfg1.pendingStartTimeRef.current;
 
-    const cfg = configRef.current;
-    resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg.token, track?.duration_ms)
+    if (track?.source === "youtube") {
+      startYT(videoId, startTime);
+      return;
+    }
+
+    resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg1.token, track?.duration_ms, track?.source)
       .then((result) => {
         if (videoId !== lastVideoIdRef.current) return;
         if (result.audioUrl) {
           resolvedUrlsRef.current.set(videoId, result.audioUrl);
           resolvedTimestampsRef.current.set(videoId, Date.now());
-          startAudio(result.audioUrl, cfg.pendingStartTimeRef.current);
+          startAudio(result.audioUrl, cfg1.pendingStartTimeRef.current);
         } else {
-          startYT(videoId, cfg.pendingStartTimeRef.current);
+          startYT(videoId, cfg1.pendingStartTimeRef.current);
         }
       })
       .catch(() => {
