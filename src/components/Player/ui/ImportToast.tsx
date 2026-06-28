@@ -23,10 +23,13 @@ export function ImportToast({ status, onDismiss }: Props) {
     }
     setVisible(true);
     if (status.type === "done" || status.type === "error") {
-      const t = setTimeout(() => {
-        setVisible(false);
-        onDismiss();
-      }, status.type === "done" ? 4000 : 6000);
+      const t = setTimeout(
+        () => {
+          setVisible(false);
+          onDismiss();
+        },
+        status.type === "done" ? 4000 : 6000,
+      );
       return () => clearTimeout(t);
     }
   }, [status, onDismiss]);
@@ -34,15 +37,14 @@ export function ImportToast({ status, onDismiss }: Props) {
   if (!visible || status.type === "idle") return null;
 
   return (
-    <div
-      className="fixed bottom-4 right-4 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-200"
-    >
-      <div
-        className="flex items-center gap-3 px-4 py-3 min-w-[280px] rounded-2xl border border-white/[0.12] bg-white/[0.06] backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
-      >
+    <div className="fixed bottom-4 right-4 z-[100] animate-in slide-in-from-bottom-4 fade-in duration-200">
+      <div className="flex items-center gap-3 px-4 py-3 min-w-[280px] rounded-2xl border border-white/[0.12] bg-black backdrop-blur-2xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]">
         {status.type === "importing" && (
           <>
-            <Loader2 size={18} className="text-violet-400 animate-spin shrink-0" />
+            <Loader2
+              size={18}
+              className="text-violet-400 animate-spin shrink-0"
+            />
             <div className="flex-1 min-w-0">
               <p className="text-[13px] text-white/90">Importing playlist...</p>
               <div className="mt-1 h-1 w-full rounded-full bg-white/10 overflow-hidden">
@@ -58,7 +60,13 @@ export function ImportToast({ status, onDismiss }: Props) {
             <p className="flex-1 text-[13px] text-white/90">
               Imported {status.trackCount} tracks
             </p>
-            <button onClick={() => { setVisible(false); onDismiss(); }} className="text-white/40 hover:text-white/80">
+            <button
+              onClick={() => {
+                setVisible(false);
+                onDismiss();
+              }}
+              className="text-white/40 hover:text-white/80"
+            >
               <X size={14} />
             </button>
           </>
@@ -70,7 +78,13 @@ export function ImportToast({ status, onDismiss }: Props) {
             <div className="flex-1 min-w-0">
               <p className="text-[13px] text-red-300">{status.error}</p>
             </div>
-            <button onClick={() => { setVisible(false); onDismiss(); }} className="text-white/40 hover:text-white/80 shrink-0">
+            <button
+              onClick={() => {
+                setVisible(false);
+                onDismiss();
+              }}
+              className="text-white/40 hover:text-white/80 shrink-0"
+            >
               <X size={14} />
             </button>
           </>
