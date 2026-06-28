@@ -309,7 +309,7 @@ export function SquarePlayer({
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isLoading ? (
-              <span className="block h-4.5 w-4.5 rounded-sm bg-white border md:border-2 border-black" />
+              <span className="block h-4.5 w-4.5 rounded-full bg-white border md:border-2 border-black" />
             ) : isPlaying ? (
               <Icon name="pause" size={18} className="text-black" />
             ) : (
