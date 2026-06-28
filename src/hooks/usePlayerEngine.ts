@@ -121,7 +121,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     div.id = containerIdRef.current;
     div.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none";
     document.body.appendChild(div);
-    return () => { document.body.removeChild(div); };
+    return () => { div.remove(); };
   }, []);
 
   // ── Safe audio play (handles AbortError / NotAllowedError) ──

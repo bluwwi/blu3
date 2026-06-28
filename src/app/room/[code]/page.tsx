@@ -47,7 +47,7 @@ export default function RoomPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
-  const manualPauseRef = useRef(false);
+
   const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
   const token =
@@ -622,7 +622,6 @@ export default function RoomPage() {
       return;
     }
     if (player.playerState === "playing") {
-      manualPauseRef.current = true;
       player.pause?.();
       sendPause(engineRef.current.currentTime);
       return;
@@ -808,53 +807,50 @@ export default function RoomPage() {
     sendPlaybackMode({ repeatMode: nextRepeatMode });
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
+  const handleSkipBackRef = useRef(handleSkipBack);
+  useEffect(() => { handleSkipBackRef.current = handleSkipBack; }, [handleSkipBack]);
+  const handleSkipForwardRef = useRef(handleSkipForward);
+  useEffect(() => { handleSkipForwardRef.current = handleSkipForward; }, [handleSkipForward]);
+
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     try {
       navigator.mediaSession.setActionHandler("previoustrack", () =>
-        handleSkipBack(),
+        handleSkipBackRef.current(),
       );
       navigator.mediaSession.setActionHandler("nexttrack", () =>
-        handleSkipForward(),
+        handleSkipForwardRef.current(),
       );
       navigator.mediaSession.setActionHandler("seekbackward", () => {
         const newTime = Math.max(0, engineRef.current.currentTime - 10);
         engineRef.current.seekTo(newTime);
-        if (canControlPlayback) sendSeek(newTime);
+        if (canControlPlaybackRef.current) sendSeek(newTime);
       });
       navigator.mediaSession.setActionHandler("seekforward", () => {
         const newTime = Math.min(engineRef.current.duration, engineRef.current.currentTime + 10);
         engineRef.current.seekTo(newTime);
-        if (canControlPlayback) sendSeek(newTime);
+        if (canControlPlaybackRef.current) sendSeek(newTime);
       });
       navigator.mediaSession.setActionHandler("play", () => {
-        const audio = engineRef.current.audioRef.current;
-        if (audio) {
-          manualPauseRef.current = false;
-          audio.play().catch(() => {});
-        }
+        const p = playerRef_fix.current;
+        if (p.playerState === "playing") return;
+        if (!canControlPlaybackRef.current) return;
+        p.play?.();
       });
       navigator.mediaSession.setActionHandler("pause", () => {
-        const audio = engineRef.current.audioRef.current;
-        if (audio) {
-          manualPauseRef.current = true;
-          audio.pause();
-        }
+        const p = playerRef_fix.current;
+        if (p.playerState !== "playing") return;
+        if (!canControlPlaybackRef.current) return;
+        p.pause?.();
       });
       navigator.mediaSession.setActionHandler("seekto", (details) => {
         if (details.seekTime != null) {
           engineRef.current.seekTo(details.seekTime);
-          if (canControlPlayback) sendSeek(details.seekTime);
+          if (canControlPlaybackRef.current) sendSeek(details.seekTime);
         }
       });
     } catch {}
-  }, [
-    handleSkipBack,
-    handleSkipForward,
-    canControlPlayback,
-    sendSeek,
-    manualPauseRef,
-  ]);
+  }, [sendSeek]);
 
   useEffect(() => {
     return () => {
