@@ -321,6 +321,20 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }
   }, [config.volume, config.isMuted, mode]);
 
+  // ── Visibility: re-sync YT progress when tab becomes visible ──
+  useEffect(() => {
+    const onShow = () => {
+      if (lastModeRef.current !== "youtube" || !playerRef.current) return;
+      const cur = playerRef.current.getCurrentTime?.() ?? 0;
+      const dur = playerRef.current.getDuration?.() ?? 0;
+      setCurrentTime(cur);
+      setDuration(dur);
+      setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+    };
+    document.addEventListener("visibilitychange", onShow);
+    return () => document.removeEventListener("visibilitychange", onShow);
+  }, []);
+
   // ── Cleanup on unmount ──
   useEffect(() => {
     return () => { stopBothRef.current(); };
