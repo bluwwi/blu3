@@ -92,18 +92,7 @@ export function Profile({ size = "sm" }: ProfileProps) {
                 {user.name}
               </p>
               <p className="text-white/60 text-sm mt-0.5 mb-6">{user.email}</p>
-              <Link
-                href={"/browse"}
-                className="block w-full rounded-lg py-1.5 bg-purple-200 hover:bg-purple-300  mb-2 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-              >
-                Rooms
-              </Link>
-              <Link
-                href={"/playlists"}
-                className="block w-full rounded-lg py-1.5 bg-blue-200 hover:bg-blue-300  mb-2 text-black text-[15px] font-semibold transition-all duration-500 cursor-pointer"
-              >
-                Manage Playlists
-              </Link>
+
               <button
                 onClick={handleLogout}
                 className="block w-full rounded-lg py-1.5 mb-2 text-white text-[15px] font-semibold transition-all duration-500 cursor-pointer bg-[#c0392b] hover:bg-[#a93226]"

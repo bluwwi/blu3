@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2, BugPlay, Plus, Music2 } from "lucide-react";
+import { X, Loader2, Plus, Music2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Icon } from "@/hooks/useIcon";
 import { ImportStatus } from "./ImportToast";
@@ -40,6 +40,8 @@ export function PlaylistModal({
   onClose,
   onQueuePlaylist,
   onImportStatus,
+  resolveLink,
+  addToQueue,
 }: Props) {
   const [playlists, setPlaylists] = useState<PlaylistInfo[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,13 +52,29 @@ export function PlaylistModal({
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState("");
 
+  const [showImportSong, setShowImportSong] = useState(false);
+  const [songUrl, setSongUrl] = useState("");
+  const [resolving, setResolving] = useState(false);
+  const [resolvedTrack, setResolvedTrack] = useState<{
+    videoId: string;
+    name: string;
+    artist: string;
+    image: string;
+    source: string;
+  } | null>(null);
+  const [resolveError, setResolveError] = useState("");
+
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
     setShowImport(false);
+    setShowImportSong(false);
     setImportUrl("");
     setImportError("");
+    setSongUrl("");
+    setResolvedTrack(null);
+    setResolveError("");
     fetchPlaylists();
   }, [open]);
 
@@ -93,6 +111,44 @@ export function PlaylistModal({
       setQueuing(null);
     }
   }
+
+  const handleResolveSong = async () => {
+    if (!songUrl.trim()) return;
+    setResolving(true);
+    setResolveError("");
+    setResolvedTrack(null);
+    try {
+      const result = await resolveLink(songUrl.trim());
+      if (!result) {
+        setResolveError("Could not resolve this link. Try a different one.");
+        return;
+      }
+      setResolvedTrack(result);
+    } catch {
+      setResolveError("Something went wrong. Try again.");
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  const handleAddSongToQueue = () => {
+    if (!resolvedTrack) return;
+    const track: Track = {
+      id: `import-${resolvedTrack.videoId}`,
+      source: resolvedTrack.source === "jiosaavn" ? "jiosaavn" : "youtube",
+      videoId: resolvedTrack.videoId,
+      name: resolvedTrack.name || "Imported track",
+      duration_ms: 0,
+      explicit: false,
+      artists: [{ name: resolvedTrack.artist || "Unknown" }],
+      album: { name: "" },
+      image: resolvedTrack.image || "",
+    };
+    addToQueue(track);
+    setSongUrl("");
+    setResolvedTrack(null);
+    setShowImportSong(false);
+  };
 
   async function handleImport() {
     if (!importUrl.trim()) return;
@@ -246,7 +302,88 @@ export function PlaylistModal({
           </div>
         )}
 
+        {showImportSong && (
+          <div className="px-4 py-0">
+            <div className="flex items-center gap-2 mb-3">
+              <input
+                type="text"
+                value={songUrl}
+                onChange={(e) => setSongUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleResolveSong()}
+                placeholder="Paste YouTube / Spotify / Apple Music link"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/70 outline-none focus:border-white/30 placeholder:text-white/40"
+                disabled={resolving}
+              />
+              <button
+                onClick={handleResolveSong}
+                disabled={resolving || !songUrl.trim()}
+                className="shrink-0 bg-white/10 hover:bg-white/20 disabled:opacity-40 text-white rounded-lg px-3 py-2 text-sm transition-colors cursor-pointer"
+              >
+                {resolving ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  "Resolve"
+                )}
+              </button>
+            </div>
+
+            {resolveError && (
+              <p className="text-sm text-red-400 mb-3 text-center">
+                {resolveError}
+              </p>
+            )}
+
+            {resolvedTrack && (
+              <div className="border border-white/10 rounded-xl bg-white/5 mb-4">
+                <div className="flex items-center gap-3 px-3 py-3">
+                  <div className="relative aspect-square w-14 shrink-0 overflow-hidden rounded-lg bg-white/10">
+                    {resolvedTrack.image ? (
+                      <img
+                        src={resolvedTrack.image}
+                        alt={resolvedTrack.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Music2 size={16} className="text-white/30" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-white/85 leading-tight">
+                      {resolvedTrack.name}
+                    </p>
+                    <p className="truncate text-xs text-white/45 mt-0.5">
+                      {resolvedTrack.artist}
+                    </p>
+                  </div>
+                </div>
+                <div className="border-t border-white/10 p-2">
+                  <button
+                    onClick={handleAddSongToQueue}
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-100 px-4 py-2.5 text-base font-medium text-black transition-all hover:bg-blue-200 cursor-pointer"
+                  >
+                    Add to queue
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex gap-2 px-4 pb-4 pt-2 ">
+          <button
+            onClick={() => {
+              setShowImportSong((v) => !v);
+              setResolveError("");
+              setResolvedTrack(null);
+              setSongUrl("");
+            }}
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg   bg-blue-200 text-black hover:bg-blue-100/70 cursor-pointer duration-200 transition-colors"
+          >
+            <LinkIcon size={16} weight="regular" />
+            Import Song
+          </button>
           <button
             onClick={() => {
               setShowImport((v) => !v);
@@ -257,14 +394,6 @@ export function PlaylistModal({
             <Plus size={14} />
             Import Playlist
           </button>
-          <Link
-            href={"/playlists"}
-            target="_blank"
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg  bg-blue-200 text-black hover:bg-blue-100/70 cursor-pointer duration-200 transition-colors"
-          >
-            <PlaylistIcon size={16} weight="regular" />
-            Manage
-          </Link>
         </div>
       </div>
     </div>,

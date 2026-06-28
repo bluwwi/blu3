@@ -248,7 +248,7 @@ export function SquarePlayer({
   return (
     <div
       ref={frameRef}
-      className="flex flex-col text-white items-center justify-between   sm:rounded-[28px] max-sm:p-0 sm:p-4 sm:p-5 h-full  sm:h-full overflow-hidden w-full relative"
+      className="flex flex-col text-white items-center justify-between   sm:rounded-[28px] max-sm:p-0  sm:p-3 h-full  sm:h-full overflow-hidden w-full relative"
     >
       {!hideWaves && (
         <canvas
@@ -264,7 +264,7 @@ export function SquarePlayer({
           src={"/logo/blu3.svg"}
           alt={"logo"}
           priority
-          className="w-15 sm:w-13"
+          className="w-16 p-1 sm:w-13"
         />
         <Profile size="lg" />
       </div>
@@ -309,7 +309,7 @@ export function SquarePlayer({
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isLoading ? (
-              <span className="block h-4.5 w-4.5 rounded-sm bg-white border-2 border-black" />
+              <span className="block h-4.5 w-4.5 rounded-sm bg-white border md:border-2 border-black" />
             ) : isPlaying ? (
               <Icon name="pause" size={18} className="text-black" />
             ) : (
