@@ -55,7 +55,6 @@ export default function RoomPage() {
       ? (localStorage.getItem("blu3_token") ?? undefined)
       : undefined;
 
-
   const engine = usePlayerEngine({
     token,
     nowPlaying: player.nowPlaying,
@@ -68,9 +67,9 @@ export default function RoomPage() {
     onTrackEnd: () => player.setPlayerState("ended"),
   });
   const engineRef = useRef(engine);
-  useEffect(() => { engineRef.current = engine; }, [engine]);
-
-
+  useEffect(() => {
+    engineRef.current = engine;
+  }, [engine]);
 
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
@@ -192,8 +191,6 @@ export default function RoomPage() {
     }, []),
   });
 
-
-
   const playbackRef = useRef(playback);
   useEffect(() => {
     playbackRef.current = playback;
@@ -212,7 +209,9 @@ export default function RoomPage() {
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
           [...data.tracks].reverse().forEach((t: any) => {
-            const source = /^\d+$/.test(t.videoId) ? "jiosaavn" : (t.source || "youtube");
+            const source = /^\d+$/.test(t.videoId)
+              ? "jiosaavn"
+              : t.source || "youtube";
             addToQueue({
               id: t.id,
               source,
@@ -306,13 +305,7 @@ export default function RoomPage() {
         player.playTrack(track, adjustedSeek, true);
       }
     },
-    [
-      getSyncedTime,
-      player.nowPlaying?.videoId,
-      player.play,
-      player.playTrack,
-
-    ],
+    [getSyncedTime, player.nowPlaying?.videoId, player.play, player.playTrack],
   );
 
   const handlePause = useCallback(() => {
@@ -694,7 +687,7 @@ export default function RoomPage() {
         : playbackMode.repeatMode === "all"
           ? sortedQueue[0]
           : null;
-      if (!nextTrack) return;
+    if (!nextTrack) return;
     player.playTrack(nextTrack, 0, true);
     sendPlay({
       id: nextTrack.id,
@@ -826,9 +819,13 @@ export default function RoomPage() {
   }, [canControlPlayback, playbackMode.repeatMode, sendPlaybackMode]);
 
   const handleSkipBackRef = useRef(handleSkipBack);
-  useEffect(() => { handleSkipBackRef.current = handleSkipBack; }, [handleSkipBack]);
+  useEffect(() => {
+    handleSkipBackRef.current = handleSkipBack;
+  }, [handleSkipBack]);
   const handleSkipForwardRef = useRef(handleSkipForward);
-  useEffect(() => { handleSkipForwardRef.current = handleSkipForward; }, [handleSkipForward]);
+  useEffect(() => {
+    handleSkipForwardRef.current = handleSkipForward;
+  }, [handleSkipForward]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
@@ -845,7 +842,10 @@ export default function RoomPage() {
         if (canControlPlaybackRef.current) sendSeek(newTime);
       });
       navigator.mediaSession.setActionHandler("seekforward", () => {
-        const newTime = Math.min(engineRef.current.duration, engineRef.current.currentTime + 10);
+        const newTime = Math.min(
+          engineRef.current.duration,
+          engineRef.current.currentTime + 10,
+        );
         engineRef.current.seekTo(newTime);
         if (canControlPlaybackRef.current) sendSeek(newTime);
       });
@@ -914,7 +914,8 @@ export default function RoomPage() {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
       if (document.hidden) return;
-      if (player.playerState === "playing") sendProgress(engineRef.current.currentTime);
+      if (player.playerState === "playing")
+        sendProgress(engineRef.current.currentTime);
     }, 3000);
     return () => window.clearInterval(heartbeatId);
   }, [
@@ -959,7 +960,12 @@ export default function RoomPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closeChatOverlay, closeSearchOverlay, openSearchOverlay, onPlayPauseAction]);
+  }, [
+    closeChatOverlay,
+    closeSearchOverlay,
+    openSearchOverlay,
+    onPlayPauseAction,
+  ]);
 
   const handleLeave = () => {
     leaveRoom();
@@ -1094,14 +1100,14 @@ export default function RoomPage() {
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
                 <div className="flex h-full mt-0  gap-0 sm:gap-2 pt-0  min-h-0">
-                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-7 sm:gap-3 pb-0  lg:pb-0">
+                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 sm:gap-3 pb-0  lg:pb-0">
                     <aside
                       className="
                   w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
                   max-sm:rounded-none sm:rounded-3xl
                   max-sm:border-0 sm:border sm:border-white/10
-                  max-sm:bg-transparent sm:bg-white/5
-                  max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                  bg-white/5
+                   backdrop-blur-2xl
 
                   filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
                   sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,1)]
@@ -1138,33 +1144,33 @@ export default function RoomPage() {
                         </div>
                       ) : (
                         <>
-                        <SquarePlayer
-                          track={footerTrack}
-                          activeVideoId={
-                            player.activeVideoId ?? playback?.videoId ?? null
-                          }
-                          playerState={footerPlayerState}
-                          isLiked={isLiked}
-                          onToggleLike={handleToggleLike}
-                          progress={engine.progress}
-                          currentTime={engine.currentTime}
-                          duration={engine.duration}
-                          volume={player.volume}
-                          isMuted={player.isMuted}
-                          onPlayPause={onPlayPauseAction}
-                          onMute={toggleMuteWrapped}
-                          onVolume={handleVolumeWrapped}
-                          onSeek={
-                            canControlPlayback ? handleSeekAction : undefined
-                          }
-                          onSkipBack={
-                            canControlPlayback ? handleSkipBack : undefined
-                          }
-                          onSkipForward={
-                            canControlPlayback ? handleSkipForward : undefined
-                          }
-                        />
-                      </>
+                          <SquarePlayer
+                            track={footerTrack}
+                            activeVideoId={
+                              player.activeVideoId ?? playback?.videoId ?? null
+                            }
+                            playerState={footerPlayerState}
+                            isLiked={isLiked}
+                            onToggleLike={handleToggleLike}
+                            progress={engine.progress}
+                            currentTime={engine.currentTime}
+                            duration={engine.duration}
+                            volume={player.volume}
+                            isMuted={player.isMuted}
+                            onPlayPause={onPlayPauseAction}
+                            onMute={toggleMuteWrapped}
+                            onVolume={handleVolumeWrapped}
+                            onSeek={
+                              canControlPlayback ? handleSeekAction : undefined
+                            }
+                            onSkipBack={
+                              canControlPlayback ? handleSkipBack : undefined
+                            }
+                            onSkipForward={
+                              canControlPlayback ? handleSkipForward : undefined
+                            }
+                          />
+                        </>
                       )}
                     </aside>
 
@@ -1173,8 +1179,8 @@ export default function RoomPage() {
                   flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
                   max-sm:rounded-none sm:rounded-3xl
                   max-sm:border-0 sm:border-2 sm:border-white/8
-                  max-sm:bg-transparent sm:bg-white/5
-                  max-sm:backdrop-blur-none sm:backdrop-blur-2xl
+                  bg-white/5
+                  backdrop-blur-2xl
 
                   filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
                   sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
