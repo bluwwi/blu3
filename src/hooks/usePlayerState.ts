@@ -100,12 +100,16 @@ export function usePlayerState(): UsePlayerStateReturn {
       : "none";
   }, [playerState]);
 
+  const lastMetadataVideoIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
-    if (!nowPlaying) {
-      navigator.mediaSession.metadata = null;
+    if (playerState !== "playing" || !nowPlaying) {
+      if (!nowPlaying) lastMetadataVideoIdRef.current = null;
       return;
     }
+    if (nowPlaying.videoId && nowPlaying.videoId === lastMetadataVideoIdRef.current) return;
+    lastMetadataVideoIdRef.current = nowPlaying.videoId;
     try {
       navigator.mediaSession.metadata = new MediaMetadata({
         title: nowPlaying.name || "Unknown",
@@ -116,7 +120,7 @@ export function usePlayerState(): UsePlayerStateReturn {
           : [],
       });
     } catch {}
-  }, [nowPlaying]);
+  }, [playerState, nowPlaying]);
 
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;

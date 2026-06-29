@@ -176,7 +176,14 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const streamingUrl = `${base}${url}${token ? `?token=${encodeURIComponent(token)}` : ""}`;
     audio.src = streamingUrl;
-    audio.currentTime = startTime;
+    // Defer seek until metadata is loaded (fixes mobile background playback)
+    const onLoaded = () => {
+      audio.removeEventListener("loadedmetadata", onLoaded);
+      if (startTime > 0 && Math.abs(audio.currentTime - startTime) > 0.5) {
+        audio.currentTime = startTime;
+      }
+    };
+    audio.addEventListener("loadedmetadata", onLoaded);
     safePlay(audio);
     abortCountRef.current = 0;
 
