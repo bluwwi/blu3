@@ -1090,8 +1090,6 @@ export default function RoomPage() {
               />
             </div>
 
-            {starsMounted && <RoomStars />}
-
             <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
               <div
                 className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0  px-0 sm:rounded-3xl
