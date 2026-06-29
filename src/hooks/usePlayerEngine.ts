@@ -321,15 +321,22 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }
   }, [config.volume, config.isMuted, mode]);
 
-  // ── Visibility: re-sync YT progress when tab becomes visible ──
+  // ── Visibility: re-sync YT progress and resume if paused in background ──
   useEffect(() => {
     const onShow = () => {
+      if (document.hidden) return;
       if (lastModeRef.current !== "youtube" || !playerRef.current) return;
       const cur = playerRef.current.getCurrentTime?.() ?? 0;
       const dur = playerRef.current.getDuration?.() ?? 0;
       setCurrentTime(cur);
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+      try {
+        const state = playerRef.current.getPlayerState?.();
+        if (state === window.YT.PlayerState.PAUSED && configRef.current.isPlaying) {
+          playerRef.current.playVideo?.();
+        }
+      } catch {}
     };
     document.addEventListener("visibilitychange", onShow);
     return () => document.removeEventListener("visibilitychange", onShow);

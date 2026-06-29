@@ -777,6 +777,23 @@ export default function RoomPage() {
     sendPlay,
   ]);
 
+  useEffect(() => {
+    player.mediaSessionCbsRef.current = {
+      onNext: handleSkipForward,
+      onPrev: handleSkipBack,
+      onSeekTo: (time) => {
+        engineRef.current.seekTo(time);
+        sendSeek(time);
+      },
+      onSeekForward: () => {
+        engineRef.current.seekTo(engineRef.current.currentTime + 10);
+      },
+      onSeekBackward: () => {
+        engineRef.current.seekTo(engineRef.current.currentTime - 10);
+      },
+    };
+  }, [handleSkipForward, handleSkipBack, sendSeek, engine, engineRef]);
+
   const handleToggleShuffle = useCallback(() => {
     if (!canControlPlayback) return;
     const newShuffle = !playbackMode.shuffle;

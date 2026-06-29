@@ -5,6 +5,14 @@ import type { Track, PlayerState as PlayerStateType } from "../utils/types";
 import { CONFIG } from "@/components/Player/constants";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
 
+export interface MediaSessionCallbacks {
+  onNext?: () => void;
+  onPrev?: () => void;
+  onSeekTo?: (time: number) => void;
+  onSeekForward?: () => void;
+  onSeekBackward?: () => void;
+}
+
 interface UsePlayerStateReturn {
   playerState: PlayerStateType;
   volume: number;
@@ -15,6 +23,7 @@ interface UsePlayerStateReturn {
   error: string;
   playing: boolean;
   pendingStartTimeRef: React.MutableRefObject<number>;
+  mediaSessionCbsRef: React.MutableRefObject<MediaSessionCallbacks | null>;
   playTrack: (track: Track, startTime?: number, shouldPlay?: boolean) => void;
   togglePlayPause: () => void;
   handleVolume: (val: number) => void;
@@ -50,6 +59,7 @@ export function usePlayerState(): UsePlayerStateReturn {
   const activeVideoIdRef = useRef(activeVideoId);
   activeVideoIdRef.current = activeVideoId;
   const pendingStartTimeRef = useRef(0);
+  const mediaSessionCbsRef = useRef<MediaSessionCallbacks | null>(null);
 
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
@@ -79,6 +89,9 @@ export function usePlayerState(): UsePlayerStateReturn {
     setPlaying(false);
   }, []);
 
+  const mediaSessionCallbacksRef = useRef(mediaSessionCbsRef);
+  mediaSessionCallbacksRef.current = mediaSessionCbsRef;
+
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState =
@@ -104,6 +117,20 @@ export function usePlayerState(): UsePlayerStateReturn {
       });
     } catch {}
   }, [nowPlaying]);
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    const cbs = mediaSessionCallbacksRef.current?.current;
+    navigator.mediaSession.setActionHandler("play", play);
+    navigator.mediaSession.setActionHandler("pause", pause);
+    navigator.mediaSession.setActionHandler("nexttrack", () => cbs?.onNext?.());
+    navigator.mediaSession.setActionHandler("previoustrack", () => cbs?.onPrev?.());
+    navigator.mediaSession.setActionHandler("seekto", (e) => {
+      if (e.seekTime != null) cbs?.onSeekTo?.(e.seekTime);
+    });
+    navigator.mediaSession.setActionHandler("seekforward", () => cbs?.onSeekForward?.());
+    navigator.mediaSession.setActionHandler("seekbackward", () => cbs?.onSeekBackward?.());
+  }, [play, pause]);
 
   const togglePlayPause = useCallback(() => {
     const id = nowPlayingRef.current?.videoId;
@@ -174,6 +201,7 @@ export function usePlayerState(): UsePlayerStateReturn {
     error,
     playing,
     pendingStartTimeRef,
+    mediaSessionCbsRef,
     playTrack,
     togglePlayPause,
     handleVolume,
