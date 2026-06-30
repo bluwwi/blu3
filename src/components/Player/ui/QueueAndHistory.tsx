@@ -109,7 +109,7 @@ export function QueueAndHistory({
       const data = await res.json();
       if (data.tracks && data.tracks.length > 0) {
         [...data.tracks].reverse().forEach((t: any) => {
-          const source = /^\d+$/.test(t.videoId) ? "jiosaavn" : (t.source || "youtube");
+          const source = t.source || (/^\d+$/.test(t.videoId) ? "jiosaavn" : "youtube");
           addToQueue({
             id: t.id,
             source,

@@ -248,7 +248,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
               }
             }
           },
-          onError: () => {},
+          onError: () => { console.error("YouTube player error for videoId:", videoId); },
         },
       });
     };
