@@ -567,12 +567,7 @@ export default function RoomPage() {
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback || !track.videoId) return;
-      setQueue((prev) => {
-        const filtered = prev.filter(
-          (t) => t.id !== track.id || t.videoId !== track.videoId,
-        );
-        return [track, ...filtered];
-      });
+      addToQueue(track);
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
@@ -585,7 +580,7 @@ export default function RoomPage() {
         duration_ms: track.duration_ms,
       });
     },
-    [canControlPlayback, player.playTrack, sendPlay, setQueue],
+    [canControlPlayback, player.playTrack, sendPlay, addToQueue],
   );
 
   const handleSeekAction = useCallback(
@@ -667,25 +662,20 @@ export default function RoomPage() {
     if (!canControlPlayback || !joined) return;
     const playingId = player.nowPlaying?.videoId || player.nowPlaying?.id;
     if (!playingId) return;
-    const sortedQueue = [...queue].sort((a) =>
-      a.videoId === playingId || a.id === playingId ? -1 : 0,
-    );
-    const currentIdx = sortedQueue.findIndex(
+    const currentIdx = queue.findIndex(
       (t) => t.videoId === playingId || t.id === playingId,
     );
     if (currentIdx === -1) return;
-    const currentTrack = queue.find(
-      (t) => t.videoId === playingId || t.id === playingId,
-    );
+    const currentTrack = queue[currentIdx];
     if (currentTrack) cycleQueueCurrent(currentTrack.id);
-    const upcomingTracks = sortedQueue.slice(currentIdx + 1);
+    const upcomingTracks = queue.slice(currentIdx + 1);
     const nextTrack =
       upcomingTracks.length > 0
         ? playbackMode.shuffle
           ? upcomingTracks[Math.floor(Math.random() * upcomingTracks.length)]
           : upcomingTracks[0]
         : playbackMode.repeatMode === "all"
-          ? sortedQueue[0]
+          ? queue[0]
           : null;
     if (!nextTrack) return;
     player.playTrack(nextTrack, 0, true);
