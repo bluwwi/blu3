@@ -208,7 +208,7 @@ export default function RoomPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
-          [...data.tracks].reverse().forEach((t: any) => {
+          data.tracks.forEach((t: any) => {
             const source = t.source || (/^\d+$/.test(t.videoId)
               ? "jiosaavn"
               : "youtube");
@@ -567,7 +567,14 @@ export default function RoomPage() {
   const handleAdminPlayTrack = useCallback(
     (track: Track) => {
       if (!canControlPlayback || !track.videoId) return;
-      addToQueue(track);
+      const oldFirst = queue[0];
+      setQueue((prev) => {
+        const filtered = prev.filter(
+          (t) => t.id !== track.id || t.videoId !== track.videoId,
+        );
+        return [track, ...filtered];
+      });
+      if (oldFirst && oldFirst.id !== track.id) cycleQueueCurrent(oldFirst.id);
       player.playTrack(track, 0, true);
       sendPlay({
         id: track.id,
@@ -580,7 +587,7 @@ export default function RoomPage() {
         duration_ms: track.duration_ms,
       });
     },
-    [canControlPlayback, player.playTrack, sendPlay, addToQueue],
+    [canControlPlayback, player.playTrack, sendPlay, cycleQueueCurrent, queue],
   );
 
   const handleSeekAction = useCallback(
