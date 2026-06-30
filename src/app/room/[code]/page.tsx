@@ -209,9 +209,9 @@ export default function RoomPage() {
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
           [...data.tracks].reverse().forEach((t: any) => {
-            const source = /^\d+$/.test(t.videoId)
+            const source = t.source || (/^\d+$/.test(t.videoId)
               ? "jiosaavn"
-              : t.source || "youtube";
+              : "youtube");
             addToQueue({
               id: t.id,
               source,
