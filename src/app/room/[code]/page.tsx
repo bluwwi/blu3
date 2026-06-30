@@ -209,9 +209,8 @@ export default function RoomPage() {
       .then((data) => {
         if (data.tracks && data.tracks.length > 0) {
           data.tracks.forEach((t: any) => {
-            const source = t.source || (/^\d+$/.test(t.videoId)
-              ? "jiosaavn"
-              : "youtube");
+            const source =
+              t.source || (/^\d+$/.test(t.videoId) ? "jiosaavn" : "youtube");
             addToQueue({
               id: t.id,
               source,
@@ -1090,7 +1089,7 @@ export default function RoomPage() {
             <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
               <div
                 className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0  px-0 sm:rounded-3xl
-              w-[55%] max-2xl:w-[65%] max-xl:w-[85%] max-lg:w-[92%] max-sm:w-full
+              w-[55%] max-2xl:w-[65%] max-xl:w-[65%] max-lg:w-[92%] max-sm:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
