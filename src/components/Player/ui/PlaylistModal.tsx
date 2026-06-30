@@ -160,7 +160,7 @@ export function PlaylistModal({
       const data = await res.json();
       if (res.ok && data.tracks) {
         for (const t of data.tracks.reverse()) {
-          const source = /^\d+$/.test(t.videoId) ? "jiosaavn" : "youtube";
+          const source = t.source || (/^\d+$/.test(t.videoId) ? "jiosaavn" : "youtube");
           addToQueue({
             id: `import-${t.videoId}-${Date.now()}-${Math.random()}`,
             source,
