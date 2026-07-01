@@ -60,6 +60,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const suppressCallbacksRef = useRef(false);
   const trackStartWallRef = useRef(0);
   const trackDurationMsRef = useRef(0);
+  const currentTimeRef = useRef(0);
 
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
@@ -96,7 +97,13 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           configRef.current.onTrackEnd();
         }
       });
-      el.onerror = guard(() => { el.pause(); el.src = ""; });
+      el.onerror = guard(() => {
+        el.pause(); el.src = "";
+        if (!endedSentRef.current) {
+          endedSentRef.current = true;
+          configRef.current.onTrackEnd();
+        }
+      });
 
       return el;
     };
@@ -115,6 +122,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         const cur = elA.currentTime;
         const dur = elA.duration || 0;
         setCurrentTime(cur);
+        currentTimeRef.current = cur;
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
       } catch {}
@@ -128,6 +136,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         const cur = elB.currentTime;
         const dur = elB.duration || 0;
         setCurrentTime(cur);
+        currentTimeRef.current = cur;
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
       } catch {}
@@ -216,6 +225,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       const cur = playerRef.current.getCurrentTime?.() ?? 0;
       const dur = playerRef.current.getDuration?.() ?? 0;
       setCurrentTime(cur);
+      currentTimeRef.current = cur;
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
       if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
@@ -241,7 +251,10 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     setMode("audio");
     lastModeRef.current = "audio";
 
-    const target = getInactiveAudio();
+    // Swap immediately so old element's onended is ignored by A/B guard
+    activeAudioRef.current = activeAudioRef.current === "a" ? "b" : "a";
+
+    const target = getActiveAudio();
     if (!target) return;
     const token = configRef.current.token;
     const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -253,19 +266,17 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (startTime > 0 && Math.abs(target.currentTime - startTime) > 0.5) {
         target.currentTime = startTime;
       }
+      // Stop old inactive element after new one starts (overlap)
+      const old = getInactiveAudio();
+      if (old && old !== target) {
+        old.pause();
+        old.src = "";
+      }
     };
     target.addEventListener("loadedmetadata", onLoaded);
 
     safePlay(target);
     abortCountRef.current = 0;
-
-    // Stop old active element after new one starts (overlap keeps tab "active")
-    const old = getActiveAudio();
-    if (old && old !== target) {
-      old.pause();
-      old.src = "";
-    }
-    activeAudioRef.current = activeAudioRef.current === "a" ? "b" : "a";
 
     if (progressIntRef.current) clearInterval(progressIntRef.current);
     progressIntRef.current = setInterval(() => {
@@ -447,10 +458,19 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         return;
       }
 
-      if (lastModeRef.current === "youtube" && playerRef.current) {
+      if (lastModeRef.current === "youtube") {
+        // Re-create iframe if it was destroyed in background
+        if (!playerRef.current) {
+          const track = configRef.current.nowPlaying;
+          if (track?.videoId) {
+            startYT(track.videoId, currentTimeRef.current);
+          }
+          return;
+        }
         const cur = playerRef.current.getCurrentTime?.() ?? 0;
         const dur = playerRef.current.getDuration?.() ?? 0;
         setCurrentTime(cur);
+        currentTimeRef.current = cur;
         setDuration(dur);
         setProgress(dur > 0 ? (cur / dur) * 100 : 0);
         try {
@@ -492,7 +512,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     };
     document.addEventListener("visibilitychange", onShow);
     return () => document.removeEventListener("visibilitychange", onShow);
-  }, [safePlay]);
+  }, [safePlay, startYT]);
 
   // ── Cleanup on unmount ──
   useEffect(() => {
@@ -508,6 +528,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (playerRef.current) playerRef.current.seekTo?.(time, true);
     }
     setCurrentTime(time);
+    currentTimeRef.current = time;
   }, [mode]);
 
   return { mode, currentTime, duration, progress, audioRef, seekTo };
