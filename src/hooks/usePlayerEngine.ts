@@ -56,6 +56,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const abortCountRef = useRef(0);
   const endedSentRef = useRef(false);
   const suppressCallbacksRef = useRef(false);
+  const trackStartWallRef = useRef(0);
+  const trackDurationMsRef = useRef(0);
 
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
@@ -281,6 +283,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     setMode("resolving");
     stopBothRef.current();
     endedSentRef.current = false;
+    trackStartWallRef.current = Date.now();
+    trackDurationMsRef.current = track?.duration_ms ?? 0;
     const cfg1 = configRef.current;
     const startTime = cfg1.pendingStartTimeRef.current;
 
