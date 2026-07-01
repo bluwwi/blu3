@@ -215,6 +215,13 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
           endedSentRef.current = true;
           configRef.current.onTrackEnd();
+          return;
+        }
+        const wallElapsed = Date.now() - trackStartWallRef.current;
+        const wallDur = trackDurationMsRef.current;
+        if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+          endedSentRef.current = true;
+          configRef.current.onTrackEnd();
         }
       } catch {}
     }, AUDIO_POLL_MS);
