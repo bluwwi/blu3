@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { QueueAndHistory } from "./QueueAndHistory";
+import { ChatPanel } from "./ChatPanel";
 import { MembersPopup } from "./MembersPopup";
 import { LeavePopup } from "./LeavePopup";
 import { SharePopup } from "./SharePopup";
@@ -64,6 +65,11 @@ interface Props {
     image: string;
     source: string;
   } | null>;
+  chatOpen?: boolean;
+  chatInput?: string;
+  setChatInput?: (val: string) => void;
+  handleSendChat?: () => void;
+  nextTrack?: Track | null;
 }
 
 export function RightSidebar({
@@ -92,6 +98,11 @@ export function RightSidebar({
   onLeave,
   roomCode,
   resolveLink,
+  chatOpen,
+  chatInput = "",
+  setChatInput,
+  handleSendChat,
+  nextTrack,
 }: Props) {
   const [showMembersPopup, setShowMembersPopup] = useState(false);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
@@ -146,12 +157,12 @@ export function RightSidebar({
               <div className="flex items-center">
                 <button
                   onClick={openMembers}
-                  className="flex  -space-x-3 cursor-pointer"
+                  className="flex gap-0.5 cursor-pointer"
                 >
                   {members.map((m, i) => (
                     <div
                       key={i}
-                      className="flex items-center rounded-full   h-6 w-6"
+                      className="flex items-center rounded-full h-6 w-6"
                     >
                       {m.avatar ? (
                         <img
@@ -160,7 +171,7 @@ export function RightSidebar({
                           className="h-6 w-6 aspect-square rounded-full border border-white/30 object-cover"
                         />
                       ) : (
-                        <div className="h-4 w-4 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
+                        <div className="h-5 w-5 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
                           {m.name[0]}
                         </div>
                       )}
@@ -209,24 +220,46 @@ export function RightSidebar({
 
           <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
             <div className="flex-1 min-h-0">
-              <QueueAndHistory
-                queue={queue}
-                recentTracks={recentTracks}
-                canControlPlayback={canControlPlayback}
-                handleAdminPlayTrack={handleAdminPlayTrack}
-                removeFromQueue={removeFromQueue}
-                addToQueue={addToQueue}
-                activeVideoId={activeVideoId}
-                playerState={playerState}
-                shuffleEnabled={shuffleEnabled}
-                repeatMode={repeatMode}
-                onToggleShuffle={onToggleShuffle}
-                onCycleRepeat={onCycleRepeat}
-                onSearchClick={onSearchClick}
-                clearQueue={clearQueue}
-                userName={user?.name}
-                resolveLink={resolveLink}
-              />
+              {chatOpen ? (
+                <ChatPanel
+                  messages={messages}
+                  chatInput={chatInput}
+                  setChatInput={setChatInput || (() => {})}
+                  handleSendChat={handleSendChat || (() => {})}
+                  onClose={() => onChatToggle?.()}
+                  track={null}
+                  isPlaying={false}
+                  canControlPlayback={false}
+                  userProfile={
+                    user
+                      ? {
+                          name: user.name || user.email || "U",
+                          avatar: user.avatar ?? user.image ?? undefined,
+                        }
+                      : null
+                  }
+                  nextTrack={nextTrack}
+                />
+              ) : (
+                <QueueAndHistory
+                  queue={queue}
+                  recentTracks={recentTracks}
+                  canControlPlayback={canControlPlayback}
+                  handleAdminPlayTrack={handleAdminPlayTrack}
+                  removeFromQueue={removeFromQueue}
+                  addToQueue={addToQueue}
+                  activeVideoId={activeVideoId}
+                  playerState={playerState}
+                  shuffleEnabled={shuffleEnabled}
+                  repeatMode={repeatMode}
+                  onToggleShuffle={onToggleShuffle}
+                  onCycleRepeat={onCycleRepeat}
+                  onSearchClick={onSearchClick}
+                  clearQueue={clearQueue}
+                  userName={user?.name}
+                  resolveLink={resolveLink}
+                />
+              )}
             </div>
           </div>
         </div>

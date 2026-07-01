@@ -25,7 +25,6 @@ import { RightSidebar } from "@/components/Player/ui/RightSidebar";
 import { RoomLoading } from "@/components/Player/ui/RoomLoading";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
-import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { RoomTopSection } from "@/components/Player/ui/RoomTopSection";
 import { RoomFooter } from "@/components/Player/ui/RoomFooter";
@@ -256,6 +255,16 @@ export default function RoomPage() {
   const playbackTrack = asTrackFromPlayback(playback);
   const lastPlayedTrack = asTrackFromRecent(recentTracks[0]);
   const footerTrack = player.nowPlaying ?? playbackTrack ?? lastPlayedTrack;
+  const nextTrack = (() => {
+    const playingId = player.nowPlaying?.videoId || player.nowPlaying?.id;
+    if (!playingId) return queue[0] || null;
+    const idx = queue.findIndex(
+      (t) => t.videoId === playingId || t.id === playingId,
+    );
+    if (idx >= 0 && idx + 1 < queue.length) return queue[idx + 1];
+    if (idx >= 0 && playbackMode.repeatMode === "all") return queue[0];
+    return queue[0] || null;
+  })();
   const footerPlayerState =
     player.playerState === "idle" && playback?.videoId
       ? playback.isPlaying
@@ -1089,15 +1098,15 @@ export default function RoomPage() {
             <div className="relative z-10 gap-2 sm:h-dvh items-center justify-center flex flex-col h-full w-full overflow-hidden">
               <div
                 className="mx-auto flex sm:border border-white/10 h-full sm:h-[82%] flex-col pb-0  px-0 sm:rounded-3xl
-              w-[55%] max-2xl:w-[65%] max-xl:w-[65%] max-lg:w-[92%] max-sm:w-full
+              w-[55%] max-2xl:w-[62%] max-xl:w-[clamp(1rem,120vh,500rem)] max-lg:w-[92%] max-sm:w-full
               filter shadow-[0_0_40px_rgba(0,0,0,0.6)]
               sm:filter sm:shadow-[0_0_60px_rgba(0,0,0,0.5)] "
               >
                 <div className="flex h-full mt-0  gap-0 sm:gap-2 pt-0  min-h-0">
-                  <div className="relative w-full h-full flex flex-col lg:flex-row min-h-0 flex-1 gap-0 sm:gap-3 pb-0  lg:pb-0">
+                  <div className="relative w-full h-full flex flex-col sm:flex-row min-h-0 flex-1 gap-0 sm:gap-3 pb-0  lg:pb-0">
                     <aside
                       className="
-                  w-full lg:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
+                  w-full sm:w-[55%] h-full lg:h-full shrink-0 min-h-125 sm:min-h-0 lg:min-h-0
                   max-sm:rounded-none sm:rounded-3xl
                   max-sm:border-0 sm:border sm:border-white/10
                   bg-white/5
@@ -1112,65 +1121,37 @@ export default function RoomPage() {
                   max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-linear-to-b sm:before:from-white/4 sm:before:to-transparent
                 "
                     >
-                      {chatOpen ? (
-                        <div className="absolute inset-0 animate-in p-3 sm:p-0 fade-in duration-300">
-                          <ChatPanel
-                            messages={messages}
-                            chatInput={chatInput}
-                            setChatInput={setChatInput}
-                            handleSendChat={handleSendChat}
-                            onClose={() => setChatOpen(false)}
-                            track={footerTrack}
-                            isPlaying={player.playerState === "playing"}
-                            canControlPlayback={canControlPlayback}
-                            onPlayPause={onPlayPauseAction}
-                            onSkipBack={
-                              canControlPlayback ? handleSkipBack : undefined
-                            }
-                            onSkipForward={
-                              canControlPlayback ? handleSkipForward : undefined
-                            }
-                            userProfile={{
-                              name: user?.name || user?.email || "U",
-                              avatar: user?.avatar ?? undefined,
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <>
-                          <SquarePlayer
-                            track={footerTrack}
-                            activeVideoId={
-                              player.activeVideoId ?? playback?.videoId ?? null
-                            }
-                            playerState={footerPlayerState}
-                            isLiked={isLiked}
-                            onToggleLike={handleToggleLike}
-                            progress={engine.progress}
-                            currentTime={engine.currentTime}
-                            duration={engine.duration}
-                            volume={player.volume}
-                            isMuted={player.isMuted}
-                            onPlayPause={onPlayPauseAction}
-                            onMute={toggleMuteWrapped}
-                            onVolume={handleVolumeWrapped}
-                            onSeek={
-                              canControlPlayback ? handleSeekAction : undefined
-                            }
-                            onSkipBack={
-                              canControlPlayback ? handleSkipBack : undefined
-                            }
-                            onSkipForward={
-                              canControlPlayback ? handleSkipForward : undefined
-                            }
-                          />
-                        </>
-                      )}
+                      <SquarePlayer
+                        track={footerTrack}
+                        activeVideoId={
+                          player.activeVideoId ?? playback?.videoId ?? null
+                        }
+                        playerState={footerPlayerState}
+                        isLiked={isLiked}
+                        onToggleLike={handleToggleLike}
+                        progress={engine.progress}
+                        currentTime={engine.currentTime}
+                        duration={engine.duration}
+                        volume={player.volume}
+                        isMuted={player.isMuted}
+                        onPlayPause={onPlayPauseAction}
+                        onMute={toggleMuteWrapped}
+                        onVolume={handleVolumeWrapped}
+                        onSeek={
+                          canControlPlayback ? handleSeekAction : undefined
+                        }
+                        onSkipBack={
+                          canControlPlayback ? handleSkipBack : undefined
+                        }
+                        onSkipForward={
+                          canControlPlayback ? handleSkipForward : undefined
+                        }
+                      />
                     </aside>
 
                     <aside
                       className="
-                  flex-1 min-w-0 w-full lg:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
+                  flex-1 min-w-0 w-full sm:w-[45%] h-full lg:h-full shrink-0 min-h-95 sm:min-h-0 lg:min-h-0
                   max-sm:rounded-none sm:rounded-3xl
                   max-sm:border-0 sm:border-2 sm:border-white/8
                   bg-white/5
@@ -1210,6 +1191,11 @@ export default function RoomPage() {
                           canControlPlayback ? handleCycleRepeat : undefined
                         }
                         onChatToggle={() => setChatOpen(!chatOpen)}
+                        chatOpen={chatOpen}
+                        chatInput={chatInput}
+                        setChatInput={setChatInput}
+                        handleSendChat={handleSendChat}
+                        nextTrack={nextTrack}
                         onSearchClick={openSearchOverlay}
                         clearQueue={clearQueue}
                         user={user}

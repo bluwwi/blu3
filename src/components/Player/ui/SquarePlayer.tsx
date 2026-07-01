@@ -292,8 +292,30 @@ export function SquarePlayer({
             )}
           </div>
         </div>
-
-        <div className="flex items-center justify-center gap-2 sm:gap-2 mb-3 flex-nowrap w-full select-none">
+        <div className="w-[80%] sm:w-[70%] px-2 my-2 shrink-0">
+          <div className="flex  items-center gap-2">
+            <span className="text-[10px] text-white/80 tabular-nums w-7 text-right shrink-0">
+              {fmtSec(currentTime)}
+            </span>
+            <div className="flex-1">
+              <Slider
+                value={currentTime}
+                onValueChange={(v) => onSeek?.(v)}
+                min={0}
+                max={Math.max(duration, 1)}
+                step={0.5}
+                className="cursor-pointer"
+                trackClassName="h-1.25  bg-white/10"
+                rangeClassName="bg-gradient-to-r  from-white/60 to-white"
+                thumbClassName="bg-white"
+              />
+            </div>
+            <span className="text-[10px] text-white/80 tabular-nums w-7 shrink-0">
+              {fmtSec(duration)}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center justify-center gap-2 sm:gap-2 mt-3 flex-nowrap w-full select-none">
           <button
             onClick={onSkipBack}
             disabled={!onSkipBack}
@@ -309,7 +331,7 @@ export function SquarePlayer({
             aria-label={isPlaying ? "Pause" : "Play"}
           >
             {isLoading ? (
-              <span className="block h-4.5 w-4.5 rounded-full bg-white border md:border-2 border-black" />
+              <Icon name="pause" size={18} className="text-black" />
             ) : isPlaying ? (
               <Icon name="pause" size={18} className="text-black" />
             ) : (
@@ -369,30 +391,6 @@ export function SquarePlayer({
               />
             </button>
           )}
-        </div>
-
-        <div className="w-[80%] px-2 my-2 shrink-0">
-          <div className="flex  items-center gap-2">
-            <span className="text-[9px] text-white/70 tabular-nums w-7 text-right shrink-0">
-              {fmtSec(currentTime)}
-            </span>
-            <div className="flex-1">
-              <Slider
-                value={currentTime}
-                onValueChange={(v) => onSeek?.(v)}
-                min={0}
-                max={Math.max(duration, 1)}
-                step={0.5}
-                className="cursor-pointer"
-                trackClassName="h-1.25  bg-white/10"
-                rangeClassName="bg-gradient-to-r  from-white/60 to-white"
-                thumbClassName="bg-white"
-              />
-            </div>
-            <span className="text-[9px] text-white/70 tabular-nums w-7 shrink-0">
-              {fmtSec(duration)}
-            </span>
-          </div>
         </div>
       </div>
       <div className="w-full pt-6  ">
