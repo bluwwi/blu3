@@ -13,13 +13,12 @@ export function RoomLoading() {
         <Image
           width={400}
           height={400}
-          src={"/logo/blu3.svg"}
+          src={"/logo/tvlogo.svg"}
           alt={"blu3"}
           priority
           className={"w-24"}
         />
       </div>
-
     </div>
   );
 }

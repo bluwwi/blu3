@@ -261,10 +261,10 @@ export function SquarePlayer({
         <Image
           width={1200}
           height={1200}
-          src={"/logo/blu3.svg"}
+          src={"/logo/tvlogo.svg"}
           alt={"logo"}
           priority
-          className="w-13 sm:p-1 sm:w-13 "
+          className="w-13  sm:w-14 -mt-1 "
         />
         <Profile size="lg" />
       </div>

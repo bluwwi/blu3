@@ -126,12 +126,7 @@ function getDemoRecent() {
 }
 
 type PlayerState =
-  | "idle"
-  | "loading"
-  | "playing"
-  | "paused"
-  | "ended"
-  | "error";
+  "idle" | "loading" | "playing" | "paused" | "ended" | "error";
 
 export default function Home() {
   const router = useRouter();
@@ -311,7 +306,7 @@ export default function Home() {
                   >
                     <div className="flex gap-5 md:gap-10  px-6 pt-16 py-8 md:py-8 flex-col h-full w-full justify-evenly items-center sm:items-start">
                       <img
-                        src={"/logo/blu3.svg"}
+                        src={"/logo/tvlogo.svg"}
                         alt={"gif"}
                         className="w-26 md:w-20 h-fit mx-auto sm:mx-0"
                       />
