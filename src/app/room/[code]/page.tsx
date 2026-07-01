@@ -96,7 +96,6 @@ export default function RoomPage() {
   }, []);
 
   const originalQueueRef = useRef<Track[]>([]);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const {
     connected,
@@ -1032,41 +1031,7 @@ export default function RoomPage() {
     "EDM",
   ];
 
-  useEffect(() => {
-    if (!joined) return;
-    const video = videoRef.current;
-    if (!video) return;
 
-    const LOOP_START = 10.58;
-    const LOOP_END = 17.6;
-    let rafId: number;
-
-    const forcePlay = () => {
-      if (video.paused) video.play().catch(() => {});
-    };
-    const tick = () => {
-      if (video.currentTime >= LOOP_END) video.currentTime = LOOP_START;
-      rafId = requestAnimationFrame(tick);
-    };
-    const handleEnded = () => {
-      video.currentTime = LOOP_START;
-      forcePlay();
-    };
-
-    forcePlay();
-    rafId = requestAnimationFrame(tick);
-    video.addEventListener("ended", handleEnded);
-    video.addEventListener("pause", forcePlay);
-    const unsub = onVisibilityChange((visible) => {
-      if (visible) forcePlay();
-    });
-    return () => {
-      cancelAnimationFrame(rafId);
-      video.removeEventListener("ended", handleEnded);
-      video.removeEventListener("pause", forcePlay);
-      unsub();
-    };
-  }, [joined]);
 
   return (
     <>
