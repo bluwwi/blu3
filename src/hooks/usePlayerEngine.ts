@@ -164,6 +164,13 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
         endedSentRef.current = true;
         configRef.current.onTrackEnd();
+        return;
+      }
+      const wallElapsed = Date.now() - trackStartWallRef.current;
+      const wallDur = trackDurationMsRef.current;
+      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+        endedSentRef.current = true;
+        configRef.current.onTrackEnd();
       }
     }, YT_POLL_MS);
   }, []);
@@ -344,6 +351,14 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   useEffect(() => {
     const onShow = () => {
       if (document.hidden) return;
+
+      const wallElapsed = Date.now() - trackStartWallRef.current;
+      const wallDur = trackDurationMsRef.current;
+      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+        endedSentRef.current = true;
+        configRef.current.onTrackEnd();
+        return;
+      }
 
       if (lastModeRef.current === "youtube" && playerRef.current) {
         const cur = playerRef.current.getCurrentTime?.() ?? 0;
