@@ -338,12 +338,32 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
               }
             }
           },
-          onError: () => { console.error("YouTube player error for videoId:", videoId); },
+          onError: () => {
+            console.error("YouTube player error for videoId:", videoId);
+            const track = configRef.current.nowPlaying;
+            if (track?.videoId === videoId) {
+              resolveTrackSource(videoId, track.name ?? "", track.artists?.[0]?.name, configRef.current.token, track.duration_ms, "youtube")
+                .then((result) => {
+                  if (result.audioUrl) {
+                    startAudio(result.audioUrl, startTime);
+                  } else if (!endedSentRef.current) {
+                    endedSentRef.current = true;
+                    configRef.current.onTrackEnd();
+                  }
+                })
+                .catch(() => {
+                  if (!endedSentRef.current) {
+                    endedSentRef.current = true;
+                    configRef.current.onTrackEnd();
+                  }
+                });
+            }
+          },
         },
       });
     };
     tryInit();
-  }, [startYTProgress]);
+  }, [startYTProgress, startAudio]);
 
   // ── Main effect: track change triggers resolve ──
   useEffect(() => {
