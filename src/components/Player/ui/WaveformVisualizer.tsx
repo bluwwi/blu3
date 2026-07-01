@@ -17,10 +17,9 @@ function ease(x: number) {
 
 interface Props {
   className?: string;
-  bandsRef?: React.RefObject<readonly number[] | null>;
 }
 
-export function WaveformVisualizer({ className, bandsRef: bandsRefProp }: Props) {
+export function WaveformVisualizer({ className }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef(0);
@@ -70,15 +69,12 @@ export function WaveformVisualizer({ className, bandsRef: bandsRefProp }: Props)
         (_, i) => midY - ((NUM_LINES - 1) * GAP) / 2 + i * GAP,
       );
 
-      const liveBands = bandsRefProp?.current;
-
       WAVE_LINES.forEach((cfg, idx) => {
         const baseY = baseYs[idx];
         const scroll = scrollOffsetRef.current * cfg.scrollSpeed + cfg.scrollPhase;
         const freq = ((2 * Math.PI) / W) * 1.5;
         const breath = 1 + 0.3 * Math.sin(tRef.current * cfg.wlSpeed * 1.7 + cfg.wlPhase + 1.2);
-        const bandMod = liveBands?.[idx] ?? 1;
-        const amp = H * cfg.amp * mt * breath * bandMod;
+        const amp = H * cfg.amp * mt * breath;
 
         ctx.strokeStyle = "rgba(106,90,205,0.12)";
         ctx.lineWidth = 11;
