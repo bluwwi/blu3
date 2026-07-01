@@ -302,11 +302,6 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     const cfg1 = configRef.current;
     const startTime = cfg1.pendingStartTimeRef.current;
 
-    if (track?.source === "youtube") {
-      startYT(videoId, startTime);
-      return;
-    }
-
     resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg1.token, track?.duration_ms, track?.source)
       .then((result) => {
         if (videoId !== lastVideoIdRef.current) return;
