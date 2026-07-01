@@ -63,7 +63,10 @@ export default function RoomPage() {
     pendingStartTimeRef: player.pendingStartTimeRef,
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
-    onTrackEnd: () => player.setPlayerState("ended"),
+    onTrackEnd: () => {
+      console.log(`[Page] onTrackEnd called, nowPlaying="${player.nowPlaying?.name}" videoId=${player.nowPlaying?.videoId} playerState=${player.playerState}`);
+      player.setPlayerState("ended");
+    },
   });
   const engineRef = useRef(engine);
   useEffect(() => {
@@ -372,17 +375,28 @@ export default function RoomPage() {
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
 
   const maybeAdvanceQueue = useCallback(() => {
+    console.log(`[Page] maybeAdvanceQueue ENTER canControl=${canControlPlaybackRef.current} joined=${joined} queue.length=${queue.length} playerState=${playerRef_fix.current.playerState} activeTrack="${playerRef_fix.current.nowPlaying?.name}"`);
     if (!canControlPlaybackRef.current || !joined) return;
     const p = playerRef_fix.current;
     const activeTrack = p.nowPlaying;
-    if (!activeTrack) return;
+    if (!activeTrack) {
+      console.log(`[Page] maybeAdvanceQueue: no activeTrack -> return`);
+      return;
+    }
 
     const currentQueueTrack = queue[0];
-    if (!currentQueueTrack) return;
+    if (!currentQueueTrack) {
+      console.log(`[Page] maybeAdvanceQueue: queue empty -> return`);
+      return;
+    }
 
     const activeKey = activeTrack.videoId || activeTrack.id;
-    if (!activeKey || queueAdvanceLockRef.current === activeKey) return;
+    if (!activeKey || queueAdvanceLockRef.current === activeKey) {
+      console.log(`[Page] maybeAdvanceQueue: locked (key=${activeKey} lock=${queueAdvanceLockRef.current}) -> return`);
+      return;
+    }
     queueAdvanceLockRef.current = activeKey;
+    console.log(`[Page] maybeAdvanceQueue: lock set to ${activeKey}`);
 
     sendTrackEnded(
       activeTrack.duration_ms ? activeTrack.duration_ms / 1000 : 0,
@@ -391,6 +405,7 @@ export default function RoomPage() {
     const isCurrentQueueTrack =
       currentQueueTrack.videoId === activeTrack.videoId ||
       currentQueueTrack.id === activeTrack.id;
+    console.log(`[Page] maybeAdvanceQueue: isCurrentQueueTrack=${isCurrentQueueTrack} repeatMode=${playbackMode.repeatMode} activeKey=${activeKey} queue[0]="${currentQueueTrack.name}"`);
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
@@ -506,7 +521,11 @@ export default function RoomPage() {
   ]);
 
   useEffect(() => {
-    if (player.playerState === "ended") maybeAdvanceQueue();
+    console.log(`[Page] playerState changed to "${player.playerState}"`);
+    if (player.playerState === "ended") {
+      console.log(`[Page] playerState=ended -> call maybeAdvanceQueue`);
+      maybeAdvanceQueue();
+    }
   }, [maybeAdvanceQueue, player.playerState]);
 
   useEffect(() => {

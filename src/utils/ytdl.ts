@@ -35,6 +35,7 @@ export async function resolveTrackSource(
   duration?: number,
   source?: string,
 ): Promise<{ source: string; audioUrl?: string; videoId: string; image?: string }> {
+  console.log(`[Resolve] ENTER videoId=${videoId} name="${name}" source=${source} duration=${duration}`);
   return withLimit(async () => {
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
@@ -43,29 +44,40 @@ export async function resolveTrackSource(
 
     for (let attempt = 0; attempt <= 3; attempt++) {
       try {
+        const t0 = Date.now();
         const res = await fetch(`${API_URL}/api/resolve`, {
           method: "POST",
           headers,
           body: JSON.stringify({ videoId, name, artists, duration, source }),
         });
+        const ms = Date.now() - t0;
+        console.log(`[Resolve] attempt=${attempt} status=${res.status} ${ms}ms videoId=${videoId}`);
         if (res.status === 429 && attempt < 3) {
           const delay = Math.min(1000 * Math.pow(2, attempt), 8000);
+          console.log(`[Resolve] 429 retry delay=${delay} videoId=${videoId}`);
           await new Promise((r) => setTimeout(r, delay));
           continue;
         }
-        if (!res.ok) return { source: "youtube", videoId };
+        if (!res.ok) {
+          console.log(`[Resolve] !ok -> youtube fallback videoId=${videoId}`);
+          return { source: "youtube", videoId };
+        }
         const data = await res.json();
+        const hasAudio = !!data.audioUrl;
+        console.log(`[Resolve] SUCCESS videoId=${videoId} hasAudio=${hasAudio} source=${data.source}`);
         return {
           source: data.source ?? "youtube",
           audioUrl: data.audioUrl,
           videoId: data.videoId,
           image: data.image,
         };
-      } catch {
+      } catch (e) {
+        console.log(`[Resolve] FETCH_ERROR attempt=${attempt} videoId=${videoId}`, e);
         if (attempt < 3) {
           await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
           continue;
         }
+        console.log(`[Resolve] giving up -> youtube fallback videoId=${videoId}`);
         return { source: "youtube", videoId };
       }
     }
