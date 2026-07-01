@@ -167,7 +167,7 @@ export default function BrowsePage() {
               height={400}
               src={"/logo/tvlogo.svg"}
               alt={"logo"}
-              className=" w-13"
+              className="w-14"
             />
             <div className="relative z-10 w-fit aspect-square">
               <Profile size="md" />

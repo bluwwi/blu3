@@ -44,6 +44,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "yt3.googleusercontent.com",
+        pathname: "/**",
       },
       {
         protocol: "https",
