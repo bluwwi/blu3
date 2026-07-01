@@ -46,6 +46,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const [progress, setProgress] = useState(0);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audio2Ref = useRef<HTMLAudioElement | null>(null);
+  const activeAudioRef = useRef<"a" | "b">("a");
   const playerRef = useRef<any>(null);
   const apiReadyRef = useRef(false);
   const containerIdRef = useRef(`yt-player-${++playerCounter}`);
@@ -62,49 +64,97 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
 
-  // ── Audio element lifecycle ──
+  function getActiveAudio(): HTMLAudioElement | null {
+    return activeAudioRef.current === "a" ? audioRef.current : audio2Ref.current;
+  }
+
+  function getInactiveAudio(): HTMLAudioElement | null {
+    return activeAudioRef.current === "a" ? audio2Ref.current : audioRef.current;
+  }
+
+  // ── Audio elements lifecycle ──
   useEffect(() => {
-    const audio = new Audio();
-    audio.preload = "auto";
-    audio.crossOrigin = "anonymous";
-    audio.style.display = "none";
-    document.body.appendChild(audio);
+    const makeAudio = () => {
+      const el = new Audio();
+      el.preload = "auto";
+      el.crossOrigin = "anonymous";
+      el.style.display = "none";
+      document.body.appendChild(el);
 
-    audio.onplay = () => { if (suppressCallbacksRef.current) return; configRef.current.onPlay(); };
-    audio.onpause = () => { if (suppressCallbacksRef.current) return; configRef.current.onPause(); };
-    audio.onended = () => {
-      if (suppressCallbacksRef.current) return;
-      if (!endedSentRef.current) {
-        endedSentRef.current = true;
-        configRef.current.onTrackEnd();
-      }
+      const guard = (fn: () => void) => () => {
+        const expected = el === audioRef.current ? "a" : "b";
+        if (activeAudioRef.current !== expected) return;
+        if (suppressCallbacksRef.current) return;
+        fn();
+      };
+
+      el.onplay = guard(() => configRef.current.onPlay());
+      el.onpause = guard(() => configRef.current.onPause());
+      el.onended = guard(() => {
+        if (!endedSentRef.current) {
+          endedSentRef.current = true;
+          configRef.current.onTrackEnd();
+        }
+      });
+      el.onerror = guard(() => { el.pause(); el.src = ""; });
+
+      return el;
     };
-    audio.onerror = () => { audio.pause(); audio.src = ""; };
 
-    audioRef.current = audio;
+    const elA = makeAudio();
+    const elB = makeAudio();
 
-    const onTimeUpdate = () => {
+    audioRef.current = elA;
+    audio2Ref.current = elB;
+    activeAudioRef.current = "a";
+
+    const onTimeUpdateA = () => {
+      if (activeAudioRef.current !== "a") return;
       if (lastModeRef.current !== "audio") return;
       try {
-        const cur = audio.currentTime;
-        const dur = audio.duration || 0;
+        const cur = elA.currentTime;
+        const dur = elA.duration || 0;
         setCurrentTime(cur);
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
       } catch {}
     };
-    audio.addEventListener("timeupdate", onTimeUpdate);
+    elA.addEventListener("timeupdate", onTimeUpdateA);
+
+    const onTimeUpdateB = () => {
+      if (activeAudioRef.current !== "b") return;
+      if (lastModeRef.current !== "audio") return;
+      try {
+        const cur = elB.currentTime;
+        const dur = elB.duration || 0;
+        setCurrentTime(cur);
+        setDuration(dur);
+        if (dur > 0) setProgress((cur / dur) * 100);
+      } catch {}
+    };
+    elB.addEventListener("timeupdate", onTimeUpdateB);
 
     return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.onplay = null;
-      audio.onpause = null;
-      audio.onended = null;
-      audio.onerror = null;
-      audio.pause();
-      audio.src = "";
-      document.body.removeChild(audio);
+      elA.removeEventListener("timeupdate", onTimeUpdateA);
+      elA.onplay = null;
+      elA.onpause = null;
+      elA.onended = null;
+      elA.onerror = null;
+      elA.pause();
+      elA.src = "";
+      document.body.removeChild(elA);
+
+      elB.removeEventListener("timeupdate", onTimeUpdateB);
+      elB.onplay = null;
+      elB.onpause = null;
+      elB.onended = null;
+      elB.onerror = null;
+      elB.pause();
+      elB.src = "";
+      document.body.removeChild(elB);
+
       audioRef.current = null;
+      audio2Ref.current = null;
     };
   }, []);
 
@@ -140,15 +190,22 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     });
   }, []);
 
-  // ── Stop both engines ──
+  // ── Cleanup current audio (keep element alive for overlap) ──
+  const cleanupCurrentAudio = useCallback(() => {
+    if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
+    if (playerRef.current) { try { playerRef.current.destroy(); } catch {} playerRef.current = null; }
+    lastModeRef.current = "idle";
+  }, []);
+
+  // ── Stop both engines (full teardown) ──
   const stopBothRef = useRef<() => void>(() => {});
   stopBothRef.current = () => {
     suppressCallbacksRef.current = true;
-    if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
-    const audio = audioRef.current;
-    if (audio) { audio.pause(); audio.src = ""; }
-    if (playerRef.current) { try { playerRef.current.destroy(); } catch {} playerRef.current = null; }
-    lastModeRef.current = "idle";
+    cleanupCurrentAudio();
+    const a1 = audioRef.current;
+    if (a1) { a1.pause(); a1.src = ""; }
+    const a2 = audio2Ref.current;
+    if (a2) { a2.pause(); a2.src = ""; }
   };
 
   // ── YT progress polling ──
@@ -175,37 +232,46 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }, YT_POLL_MS);
   }, []);
 
-  // ── Start audio playback ──
+  // ── Start audio playback (dual-element overlap) ──
   const startAudio = useCallback((url: string, startTime: number) => {
-    stopBothRef.current();
+    cleanupCurrentAudio();
+
     suppressCallbacksRef.current = false;
     endedSentRef.current = false;
     setMode("audio");
     lastModeRef.current = "audio";
 
-    const audio = audioRef.current;
-    if (!audio) return;
+    const target = getInactiveAudio();
+    if (!target) return;
     const token = configRef.current.token;
     const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const streamingUrl = `${base}${url}${token ? `?token=${encodeURIComponent(token)}` : ""}`;
-    audio.src = streamingUrl;
-    // Defer seek until metadata is loaded (fixes mobile background playback)
+    target.src = streamingUrl;
+
     const onLoaded = () => {
-      audio.removeEventListener("loadedmetadata", onLoaded);
-      if (startTime > 0 && Math.abs(audio.currentTime - startTime) > 0.5) {
-        audio.currentTime = startTime;
+      target.removeEventListener("loadedmetadata", onLoaded);
+      if (startTime > 0 && Math.abs(target.currentTime - startTime) > 0.5) {
+        target.currentTime = startTime;
       }
     };
-    audio.addEventListener("loadedmetadata", onLoaded);
-    safePlay(audio);
+    target.addEventListener("loadedmetadata", onLoaded);
+
+    safePlay(target);
     abortCountRef.current = 0;
 
-    // Audio polling backup
+    // Stop old active element after new one starts (overlap keeps tab "active")
+    const old = getActiveAudio();
+    if (old && old !== target) {
+      old.pause();
+      old.src = "";
+    }
+    activeAudioRef.current = activeAudioRef.current === "a" ? "b" : "a";
+
     if (progressIntRef.current) clearInterval(progressIntRef.current);
     progressIntRef.current = setInterval(() => {
       if (lastModeRef.current !== "audio") return;
       try {
-        const a = audioRef.current;
+        const a = getActiveAudio();
         if (!a) return;
         const cur = a.currentTime;
         const dur = a.duration || 0;
@@ -295,7 +361,6 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     lastVideoIdRef.current = videoId;
 
     setMode("resolving");
-    stopBothRef.current();
     endedSentRef.current = false;
     trackStartWallRef.current = Date.now();
     trackDurationMsRef.current = track?.duration_ms ?? 0;
@@ -322,7 +387,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   // ── Play/pause effect ──
   useEffect(() => {
     if (mode === "audio") {
-      const audio = audioRef.current;
+      const audio = getActiveAudio();
       if (!audio || !audio.src) return;
       if (config.isPlaying) {
         if (audio.paused) safePlay(audio);
@@ -342,7 +407,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   // ── Volume effect ──
   useEffect(() => {
     if (mode === "audio") {
-      const audio = audioRef.current;
+      const audio = getActiveAudio();
       if (audio) audio.volume = config.isMuted ? 0 : config.volume / 100;
     } else if (mode === "youtube") {
       if (playerRef.current) playerRef.current.setVolume?.(config.isMuted ? 0 : config.volume);
@@ -385,7 +450,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       }
 
       if (lastModeRef.current === "audio") {
-        const a = audioRef.current;
+        const a = getActiveAudio();
         if (a) {
           const cur = a.currentTime;
           const dur = a.duration || 0;
@@ -417,7 +482,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   // ── Seek ──
   const seekTo = useCallback((time: number) => {
     if (mode === "audio") {
-      const audio = audioRef.current;
+      const audio = getActiveAudio();
       if (audio) audio.currentTime = time;
     } else if (mode === "youtube") {
       if (playerRef.current) playerRef.current.seekTo?.(time, true);
