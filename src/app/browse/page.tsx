@@ -161,13 +161,20 @@ export default function BrowsePage() {
     <div className="min-h-screen max-h-screen h-dvh relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
-          <div className="flex absolute top-5 right-5 items-center  rounded-2xl overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
+          <div className="flex justify-between w-full absolute top-0 p-5 items-center overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
+            <Image
+              width={400}
+              height={400}
+              src={"/logo/tvlogo.svg"}
+              alt={"logo"}
+              className=" w-13"
+            />
             <div className="relative z-10 w-fit aspect-square">
               <Profile size="md" />
             </div>
           </div>
 
-          <ScrollArea className="flex flex-col items-center justify-center h-full w-full">
+          <ScrollArea className="flex flex-col items-center justify-center mt-6 sm:mt-0 h-full w-full">
             <div className="flex flex-wrap items-center justify-center content-center gap-6 py-16 px-6 w-full min-h-full">
               {loading
                 ? Array.from({ length: 9 }).map((_, i) => (
