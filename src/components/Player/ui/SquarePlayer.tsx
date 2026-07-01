@@ -257,21 +257,21 @@ export function SquarePlayer({
         />
       )}
       {/*<div className=" w-full py-4 px-4.5 sm:p-0 sm:absolute top-3 left-3 sm:rounded-full "></div>*/}
-      <div className="w-full flex items-center justify-between py-4 px-8 sm:p-0 sm:pb-6  ">
+      <div className="w-full flex  items-center justify-between pt-4 pb  pb-8 px-4 sm:p-0 sm:pb-6  ">
         <Image
           width={1200}
           height={1200}
           src={"/logo/blu3.svg"}
           alt={"logo"}
           priority
-          className="w-16 p-1 sm:w-13"
+          className="w-13 sm:p-1 sm:w-13 "
         />
         <Profile size="lg" />
       </div>
       <div className="w-full flex flex-col justify-center items-center h-fit">
         <div
           ref={wrapRef}
-          className="w-[85%] aspect-square sm:w-[clamp(4rem,39vh,1000rem)]  rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
+          className="w-[70%] aspect-square sm:w-[clamp(4rem,39vh,1000rem)]  rounded-xl overflow-hidden mb-3 border border-white/10 relative select-none shadow-[0_0_40px_-8px_rgba(255,255,255,0.15)] mx-auto"
         >
           <img
             src={albumArt}
