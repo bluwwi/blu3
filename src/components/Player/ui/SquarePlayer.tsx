@@ -319,7 +319,7 @@ export function SquarePlayer({
           <button
             onClick={onSkipBack}
             disabled={!onSkipBack}
-            className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+            className=" text-white/80 hover:text-white hover:scale-110 rounded-full transition-all disabled:opacity-30 cursor-pointer"
             aria-label="Previous"
           >
             <Icon name="skip-back" size={22} className="text-current" />
@@ -341,7 +341,7 @@ export function SquarePlayer({
           <button
             onClick={onSkipForward}
             disabled={!onSkipForward}
-            className=" text-white/80 hover:text-white hover:scale-110 hover:bg-white/10 rounded-full transition-all disabled:opacity-30 cursor-pointer"
+            className=" text-white/80 hover:text-white hover:scale-110  rounded-full transition-all disabled:opacity-30 cursor-pointer"
             aria-label="Next"
           >
             <Icon name="skip-forward" size={22} className="text-current" />
@@ -379,7 +379,7 @@ export function SquarePlayer({
               className={`rounded-full ml-2 transition-all cursor-pointer shrink-0 ${
                 isLiked
                   ? "text-rose-500 "
-                  : "text-white/50 hover:text-white hover:bg-white/10 hover:scale-105 "
+                  : "text-white/50 hover:text-white hover:scale-105 "
               }`}
               aria-label={isLiked ? "Unlike track" : "Like track"}
               title={isLiked ? "Unlike track" : "Like track"}

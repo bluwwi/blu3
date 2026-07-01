@@ -159,6 +159,10 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       setCurrentTime(cur);
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+      if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
+        endedSentRef.current = true;
+        configRef.current.onTrackEnd();
+      }
     }, YT_POLL_MS);
   }, []);
 
@@ -199,6 +203,10 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         setCurrentTime(cur);
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
+        if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
+          endedSentRef.current = true;
+          configRef.current.onTrackEnd();
+        }
       } catch {}
     }, AUDIO_POLL_MS);
   }, [safePlay]);
@@ -328,26 +336,57 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }
   }, [config.volume, config.isMuted, mode]);
 
-  // ── Visibility: re-sync YT progress and resume if paused in background ──
+  // ── Visibility: detect ended-in-background and resume if paused ──
   useEffect(() => {
     const onShow = () => {
       if (document.hidden) return;
-      if (lastModeRef.current !== "youtube" || !playerRef.current) return;
-      const cur = playerRef.current.getCurrentTime?.() ?? 0;
-      const dur = playerRef.current.getDuration?.() ?? 0;
-      setCurrentTime(cur);
-      setDuration(dur);
-      setProgress(dur > 0 ? (cur / dur) * 100 : 0);
-      try {
-        const state = playerRef.current.getPlayerState?.();
-        if (state === window.YT.PlayerState.PAUSED && configRef.current.isPlaying) {
-          playerRef.current.playVideo?.();
+
+      if (lastModeRef.current === "youtube" && playerRef.current) {
+        const cur = playerRef.current.getCurrentTime?.() ?? 0;
+        const dur = playerRef.current.getDuration?.() ?? 0;
+        setCurrentTime(cur);
+        setDuration(dur);
+        setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+        try {
+          const state = playerRef.current.getPlayerState?.();
+          if (state === window.YT.PlayerState.ENDED || (dur > 0 && cur >= dur - 1)) {
+            if (!endedSentRef.current) {
+              endedSentRef.current = true;
+              configRef.current.onTrackEnd();
+            }
+            return;
+          }
+          if (state === window.YT.PlayerState.PAUSED && configRef.current.isPlaying) {
+            playerRef.current.playVideo?.();
+          }
+        } catch {}
+        return;
+      }
+
+      if (lastModeRef.current === "audio") {
+        const a = audioRef.current;
+        if (a) {
+          const cur = a.currentTime;
+          const dur = a.duration || 0;
+          setCurrentTime(cur);
+          setDuration(dur);
+          setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+          if (a.ended || (dur > 0 && cur >= dur - 1)) {
+            if (!endedSentRef.current) {
+              endedSentRef.current = true;
+              configRef.current.onTrackEnd();
+            }
+            return;
+          }
+          if (a.paused && configRef.current.isPlaying && (!dur || cur < dur - 1)) {
+            safePlay(a);
+          }
         }
-      } catch {}
+      }
     };
     document.addEventListener("visibilitychange", onShow);
     return () => document.removeEventListener("visibilitychange", onShow);
-  }, []);
+  }, [safePlay]);
 
   // ── Cleanup on unmount ──
   useEffect(() => {
