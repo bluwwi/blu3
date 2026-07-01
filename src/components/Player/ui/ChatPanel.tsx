@@ -52,17 +52,22 @@ export function ChatPanel({
   return (
     <div className="flex flex-col h-full bg-transparent overflow-hidden text-white w-full">
       {nextTrack ? (
-        <div className="flex items-center gap-3 max-sm:px-2 sm:px-3 py-2 border-b border-white/10 bg-transparent">
+        <div className="flex items-center gap-3 max-sm:px-2 sm:px-3 py-1 border-b border-white/10 bg-transparent">
           <img
             src={nextTrack.image || "https://via.placeholder.com/150"}
             alt="Next track cover"
-            className="w-9 h-9 rounded-md object-cover shrink-0"
+            className=" h-12 w-12 rounded-md object-cover shrink-0"
           />
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Next up</p>
-            <p className="text-[13px] font-semibold truncate text-white">{nextTrack.name}</p>
-            <p className="text-[11px] text-white/60 truncate">
-              {nextTrack.artists?.[0]?.name || "Unknown Artist"}
+            <p className="text-[12px] text-white/70 uppercase tracking-wider font-semibold">
+              Next up
+            </p>
+            <p className="text-[13px] flex items-end gap-1 font-semibold truncate text-white">
+              {nextTrack.name}{" "}
+              <span className="text-[13px] text-blue-200   truncate">
+                {" by "}
+                {nextTrack.artists?.[0]?.name || "Unknown Artist"}
+              </span>
             </p>
           </div>
         </div>
