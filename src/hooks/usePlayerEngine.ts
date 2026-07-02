@@ -235,7 +235,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         configRef.current.onTrackEnd();
         return;
       }
-      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
+      if (!configRef.current.isPlaying) return;
+      const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
+      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
       const wallDur = trackDurationMsRef.current;
       if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
         endedSentRef.current = true;
@@ -295,7 +297,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           configRef.current.onTrackEnd();
           return;
         }
-        const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
+        if (!configRef.current.isPlaying) return;
+        const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
+        const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
         const wallDur = trackDurationMsRef.current;
         if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
           endedSentRef.current = true;
@@ -472,7 +476,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     const onShow = () => {
       if (document.hidden) return;
 
-      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
+      if (!configRef.current.isPlaying) return;
+      const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
+      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
       const wallDur = trackDurationMsRef.current;
       if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
         endedSentRef.current = true;
