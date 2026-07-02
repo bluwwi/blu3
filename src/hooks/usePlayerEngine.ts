@@ -61,6 +61,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const trackStartWallRef = useRef(0);
   const trackDurationMsRef = useRef(0);
   const currentTimeRef = useRef(0);
+  const pauseStartRef = useRef(0);
+  const totalPausedRef = useRef(0);
 
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
@@ -233,7 +235,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         configRef.current.onTrackEnd();
         return;
       }
-      const wallElapsed = Date.now() - trackStartWallRef.current;
+      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
       const wallDur = trackDurationMsRef.current;
       if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
         endedSentRef.current = true;
@@ -293,7 +295,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           configRef.current.onTrackEnd();
           return;
         }
-        const wallElapsed = Date.now() - trackStartWallRef.current;
+        const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
         const wallDur = trackDurationMsRef.current;
         if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
           endedSentRef.current = true;
@@ -399,6 +401,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     endedSentRef.current = false;
     trackStartWallRef.current = Date.now();
     trackDurationMsRef.current = track?.duration_ms ?? 0;
+    pauseStartRef.current = 0;
+    totalPausedRef.current = 0;
     const cfg1 = configRef.current;
     const startTime = cfg1.pendingStartTimeRef.current;
 
@@ -449,12 +453,26 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }
   }, [config.volume, config.isMuted, mode]);
 
+  // ── Track pause time so the wall-clock guard doesn't fire after resume ──
+  useEffect(() => {
+    if (config.isPlaying) {
+      if (pauseStartRef.current > 0) {
+        totalPausedRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = 0;
+      }
+    } else {
+      if (pauseStartRef.current === 0) {
+        pauseStartRef.current = Date.now();
+      }
+    }
+  }, [config.isPlaying]);
+
   // ── Visibility: detect ended-in-background and resume if paused ──
   useEffect(() => {
     const onShow = () => {
       if (document.hidden) return;
 
-      const wallElapsed = Date.now() - trackStartWallRef.current;
+      const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current;
       const wallDur = trackDurationMsRef.current;
       if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
         endedSentRef.current = true;
