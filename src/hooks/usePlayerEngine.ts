@@ -230,6 +230,12 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       currentTimeRef.current = cur;
       setDuration(dur);
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
+      if (dur > 0 && configRef.current.isPlaying) {
+        const state = playerRef.current.getPlayerState?.();
+        if (state === window.YT.PlayerState.PAUSED || state === window.YT.PlayerState.UNSTARTED) {
+          playerRef.current.playVideo?.();
+        }
+      }
       if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
         endedSentRef.current = true;
         configRef.current.onTrackEnd();
@@ -338,6 +344,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         events: {
           onReady: () => {
             if (startTime > 0) playerRef.current?.seekTo?.(startTime, true);
+            startYTProgress();
           },
           onStateChange: (e: any) => {
             if (suppressCallbacksRef.current) return;
@@ -346,11 +353,13 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
               configRef.current.onPlay();
               startYTProgress();
             } else if (e.data === S.PAUSED || e.data === S.ENDED) {
-              if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
               configRef.current.onPause();
-              if (e.data === S.ENDED && !endedSentRef.current) {
-                endedSentRef.current = true;
-                configRef.current.onTrackEnd();
+              if (e.data === S.ENDED) {
+                if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
+                if (!endedSentRef.current) {
+                  endedSentRef.current = true;
+                  configRef.current.onTrackEnd();
+                }
               }
             }
           },
