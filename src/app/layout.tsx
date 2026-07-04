@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { PlaylistsProvider } from "@/hooks/usePlaylists";
-import { AuthGate } from "@/components/LoginPopup";
 import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
@@ -60,7 +59,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col">
         <PlaylistsProvider>
-          <AuthGate>{children}</AuthGate>
+          {children}
         </PlaylistsProvider>
         <ServiceWorkerRegistrar />
       </body>
