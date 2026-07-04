@@ -1,0 +1,57 @@
+Custom Non-Commercial Educational License
+Copyright (c) 2025 Heet Vavadiya (xrealblue)
+Project: blu3 — https://blu3.in
+
+Permission is hereby granted to any person obtaining a copy of this project
+(the "Software") to view, fork, run, and study the Software for educational
+and non-commercial purposes only, subject to the following conditions:
+
+1. NON-COMMERCIAL USE ONLY
+   The Software may not be used for any commercial purpose. This includes but
+   is not limited to: selling, licensing, monetizing, hosting as a service,
+   or incorporating into a commercial product. No advertisement, subscription,
+   or payment of any kind may be associated with the use of this Software.
+
+2. NO CONTENT OWNERSHIP
+   The author makes no claim of ownership over any music, audio, lyrics, album
+   art, or metadata that is accessed, fetched, or displayed through the
+   Software. All such content is the property of its respective rights holders
+   (including but not limited to JioSaavn, YouTube/Google, music artists, and
+   record labels). The Software merely interfaces with publicly accessible
+   third-party APIs for educational demonstration.
+
+3. ATTRIBUTION
+   Any distribution or public deployment of the Software must retain this
+   license notice and attribute the original author (Heet Vavadiya) and the
+   project name (blu3).
+
+4. MODIFICATION AND DISTRIBUTION
+   You may modify the Software for personal or educational use. You may
+   distribute copies of the Software or derivative works only if they remain
+   non-commercial and include this same license.
+
+5. DMCA / TAKEDOWN CLAUSE
+   Any rights holder who believes their intellectual property rights have been
+   infringed by the public deployment of this Software may contact the author
+   at heetvavadiya099@gmail.com or via X @realbluex. Upon receipt of a valid
+   legal notice, the author will immediately remove the Software from any
+   public-facing deployment (including blu3.in). After removal, the Software
+   may remain available solely as a local/educational GitHub repository.
+
+6. DISCLAIMER OF WARRANTY
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL
+   THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+   FROM THE USE OF THE SOFTWARE.
+
+7. THIRD-PARTY SERVICES
+   This Software interfaces with third-party services including JioSaavn CDN
+   (unofficial/public endpoints), YouTube iFrame API, and ytmusic-api.js
+   (unofficial YouTube Music API wrapper). Use of these services is subject to
+   their respective terms of service. The author is not affiliated with any of
+   these services.
+
+8. TERMINATION
+   This license terminates automatically if you violate any of its terms. Upon
+   termination, you must destroy all copies of the Software in your possession.

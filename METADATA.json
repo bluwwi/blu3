@@ -1,0 +1,42 @@
+{
+  "project": {
+    "name": "blu3",
+    "tagline": "Listen Together",
+    "description": "A real-time collaborative music listening web app. Create rooms, queue songs, and listen together with synchronized playback. Built as a non-commercial educational project.",
+    "url": "https://blu3.in",
+    "type": "study-project",
+    "status": "live-demo",
+    "commercial": false,
+    "author": "Heet Vavadiya",
+    "github": "https://github.com/xrealblue/blu3",
+    "license": "Custom Non-Commercial Educational License",
+    "version": "1.0.0",
+    "year": "2025"
+  },
+  "openGraph": {
+    "og:title": "blu3 — Listen Together",
+    "og:description": "Listen to music together in real-time with friends. Create rooms, queue songs, and sync playback.",
+    "og:type": "website",
+    "og:url": "https://blu3.in",
+    "og:image": "https://blu3.in/assets/og-image.png",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "blu3 — Listen Together",
+    "twitter:description": "Listen to music together in real-time with friends. Create rooms, queue songs, and sync playback."
+  },
+  "legal": {
+    "dmca_contact": "heetvavadiya099@gmail.com",
+    "takedown_policy": "This project will be removed from blu3.in upon any valid DMCA or legal request. It will remain available only as a local/educational GitHub repository.",
+    "content_ownership": "All music, audio, lyrics, and metadata served through this application belong to their respective rights holders (JioSaavn, YouTube/Google, artists, labels)."
+  },
+  "stack": {
+    "frontend": "Next.js (React)",
+    "backend": "Hono.js",
+    "database": "PostgreSQL (Neon)",
+    "cache": "Upstash Redis",
+    "apis": [
+      "JioSaavn CDN (unofficial/public endpoints)",
+      "YouTube iFrame API",
+      "ytmusic-api.js"
+    ]
+  }
+}
