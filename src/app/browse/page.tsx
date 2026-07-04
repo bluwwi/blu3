@@ -158,7 +158,7 @@ export default function BrowsePage() {
   );
 
   return (
-    <div className="min-h-screen max-h-screen h-dvh relative overflow-hidden">
+    <div className="min-h-screen  bg-black max-h-screen h-dvh relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           <div className="flex justify-between w-full absolute top-0 p-5 items-center overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
