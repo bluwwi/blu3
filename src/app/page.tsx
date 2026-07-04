@@ -4,28 +4,11 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
-import { RightSidebar } from "@/components/Player/ui/RightSidebar";
-import { SquarePlayer } from "@/components/Player/ui/SquarePlayer";
-import { ChatPanel } from "@/components/Player/ui/ChatPanel";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { VideoBackground } from "@/components/Player/ui/VideoBackground";
-import { WaveBackground } from "@/components/Player/ui/WaveBackground";
-import {
-  ArrowSquareUpRightIcon,
-  InstagramLogoIcon,
-  LinkedinLogoIcon,
-  MusicNoteIcon,
-  MusicNotesIcon,
-  NavigationArrowIcon,
-  ShuffleAngularIcon,
-  StarFourIcon,
-  StarIcon,
-  TwitterLogoIcon,
-  XLogoIcon,
-} from "@phosphor-icons/react";
+import { MusicNotesIcon, StarIcon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { GithubLogoIcon } from "@phosphor-icons/react/dist/ssr";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -375,15 +358,6 @@ export default function Home() {
                             className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
                           >
                             <XLogoIcon size={22} />
-                          </a>
-                          <span className="text-white/40">|</span>
-                          <a
-                            href="https://www.instagram.com/realblue07/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
-                          >
-                            <InstagramLogoIcon size={22} />
                           </a>
                         </div>
                       </div>
