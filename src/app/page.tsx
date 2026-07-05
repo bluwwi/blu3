@@ -7,7 +7,7 @@ import type { Track } from "@/utils/types";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { VideoBackground } from "@/components/Player/ui/VideoBackground";
-import { MusicNotesIcon, StarIcon } from "@phosphor-icons/react";
+import { MusicNotesIcon, StarIcon, XLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 
 const DEMO_TRACKS: Track[] = [
