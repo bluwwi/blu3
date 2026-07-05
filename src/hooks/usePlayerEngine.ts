@@ -22,6 +22,7 @@ export interface PlayerEngineResult {
   progress: number;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   seekTo: (time: number) => void;
+  stopPlayback: () => void;
 }
 
 declare global {
@@ -556,6 +557,11 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     return () => { stopBothRef.current(); };
   }, []);
 
+  // ── Synchronous stop (called before state updates on track change) ──
+  const stopPlayback = useCallback(() => {
+    stopBothRef.current();
+  }, []);
+
   // ── Seek ──
   const seekTo = useCallback((time: number) => {
     if (mode === "audio") {
@@ -568,5 +574,5 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     currentTimeRef.current = time;
   }, [mode]);
 
-  return { mode, currentTime, duration, progress, audioRef, seekTo };
+  return { mode, currentTime, duration, progress, audioRef, seekTo, stopPlayback };
 }
