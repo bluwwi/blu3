@@ -46,9 +46,8 @@ export default function RoomPage() {
   const { user, loading: authLoading, logout } = useAuth();
   const { room, joinRoom, leaveRoom } = useRoom();
   const setPlayerStateRef = useRef<((s: PlayerState) => void) | null>(null);
-  const stopPlaybackRef = useRef<() => void>(() => {});
 
-  const player = usePlayerState(stopPlaybackRef);
+  const player = usePlayerState();
   setPlayerStateRef.current = player.setPlayerState;
   const token =
     typeof window !== "undefined"
@@ -69,7 +68,6 @@ export default function RoomPage() {
       player.setPlayerState("ended");
     },
   });
-  stopPlaybackRef.current = engine.stopPlayback;
   const engineRef = useRef(engine);
   useEffect(() => {
     engineRef.current = engine;

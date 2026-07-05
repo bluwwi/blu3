@@ -22,7 +22,6 @@ export interface PlayerEngineResult {
   progress: number;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   seekTo: (time: number) => void;
-  stopPlayback: () => void;
 }
 
 declare global {
@@ -67,6 +66,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
   const resolvedUrlsRef = useRef(new Map<string, string>());
   const resolvedTimestampsRef = useRef(new Map<string, number>());
+  const resolvedYoutubeRef = useRef(new Set<string>());
 
   function getActiveAudio(): HTMLAudioElement | null {
     return activeAudioRef.current === "a" ? audioRef.current : audio2Ref.current;
@@ -411,7 +411,6 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     setDuration(0);
     setProgress(0);
     currentTimeRef.current = 0;
-    setMode("resolving");
     endedSentRef.current = false;
     trackStartWallRef.current = Date.now();
     trackDurationMsRef.current = track?.duration_ms ?? 0;
@@ -419,6 +418,20 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     totalPausedRef.current = 0;
     const cfg1 = configRef.current;
     const startTime = cfg1.pendingStartTimeRef.current;
+
+    // Use cached resolution if available (avoids re-resolution switching source)
+    const cachedUrl = resolvedUrlsRef.current.get(videoId);
+    const cachedTs = resolvedTimestampsRef.current.get(videoId);
+    if (cachedUrl && cachedTs && Date.now() - cachedTs < STALE_THRESHOLD_MS) {
+      startAudio(cachedUrl, startTime);
+      return;
+    }
+    if (resolvedYoutubeRef.current.has(videoId)) {
+      startYT(videoId, startTime);
+      return;
+    }
+
+    setMode("resolving");
 
     resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg1.token, track?.duration_ms, track?.source)
       .then((result) => {
@@ -428,6 +441,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           resolvedTimestampsRef.current.set(videoId, Date.now());
           startAudio(result.audioUrl, cfg1.pendingStartTimeRef.current);
         } else {
+          resolvedYoutubeRef.current.add(videoId);
           startYT(videoId, cfg1.pendingStartTimeRef.current);
         }
       })
@@ -557,11 +571,6 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     return () => { stopBothRef.current(); };
   }, []);
 
-  // ── Synchronous stop (called before state updates on track change) ──
-  const stopPlayback = useCallback(() => {
-    stopBothRef.current();
-  }, []);
-
   // ── Seek ──
   const seekTo = useCallback((time: number) => {
     if (mode === "audio") {
@@ -574,5 +583,5 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     currentTimeRef.current = time;
   }, [mode]);
 
-  return { mode, currentTime, duration, progress, audioRef, seekTo, stopPlayback };
+  return { mode, currentTime, duration, progress, audioRef, seekTo };
 }

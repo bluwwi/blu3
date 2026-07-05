@@ -40,7 +40,7 @@ interface UsePlayerStateReturn {
   handleError: (e: any) => void;
 }
 
-export function usePlayerState(stopPlaybackRef?: React.MutableRefObject<() => void>): UsePlayerStateReturn {
+export function usePlayerState(): UsePlayerStateReturn {
   const [playerState, setPlayerState] = useState<PlayerStateType>("idle");
   const [volume, setVolume] = useState(CONFIG.DEFAULT_VOLUME);
   const [isMuted, setIsMuted] = useState(false);
@@ -60,14 +60,9 @@ export function usePlayerState(stopPlaybackRef?: React.MutableRefObject<() => vo
   activeVideoIdRef.current = activeVideoId;
   const pendingStartTimeRef = useRef(0);
   const mediaSessionCbsRef = useRef<MediaSessionCallbacks | null>(null);
-  const internalStopRef = useRef<() => void>(() => {});
-  if (stopPlaybackRef) {
-    internalStopRef.current = stopPlaybackRef.current;
-  }
 
   const playTrack = useCallback(
     (track: Track, startTime?: number, shouldPlay: boolean = true) => {
-      internalStopRef.current();
       setError("");
       setNowPlaying(track);
       setActiveSource(track.source ?? "youtube");
