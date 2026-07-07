@@ -292,7 +292,7 @@ export function SquarePlayer({
             )}
           </div>
         </div>
-        <div className="w-[80%] sm:w-[70%] px-2 my-2 shrink-0">
+        <div className="w-[78%] sm:w-[70%] px-2 my-2 shrink-0">
           <div className="flex  items-center gap-2">
             <span className="text-[10px] text-white/80 tabular-nums w-7 text-right shrink-0">
               {fmtSec(currentTime)}
@@ -324,20 +324,22 @@ export function SquarePlayer({
           >
             <Icon name="skip-back" size={22} className="text-current" />
           </button>
-          <button
-            onClick={onPlayPause}
-            disabled={!onPlayPause}
-            className="flex h-13 w-13 sm:h-13 sm:w-13 items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
-            aria-label={isPlaying ? "Pause" : "Play"}
-          >
-            {isLoading ? (
-              <Icon name="pause" size={18} className="text-black" />
-            ) : isPlaying ? (
-              <Icon name="pause" size={18} className="text-black" />
-            ) : (
-              <Icon name="play" size={18} className="text-black " />
-            )}
-          </button>
+          <div className="h-15 w-15 items-center flex justify-center rounded-full p-0.5 border-[2.5] border-white">
+            <button
+              onClick={onPlayPause}
+              disabled={!onPlayPause}
+              className="flex w-full h-full items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
+              aria-label={isPlaying ? "Pause" : "Play"}
+            >
+              {isLoading ? (
+                <Icon name="pause" size={19} className="text-black" />
+              ) : isPlaying ? (
+                <Icon name="pause" size={19} className="text-black" />
+              ) : (
+                <Icon name="play" size={19} className="text-black " />
+              )}
+            </button>
+          </div>
           <button
             onClick={onSkipForward}
             disabled={!onSkipForward}

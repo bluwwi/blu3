@@ -64,7 +64,9 @@ export default function RoomPage() {
     onPlay: () => player.handlePlayEvent(),
     onPause: () => player.handlePauseEvent(),
     onTrackEnd: () => {
-      console.log(`[Page] onTrackEnd called, nowPlaying="${player.nowPlaying?.name}" videoId=${player.nowPlaying?.videoId} playerState=${player.playerState}`);
+      console.log(
+        `[Page] onTrackEnd called, nowPlaying="${player.nowPlaying?.name}" videoId=${player.nowPlaying?.videoId} playerState=${player.playerState}`,
+      );
       player.setPlayerState("ended");
     },
   });
@@ -375,7 +377,9 @@ export default function RoomPage() {
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
 
   const maybeAdvanceQueue = useCallback(() => {
-    console.log(`[Page] maybeAdvanceQueue ENTER canControl=${canControlPlaybackRef.current} joined=${joined} queue.length=${queue.length} playerState=${playerRef_fix.current.playerState} activeTrack="${playerRef_fix.current.nowPlaying?.name}"`);
+    console.log(
+      `[Page] maybeAdvanceQueue ENTER canControl=${canControlPlaybackRef.current} joined=${joined} queue.length=${queue.length} playerState=${playerRef_fix.current.playerState} activeTrack="${playerRef_fix.current.nowPlaying?.name}"`,
+    );
     if (!canControlPlaybackRef.current || !joined) return;
     const p = playerRef_fix.current;
     const activeTrack = p.nowPlaying;
@@ -392,7 +396,9 @@ export default function RoomPage() {
 
     const activeKey = activeTrack.videoId || activeTrack.id;
     if (!activeKey || queueAdvanceLockRef.current === activeKey) {
-      console.log(`[Page] maybeAdvanceQueue: locked (key=${activeKey} lock=${queueAdvanceLockRef.current}) -> return`);
+      console.log(
+        `[Page] maybeAdvanceQueue: locked (key=${activeKey} lock=${queueAdvanceLockRef.current}) -> return`,
+      );
       return;
     }
     queueAdvanceLockRef.current = activeKey;
@@ -405,7 +411,9 @@ export default function RoomPage() {
     const isCurrentQueueTrack =
       currentQueueTrack.videoId === activeTrack.videoId ||
       currentQueueTrack.id === activeTrack.id;
-    console.log(`[Page] maybeAdvanceQueue: isCurrentQueueTrack=${isCurrentQueueTrack} repeatMode=${playbackMode.repeatMode} activeKey=${activeKey} queue[0]="${currentQueueTrack.name}"`);
+    console.log(
+      `[Page] maybeAdvanceQueue: isCurrentQueueTrack=${isCurrentQueueTrack} repeatMode=${playbackMode.repeatMode} activeKey=${activeKey} queue[0]="${currentQueueTrack.name}"`,
+    );
 
     if (isCurrentQueueTrack) {
       if (playbackMode.repeatMode === "one") {
@@ -1049,8 +1057,6 @@ export default function RoomPage() {
     "Bollywood",
     "EDM",
   ];
-
-
 
   return (
     <>
