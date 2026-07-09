@@ -196,8 +196,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
   // ── Safe audio play (handles AbortError / NotAllowedError) ──
   const safePlay = useCallback((audio: HTMLAudioElement) => {
-    if (!audio.src || audio.src === "") return;
-    audio.play().catch((err: DOMException) => {
+    if (!audio.src || audio.src === "") return Promise.resolve();
+    return audio.play().catch((err: DOMException) => {
       if (err.name === "AbortError") {
         abortCountRef.current++;
         if (abortCountRef.current > 5) return;
@@ -287,9 +287,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (target) {
         target.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
         if (startTime > 0 && Math.abs(target.currentTime - startTime) > 0.5) target.currentTime = startTime;
-        safePlay(target);
+        safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
       }
-      startAudioProgress();
       return;
     }
 
@@ -313,19 +312,25 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     };
     target.addEventListener("loadedmetadata", onLoaded);
 
-    safePlay(target);
+    safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
     abortCountRef.current = 0;
-    startAudioProgress();
   }, [safePlay]);
 
   // ── Audio progress polling ──
-  const startAudioProgress = useCallback(() => {
+  const startAudioProgress = useCallback((expectedVideoId: string) => {
     if (progressIntRef.current) clearInterval(progressIntRef.current);
     progressIntRef.current = setInterval(() => {
-      if (lastModeRef.current !== "audio") return;
+      if (lastVideoIdRef.current !== expectedVideoId) {
+        clearInterval(progressIntRef.current!);
+        progressIntRef.current = null;
+        return;
+      }
       try {
         const a = getActiveAudio();
-        if (!a || !a.src || a.src === "") { setCurrentTime(0); setDuration(0); setProgress(0); return; }
+        if (!a || !a.src || a.src === "" || a.paused || a.readyState < 2 || isNaN(a.duration)) {
+          setCurrentTime(0); setDuration(0); setProgress(0);
+          return;
+        }
         const cur = a.currentTime;
         const dur = a.duration || 0;
         setCurrentTime(cur);
@@ -353,6 +358,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     stopBothRef.current();
     setMode("youtube");
     lastModeRef.current = "youtube";
+    const ytVideoId = videoId;
 
     const tryInit = () => {
       if (!apiReadyRef.current || !window.YT?.Player) {
@@ -376,10 +382,15 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         },
         events: {
           onReady: () => {
+            if (lastVideoIdRef.current !== ytVideoId) {
+              playerRef.current?.destroy();
+              return;
+            }
             if (startTime > 0) playerRef.current?.seekTo?.(startTime, true);
             startYTProgress();
           },
           onStateChange: (e: any) => {
+            if (lastVideoIdRef.current !== ytVideoId) return;
             if (suppressCallbacksRef.current) return;
             const S = window.YT.PlayerState;
             if (e.data === S.PLAYING) {
@@ -397,23 +408,18 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
             }
           },
           onError: () => {
+            if (lastVideoIdRef.current !== ytVideoId) return;
+            setMode("idle");
             const track = configRef.current.nowPlaying;
             if (track?.videoId === videoId) {
-              resolveTrackSource(videoId, track.name ?? "", track.artists?.[0]?.name, configRef.current.token, track.duration_ms, "youtube")
+              resolveTrackSource(videoId, track.name ?? "", track.artists?.[0]?.name, configRef.current.token, track.duration_ms, "youtube", resolveAbortRef.current?.signal)
                 .then((result) => {
+                  if (lastVideoIdRef.current !== ytVideoId) return;
                   if (result.audioUrl) {
                     startAudio(result.audioUrl, startTime);
-                  } else if (!endedSentRef.current) {
-                    endedSentRef.current = true;
-                    configRef.current.onTrackEnd();
                   }
                 })
-                .catch(() => {
-                  if (!endedSentRef.current) {
-                    endedSentRef.current = true;
-                    configRef.current.onTrackEnd();
-                  }
-                });
+                .catch(() => {});
             }
           },
         },
