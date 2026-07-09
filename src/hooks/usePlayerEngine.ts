@@ -60,6 +60,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const progressIntRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortCountRef = useRef(0);
   const resolveAbortRef = useRef<AbortController | null>(null);
+  const prefetchAbortRef = useRef<AbortController | null>(null);
+  const stopCountRef = useRef(0);
   const endedSentRef = useRef(false);
   const suppressCallbacksRef = useRef(false);
   const trackStartWallRef = useRef(0);
@@ -194,6 +196,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
   // ── Safe audio play (handles AbortError / NotAllowedError) ──
   const safePlay = useCallback((audio: HTMLAudioElement) => {
+    if (!audio.src || audio.src === "") return;
     audio.play().catch((err: DOMException) => {
       if (err.name === "AbortError") {
         abortCountRef.current++;
@@ -274,7 +277,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
     // Check if inactive element already has this URL buffered (Layer 2: preload)
     const inactive = getInactiveAudio();
-    if (inactive && inactive.src === streamingUrl && (inactive.readyState ?? 0) >= 3) {
+    const localStopCount = stopCountRef.current;
+    if (inactive && inactive.src === streamingUrl && (inactive.readyState ?? 0) >= 3 && localStopCount === stopCountRef.current) {
       // Instant swap — audio already buffered
       const old = getActiveAudio();
       if (old) { old.pause(); old.src = ""; old.load(); }
@@ -321,7 +325,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (lastModeRef.current !== "audio") return;
       try {
         const a = getActiveAudio();
-        if (!a) return;
+        if (!a || !a.src || a.src === "") { setCurrentTime(0); setDuration(0); setProgress(0); return; }
         const cur = a.currentTime;
         const dur = a.duration || 0;
         setCurrentTime(cur);
@@ -422,6 +426,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const stopCurrentImmediately = useCallback(() => {
     resolveAbortRef.current?.abort();
     resolveAbortRef.current = new AbortController();
+    prefetchAbortRef.current?.abort();
+    prefetchAbortRef.current = new AbortController();
+    stopCountRef.current++;
 
     const a1 = audioRef.current;
     const a2 = audio2Ref.current;
@@ -649,6 +656,10 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
   // ── Prefetch next track (resolve + preload into inactive element) ──
   const prefetchNextTrack = useCallback((track: Track) => {
+    prefetchAbortRef.current?.abort();
+    prefetchAbortRef.current = new AbortController();
+    const signal = prefetchAbortRef.current.signal;
+
     const cachedUrl = resolvedUrlsRef.current.get(track.videoId);
     const cachedTs = resolvedTimestampsRef.current.get(track.videoId);
     if (cachedUrl && cachedTs && Date.now() - cachedTs < STALE_THRESHOLD_MS) {
@@ -663,7 +674,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       configRef.current.token,
       track.duration_ms,
       track.source,
+      signal,
     ).then((result) => {
+      if (signal.aborted) return;
       if (result.audioUrl) {
         resolvedUrlsRef.current.set(track.videoId, result.audioUrl);
         resolvedTimestampsRef.current.set(track.videoId, Date.now());

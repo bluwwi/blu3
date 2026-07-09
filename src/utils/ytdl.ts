@@ -67,7 +67,7 @@ export async function resolveTrackSource(
         };
       } catch (err) {
         if ((err as any)?.name === "AbortError") {
-          return { source: "youtube", videoId };
+          throw err;
         }
         if (attempt < 3) {
           await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
