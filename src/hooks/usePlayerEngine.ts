@@ -212,12 +212,14 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   // ── Stop both engines (full teardown) ──
   const stopBothRef = useRef<() => void>(() => {});
   stopBothRef.current = () => {
+    resolveAbortRef.current?.abort();
+    resolveAbortRef.current = new AbortController();
     suppressCallbacksRef.current = true;
     cleanupCurrentAudio();
     const a1 = audioRef.current;
-    if (a1) { a1.pause(); }
+    if (a1) { a1.pause(); a1.src = ""; a1.load(); }
     const a2 = audio2Ref.current;
-    if (a2) { a2.pause(); }
+    if (a2) { a2.pause(); a2.src = ""; a2.load(); }
   };
 
   // ── YT progress polling ──
@@ -390,13 +392,31 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     tryInit();
   }, [startYTProgress, startAudio]);
 
+  // ── Stop current audio immediately (Layer 1: instant skip) ──
+  const stopCurrentImmediately = useCallback(() => {
+    resolveAbortRef.current?.abort();
+    resolveAbortRef.current = new AbortController();
+
+    const a1 = audioRef.current;
+    const a2 = audio2Ref.current;
+    const active = getActiveAudio();
+    if (active) { active.pause(); active.src = ""; active.load(); }
+    if (a1 && a1 !== active) { a1.pause(); a1.src = ""; a1.load(); }
+    if (a2 && a2 !== active) { a2.pause(); a2.src = ""; a2.load(); }
+
+    if (playerRef.current) { try { playerRef.current.stopVideo?.(); } catch {} }
+    if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
+    lastModeRef.current = "idle";
+    suppressCallbacksRef.current = true;
+  }, []);
+
   // ── Main effect: track change triggers resolve ──
   useEffect(() => {
     const track = config.nowPlaying;
     const videoId = track?.videoId ?? null;
 
     if (!videoId) {
-      stopBothRef.current();
+      stopCurrentImmediately();
       setMode("idle");
       lastVideoIdRef.current = null;
       return;
@@ -405,8 +425,8 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     if (videoId === lastVideoIdRef.current) return;
     lastVideoIdRef.current = videoId;
 
-    // Stop current playback immediately and reset progress
-    stopBothRef.current();
+    // Layer 1: stop audio NOW, clear everything
+    stopCurrentImmediately();
     setCurrentTime(0);
     setDuration(0);
     setProgress(0);
@@ -433,7 +453,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
     setMode("resolving");
 
-    resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg1.token, track?.duration_ms, track?.source)
+    const signal = resolveAbortRef.current?.signal;
+
+    resolveTrackSource(videoId, track?.name ?? "", track?.artists?.[0]?.name, cfg1.token, track?.duration_ms, track?.source, signal)
       .then((result) => {
         if (videoId !== lastVideoIdRef.current) return;
         if (result.audioUrl) {
@@ -449,7 +471,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         if (videoId !== lastVideoIdRef.current) return;
         startYT(videoId, 0);
       });
-  }, [config.nowPlaying?.videoId, startAudio, startYT]);
+  }, [config.nowPlaying?.videoId, startAudio, startYT, stopCurrentImmediately]);
 
   // ── Play/pause effect ──
   useEffect(() => {
