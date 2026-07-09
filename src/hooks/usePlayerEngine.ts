@@ -63,6 +63,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const prefetchAbortRef = useRef<AbortController | null>(null);
   const stopCountRef = useRef(0);
   const endedSentRef = useRef(false);
+  const youtubeErrorRef = useRef(false);
   const suppressCallbacksRef = useRef(false);
   const trackStartWallRef = useRef(0);
   const trackDurationMsRef = useRef(0);
@@ -101,14 +102,14 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       el.onplay = guard(() => configRef.current.onPlay());
       el.onpause = guard(() => configRef.current.onPause());
       el.onended = guard(() => {
-        if (!endedSentRef.current) {
+        if (!endedSentRef.current && !youtubeErrorRef.current) {
           endedSentRef.current = true;
           configRef.current.onTrackEnd();
         }
       });
       el.onerror = guard(() => {
         el.pause();
-        if (!endedSentRef.current) {
+        if (!endedSentRef.current && !youtubeErrorRef.current) {
           endedSentRef.current = true;
           configRef.current.onTrackEnd();
         }
@@ -246,7 +247,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           playerRef.current.playVideo?.();
         }
       }
-      if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
+      if (dur > 0 && cur >= dur - 1 && !endedSentRef.current && !youtubeErrorRef.current) {
         endedSentRef.current = true;
         configRef.current.onTrackEnd();
         return;
@@ -255,7 +256,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
       const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
       const wallDur = trackDurationMsRef.current;
-      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current && !youtubeErrorRef.current) {
         endedSentRef.current = true;
         configRef.current.onTrackEnd();
       }
@@ -336,7 +337,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         setCurrentTime(cur);
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
-        if (dur > 0 && cur >= dur - 1 && !endedSentRef.current) {
+        if (dur > 0 && cur >= dur - 1 && !endedSentRef.current && !youtubeErrorRef.current) {
           endedSentRef.current = true;
           configRef.current.onTrackEnd();
           return;
@@ -345,7 +346,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
         const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
         const wallDur = trackDurationMsRef.current;
-        if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+        if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current && !youtubeErrorRef.current) {
           endedSentRef.current = true;
           configRef.current.onTrackEnd();
         }
@@ -367,6 +368,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       }
       suppressCallbacksRef.current = false;
       endedSentRef.current = false;
+      youtubeErrorRef.current = false;
       playerRef.current = new window.YT.Player(containerIdRef.current, {
         videoId,
         height: 1,
@@ -398,22 +400,26 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
               startYTProgress();
             } else if (e.data === S.PAUSED || e.data === S.ENDED) {
               configRef.current.onPause();
-              if (e.data === S.ENDED) {
-                if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
-                if (!endedSentRef.current) {
-                  endedSentRef.current = true;
-                  configRef.current.onTrackEnd();
+                if (e.data === S.ENDED) {
+                  if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
+                  if (!endedSentRef.current && !youtubeErrorRef.current) {
+                    endedSentRef.current = true;
+                    configRef.current.onTrackEnd();
+                  }
                 }
-              }
             }
           },
           onError: () => {
             if (lastVideoIdRef.current !== ytVideoId) {
               playerRef.current?.destroy();
+              playerRef.current = null;
               return;
             }
+            if (progressIntRef.current) { clearInterval(progressIntRef.current); progressIntRef.current = null; }
             endedSentRef.current = true;
+            youtubeErrorRef.current = true;
             playerRef.current?.destroy();
+            playerRef.current = null;
             setMode("idle");
             const track = configRef.current.nowPlaying;
             if (track?.videoId === videoId) {
@@ -421,6 +427,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
                 .then((result) => {
                   if (lastVideoIdRef.current !== ytVideoId) return;
                   if (result.audioUrl) {
+                    youtubeErrorRef.current = false;
                     endedSentRef.current = false;
                     startAudio(result.audioUrl, startTime);
                   }
@@ -571,7 +578,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       const currentPause = pauseStartRef.current > 0 ? Date.now() - pauseStartRef.current : 0;
       const wallElapsed = Date.now() - trackStartWallRef.current - totalPausedRef.current - currentPause;
       const wallDur = trackDurationMsRef.current;
-      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current) {
+      if (wallDur > 0 && wallElapsed >= wallDur - 1000 && !endedSentRef.current && !youtubeErrorRef.current) {
         endedSentRef.current = true;
         configRef.current.onTrackEnd();
         return;
@@ -595,7 +602,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         try {
           const state = playerRef.current.getPlayerState?.();
           if (state === window.YT.PlayerState.ENDED || (dur > 0 && cur >= dur - 1)) {
-            if (!endedSentRef.current) {
+            if (!endedSentRef.current && !youtubeErrorRef.current) {
               endedSentRef.current = true;
               configRef.current.onTrackEnd();
             }
@@ -617,7 +624,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
           setDuration(dur);
           setProgress(dur > 0 ? (cur / dur) * 100 : 0);
           if (a.ended || (dur > 0 && cur >= dur - 1)) {
-            if (!endedSentRef.current) {
+            if (!endedSentRef.current && !youtubeErrorRef.current) {
               endedSentRef.current = true;
               configRef.current.onTrackEnd();
             }
