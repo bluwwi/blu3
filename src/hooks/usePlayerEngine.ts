@@ -59,6 +59,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   const lastModeRef = useRef<"idle" | "resolving" | "audio" | "youtube">("idle");
   const progressIntRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const abortCountRef = useRef(0);
+  const resolveAbortRef = useRef<AbortController | null>(null);
   const endedSentRef = useRef(false);
   const suppressCallbacksRef = useRef(false);
   const trackStartWallRef = useRef(0);

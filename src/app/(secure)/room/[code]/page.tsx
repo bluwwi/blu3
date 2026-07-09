@@ -75,18 +75,6 @@ export default function RoomPage() {
     engineRef.current = engine;
   }, [engine]);
 
-  // Auto-prefetch next track when this track starts playing
-  useEffect(() => {
-    if ((engine.mode === "audio" || engine.mode === "youtube") && queue.length > 1) {
-      const nowPlaying = player.nowPlaying;
-      const currentIdx = queue.findIndex(t => t.videoId === nowPlaying?.videoId);
-      const nextTrack = currentIdx >= 0 && currentIdx + 1 < queue.length ? queue[currentIdx + 1] : queue[0];
-      if (nextTrack && nextTrack.videoId !== nowPlaying?.videoId) {
-        engine.prefetchNextTrack(nextTrack);
-      }
-    }
-  }, [engine.mode, queue, player.nowPlaying?.videoId, engine.prefetchNextTrack]);
-
   const { likedTrackIds, toggleLike } = usePlaylists();
   const searchState = useSearch();
   const suggestState = useSuggestions(API_URL);
@@ -209,6 +197,18 @@ export default function RoomPage() {
       }, 3000);
     }, []),
   });
+
+  // Auto-prefetch next track when this track starts playing
+  useEffect(() => {
+    if ((engine.mode === "audio" || engine.mode === "youtube") && queue.length > 1) {
+      const nowPlaying = player.nowPlaying;
+      const currentIdx = queue.findIndex(t => t.videoId === nowPlaying?.videoId);
+      const nextTrack = currentIdx >= 0 && currentIdx + 1 < queue.length ? queue[currentIdx + 1] : queue[0];
+      if (nextTrack && nextTrack.videoId !== nowPlaying?.videoId) {
+        engine.prefetchNextTrack(nextTrack);
+      }
+    }
+  }, [engine.mode, queue, player.nowPlaying?.videoId, engine.prefetchNextTrack]);
 
   const playbackRef = useRef(playback);
   useEffect(() => {
