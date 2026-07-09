@@ -112,7 +112,8 @@ type RoomSocketMessage =
       queue?: Track[];
     }
   | { type: "room:playback_mode"; playbackMode: PlaybackMode }
-  | { type: "room:queue_update"; queue?: Track[]; recentTracks?: RecentTrack[] };
+  | { type: "room:queue_update"; queue?: Track[]; recentTracks?: RecentTrack[] }
+  | { type: "track:preresolved"; videoId: string; audioUrl: string };
 
 interface UseRoomSocketProps {
   roomCode: string | null;
@@ -121,6 +122,7 @@ interface UseRoomSocketProps {
   onSeek?: (state: SeekMessage) => void;
   onPlaybackSync?: (state: PlaybackState, getSyncedTime: () => number) => void;
   onMemberJoined?: (user: { name: string; avatar?: string }) => void;
+  onPreResolved?: (videoId: string, audioUrl: string) => void;
   chatOpen?: boolean;
 }
 
@@ -131,6 +133,7 @@ export function useRoomSocket({
   onSeek,
   onPlaybackSync,
   onMemberJoined,
+  onPreResolved,
   chatOpen,
 }: UseRoomSocketProps) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -156,6 +159,7 @@ export function useRoomSocket({
   const onSeekRef = useRef(onSeek);
   const onPlaybackSyncRef = useRef(onPlaybackSync);
   const onMemberJoinedRef = useRef(onMemberJoined);
+  const onPreResolvedRef = useRef(onPreResolved);
   const chatOpenRef = useRef(chatOpen);
 
   const getSyncedTime = useCallback(
@@ -179,7 +183,8 @@ export function useRoomSocket({
     onSeekRef.current = onSeek;
     onPlaybackSyncRef.current = onPlaybackSync;
     onMemberJoinedRef.current = onMemberJoined;
-  }, [onPause, onPlay, onSeek, onPlaybackSync, onMemberJoined]);
+    onPreResolvedRef.current = onPreResolved;
+  }, [onPause, onPlay, onSeek, onPlaybackSync, onMemberJoined, onPreResolved]);
 
   useEffect(() => {
     chatOpenRef.current = chatOpen;
@@ -340,6 +345,9 @@ export function useRoomSocket({
         case "room:queue_update":
           if (msg.queue) setQueue(msg.queue);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
+          break;
+        case "track:preresolved":
+          onPreResolvedRef.current?.(msg.videoId, msg.audioUrl);
           break;
       }
     };
