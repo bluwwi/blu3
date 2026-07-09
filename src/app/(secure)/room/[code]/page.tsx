@@ -205,6 +205,7 @@ export default function RoomPage() {
       const currentIdx = queue.findIndex(t => t.videoId === nowPlaying?.videoId);
       const nextTrack = currentIdx >= 0 && currentIdx + 1 < queue.length ? queue[currentIdx + 1] : queue[0];
       if (nextTrack && nextTrack.videoId !== nowPlaying?.videoId) {
+        console.log(`[Page] auto-prefetch nextTrack="${nextTrack.name}" videoId=${nextTrack.videoId} mode=${engine.mode}`);
         engine.prefetchNextTrack(nextTrack);
       }
     }
@@ -601,6 +602,7 @@ export default function RoomPage() {
         ? player.nowPlaying.duration_ms / 1000
         : 0;
       if (dur > 0 && ct >= Math.max(dur - 2, 0)) {
+        console.log(`[Page] near-end interval triggered maybeAdvanceQueue (ct=${ct.toFixed(1)}, dur=${dur.toFixed(1)})`);
         maybeAdvanceQueue();
       }
     }, 1000);
