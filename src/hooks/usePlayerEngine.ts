@@ -24,6 +24,7 @@ export interface PlayerEngineResult {
   seekTo: (time: number) => void;
   cacheResolvedUrl: (videoId: string, url: string) => void;
   preloadAudioData: (url: string) => void;
+  prefetchNextTrack: (track: Track) => void;
 }
 
 declare global {
@@ -623,5 +624,30 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     inactive.volume = 0;
   }, []);
 
-  return { mode, currentTime, duration, progress, audioRef, seekTo, cacheResolvedUrl, preloadAudioData };
+  // ── Prefetch next track (resolve + preload into inactive element) ──
+  const prefetchNextTrack = useCallback((track: Track) => {
+    const cachedUrl = resolvedUrlsRef.current.get(track.videoId);
+    const cachedTs = resolvedTimestampsRef.current.get(track.videoId);
+    if (cachedUrl && cachedTs && Date.now() - cachedTs < STALE_THRESHOLD_MS) {
+      preloadAudioData(cachedUrl);
+      return;
+    }
+
+    resolveTrackSource(
+      track.videoId,
+      track.name ?? "",
+      track.artists?.[0]?.name,
+      configRef.current.token,
+      track.duration_ms,
+      track.source,
+    ).then((result) => {
+      if (result.audioUrl) {
+        resolvedUrlsRef.current.set(track.videoId, result.audioUrl);
+        resolvedTimestampsRef.current.set(track.videoId, Date.now());
+        preloadAudioData(result.audioUrl);
+      }
+    }).catch(() => {});
+  }, [preloadAudioData]);
+
+  return { mode, currentTime, duration, progress, audioRef, seekTo, cacheResolvedUrl, preloadAudioData, prefetchNextTrack };
 }
