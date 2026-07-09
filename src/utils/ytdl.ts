@@ -34,6 +34,7 @@ export async function resolveTrackSource(
   token?: string,
   duration?: number,
   source?: string,
+  signal?: AbortSignal,
 ): Promise<{ source: string; audioUrl?: string; videoId: string; image?: string }> {
   return withLimit(async () => {
     const headers: Record<string, string> = {
@@ -47,6 +48,7 @@ export async function resolveTrackSource(
           method: "POST",
           headers,
           body: JSON.stringify({ videoId, name, artists, duration, source }),
+          signal,
         });
         if (res.status === 429 && attempt < 3) {
           const delay = Math.min(1000 * Math.pow(2, attempt), 8000);
@@ -63,7 +65,10 @@ export async function resolveTrackSource(
           videoId: data.videoId,
           image: data.image,
         };
-      } catch {
+      } catch (err) {
+        if ((err as any)?.name === "AbortError") {
+          return { source: "youtube", videoId };
+        }
         if (attempt < 3) {
           await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
           continue;
