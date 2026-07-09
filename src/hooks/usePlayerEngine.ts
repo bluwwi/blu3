@@ -408,7 +408,12 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
             }
           },
           onError: () => {
-            if (lastVideoIdRef.current !== ytVideoId) return;
+            if (lastVideoIdRef.current !== ytVideoId) {
+              playerRef.current?.destroy();
+              return;
+            }
+            endedSentRef.current = true;
+            playerRef.current?.destroy();
             setMode("idle");
             const track = configRef.current.nowPlaying;
             if (track?.videoId === videoId) {
@@ -416,6 +421,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
                 .then((result) => {
                   if (lastVideoIdRef.current !== ytVideoId) return;
                   if (result.audioUrl) {
+                    endedSentRef.current = false;
                     startAudio(result.audioUrl, startTime);
                   }
                 })
