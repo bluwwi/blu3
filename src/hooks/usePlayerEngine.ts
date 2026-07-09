@@ -22,6 +22,8 @@ export interface PlayerEngineResult {
   progress: number;
   audioRef: React.RefObject<HTMLAudioElement | null>;
   seekTo: (time: number) => void;
+  cacheResolvedUrl: (videoId: string, url: string) => void;
+  preloadAudioData: (url: string) => void;
 }
 
 declare global {
@@ -605,5 +607,21 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     currentTimeRef.current = time;
   }, [mode]);
 
-  return { mode, currentTime, duration, progress, audioRef, seekTo };
+  const cacheResolvedUrl = useCallback((videoId: string, url: string) => {
+    resolvedUrlsRef.current.set(videoId, url);
+    resolvedTimestampsRef.current.set(videoId, Date.now());
+  }, []);
+
+  // ── Preload audio into inactive element (Layer 2: look-ahead) ──
+  const preloadAudioData = useCallback((url: string) => {
+    const inactive = getInactiveAudio();
+    if (!inactive) return;
+    if (inactive.src === url) return;
+    inactive.preload = "auto";
+    inactive.src = url;
+    inactive.load();
+    inactive.volume = 0;
+  }, []);
+
+  return { mode, currentTime, duration, progress, audioRef, seekTo, cacheResolvedUrl, preloadAudioData };
 }
