@@ -258,7 +258,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     }, YT_POLL_MS);
   }, []);
 
-  // ── Start audio playback (dual-element overlap) ──
+  // ── Start audio playback (dual-element overlap, instant swap if preloaded) ──
   const startAudio = useCallback((url: string, startTime: number) => {
     cleanupCurrentAudio();
 
@@ -267,14 +267,32 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     setMode("audio");
     lastModeRef.current = "audio";
 
+    const token = configRef.current.token;
+    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const streamingUrl = `${base}${url}${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+
+    // Check if inactive element already has this URL buffered (Layer 2: preload)
+    const inactive = getInactiveAudio();
+    if (inactive && inactive.src === streamingUrl && (inactive.readyState ?? 0) >= 3) {
+      // Instant swap — audio already buffered
+      const old = getActiveAudio();
+      if (old) { old.pause(); old.src = ""; old.load(); }
+      activeAudioRef.current = activeAudioRef.current === "a" ? "b" : "a";
+      const target = getActiveAudio();
+      if (target) {
+        target.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
+        if (startTime > 0 && Math.abs(target.currentTime - startTime) > 0.5) target.currentTime = startTime;
+        safePlay(target);
+      }
+      startAudioProgress();
+      return;
+    }
+
     // Swap immediately so old element's onended is ignored by A/B guard
     activeAudioRef.current = activeAudioRef.current === "a" ? "b" : "a";
 
     const target = getActiveAudio();
     if (!target) return;
-    const token = configRef.current.token;
-    const base = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-    const streamingUrl = `${base}${url}${token ? `?token=${encodeURIComponent(token)}` : ""}`;
     target.src = streamingUrl;
 
     const onLoaded = () => {
@@ -292,7 +310,11 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
 
     safePlay(target);
     abortCountRef.current = 0;
+    startAudioProgress();
+  }, [safePlay]);
 
+  // ── Audio progress polling ──
+  const startAudioProgress = useCallback(() => {
     if (progressIntRef.current) clearInterval(progressIntRef.current);
     progressIntRef.current = setInterval(() => {
       if (lastModeRef.current !== "audio") return;
@@ -319,7 +341,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         }
       } catch {}
     }, AUDIO_POLL_MS);
-  }, [safePlay]);
+  }, []);
 
   // ── Start YouTube playback ──
   const startYT = useCallback((videoId: string, startTime: number) => {
