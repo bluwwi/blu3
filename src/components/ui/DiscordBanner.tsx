@@ -12,7 +12,7 @@ export function DiscordBanner({ url, avatar, name }: DiscordBannerProps) {
   return (
     <div className="w-90 h-50 relative">
       <img
-        src={`/banner.png?v=2`}
+        src={`/banner.png?v=3`}
         alt=""
         className="w-full h-full absolute inset-0 object-cover"
       />

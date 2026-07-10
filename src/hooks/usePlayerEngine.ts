@@ -344,7 +344,6 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       try {
         const a = getActiveAudio();
         if (!a || !a.src || a.src === "" || a.paused || a.readyState < 2 || isNaN(a.duration)) {
-          setCurrentTime(0); setDuration(0); setProgress(0);
           return;
         }
         const cur = a.currentTime;

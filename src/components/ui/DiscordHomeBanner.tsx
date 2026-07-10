@@ -20,7 +20,7 @@ export function DiscordHomeBanner({
   return (
     <div className="w-90 h-50 relative">
       <img
-        src={`/homebanner.png?v=2`}
+        src={`/homebanner.png?v=3`}
         alt=""
         className="w-full h-full absolute inset-0 object-cover"
       />
