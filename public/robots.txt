@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /room/
+
+Sitemap: https://blu3.in/sitemap.xml

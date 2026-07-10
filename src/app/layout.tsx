@@ -5,8 +5,41 @@ import { ServiceWorkerRegistrar } from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://blu3.in"),
-  title: "Blu3",
-  description: "Blu3 — music rooms",
+  title: {
+    default: "Blu3 — Listen Together in Real-Time Music Rooms",
+    template: "%s | Blu3",
+  },
+  description:
+    "Blu3 is a real-time collaborative music listening platform. Create music rooms, listen together with friends, discover new songs from JioSaavn and YouTube, and share the vibe. Free, no ads, cross-platform.",
+  keywords: [
+    "blu3",
+    "blu3 music",
+    "blue music",
+    "listen together",
+    "music rooms",
+    "listen with friends",
+    "sync music",
+    "real-time music",
+    "collaborative playlist",
+    "jiosaavn",
+    "youtube music",
+    "party music",
+    "group listening",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  alternates: {
+    canonical: "https://blu3.in",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -14,10 +47,12 @@ export const metadata: Metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
+    "google-site-verification": "",
   },
   openGraph: {
-    title: "Blu3 — Music Rooms",
-    description: "Listen to music together in real-time with friends",
+    title: "Blu3 — Listen Together in Real-Time Music Rooms",
+    description:
+      "Create music rooms and listen together with friends in real-time. Free, no ads, cross-platform. Powered by JioSaavn & YouTube.",
     url: "https://blu3.in",
     siteName: "Blu3",
     images: [{ url: "/api/og?home=1&v=3", width: 600, height: 315 }],
@@ -26,8 +61,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Blu3 — Music Rooms",
-    description: "Listen to music together in real-time with friends",
+    title: "Blu3 — Listen Together in Real-Time Music Rooms",
+    description:
+      "Create music rooms and listen together with friends in real-time. Free, no ads, cross-platform.",
     images: ["/api/og?home=1&v=3"],
   },
 };

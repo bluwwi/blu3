@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node scripts/generate-sw.mjs && next dev",
     "build": "node scripts/generate-sw.mjs && next build",
+    "postbuild": "next-sitemap --config next-sitemap.config.js",
     "start": "next start",
     "postinstall": "node scripts/generate-sw.mjs",
     "desktop:dev": "node scripts/generate-sw.mjs && next dev & npx wait-on http://localhost:3000 && npx electron .",
@@ -37,6 +38,7 @@
     "babel-plugin-react-compiler": "1.0.0",
     "electron": "^42.3.3",
     "electron-builder": "^26.15.2",
+    "next-sitemap": "^4.2.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wait-on": "^9.0.10"
