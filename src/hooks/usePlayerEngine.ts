@@ -343,12 +343,17 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       }
       try {
         const a = getActiveAudio();
-        if (!a || !a.src || a.src === "" || a.paused || a.readyState < 2 || isNaN(a.duration)) {
+        if (!a || !a.src || a.src === "" || a.readyState < 2 || isNaN(a.duration)) {
+          return;
+        }
+        if (a.paused) {
+          if (configRef.current.isPlaying) safePlay(a);
           return;
         }
         const cur = a.currentTime;
         const dur = a.duration || 0;
         setCurrentTime(cur);
+        currentTimeRef.current = cur;
         setDuration(dur);
         if (dur > 0) setProgress((cur / dur) * 100);
         if (dur > 0 && cur >= dur - 1 && !endedSentRef.current && !youtubeErrorRef.current) {

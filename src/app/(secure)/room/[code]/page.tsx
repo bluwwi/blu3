@@ -920,6 +920,24 @@ export default function RoomPage() {
   }, [sendSeek]);
 
   useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    const interval = setInterval(() => {
+      const dur = player.nowPlaying?.duration_ms
+        ? player.nowPlaying.duration_ms / 1000
+        : 0;
+      if (dur <= 0) return;
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: dur,
+          playbackRate: 1,
+          position: engineRef.current.currentTime,
+        });
+      } catch {}
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [player.nowPlaying?.videoId, player.nowPlaying?.duration_ms]);
+
+  useEffect(() => {
     return () => {
       syncHandledRef.current = false;
     };
@@ -962,7 +980,6 @@ export default function RoomPage() {
   useEffect(() => {
     if (!joined || !canControlPlayback || !player.nowPlaying?.videoId) return;
     const heartbeatId = window.setInterval(() => {
-      if (document.hidden) return;
       if (player.playerState === "playing")
         sendProgress(engineRef.current.currentTime);
     }, 3000);
