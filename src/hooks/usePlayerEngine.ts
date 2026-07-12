@@ -203,15 +203,48 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
   // ── Safe audio play (handles AbortError / NotAllowedError) ──
   const safePlay = useCallback((audio: HTMLAudioElement) => {
     if (!audio.src || audio.src === "") { console.log(`[Audio] safePlay skipped — empty src`); return Promise.resolve(); }
-    console.log(`[Audio] safePlay playing src=${audio.src?.substring(0, 80)}`);
+    console.log(`[Audio] safePlay playing src=${audio.src?.substring(0, 80)} readyState=${audio.readyState}`);
+
+    if (audio.readyState < 1) {
+      console.log(`[Audio] safePlay: readyState < 1 — waiting for canplay`);
+      return new Promise<void>((resolve) => {
+        const onCanPlay = () => {
+          audio.removeEventListener("canplay", onCanPlay);
+          audio.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
+          audio.play().catch((err: DOMException) => {
+            if (err.name === "AbortError") {
+              abortCountRef.current++;
+              if (abortCountRef.current > 5) console.log(`[Audio] safePlay AbortError >5, giving up`);
+            } else {
+              console.log(`[Audio] safePlay deferred error: ${err.name} — ${err.message}`);
+            }
+          }).then(() => resolve());
+        };
+        const onError = () => {
+          audio.removeEventListener("canplay", onCanPlay);
+          audio.removeEventListener("error", onError);
+          console.log(`[Audio] safePlay: audio error before canplay`);
+          resolve();
+        };
+        audio.addEventListener("canplay", onCanPlay, { once: true });
+        audio.addEventListener("error", onError, { once: true });
+      });
+    }
+
+    audio.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
     return audio.play().catch((err: DOMException) => {
       if (err.name === "AbortError") {
         abortCountRef.current++;
-        if (abortCountRef.current > 5) return;
+        if (abortCountRef.current > 5) {
+          console.log(`[Audio] safePlay: AbortError >5, giving up`);
+          return;
+        }
       } else if (err.name === "NotAllowedError") {
+        console.log(`[Audio] safePlay: NotAllowedError — autoplay blocked`);
         return;
       } else {
         abortCountRef.current = 0;
+        console.log(`[Audio] safePlay: unexpected error ${err.name} — ${err.message}`);
       }
     });
   }, []);
@@ -312,6 +345,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     const target = getActiveAudio();
     if (!target) { console.log(`[Audio] no target element — aborting`); return; }
     target.src = streamingUrl;
+    target.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
 
     const onLoaded = () => {
       console.log(`[Audio] loadedmetadata fired for videoId=${lastVideoIdRef.current}`);
