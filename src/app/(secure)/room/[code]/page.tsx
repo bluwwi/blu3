@@ -151,6 +151,7 @@ export default function RoomPage() {
         return;
       }
       syncHandledRef.current = true;
+      if (isRejoinRef.current && !canControlPlaybackRef.current) return;
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.updatedAt) {
         const elapsed = (syncedTime() - state.updatedAt) / 1000;
@@ -361,7 +362,8 @@ export default function RoomPage() {
       !joined ||
       !playback?.videoId ||
       player.nowPlaying?.videoId === playback.videoId ||
-      syncHandledRef.current
+      syncHandledRef.current ||
+      isRejoinRef.current
     )
       return;
 
@@ -823,7 +825,7 @@ export default function RoomPage() {
     player.mediaSessionCbsRef.current = {
       onNext: handleSkipForward,
       onPrev: handleSkipBack,
-      onSeekTo: (time) => {
+      onSeekTo: (time: number) => {
         engineRef.current.seekTo(time);
         sendSeek(time);
       },
@@ -943,8 +945,13 @@ export default function RoomPage() {
     };
   }, []);
 
+  const isRejoinRef = useRef(false);
+
   useEffect(() => {
     if (authLoading || !user || !code) return;
+    const lastRoom = localStorage.getItem("blu3_last_room");
+    const isRejoin = lastRoom === code;
+    isRejoinRef.current = isRejoin;
     if (room?.code === code) {
       setJoined(true);
       localStorage.setItem("blu3_last_room", code);

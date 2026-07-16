@@ -12,8 +12,8 @@ export function ServiceWorkerRegistrar() {
         const newSW = reg.installing;
         if (!newSW) return;
         newSW.addEventListener("statechange", () => {
-          if (newSW.state === "activated" && !navigator.serviceWorker.controller) {
-            window.location.reload();
+          if (newSW.state === "activated" && navigator.serviceWorker.controller) {
+            newSW.postMessage({ type: "SKIP_WAITING_ACTIVATED" });
           }
         });
       });

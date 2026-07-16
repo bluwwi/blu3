@@ -89,9 +89,6 @@ export function usePlayerState(): UsePlayerStateReturn {
     setPlaying(false);
   }, []);
 
-  const mediaSessionCallbacksRef = useRef(mediaSessionCbsRef);
-  mediaSessionCallbacksRef.current = mediaSessionCbsRef;
-
   useEffect(() => {
     if (!("mediaSession" in navigator)) return;
     navigator.mediaSession.playbackState =
@@ -121,20 +118,6 @@ export function usePlayerState(): UsePlayerStateReturn {
       });
     } catch {}
   }, [playerState, nowPlaying]);
-
-  useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
-    const cbs = mediaSessionCallbacksRef.current?.current;
-    navigator.mediaSession.setActionHandler("play", play);
-    navigator.mediaSession.setActionHandler("pause", pause);
-    navigator.mediaSession.setActionHandler("nexttrack", () => cbs?.onNext?.());
-    navigator.mediaSession.setActionHandler("previoustrack", () => cbs?.onPrev?.());
-    navigator.mediaSession.setActionHandler("seekto", (e) => {
-      if (e.seekTime != null) cbs?.onSeekTo?.(e.seekTime);
-    });
-    navigator.mediaSession.setActionHandler("seekforward", () => cbs?.onSeekForward?.());
-    navigator.mediaSession.setActionHandler("seekbackward", () => cbs?.onSeekBackward?.());
-  }, [play, pause]);
 
   const togglePlayPause = useCallback(() => {
     const id = nowPlayingRef.current?.videoId;
