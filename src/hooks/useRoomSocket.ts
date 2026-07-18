@@ -207,6 +207,13 @@ export function useRoomSocket({
       ws.send(data);
     } else {
       pendingMessagesRef.current.push(data);
+      try {
+        const raw = localStorage.getItem("blu3_ws_pending");
+        const arr: string[] = raw ? JSON.parse(raw) : [];
+        arr.push(data);
+        if (arr.length > 500) arr.splice(0, arr.length - 500);
+        localStorage.setItem("blu3_ws_pending", JSON.stringify(arr));
+      } catch {}
     }
   }, []);
 
@@ -228,6 +235,16 @@ export function useRoomSocket({
       for (const msg of pending) {
         ws.send(msg);
       }
+      try {
+        const raw = localStorage.getItem("blu3_ws_pending");
+        if (raw) {
+          const persisted: string[] = JSON.parse(raw);
+          localStorage.removeItem("blu3_ws_pending");
+          for (const msg of persisted) {
+            ws.send(msg);
+          }
+        }
+      } catch {}
       ws.send(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() }));
     };
     ws.onclose = () => {
