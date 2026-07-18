@@ -229,6 +229,7 @@ export function useRoomSocket({
     };
     ws.onclose = () => {
       setConnected(false);
+      setInitialDataLoaded(false);
       const attempt = reconnectAttemptRef.current;
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
       reconnectAttemptRef.current = attempt + 1;
