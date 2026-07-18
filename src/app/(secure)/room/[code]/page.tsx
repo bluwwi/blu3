@@ -201,16 +201,31 @@ export default function RoomPage() {
 
   // Auto-prefetch next track when this track starts playing
   useEffect(() => {
-    if ((engine.mode === "audio" || engine.mode === "youtube") && queue.length > 1) {
+    if (
+      (engine.mode === "audio" || engine.mode === "youtube") &&
+      queue.length > 1
+    ) {
       const nowPlaying = player.nowPlaying;
-      const currentIdx = queue.findIndex(t => t.videoId === nowPlaying?.videoId);
-      const nextTrack = currentIdx >= 0 && currentIdx + 1 < queue.length ? queue[currentIdx + 1] : queue[0];
+      const currentIdx = queue.findIndex(
+        (t) => t.videoId === nowPlaying?.videoId,
+      );
+      const nextTrack =
+        currentIdx >= 0 && currentIdx + 1 < queue.length
+          ? queue[currentIdx + 1]
+          : queue[0];
       if (nextTrack && nextTrack.videoId !== nowPlaying?.videoId) {
-        console.log(`[Page] auto-prefetch nextTrack="${nextTrack.name}" videoId=${nextTrack.videoId} mode=${engine.mode}`);
+        console.log(
+          `[Page] auto-prefetch nextTrack="${nextTrack.name}" videoId=${nextTrack.videoId} mode=${engine.mode}`,
+        );
         engine.prefetchNextTrack(nextTrack);
       }
     }
-  }, [engine.mode, queue, player.nowPlaying?.videoId, engine.prefetchNextTrack]);
+  }, [
+    engine.mode,
+    queue,
+    player.nowPlaying?.videoId,
+    engine.prefetchNextTrack,
+  ]);
 
   const playbackRef = useRef(playback);
   useEffect(() => {
@@ -604,7 +619,9 @@ export default function RoomPage() {
         ? player.nowPlaying.duration_ms / 1000
         : 0;
       if (dur > 0 && ct >= Math.max(dur - 2, 0)) {
-        console.log(`[Page] near-end interval triggered maybeAdvanceQueue (ct=${ct.toFixed(1)}, dur=${dur.toFixed(1)})`);
+        console.log(
+          `[Page] near-end interval triggered maybeAdvanceQueue (ct=${ct.toFixed(1)}, dur=${dur.toFixed(1)})`,
+        );
         maybeAdvanceQueue();
       }
     }, 1000);
@@ -1119,7 +1136,7 @@ export default function RoomPage() {
               : "opacity-100 pointer-events-auto"
           }`}
         >
-          <div className="w-full h-full bg-[#334EAC] relative">
+          <div className="w-full h-full bg-black relative">
             <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
               <RoomBackground
                 isPlaying={player.playerState === "playing"}

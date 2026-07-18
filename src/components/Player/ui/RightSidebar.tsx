@@ -157,18 +157,18 @@ export function RightSidebar({
               <div className="flex items-center">
                 <button
                   onClick={openMembers}
-                  className="flex gap-0.5 cursor-pointer"
+                  className="flex gap-0.5 ml-2.5 cursor-pointer"
                 >
                   {members.map((m, i) => (
                     <div
                       key={i}
-                      className="flex items-center rounded-full h-6 w-6"
+                      className="flex items-center rounded-full -ml-2.5 h-6 w-6"
                     >
                       {m.avatar ? (
                         <img
                           src={m.avatar}
                           alt="hello"
-                          className="h-6 w-6 aspect-square rounded-full border border-white/30 object-cover"
+                          className="h-6 w-6 aspect-square rounded-full border border-white/60 object-cover"
                         />
                       ) : (
                         <div className="h-5 w-5 aspect-square rounded-full bg-violet-400/25 flex items-center justify-center text-[8px] text-violet-300 font-semibold">
