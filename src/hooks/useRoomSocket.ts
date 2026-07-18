@@ -223,6 +223,7 @@ export function useRoomSocket({
       for (const msg of pending) {
         ws.send(msg);
       }
+      ws.send(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() }));
     };
     ws.onclose = () => {
       setConnected(false);
@@ -244,9 +245,17 @@ export function useRoomSocket({
 
       switch (msg.type) {
         case "clock_sync": {
-          const offset = msg.serverTime - Date.now();
-          clockOffsetRef.current = offset;
-          setClockOffsetMs(offset);
+          if ((msg as any).clientTime) {
+            const now = Date.now();
+            const rtt = now - (msg as any).clientTime;
+            const offset = msg.serverTime - (msg as any).clientTime - rtt / 2;
+            clockOffsetRef.current = offset;
+            setClockOffsetMs(offset);
+          } else {
+            const offset = msg.serverTime - Date.now();
+            clockOffsetRef.current = offset;
+            setClockOffsetMs(offset);
+          }
           break;
         }
         case "room:joined":
@@ -364,8 +373,8 @@ export function useRoomSocket({
   useEffect(() => {
     if (!roomCode) return;
     const interval = setInterval(() => {
-      safeSend(JSON.stringify({ type: "clock_sync_request" }));
-    }, 300000);
+      safeSend(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() }));
+    }, 60_000);
     return () => clearInterval(interval);
   }, [roomCode, safeSend]);
 
