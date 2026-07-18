@@ -88,6 +88,8 @@ type RoomSocketMessage =
       playbackMode?: PlaybackMode;
       recentTracks?: RecentTrack[];
       queue?: Track[];
+      queueHash?: string;
+      queueFull?: boolean;
     }
   | { type: "host:active_changed"; isHostActive: boolean }
   | {
@@ -272,6 +274,9 @@ export function useRoomSocket({
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
           setInitialDataLoaded(true);
+          if (msg.queueFull) {
+            safeSend(JSON.stringify({ type: "queue:fetch_full", hash: msg.queueHash }));
+          }
           if (msg.playback?.videoId) {
             window.setTimeout(() => {
               safeSend(JSON.stringify({ type: "playback:sync_request" }));
