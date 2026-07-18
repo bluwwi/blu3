@@ -92,6 +92,8 @@ type RoomSocketMessage =
       queueFull?: boolean;
     }
   | { type: "host:active_changed"; isHostActive: boolean }
+  | { type: "host:fallback_elected"; userId: string; name: string }
+  | { type: "host:fallback_revoked" }
   | {
       type: "room:member_joined";
       members?: Member[];
@@ -286,6 +288,12 @@ export function useRoomSocket({
           break;
         case "host:active_changed":
           setIsHostActive(msg.isHostActive);
+          break;
+        case "host:fallback_elected":
+          setIsHostActive(true);
+          break;
+        case "host:fallback_revoked":
+          setIsHostActive(false);
           break;
         case "room:member_joined":
           setMembers(msg.members ?? []);
