@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RecentTrack, Track } from "@/utils/types";
+import { cacheRoomData } from "@/lib/roomCache";
 
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
@@ -276,6 +277,12 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
+          cacheRoomData(roomCode, {
+            queue: msg.queue,
+            recentTracks: msg.recentTracks,
+            playback: msg.playback,
+            members: msg.members,
+          });
           setInitialDataLoaded(true);
           if (msg.queueFull) {
             safeSend(JSON.stringify({ type: "queue:fetch_full", hash: msg.queueHash }));
@@ -360,14 +367,35 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
+          cacheRoomData(roomCode, {
+            playback: {
+              videoId: msg.videoId ?? null,
+              source: (msg as any).source ?? "youtube",
+              trackName: msg.trackName ?? "",
+              artistName: msg.artistName ?? "",
+              image: msg.image ?? "",
+              isPlaying: Boolean(msg.isPlaying),
+              currentTime: msg.currentTime ?? 0,
+              updatedAt: msg.updatedAt ?? Date.now(),
+            },
+            recentTracks: msg.recentTracks,
+            queue: msg.queue,
+            members: undefined,
+          });
           onPlaybackSyncRef.current?.(msg, getSyncedTime);
           break;
         case "room:playback_mode":
           setPlaybackModeState(msg.playbackMode);
           break;
         case "room:queue_update":
-          if (msg.queue) setQueue(msg.queue);
-          if (msg.recentTracks) setRecentTracks(msg.recentTracks);
+          if (msg.queue) {
+            setQueue(msg.queue);
+            cacheRoomData(roomCode, { queue: msg.queue });
+          }
+          if (msg.recentTracks) {
+            setRecentTracks(msg.recentTracks);
+            cacheRoomData(roomCode, { recentTracks: msg.recentTracks });
+          }
           break;
         case "track:preresolved":
           onPreResolvedRef.current?.(msg.videoId, msg.audioUrl);
