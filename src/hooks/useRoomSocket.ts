@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RecentTrack, Track } from "@/utils/types";
 import { cacheRoomData } from "@/lib/roomCache";
+import { compress, decompress } from "@/lib/compress";
 
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
@@ -204,7 +205,7 @@ export function useRoomSocket({
   const safeSend = useCallback((data: string) => {
     const ws = wsRef.current;
     if (ws?.readyState === WebSocket.OPEN) {
-      ws.send(data);
+      ws.send(compress(data));
     } else {
       pendingMessagesRef.current.push(data);
       try {
@@ -233,7 +234,7 @@ export function useRoomSocket({
       const pending = pendingMessagesRef.current;
       pendingMessagesRef.current = [];
       for (const msg of pending) {
-        ws.send(msg);
+        ws.send(compress(msg));
       }
       try {
         const raw = localStorage.getItem("blu3_ws_pending");
@@ -241,11 +242,11 @@ export function useRoomSocket({
           const persisted: string[] = JSON.parse(raw);
           localStorage.removeItem("blu3_ws_pending");
           for (const msg of persisted) {
-            ws.send(msg);
+            ws.send(compress(msg));
           }
         }
       } catch {}
-      ws.send(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() }));
+      ws.send(compress(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() })));
     };
     ws.onclose = () => {
       setConnected(false);
@@ -261,7 +262,8 @@ export function useRoomSocket({
     ws.onmessage = (event) => {
       let msg: RoomSocketMessage;
       try {
-        msg = JSON.parse(event.data);
+        const raw = typeof event.data === "string" ? decompress(event.data) : event.data;
+        msg = JSON.parse(raw);
       } catch {
         return;
       }
