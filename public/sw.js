@@ -1,5 +1,4 @@
-const CACHE = "blu3-mrqmza1r";
-const ROOM_CACHE = "blu3-room-v1";
+const CACHE = "blu3-mrtgiskc";
 
 const PRECACHE_URLS = ["/", "/browse", "/manifest.json"];
 
@@ -13,7 +12,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE && k !== ROOM_CACHE).map((k) => caches.delete(k))),
+      Promise.all(keys.filter((k) => k !== CACHE && k !== "blu3-room-v1").map((k) => caches.delete(k))),
     ),
   );
   self.clients.claim();
@@ -53,8 +52,8 @@ self.addEventListener("message", (event) => {
   if (type === "ROOM_CACHE_PUT") {
     if (!roomCode || !data) return;
     event.waitUntil(
-      caches.open(ROOM_CACHE).then((cache) => {
-        return cache.put(`/room-data/${roomCode}`, new Response(JSON.stringify(data)));
+      caches.open("blu3-room-v1").then((cache) => {
+        return cache.put("/room-data/" + roomCode, new Response(JSON.stringify(data)));
       }),
     );
     return;
@@ -63,8 +62,8 @@ self.addEventListener("message", (event) => {
   if (type === "ROOM_CACHE_GET") {
     if (!roomCode) return;
     event.waitUntil(
-      caches.open(ROOM_CACHE).then((cache) => {
-        return cache.match(`/room-data/${roomCode}`);
+      caches.open("blu3-room-v1").then((cache) => {
+        return cache.match("/room-data/" + roomCode);
       }).then((res) => {
         if (!res) {
           event.source?.postMessage({ type: "ROOM_CACHE_RESULT", roomCode, data: null });
@@ -81,7 +80,7 @@ self.addEventListener("message", (event) => {
   if (type === "ROOM_CACHE_DELETE") {
     if (!roomCode) return;
     event.waitUntil(
-      caches.open(ROOM_CACHE).then((cache) => cache.delete(`/room-data/${roomCode}`)),
+      caches.open("blu3-room-v1").then((cache) => cache.delete("/room-data/" + roomCode)),
     );
     return;
   }
