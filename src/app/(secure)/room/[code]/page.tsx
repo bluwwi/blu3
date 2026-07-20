@@ -184,6 +184,10 @@ export default function RoomPage() {
           actualCurrentTime,
           state.isPlaying,
         );
+        if (!canControlPlaybackRef.current) {
+          if (!p.isMuted) p.toggleMute?.();
+          setListenerMuted(true);
+        }
         if (state.isPlaying) p.play?.();
       }
     },
@@ -304,9 +308,7 @@ export default function RoomPage() {
   })();
   const footerPlayerState =
     player.playerState === "idle" && playback?.videoId
-      ? playback.isPlaying
-        ? "loading"
-        : "paused"
+      ? "paused"
       : player.playerState;
 
   const isLiked = player.nowPlaying?.videoId
@@ -371,44 +373,6 @@ export default function RoomPage() {
     }
     prevConnected.current = connected;
   }, [connected]);
-
-  useEffect(() => {
-    if (
-      !joined ||
-      !playback?.videoId ||
-      player.nowPlaying?.videoId === playback.videoId ||
-      syncHandledRef.current ||
-      isRejoinRef.current
-    )
-      return;
-
-    if (!canControlPlayback && playback.isPlaying) {
-      const p = playerRef_fix.current;
-      let time = playback.currentTime ?? 0;
-      if (playback.updatedAt) {
-        const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
-        if (elapsed > 0 && elapsed < 3600) time += elapsed;
-      }
-      if (!player.isMuted) player.toggleMute();
-      p.playTrack(
-        {
-          id: `room-${playback.videoId}`,
-          source: playback.source ?? "youtube",
-          videoId: playback.videoId,
-          name: playback.trackName,
-          duration_ms: 0,
-          explicit: false,
-          artists: [{ name: playback.artistName }],
-          album: { name: "" },
-          image: playback.image,
-        },
-        time,
-        true,
-      );
-      p.play?.();
-      setListenerMuted(true);
-    }
-  }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
 
   const maybeAdvanceQueue = useCallback(() => {
     console.log(
@@ -719,20 +683,34 @@ export default function RoomPage() {
 
   const handleListenerPlay = useCallback(() => {
     if (!playback?.isPlaying) return;
-    let actualCurrentTime = playback.currentTime ?? 0;
-    if (playback.updatedAt) {
-      const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
-      if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+    if (listenerMuted) {
+      let actualCurrentTime = playback.currentTime ?? 0;
+      if (playback.updatedAt) {
+        const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+        if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+      }
+      if (player.isMuted) player.toggleMute();
+      engineRef.current.seekTo(actualCurrentTime);
+      player.play?.();
+      setListenerMuted(false);
+    } else {
+      if (player.playerState === "playing") {
+        engineRef.current.seekTo(playback.currentTime ?? 0);
+      } else {
+        let actualCurrentTime = playback.currentTime ?? 0;
+        if (playback.updatedAt) {
+          const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+          if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+        }
+        engineRef.current.seekTo(actualCurrentTime);
+        player.play?.();
+      }
     }
-    if (player.isMuted) player.toggleMute();
-    engineRef.current.seekTo(actualCurrentTime);
-    player.play?.();
-    setListenerMuted(false);
-  }, [playback, getSyncedTime, player]);
+  }, [playback, getSyncedTime, player, listenerMuted]);
 
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
-    : listenerMuted || (playback?.isPlaying && player.playerState !== "playing")
+    : playback?.isPlaying
       ? handleListenerPlay
       : undefined;
 
