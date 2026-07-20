@@ -84,7 +84,7 @@ export default function RoomPage() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [roomTheme, setRoomTheme] = useState<RoomTheme>("purple");
-  const [listenerMuted, setListenerMuted] = useState(false);
+  const [listenerMuted, setListenerMuted] = useState(true);
   const [joinToasts, setJoinToasts] = useState<
     Array<{ id: string; name: string; avatar?: string }>
   >([]);
