@@ -308,7 +308,7 @@ export default function RoomPage() {
   })();
   const footerPlayerState =
     player.playerState === "idle" && playback?.videoId
-      ? "paused"
+      ? "loading"
       : player.playerState;
 
   const isLiked = player.nowPlaying?.videoId
