@@ -150,15 +150,8 @@ export default function RoomPage() {
         syncHandledRef.current = true;
         return;
       }
-      const isFirstSync = !syncHandledRef.current;
       syncHandledRef.current = true;
       if (isRejoinRef.current && !canControlPlaybackRef.current) return;
-
-      if (isFirstSync && !canControlPlaybackRef.current && state.isPlaying) {
-        if (!playerRef_fix.current.isMuted) playerRef_fix.current.toggleMute();
-        setListenerMuted(true);
-      }
-
       let actualCurrentTime = state.currentTime ?? 0;
       if (state.updatedAt) {
         const elapsed = (syncedTime() - state.updatedAt) / 1000;
@@ -390,7 +383,29 @@ export default function RoomPage() {
       return;
 
     if (!canControlPlayback && playback.isPlaying) {
+      const p = playerRef_fix.current;
+      let time = playback.currentTime ?? 0;
+      if (playback.updatedAt) {
+        const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+        if (elapsed > 0 && elapsed < 3600) time += elapsed;
+      }
       if (!player.isMuted) player.toggleMute();
+      p.playTrack(
+        {
+          id: `room-${playback.videoId}`,
+          source: playback.source ?? "youtube",
+          videoId: playback.videoId,
+          name: playback.trackName,
+          duration_ms: 0,
+          explicit: false,
+          artists: [{ name: playback.artistName }],
+          album: { name: "" },
+          image: playback.image,
+        },
+        time,
+        true,
+      );
+      p.play?.();
       setListenerMuted(true);
     }
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);

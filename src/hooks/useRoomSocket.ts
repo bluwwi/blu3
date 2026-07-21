@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RecentTrack, Track } from "@/utils/types";
-import { decompress } from "@/lib/compress";
 
 const WS_URL =
   process.env.NEXT_PUBLIC_API_URL?.replace("http", "ws") ||
@@ -196,7 +195,6 @@ export function useRoomSocket({
   const reconnectAttemptRef = useRef(0);
   const roomCodeRef = useRef(roomCode);
   roomCodeRef.current = roomCode;
-  const wsGenRef = useRef(0);
 
   const safeSend = useCallback((data: string) => {
     const ws = wsRef.current;
@@ -213,18 +211,11 @@ export function useRoomSocket({
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
 
-    // Cancel any pending reconnect and close old socket to prevent duplicate loop
-    if (reconnectTimerRef.current) { clearTimeout(reconnectTimerRef.current); reconnectTimerRef.current = null; }
-    const prev = wsRef.current;
-    if (prev) { prev.onclose = null; prev.onerror = null; prev.onmessage = null; try { prev.close(); } catch {} }
-
-    const gen = ++wsGenRef.current;
     const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${code}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      if (wsGenRef.current !== gen) return;
       setConnected(true);
       reconnectAttemptRef.current = 0;
       const pending = pendingMessagesRef.current;
@@ -234,7 +225,6 @@ export function useRoomSocket({
       }
     };
     ws.onclose = () => {
-      if (wsGenRef.current !== gen) return;
       setConnected(false);
       const attempt = reconnectAttemptRef.current;
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
@@ -245,11 +235,9 @@ export function useRoomSocket({
       console.error("WS error:", e);
     };
     ws.onmessage = (event) => {
-      let raw = event.data;
-      try { raw = decompress(event.data); } catch {}
       let msg: RoomSocketMessage;
       try {
-        msg = JSON.parse(raw);
+        msg = JSON.parse(event.data);
       } catch {
         return;
       }
