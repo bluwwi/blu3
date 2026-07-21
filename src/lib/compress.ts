@@ -1,4 +1,4 @@
-import { gzip, gunzip } from "pako";
+import { gzip, ungzip } from "pako";
 
 const COMPRESS_THRESHOLD = 1024;
 const PREFIX = "BZ:";
@@ -22,7 +22,7 @@ export function decompress(data: string): string {
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i);
     }
-    const decompressed = gunzip(bytes);
+    const decompressed = ungzip(bytes);
     return new TextDecoder().decode(decompressed);
   } catch {
     return data;

@@ -1,7 +1,21 @@
+# *
 User-agent: *
 Allow: /
+
+# *
+User-agent: *
 Disallow: /api/
+
+# *
+User-agent: *
 Disallow: /auth/
+
+# *
+User-agent: *
 Disallow: /room/
 
+# Host
+Host: https://blu3.in
+
+# Sitemaps
 Sitemap: https://blu3.in/sitemap.xml

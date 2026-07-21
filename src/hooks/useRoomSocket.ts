@@ -34,6 +34,7 @@ export interface PlaybackState {
   updatedAt: number;
   anchorServerTime?: number;
   positionSec?: number;
+  durationMs?: number;
 }
 
 export type RepeatMode = "off" | "all" | "one";
@@ -199,6 +200,7 @@ export function useRoomSocket({
   const pendingMessagesRef = useRef<string[]>([]);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptRef = useRef(0);
+  const connectingRef = useRef(false);
   const roomCodeRef = useRef(roomCode);
   roomCodeRef.current = roomCode;
 
@@ -224,11 +226,17 @@ export function useRoomSocket({
     const token = localStorage.getItem("blu3_token");
     if (!token) return;
 
+    if (connectingRef.current) return;
+    if (wsRef.current?.readyState === WebSocket.OPEN ||
+        wsRef.current?.readyState === WebSocket.CONNECTING) return;
+    connectingRef.current = true;
+
     const wsUrl = `${WS_URL}/ws?token=${encodeURIComponent(token)}&room=${code}`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      connectingRef.current = false;
       setConnected(true);
       reconnectAttemptRef.current = 0;
       const pending = pendingMessagesRef.current;
@@ -249,15 +257,16 @@ export function useRoomSocket({
       ws.send(compress(JSON.stringify({ type: "clock_sync_request", clientTime: Date.now() })));
     };
     ws.onclose = () => {
+      if (wsRef.current !== ws) return;
+      connectingRef.current = false;
       setConnected(false);
-      setInitialDataLoaded(false);
       const attempt = reconnectAttemptRef.current;
       const delay = Math.min(1000 * Math.pow(2, attempt), 30000);
       reconnectAttemptRef.current = attempt + 1;
       reconnectTimerRef.current = setTimeout(connectWs, delay);
     };
-    ws.onerror = (e) => {
-      console.error("WS error:", e);
+    ws.onerror = () => {
+      connectingRef.current = false;
     };
     ws.onmessage = (event) => {
       let msg: RoomSocketMessage;
@@ -296,7 +305,7 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
-          cacheRoomData(roomCode, {
+          if (roomCode) cacheRoomData(roomCode, {
             queue: msg.queue,
             recentTracks: msg.recentTracks,
             playback: msg.playback,
@@ -386,7 +395,7 @@ export function useRoomSocket({
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);
           if (msg.recentTracks) setRecentTracks(msg.recentTracks);
           if (msg.queue) setQueue(msg.queue);
-          cacheRoomData(roomCode, {
+          if (roomCode) cacheRoomData(roomCode, {
             playback: {
               videoId: msg.videoId ?? null,
               source: (msg as any).source ?? "youtube",
@@ -409,11 +418,11 @@ export function useRoomSocket({
         case "room:queue_update":
           if (msg.queue) {
             setQueue(msg.queue);
-            cacheRoomData(roomCode, { queue: msg.queue });
+            if (roomCode) cacheRoomData(roomCode, { queue: msg.queue });
           }
           if (msg.recentTracks) {
             setRecentTracks(msg.recentTracks);
-            cacheRoomData(roomCode, { recentTracks: msg.recentTracks });
+            if (roomCode) cacheRoomData(roomCode, { recentTracks: msg.recentTracks });
           }
           break;
         case "track:preresolved":
