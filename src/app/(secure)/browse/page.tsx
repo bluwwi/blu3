@@ -158,7 +158,7 @@ export default function BrowsePage() {
   );
 
   return (
-    <div className="min-h-screen  bg-black max-h-screen h-dvh relative overflow-hidden">
+    <div className="min-h-screen  bg-linear-to-b from-black to-blue-950 max-h-screen h-dvh relative overflow-hidden">
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           <div className="flex justify-between w-full absolute top-0 p-5 items-center overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
@@ -215,15 +215,15 @@ export default function BrowsePage() {
                                 ? handleDeleteRoom(e, room)
                                 : handleLeaveRoom(e, room)
                             }
-                            className="absolute bottom-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-500/80 hover:border-red-400/40 cursor-pointer z-10"
+                            className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-opacity hover:bg-red-600 hover:border-red-400/40 cursor-pointer z-10"
                             title={isHost ? "Delete room" : "Leave room"}
                           >
-                            <Trash2 className="w-3 h-3 text-white/80" />
+                            <Plus className="w-6 h-6 rotate-45 text-white/80" />
                           </button>
                         </div>
                         <div className="px-0.5 mt-1 flex overflow-hidden relative w-full items-center">
                           <p className="text-xs md:text-[14px]   text-white truncate  leading-tight">
-                            {room.hostName} • {room.name}
+                            {room.code} • {room.hostName}
                           </p>
                         </div>
                       </div>
@@ -235,7 +235,7 @@ export default function BrowsePage() {
                   className="create-card flex flex-col gap-2 w-28 sm:w-32 md:w-36 lg:w-40 cursor-pointer"
                   onClick={handleCreate}
                 >
-                  <div className="aspect-square text-neutral-600 hover:text-neutral-400  border-2 border-dashed border-white/20 hover:border-white/30 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
+                  <div className="aspect-square text-neutral-500 hover:text-neutral-300  border-2 border-dashed border-white/30 hover:border-white/40 backdrop-blur-2xl flex items-center justify-center  rounded-lg transition-all shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)]">
                     <Plus
                       className="create-plus w-30 h-30  transition-all"
                       strokeWidth={2.25}

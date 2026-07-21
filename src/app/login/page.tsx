@@ -1,5 +1,6 @@
 "use client";
 
+import { VideoBackground } from "@/components/VideoBackground";
 import { authClient } from "@/lib/auth-client";
 
 function GoogleLogo() {
@@ -40,7 +41,9 @@ export default function LoginPage() {
     if (returnUrl) {
       sessionStorage.setItem("returnUrl", returnUrl);
     }
-    const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
+    const isElectron =
+      typeof window !== "undefined" &&
+      window.navigator.userAgent.includes("Electron");
     const callbackURL = isElectron
       ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/desktop-redirect`
       : window.location.origin + "/browse";
@@ -49,6 +52,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <VideoBackground url={"/login.mp4"} />
+      </div>
       <div
         className="w-80 p-5 text-center"
         style={{
@@ -60,10 +66,10 @@ export default function LoginPage() {
       >
         <div className="flex flex-col mb-16 gap-1">
           <p className="text-white text-3xl text-left leading-snug">
-            Login Or SignUp
+            Welcome to Blu3
           </p>
-          <p className="text-white/60 text-xl text-left leading-snug">
-            Let's get to know <br /> each other.
+          <p className="text-white/60 text-xl text-left font-semibold leading-snug">
+            Your favorite song <br /> is waiting{"."}
           </p>
         </div>
 

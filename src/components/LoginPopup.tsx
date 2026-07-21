@@ -12,15 +12,13 @@ function LoginCard({
   onLogin: (provider: "google" | "discord") => void;
 }) {
   return (
-    <div
-      className="w-80 p-5 text-center bg-black/35 backdrop-blur-sm rounded-[24px] border border-white/30"
-    >
+    <div className="w-80 p-5 text-center bg-black/35 backdrop-blur-sm rounded-[24px] border border-white/30">
       <div className="flex flex-col mb-16 gap-1">
         <p className="text-white text-3xl text-left leading-snug">
-          Login Or SignUp
+          Login to blu3
         </p>
         <p className="text-white/60 text-xl text-left leading-snug">
-          Let's get to know <br /> each other.
+          Your next favorite <br /> song is waiting{"."}
         </p>
       </div>
 
@@ -88,7 +86,9 @@ function LoginPopup() {
 
   const handleLogin = (provider: "google" | "discord") => {
     sessionStorage.setItem("returnUrl", window.location.pathname);
-    const isElectron = typeof window !== "undefined" && window.navigator.userAgent.includes("Electron");
+    const isElectron =
+      typeof window !== "undefined" &&
+      window.navigator.userAgent.includes("Electron");
     const callbackURL = isElectron
       ? `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/auth/desktop-redirect`
       : window.location.origin;
@@ -113,7 +113,9 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
   const [showPopup, setShowPopup] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
