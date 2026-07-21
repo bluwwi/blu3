@@ -72,4 +72,11 @@ export class ClockSync {
       }
     }
   }
+
+  handleClockSync(serverTime: number) {
+    if (!this._calibrated) {
+      this._offset = serverTime - Date.now();
+      this._calibrated = true;
+    }
+  }
 }

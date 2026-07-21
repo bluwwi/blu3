@@ -1,9 +1,14 @@
 import { ClockSync } from "./ClockSync";
-import { TransportState, ServerMessage } from "./roomTypes";
+import { TransportState } from "./roomTypes";
 import { decompress } from "@/lib/compress";
 
 const BASE_DELAY = 1000;
 const MAX_DELAY = 30000;
+
+interface ServerMsg {
+  type: string;
+  [key: string]: any;
+}
 
 export class RoomTransport {
   private ws: WebSocket | null = null;
@@ -14,7 +19,7 @@ export class RoomTransport {
   constructor(
     private readonly wsUrl: string,
     public readonly clock: ClockSync,
-    private readonly onMessage: (msg: ServerMessage) => void,
+    private readonly onMessage: (msg: any) => void,
     private readonly onStateChange: (state: TransportState) => void,
   ) {}
 
@@ -39,11 +44,15 @@ export class RoomTransport {
       if (this.ws !== ws) return;
       let raw = evt.data;
       try { raw = decompress(evt.data); } catch {}
-      let msg: ServerMessage;
+      let msg: any;
       try { msg = JSON.parse(raw); } catch { return; }
 
       if (msg.type === "clock:pong") {
         this.clock.handlePong(msg.t0, msg.serverTime);
+        return;
+      }
+      if (msg.type === "clock_sync") {
+        this.clock.handleClockSync(msg.serverTime);
         return;
       }
       this.onMessage(msg);

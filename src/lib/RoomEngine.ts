@@ -159,6 +159,8 @@ export class RoomEngine {
             autoplay: pb.isPlaying,
             role: isHost ? "host" : "listener",
           });
+          // Request fresh sync so we get the latest position
+          setTimeout(() => this.send({ type: "sync:request" }), 0);
         }
         break;
       }
@@ -310,20 +312,18 @@ export class RoomEngine {
   play(videoId: string, seekTo: number, durationMs: number, source: string,
        trackName: string, artistName: string, image: string) {
     if (!this.canControl()) return;
-    this.audio.play();
+    // Server will broadcast play to all clients, including this one.
+    // Dispatch handles the actual audio loading when the broadcast arrives.
     this.send({ type: "playback:play", videoId, seekTo, durationMs, source, trackName, artistName, image });
   }
 
   pause() {
     if (!this.canControl()) return;
-    const pos = this.audio.currentTime;
-    this.audio.pause(pos);
-    this.send({ type: "playback:pause", currentTime: pos });
+    this.send({ type: "playback:pause", currentTime: this.audio.currentTime });
   }
 
   seek(seekTo: number) {
     if (!this.canControl()) return;
-    this.audio.seekTo(seekTo);
     this.send({ type: "playback:seek", currentTime: seekTo });
   }
 
@@ -413,10 +413,7 @@ export class RoomEngine {
   }
 
   private handleClientTrackEnd() {
-    // Server handles auto-advance via scheduleTrackEnd timer.
-    // No need to send track_ended — the server's timer is authoritative.
-    // Just notify UI so it can update if needed.
-    this.notify();
+    this.send({ type: "playback:ended", currentTime: this.audio.currentTime });
   }
 
   // ─── UI State Getters (delegate to AudioEngine) ─────────────────────────

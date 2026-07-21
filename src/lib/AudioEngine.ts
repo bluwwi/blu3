@@ -2,6 +2,7 @@ import { ClockSync } from "./ClockSync";
 import { resolveTrackSource } from "@/utils/ytdl";
 
 const URL_CACHE_TTL = 25 * 60 * 1000;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 interface TrackMeta {
   videoId: string;
@@ -18,6 +19,8 @@ export interface AudioLoadParams {
   role: "host" | "listener";
 }
 
+type AudioOrYT = "audio" | "youtube";
+
 export class AudioEngine {
   private audioA = new Audio();
   private audioB = new Audio();
@@ -29,17 +32,12 @@ export class AudioEngine {
   private _playing = false;
   private _muted = false;
   private _volume = 100;
-  private _mode: "audio" | "youtube" = "audio";
+  private _mode: AudioOrYT = "audio";
   private currentVideoId: string | null = null;
-  private driftInterval: ReturnType<typeof setInterval> | null = null;
-
-  private anchorPosSec = 0;
-  private anchorTime = 0;
-  private trackIsPlaying = false;
 
   private _onTrackEnded: (() => void) | null = null;
 
-  constructor(private clock: ClockSync, private token?: string) {
+  constructor(_clock: ClockSync, private token?: string) {
     this.setupElement(this.audioA);
     this.setupElement(this.audioB);
   }
@@ -60,7 +58,6 @@ export class AudioEngine {
     el.onended = () => {
       if (el !== this.getActive()) return;
       this._playing = false;
-      this.stopDriftCheck();
       this._onTrackEnded?.();
     };
 
@@ -73,7 +70,6 @@ export class AudioEngine {
 
   private fallbackToYouTube(videoId: string | null) {
     if (!videoId) return;
-    this.stopDriftCheck();
     this.getActive().src = "";
     this.createYTPlayer(videoId);
   }
@@ -125,12 +121,11 @@ export class AudioEngine {
     }
 
     this.currentVideoId = track.videoId;
-    this.stopDriftCheck();
 
     const cached = this.urlCache.get(track.videoId);
-    let url: string | null = null;
+    let fullUrl: string | null = null;
     if (cached && Date.now() - cached.cachedAt < URL_CACHE_TTL) {
-      url = cached.url;
+      fullUrl = cached.url;
     } else {
       try {
         const result = await resolveTrackSource(
@@ -138,13 +133,13 @@ export class AudioEngine {
           track.durationMs, track.source,
         );
         if (result.audioUrl) {
-          url = result.audioUrl;
-          this.urlCache.set(track.videoId, { url, cachedAt: Date.now() });
+          fullUrl = `${API_URL}${result.audioUrl}${this.token ? `?token=${encodeURIComponent(this.token)}` : ""}`;
+          this.urlCache.set(track.videoId, { url: fullUrl, cachedAt: Date.now() });
         }
       } catch {}
     }
 
-    if (!url) {
+    if (!fullUrl) {
       this._mode = "youtube";
       this.createYTPlayer(track.videoId);
       return;
@@ -159,7 +154,7 @@ export class AudioEngine {
     old.pause();
     old.src = "";
 
-    target.src = url;
+    target.src = fullUrl;
     target.volume = this._muted ? 0 : this._volume / 100;
 
     if (role === "listener") {
@@ -175,10 +170,8 @@ export class AudioEngine {
 
     target.oncanplay = () => {
       if (autoplay) {
-        target.play().catch(() => {});
         this._playing = true;
-        this.setDriftAnchor(startSec, this.clock.serverNow());
-        this.startDriftCheck();
+        target.play().catch(() => {});
       }
     };
   }
@@ -186,12 +179,9 @@ export class AudioEngine {
   seekAndPlay(positionSec: number) {
     const el = this.getActive();
     el.currentTime = positionSec;
-    el.play().then(() => {
-      this._playing = true;
-      this._currentTime = positionSec;
-      this.setDriftAnchor(positionSec, this.clock.serverNow());
-      this.startDriftCheck();
-    }).catch(() => {});
+    this._currentTime = positionSec;
+    this._playing = true;
+    el.play().catch(() => {});
   }
 
   seekTo(positionSec: number) {
@@ -206,10 +196,8 @@ export class AudioEngine {
       this._playing = true;
       return;
     }
-    el.play().then(() => {
-      this._playing = true;
-      this.startDriftCheck();
-    }).catch(() => {});
+    if (!el.src || el.src === "") return;
+    el.play().catch(() => {});
   }
 
   pause(atPosition?: number) {
@@ -222,7 +210,6 @@ export class AudioEngine {
     el.pause();
     if (atPosition !== undefined) el.currentTime = atPosition;
     this._playing = false;
-    this.stopDriftCheck();
   }
 
   unmute() {
@@ -233,45 +220,6 @@ export class AudioEngine {
   toggleMute() {
     this._muted = !this._muted;
     this.getActive().volume = this._muted ? 0 : this._volume / 100;
-  }
-
-  setDriftAnchor(positionSec: number, anchorTime: number) {
-    this.anchorPosSec = positionSec;
-    this.anchorTime = anchorTime;
-    this.trackIsPlaying = true;
-  }
-
-  clearDriftAnchor() { this.trackIsPlaying = false; }
-
-  private startDriftCheck() {
-    this.stopDriftCheck();
-    this.driftInterval = setInterval(() => this.checkDrift(), 1000);
-  }
-
-  private stopDriftCheck() {
-    if (this.driftInterval) {
-      clearInterval(this.driftInterval);
-      this.driftInterval = null;
-    }
-    try { this.getActive().playbackRate = 1.0; } catch {}
-  }
-
-  private checkDrift() {
-    if (!this.trackIsPlaying || !this.clock.calibrated) return;
-    const elapsed = (this.clock.serverNow() - this.anchorTime) / 1000;
-    const expected = this.anchorPosSec + elapsed;
-    const actual = this.getActive().currentTime;
-    const drift = actual - expected;
-
-    if (Math.abs(drift) < 0.1) {
-      try { this.getActive().playbackRate = 1.0; } catch {}
-    } else if (Math.abs(drift) < 0.5) {
-      try { this.getActive().playbackRate = drift < 0 ? 1.05 : 0.95; } catch {}
-    } else {
-      console.warn(`[AudioEngine] hard seek: drift=${drift.toFixed(2)}s`);
-      this.getActive().currentTime = expected;
-      try { this.getActive().playbackRate = 1.0; } catch {}
-    }
   }
 
   async prefetchNextTrack(track: TrackMeta) {
@@ -287,13 +235,14 @@ export class AudioEngine {
         this.urlCache.set(track.videoId, { url: result.audioUrl, cachedAt: Date.now() });
         const inactive = this.getInactive();
         inactive.preload = "auto";
-        inactive.src = result.audioUrl;
+        inactive.src = `${API_URL}${result.audioUrl}${this.token ? `?token=${encodeURIComponent(this.token)}` : ""}`;
       }
     } catch {}
   }
 
   cacheUrl(videoId: string, url: string) {
-    this.urlCache.set(videoId, { url, cachedAt: Date.now() });
+    const fullUrl = `${API_URL}${url}${this.token ? `?token=${encodeURIComponent(this.token)}` : ""}`;
+    this.urlCache.set(videoId, { url: fullUrl, cachedAt: Date.now() });
   }
 
   private getActive() { return this.active === "a" ? this.audioA : this.audioB; }
@@ -309,7 +258,6 @@ export class AudioEngine {
   get mode() { return this._mode; }
 
   destroy() {
-    this.stopDriftCheck();
     this.audioA.pause(); this.audioA.src = "";
     this.audioB.pause(); this.audioB.src = "";
     if (this.ytPlayer) { try { this.ytPlayer.destroy(); } catch {} }
