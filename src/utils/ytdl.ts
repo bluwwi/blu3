@@ -37,10 +37,6 @@ export async function resolveTrackSource(
   signal?: AbortSignal,
 ): Promise<{ source: string; audioUrl?: string; videoId: string; image?: string }> {
   return withLimit(async () => {
-    if (source === "youtube") {
-      return { source: "youtube", videoId };
-    }
-
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
     };

@@ -232,10 +232,11 @@ export class AudioEngine {
         track.durationMs, track.source,
       );
       if (result.audioUrl) {
-        this.urlCache.set(track.videoId, { url: result.audioUrl, cachedAt: Date.now() });
+        const fullUrl = `${API_URL}${result.audioUrl}${this.token ? `?token=${encodeURIComponent(this.token)}` : ""}`;
+        this.urlCache.set(track.videoId, { url: fullUrl, cachedAt: Date.now() });
         const inactive = this.getInactive();
         inactive.preload = "auto";
-        inactive.src = `${API_URL}${result.audioUrl}${this.token ? `?token=${encodeURIComponent(this.token)}` : ""}`;
+        inactive.src = fullUrl;
       }
     } catch {}
   }
