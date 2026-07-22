@@ -93,6 +93,45 @@ export default function RootLayout({
         />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#000000" />
+        <meta name="application-name" content="Blu3" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "Blu3",
+              url: "https://blu3.in",
+              description:
+                "Real-time collaborative music listening platform. Create music rooms and listen together with friends.",
+              applicationCategory: "MusicApplication",
+              operatingSystem: "Web",
+              offers: { "@type": "Offer", price: "0" },
+              author: {
+                "@type": "Organization",
+                name: "Blu3",
+                url: "https://blu3.in",
+              },
+            }),
+          }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Blu3",
+              url: "https://blu3.in",
+              description:
+                "Create real-time collaborative music rooms. Listen together with friends, discover new songs from JioSaavn and YouTube, and share the vibe.",
+              applicationCategory: "Multimedia",
+              operatingSystem: "All",
+              browserRequirements: "Requires JavaScript",
+              offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+            }),
+          }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <PlaylistsProvider>

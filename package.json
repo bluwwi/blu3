@@ -8,7 +8,6 @@
   "scripts": {
     "dev": "node scripts/generate-sw.mjs && next dev",
     "build": "node scripts/generate-sw.mjs && next build",
-    "postbuild": "next-sitemap --config next-sitemap.config.js",
     "start": "next start",
     "postinstall": "node scripts/generate-sw.mjs",
     "desktop:dev": "node scripts/generate-sw.mjs && next dev & npx wait-on http://localhost:3000 && npx electron .",

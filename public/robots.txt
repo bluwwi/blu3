@@ -10,10 +10,6 @@ Disallow: /api/
 User-agent: *
 Disallow: /auth/
 
-# *
-User-agent: *
-Disallow: /room/
-
 # Host
 Host: https://blu3.in
 

@@ -1,10 +1,9 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
   siteUrl: "https://blu3.in",
-  generateRobotsTxt: true,
+  generateRobotsTxt: false,
   exclude: [
     "/auth/callback",
-    "/room/*",
     "/api/*",
   ],
   robotsTxtOptions: {
@@ -12,9 +11,10 @@ module.exports = {
       { userAgent: "*", allow: "/" },
       { userAgent: "*", disallow: "/api/" },
       { userAgent: "*", disallow: "/auth/" },
-      { userAgent: "*", disallow: "/room/" },
     ],
-    additionalSitemaps: [],
+    additionalSitemaps: [
+      "https://blu3.in/sitemap.xml",
+    ],
   },
   changefreq: "weekly",
   priority: 0.7,
