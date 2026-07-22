@@ -328,14 +328,14 @@ export default function Home() {
                         <div className="flex gap-2 text-sm sm:text-lg font-normal items-center flex-wrap justify-center sm:justify-start">
                           <Link
                             href={"/terms"}
-                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
+                            className=" hover:text-white transition-all duration-300"
                           >
                             Terms
                           </Link>
                           <span className="text-white/40">|</span>
                           <Link
                             href={"/privacy"}
-                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
+                            className=" hover:text-white transition-all duration-300"
                           >
                             Privacy
                           </Link>
@@ -344,7 +344,7 @@ export default function Home() {
                             href="https://github.com/xrealblue"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline underline-offset-4 hover:text-white transition-all duration-300"
+                            className=" hover:text-white transition-all duration-300"
                           >
                             Github
                           </a>
@@ -357,7 +357,7 @@ export default function Home() {
                             rel="noopener noreferrer"
                             className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
                           >
-                              <XLogoIcon size={22} />
+                            <XLogoIcon size={22} />
                           </a>
                         </div>
                       </div>
