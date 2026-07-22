@@ -153,8 +153,9 @@ export default function RoomPage() {
       syncHandledRef.current = true;
       if (isRejoinRef.current && !canControlPlaybackRef.current) return;
       let actualCurrentTime = state.currentTime ?? 0;
-      if (state.updatedAt) {
-        const elapsed = (syncedTime() - state.updatedAt) / 1000;
+      const anchorServerTime = state.anchorServerTime ?? state.updatedAt ?? 0;
+      if (anchorServerTime && state.isPlaying) {
+        const elapsed = (syncedTime() - anchorServerTime) / 1000;
         if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
       }
       const p = playerRef_fix.current;
@@ -385,8 +386,9 @@ export default function RoomPage() {
     if (!canControlPlayback && playback.isPlaying) {
       const p = playerRef_fix.current;
       let time = playback.currentTime ?? 0;
-      if (playback.updatedAt) {
-        const elapsed = (getSyncedTime() - playback.updatedAt) / 1000;
+      const anchorST = playback.anchorServerTime ?? playback.updatedAt ?? 0;
+      if (anchorST) {
+        const elapsed = (getSyncedTime() - anchorST) / 1000;
         if (elapsed > 0 && elapsed < 3600) time += elapsed;
       }
       if (!player.isMuted) player.toggleMute();

@@ -255,7 +255,7 @@ export function useRoomSocket({
           setMembers(msg.members ?? []);
           if (msg.playback) {
             const pb = msg.playback;
-            setPlayback({ ...pb, anchorServerTime: pb.updatedAt, positionSec: pb.currentTime });
+            setPlayback({ ...pb, anchorServerTime: pb.anchorServerTime ?? pb.updatedAt, positionSec: pb.currentTime });
           } else {
             setPlayback(null);
           }
@@ -331,7 +331,7 @@ export function useRoomSocket({
             isPlaying: Boolean(msg.isPlaying),
             currentTime: msg.currentTime ?? 0,
             updatedAt: msg.updatedAt ?? Date.now(),
-            anchorServerTime: msg.updatedAt ?? Date.now(),
+            anchorServerTime: (msg as any).anchorServerTime ?? msg.updatedAt ?? Date.now(),
             positionSec: msg.currentTime ?? 0,
           });
           if (msg.playbackMode) setPlaybackModeState(msg.playbackMode);

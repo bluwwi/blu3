@@ -352,12 +352,12 @@ export default function Home() {
 
                         <div className="flex gap-2 items-center">
                           <a
-                            href="https://x.com/realbluex"
+                            href="https://x.com/onebluwish"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
                           >
-                            <XLogoIcon size={22} />
+                              <XLogoIcon size={22} />
                           </a>
                         </div>
                       </div>
