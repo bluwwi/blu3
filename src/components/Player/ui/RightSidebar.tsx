@@ -148,7 +148,7 @@ export function RightSidebar({
   return (
     <>
       <div
-        className="flex h-full min-h-0 flex-col text-white"
+        className="flex h-full min-h-0 overflow-hidden flex-col text-white"
         style={getRoomThemeVars(roomTheme)}
       >
         <div className="flex h-full min-h-0 flex-col text-white overflow-hidden">

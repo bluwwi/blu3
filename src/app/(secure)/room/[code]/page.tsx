@@ -12,7 +12,6 @@ import { resolveLink } from "@/utils/ytdl";
 import { useSearch } from "@/hooks/useSearch";
 import { useSuggestions } from "@/hooks/useSuggestions";
 import { onVisibilityChange } from "@/utils/visibilityCoordinator";
-import { RoomTopBar } from "@/components/Player/ui/Roomtopbar";
 import { RoomBackground } from "@/components/Player/ui/RoomBackground";
 import { Track, PlayerState } from "@/utils/types";
 import {
@@ -1211,7 +1210,7 @@ export default function RoomPage() {
                   filter drop-shadow-[0_0_40px_rgba(0,0,0,1)]
                   sm:filter sm:drop-shadow-[0_0_60px_rgba(0,0,0,0.6)]
 
-                  overflow-visible
+                  overflow-hidden
 
                   transition-all duration-300
                   max-sm:before:hidden sm:before:absolute sm:before:inset-0 sm:before:rounded-3xl sm:before:pointer-events-none sm:before:bg-gradient-to-b sm:before:from-white/[0.04] sm:before:to-transparent
