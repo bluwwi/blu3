@@ -86,8 +86,8 @@ export default function TermsPage() {
           <p>
             If you are a rights holder and believe your intellectual property
             has been used in a way that constitutes infringement, please contact
-            the developer at heetvavadiya099@gmail.com or via X @realbluex. Upon
-            receipt of a valid legal notice, blu3.in will be taken down
+            the developer at heetvavadiya099@gmail.com or via X @onebluwish.
+            Upon receipt of a valid legal notice, blu3.in will be taken down
             immediately. The GitHub repository may remain as a local-only
             educational reference.
           </p>
@@ -96,11 +96,10 @@ export default function TermsPage() {
             8. Prohibited Use
           </h2>
           <p>
-            You agree not to use this Service for any commercial purpose,
-            scrape or redistribute audio streams or metadata, bypass
-            authentication or rate limits, use the Service for any unlawful
-            purpose, or interfere with the operation of the Service or
-            third-party APIs.
+            You agree not to use this Service for any commercial purpose, scrape
+            or redistribute audio streams or metadata, bypass authentication or
+            rate limits, use the Service for any unlawful purpose, or interfere
+            with the operation of the Service or third-party APIs.
           </p>
 
           <h2 className="text-xl font-semibold text-white mt-8">
@@ -112,9 +111,7 @@ export default function TermsPage() {
             terms.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">
-            10. Contact
-          </h2>
+          <h2 className="text-xl font-semibold text-white mt-8">10. Contact</h2>
           <p>
             Heet Vavadiya —{" "}
             <a
@@ -126,12 +123,12 @@ export default function TermsPage() {
             <br />
             X:{" "}
             <a
-              href="https://x.com/realbluex"
+              href="https://x.com/onebluwish"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-4 text-white/80 hover:text-white transition-all duration-300"
             >
-              @realbluex
+              @onebluwish
             </a>
             <br />
             GitHub:{" "}
@@ -145,9 +142,7 @@ export default function TermsPage() {
             </a>
           </p>
 
-          <p className="mt-8 text-white/50 text-sm">
-            Last updated: July 2026
-          </p>
+          <p className="mt-8 text-white/50 text-sm">Last updated: July 2026</p>
         </div>
       </div>
     </div>

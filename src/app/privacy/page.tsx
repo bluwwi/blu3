@@ -119,9 +119,7 @@ export default function PrivacyPage() {
             straightforward.
           </p>
 
-          <h2 className="text-xl font-semibold text-white mt-8">
-            8. Contact
-          </h2>
+          <h2 className="text-xl font-semibold text-white mt-8">8. Contact</h2>
           <p>
             Heet Vavadiya —{" "}
             <a
@@ -133,28 +131,16 @@ export default function PrivacyPage() {
             <br />
             X:{" "}
             <a
-              href="https://x.com/realbluex"
+              href="https://x.com/onebluwish"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-4 text-white/80 hover:text-white transition-all duration-300"
             >
-              @realbluex
-            </a>
-            <br />
-            Instagram:{" "}
-            <a
-              href="https://www.instagram.com/realblue07/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-4 text-white/80 hover:text-white transition-all duration-300"
-            >
-              @realblue07
+              @onebluwish
             </a>
           </p>
 
-          <p className="mt-8 text-white/50 text-sm">
-            Last updated: July 2026
-          </p>
+          <p className="mt-8 text-white/50 text-sm">Last updated: July 2026</p>
         </div>
       </div>
     </div>
