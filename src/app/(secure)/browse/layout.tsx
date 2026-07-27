@@ -10,13 +10,13 @@ export const metadata: Metadata = {
     description:
       "Browse active music rooms, join friends, and listen together in real-time. Free, no ads, cross-platform.",
     url: "https://blu3.in/browse",
-    images: [{ url: "/api/og?home=1&v=4", width: 600, height: 315 }],
+    images: [{ url: "/homebanner.png", width: 600, height: 315 }],
   },
   twitter: {
     title: "Blu3 — Browse Rooms",
     description:
       "Browse active music rooms, join friends, and listen together in real-time.",
-    images: ["/api/og?home=1&v=4"],
+    images: ["/homebanner.png"],
   },
 };
 

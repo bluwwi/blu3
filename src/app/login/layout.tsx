@@ -10,13 +10,13 @@ export const metadata: Metadata = {
     description:
       "Sign in with Google or Discord to start listening together in real-time music rooms.",
     url: "https://blu3.in/login",
-    images: [{ url: "/api/og?home=1&v=4", width: 600, height: 315 }],
+    images: [{ url: "/homebanner.png", width: 600, height: 315 }],
   },
   twitter: {
     title: "Blu3 — Sign In",
     description:
       "Sign in with Google or Discord to start listening together in real-time music rooms.",
-    images: ["/api/og?home=1&v=4"],
+    images: ["/homebanner.png"],
   },
 };
 
