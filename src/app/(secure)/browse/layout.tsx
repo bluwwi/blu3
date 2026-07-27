@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   description:
     "Browse and join active music rooms on Blu3. Discover what your friends are listening to, create your own room, and enjoy real-time synced music together.",
   openGraph: {
+    siteName: "Blu3",
     title: "Blu3 — Browse Rooms",
     description:
       "Browse active music rooms, join friends, and listen together in real-time. Free, no ads, cross-platform.",

@@ -1,14 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DiscordBanner } from "@/components/ui/DiscordBanner";
-import { DiscordHomeBanner } from "@/components/ui/DiscordHomeBanner";
-import { TwitterBanner } from "@/components/ui/TwitterBanner";
-import { TwitterHomeBanner } from "@/components/ui/TwitterHomeBanner";
-import { InstagramBanner } from "@/components/ui/InstagramBanner";
-import { InstagramHomeBanner } from "@/components/ui/InstagramHomeBanner";
-import { WhatsAppBanner } from "@/components/ui/WhatsAppBanner";
-import { WhatsAppHomeBanner } from "@/components/ui/WhatsAppHomeBanner";
+import { SharePreview } from "@/components/SharePreview";
 import { useAuth } from "@/hooks/useAuth";
 
 type Platform = "discord" | "twitter" | "instagram" | "whatsapp";
@@ -59,34 +52,7 @@ export default function SocialPage() {
 
   const renderBanner = () => {
     const bannerProps = { ...data, avatar, name };
-    const isHome = shareType === "home";
-
-    switch (platform) {
-      case "discord":
-        return isHome ? (
-          <DiscordHomeBanner {...bannerProps} />
-        ) : (
-          <DiscordBanner {...bannerProps} />
-        );
-      case "twitter":
-        return isHome ? (
-          <TwitterHomeBanner {...bannerProps} />
-        ) : (
-          <TwitterBanner {...bannerProps} />
-        );
-      case "instagram":
-        return isHome ? (
-          <InstagramHomeBanner {...bannerProps} />
-        ) : (
-          <InstagramBanner {...bannerProps} />
-        );
-      case "whatsapp":
-        return isHome ? (
-          <WhatsAppHomeBanner {...bannerProps} />
-        ) : (
-          <WhatsAppBanner {...bannerProps} />
-        );
-    }
+    return <SharePreview platform={platform} type={shareType} {...bannerProps} />;
   };
 
   return (

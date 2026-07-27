@@ -28,16 +28,19 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   ogParams.set("v", "3");
   const ogUrl = `${appUrl}/api/og?${ogParams}`;
 
+  const firstName = hostName ? hostName.split(" ")[0] : code;
+
   return {
     openGraph: {
-      title: `Join me on Blu3 — ${roomName || `Room ${code}`}`,
-      description: "Listening to music together in real-time",
+      siteName: "Blu3",
+      title: `Blu3 X ${firstName}`,
+      description: "Join me in a real-time music room on Blu3. Listen together, queue tracks, and vibe with friends — free and cross-platform.",
       images: [{ url: ogUrl, width: 600, height: 315 }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `Join me on Blu3 — ${roomName || `Room ${code}`}`,
-      description: "Listening to music together in real-time",
+      title: `Blu3 X ${firstName}`,
+      description: "Join me in a real-time music room on Blu3. Listen together, queue tracks, and vibe with friends — free and cross-platform.",
       images: [ogUrl],
     },
   };
