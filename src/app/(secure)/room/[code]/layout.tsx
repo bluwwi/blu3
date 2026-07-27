@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ code: str
   if (hostAvatar) ogParams.set("avatar", hostAvatar);
   if (roomName) ogParams.set("room", roomName);
 
-  ogParams.set("v", "2");
+  ogParams.set("v", "3");
   const ogUrl = `${appUrl}/api/og?${ogParams}`;
 
   return {

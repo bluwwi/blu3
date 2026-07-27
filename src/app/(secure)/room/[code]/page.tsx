@@ -344,7 +344,6 @@ export default function RoomPage() {
       };
 
       if (player.nowPlaying?.videoId === state.videoId) {
-        engineRef.current.seekTo(adjustedSeek);
         player.play?.();
       } else {
         player.playTrack(track, adjustedSeek, true);

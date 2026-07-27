@@ -157,7 +157,7 @@ export async function GET(request: Request) {
       ? <HomeOG bgImage={bgImage} />
       : <RoomOG name={name} avatar={avatar} room={room} code={code} bgImage={bgImage} />;
 
-    return new ImageResponse(content, {
+    const response = new ImageResponse(content, {
       width: BANNER_W,
       height: BANNER_H,
       fonts: [
@@ -165,6 +165,12 @@ export async function GET(request: Request) {
         { name: "Inter", data: inter500, weight: 500, style: "normal" },
       ],
     });
+
+    response.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    response.headers.set("CDN-Cache-Control", "public, max-age=3600");
+    response.headers.set("Vercel-CDN-Cache-Control", "public, max-age=3600");
+
+    return response;
   } catch (e) {
     return new Response("Failed to generate OG image", { status: 500 });
   }

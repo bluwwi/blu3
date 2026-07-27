@@ -285,7 +285,9 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       setProgress(dur > 0 ? (cur / dur) * 100 : 0);
       if (dur > 0 && configRef.current.isPlaying) {
         const state = playerRef.current.getPlayerState?.();
-        if (state === window.YT.PlayerState.PAUSED || state === window.YT.PlayerState.UNSTARTED) {
+        if (state !== undefined
+            && state !== window.YT.PlayerState.PLAYING
+            && state !== window.YT.PlayerState.ENDED) {
           playerRef.current.playVideo?.();
         }
       }
@@ -684,7 +686,10 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
             }
             return;
           }
-          if (state === window.YT.PlayerState.PAUSED && configRef.current.isPlaying) {
+          if (state !== undefined
+              && state !== window.YT.PlayerState.PLAYING
+              && state !== window.YT.PlayerState.ENDED
+              && configRef.current.isPlaying) {
             playerRef.current.playVideo?.();
           }
         } catch {}

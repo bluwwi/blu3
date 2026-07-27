@@ -55,7 +55,7 @@ export const metadata: Metadata = {
       "Create music rooms and listen together with friends in real-time. Free, no ads, cross-platform. Powered by JioSaavn & YouTube.",
     url: "https://blu3.in",
     siteName: "Blu3",
-    images: [{ url: "/api/og?home=1&v=3", width: 600, height: 315 }],
+    images: [{ url: "/api/og?home=1&v=4", width: 600, height: 315 }],
     locale: "en_US",
     type: "website",
   },
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     title: "Blu3 — Listen Together in Real-Time Music Rooms",
     description:
       "Create music rooms and listen together with friends in real-time. Free, no ads, cross-platform.",
-    images: ["/api/og?home=1&v=3"],
+    images: ["/api/og?home=1&v=4"],
   },
 };
 
