@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Slider } from "@/components/ui/slider";
 import { Profile } from "@/components/Profile";
+import { XLogoIcon } from "@phosphor-icons/react";
 
 function hashStr(s: string): number {
   let h = 0;
@@ -397,15 +398,17 @@ export function SquarePlayer({
           )}
         </div>
       </div>
-      <div className="w-full pt-6  ">
-        {/*<Image
-          width={1200}
-          height={1200}
-          src={"/logo/blu3.svg"}
-          alt={"logo"}
-          priority
-          className="w-13"
-        />*/}
+      <div className="w-full pt-6 flex justify-end -ml-4 sm:-ml-1 -mt-4  ">
+        <div className="flex gap-2 items-center">
+          <a
+            href="https://x.com/onebluwish"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-110   transition-all duration-300 text-white/80 hover:text-white"
+          >
+            <XLogoIcon size={22} />
+          </a>
+        </div>
       </div>
     </div>
   );
