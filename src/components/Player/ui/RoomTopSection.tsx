@@ -13,7 +13,7 @@ export function RoomTopSection({ onSearchClick }: Props) {
     <div className="h-[10vh] gap-3 sm:border border-white/10 flex items-center justify-between sm:h-[12%] w-full sm:w-full sm:w-[90%] lg:w-[75%] xl:w-[60%] px-4 py-3 2xl:w-[60%] rounded-xl sm:bg-white/10">
       <Image
         alt="logo"
-        src={"/logo/blu3.svg"}
+        src={"/logo/tvlogo.svg"}
         width={300}
         height={400}
         className="h-full w-fit"

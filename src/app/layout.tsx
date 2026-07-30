@@ -68,7 +68,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -85,7 +84,7 @@ export default function RootLayout({
     <html lang="en" className={`milano  text-black h-full antialiased`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo/blu3.svg" type="image/svg+xml" />
+        <link rel="icon" href="/logo/tvlogo.svg" type="image/svg+xml" />
         <link rel="canonical" href="https://blu3.in" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
@@ -135,9 +134,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        <PlaylistsProvider>
-          {children}
-        </PlaylistsProvider>
+        <PlaylistsProvider>{children}</PlaylistsProvider>
         <ServiceWorkerRegistrar />
       </body>
     </html>
