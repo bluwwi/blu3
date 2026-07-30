@@ -335,7 +335,11 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
       if (target) {
         target.volume = configRef.current.isMuted ? 0 : configRef.current.volume / 100;
         if (startTime > 0 && Math.abs(target.currentTime - startTime) > 0.5) target.currentTime = startTime;
-        safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
+        if (configRef.current.isPlaying) {
+          safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
+        } else {
+          startAudioProgress(lastVideoIdRef.current ?? "");
+        }
       }
       return;
     }
@@ -362,7 +366,11 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
     };
     target.addEventListener("loadedmetadata", onLoaded);
 
-    safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
+    if (configRef.current.isPlaying) {
+      safePlay(target)?.then(() => startAudioProgress(lastVideoIdRef.current ?? ""));
+    } else {
+      startAudioProgress(lastVideoIdRef.current ?? "");
+    }
     abortCountRef.current = 0;
   }, [safePlay]);
 
@@ -434,7 +442,7 @@ export function usePlayerEngine(config: PlayerEngineConfig): PlayerEngineResult 
         height: 1,
         width: 1,
         playerVars: {
-          autoplay: 1,
+          autoplay: configRef.current.isPlaying ? 1 : 0,
           controls: 0,
           disablekb: 1,
           fs: 0,

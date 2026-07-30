@@ -118,7 +118,7 @@ type RoomSocketMessage =
 interface UseRoomSocketProps {
   roomCode: string | null;
   onPlay?: (state: PlayMessage) => void;
-  onPause?: (state: { serverTime: number }) => void;
+  onPause?: (state: { serverTime: number; positionSec: number }) => void;
   onSeek?: (state: SeekMessage) => void;
   onPlaybackSync?: (state: PlaybackState, getSyncedTime: () => number) => void;
   onMemberJoined?: (user: { name: string; avatar?: string }) => void;

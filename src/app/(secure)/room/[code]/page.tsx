@@ -133,7 +133,7 @@ export default function RoomPage() {
     roomCode: joined ? code : null,
     chatOpen,
     onPlay: (state) => handlePlay(state),
-    onPause: () => handlePause(),
+    onPause: (state) => handlePause(state),
     onSeek: (state) => handleSeek(state),
     onPreResolved: (videoId, audioUrl) => {
       engineRef.current?.cacheResolvedUrl(videoId, audioUrl);
@@ -150,12 +150,10 @@ export default function RoomPage() {
         return;
       }
       syncHandledRef.current = true;
-      if (isRejoinRef.current && !canControlPlaybackRef.current) return;
       let actualCurrentTime = state.currentTime ?? 0;
-      const anchorServerTime = state.anchorServerTime ?? state.updatedAt ?? 0;
-      if (anchorServerTime && state.isPlaying) {
-        const elapsed = (syncedTime() - anchorServerTime) / 1000;
-        if (elapsed > 0 && elapsed < 3600) actualCurrentTime += elapsed;
+      const elapsedSinceSampled = state.updatedAt ? (syncedTime() - state.updatedAt) / 1000 : 0;
+      if (elapsedSinceSampled > 0 && elapsedSinceSampled < 3600 && state.isPlaying) {
+        actualCurrentTime += elapsedSinceSampled;
       }
       const p = playerRef_fix.current;
       if (p.nowPlaying?.videoId === state.videoId) {
@@ -307,7 +305,13 @@ export default function RoomPage() {
       ? playback.isPlaying
         ? "loading"
         : "paused"
-      : player.playerState;
+      : player.playerState === "loading" && playback?.videoId && !playback.isPlaying
+        ? "paused"
+        : listenerMuted && playback?.isPlaying && player.playerState === "playing"
+          ? "paused"
+          : player.playerState === "idle" && !playback?.videoId
+            ? "idle"
+            : player.playerState;
 
   const isLiked = player.nowPlaying?.videoId
     ? likedTrackIds.has(player.nowPlaying.videoId)
@@ -345,22 +349,29 @@ export default function RoomPage() {
 
       if (player.nowPlaying?.videoId === state.videoId) {
         player.play?.();
+      } else if (!canControlPlayback && listenerMuted) {
+        player.playTrack(track, adjustedSeek, false);
       } else {
         player.playTrack(track, adjustedSeek, true);
       }
     },
-    [getSyncedTime, player.nowPlaying?.videoId, player.play, player.playTrack],
+    [getSyncedTime, player.nowPlaying?.videoId, player.play, player.playTrack, canControlPlayback, listenerMuted],
   );
 
-  const handlePause = useCallback(() => {
-    player.pause?.();
-  }, [player.pause]);
+  const handlePause = useCallback(
+    (state: { serverTime: number; positionSec: number }) => {
+      engineRef.current.seekTo(state.positionSec);
+      player.pause?.();
+    },
+    [player.pause],
+  );
 
   const handleSeek = useCallback(
     (state: { seekTo: number; serverTime: number }) => {
-      engineRef.current.seekTo(state.seekTo);
+      const elapsed = Math.max(0, (getSyncedTime() - state.serverTime) / 1000);
+      engineRef.current.seekTo(state.seekTo + elapsed);
     },
-    [],
+    [getSyncedTime],
   );
 
   const prevConnected = useRef(connected);
@@ -376,12 +387,11 @@ export default function RoomPage() {
       !joined ||
       !playback?.videoId ||
       player.nowPlaying?.videoId === playback.videoId ||
-      syncHandledRef.current ||
-      isRejoinRef.current
+      syncHandledRef.current
     )
       return;
 
-    if (!canControlPlayback && playback.isPlaying) {
+      if (!canControlPlayback && playback.isPlaying) {
       const p = playerRef_fix.current;
       let time = playback.currentTime ?? 0;
       const anchorST = playback.anchorServerTime ?? playback.updatedAt ?? 0;
@@ -403,9 +413,8 @@ export default function RoomPage() {
           image: playback.image,
         },
         time,
-        true,
+        false,
       );
-      p.play?.();
       setListenerMuted(true);
     }
   }, [joined, playback, player.nowPlaying?.videoId, canControlPlayback]);
@@ -730,11 +739,16 @@ export default function RoomPage() {
     setListenerMuted(false);
   }, [playback, getSyncedTime, player]);
 
+  const handleListenerPause = useCallback(() => {
+    player.pause?.();
+    setListenerMuted(true);
+  }, [player]);
+
   const onPlayPauseAction = canControlPlayback
     ? handlePlayPauseAction
-    : listenerMuted || (playback?.isPlaying && player.playerState !== "playing")
+    : listenerMuted || player.playerState !== "playing"
       ? handleListenerPlay
-      : undefined;
+      : handleListenerPause;
 
   const handleSkipForward = useCallback(() => {
     if (!canControlPlayback || !joined) return;
@@ -786,8 +800,12 @@ export default function RoomPage() {
   );
 
   const toggleMuteWrapped = useCallback(() => {
-    player.toggleMute();
-  }, [player]);
+    if (listenerMuted) {
+      handleListenerPlay();
+    } else {
+      player.toggleMute();
+    }
+  }, [listenerMuted, handleListenerPlay, player]);
 
   const handleSkipBack = useCallback(() => {
     if (!canControlPlayback || !joined) return;
@@ -1006,7 +1024,7 @@ export default function RoomPage() {
     const heartbeatId = window.setInterval(() => {
       if (player.playerState === "playing")
         sendProgress(engineRef.current.currentTime);
-    }, 3000);
+    }, 1000);
     return () => window.clearInterval(heartbeatId);
   }, [
     canControlPlayback,
