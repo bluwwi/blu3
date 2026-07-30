@@ -75,22 +75,24 @@ export function ChatPanel({
           </p>
         )}
         {messages.map((msg) => (
-          <div key={msg.id} className="flex items-start gap-2">
-            {msg.avatar ? (
-              <img
-                src={msg.avatar}
-                alt=""
-                className="h-6 w-6 rounded-full object-cover flex-shrink-0 mt-0.5"
-              />
-            ) : (
-              <div className="h-6 w-6 rounded-full bg-violet-400/20 flex items-center justify-center text-[10px] text-violet-300 shrink-0 mt-0.5 font-bold">
-                {msg.name[0]?.toUpperCase()}
-              </div>
-            )}
-            <div className="min-w-0 flex gap-2 rounded-2xl rounded-tl-sm px-3 py-2 border border-white/5">
-              <span className="text-[12px] text-white/50 block mb-0.5">
+          <div key={msg.id} className="flex my-2 flex-col items-start gap-2">
+            <div className="flex gap-2 items-center">
+              {msg.avatar ? (
+                <img
+                  src={msg.avatar}
+                  alt=""
+                  className="h-6 w-6 rounded-full object-cover shrink-0 mt-0.5"
+                />
+              ) : (
+                <div className="h-6 w-6 rounded-full bg-violet-400/20 flex items-center justify-center text-[10px] text-violet-300 shrink-0 mt-0.5 font-bold">
+                  {msg.name[0]?.toUpperCase()}
+                </div>
+              )}
+              <span className="text-[12px] text-white  block -mb-0.5">
                 {msg.name.split(" ")[0]}
               </span>
+            </div>
+            <div className="min-w-0 text-white  flex gap-2 rounded-2xl rounded-tl-sm border border-white/5">
               {msg.text.match(/^\/gifs\/.+\.gif$/) ? (
                 <img
                   src={msg.text}
@@ -98,7 +100,7 @@ export function ChatPanel({
                   className="w-40 h-40 object-cover rounded-lg"
                 />
               ) : (
-                <span className="text-[12px] text-white wrap-break-words">
+                <span className="bg-white/10 px-3 text-sm py-1  rounded-2xl  wrap-break-words">
                   {msg.text}
                 </span>
               )}
