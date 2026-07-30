@@ -63,7 +63,7 @@ bun run start      # start the production server
 
 ```sh
 git clone https://github.com/xrealblue/blu3.git
-cd blu3/blu3-client
+cd blu3/blu3
 bun install
 ```
 
