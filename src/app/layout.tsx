@@ -84,7 +84,7 @@ export default function RootLayout({
     <html lang="en" className={`milano  text-black h-full antialiased`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo/tvlogo.svg" type="image/svg+xml" />
+        <link rel="icon" href="/publiclogo.svg" type="image/svg+xml" />
         <link rel="canonical" href="https://blu3.in" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta
