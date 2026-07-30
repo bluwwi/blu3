@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://blu3.in"><img src="logo/tvlogo.png" alt="Logo" height=170></a>
+  <a href="https://blu3.in"><img src="public/logo/tvlogo.png" alt="Logo" height=170></a>
 </p>
 <h1 align="center">Blu3 - Music Rooms</h1>
 
