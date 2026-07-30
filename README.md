@@ -1,7 +1,7 @@
 <p align="center">
-  <a href="https://blu3.in"><img src="logo/tvlogo.svg" alt="Logo" height=170></a>
+  <a href="https://blu3.in"><img src="logo/tvlogo.png" alt="Logo" height=170></a>
 </p>
-<h1 align="center">Blu3</h1>
+<h1 align="center">Blu3 - Music Rooms</h1>
 
 <p align="center">
 <a href="https://discord.gg/blu3" target="_blank"><img height=20 src="https://img.shields.io/badge/discord-join-7289DA" /></a>
