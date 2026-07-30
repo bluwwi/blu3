@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://blu3.in"><img src="public/logo/tvlogo.png" alt="Logo" height=170></a>
+  <a href="https://blu3.in"><img src="public/logo/tvlogo.png" alt="Logo" height=140></a>
 </p>
 <h1 align="center">Blu3 - music rooms</h1>
 
 <p align="center">
-<a href="https://discord.gg/blu3" target="_blank"><img height=20 src="https://img.shields.io/badge/discord-join-7289DA" /></a>
+<a href="https://x.com/onebluwish" target="_blank"><img height=20 src="https://img.shields.io/badge/x-@onebluwish-000000" /></a>
 <img src="https://img.shields.io/github/stars/xrealblue/blu3" alt="stars">
 <a href="https://blu3.in"><img src="https://img.shields.io/static/v1?label=status&message=live-demo&color=success" alt="status" /></a>
 </p>
@@ -14,7 +14,7 @@
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://github.com/xrealblue/blu3">GitHub</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://discord.gg/blu3">Discord</a>
+  <a href="https://x.com/onebluwish">Twitter</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://github.com/xrealblue/blu3/issues/new">Issues</a>
   <br />
