@@ -1082,6 +1082,9 @@ export default function RoomPage() {
     sendChat(chatInput.trim());
     setChatInput("");
   };
+  const handleSendGif = useCallback((gifUrl: string) => {
+    sendChat(gifUrl);
+  }, [sendChat]);
   const handleSearchInputChange = useCallback(
     (value: string) => {
       searchState.onSearchInput(value);
@@ -1261,6 +1264,7 @@ export default function RoomPage() {
                         chatInput={chatInput}
                         setChatInput={setChatInput}
                         handleSendChat={handleSendChat}
+                        sendGif={handleSendGif}
                         nextTrack={nextTrack}
                         onSearchClick={openSearchOverlay}
                         clearQueue={clearQueue}

@@ -1,6 +1,6 @@
 "use client";
 import Lottie from "lottie-react";
-import pandaBamboo from "@/assets/lolite/pandabamboo.json";
+import sleepingPenguin from "@/assets/lolite/sleeping-penguin.json";
 
 interface Props {
   userName?: string;
@@ -44,7 +44,7 @@ export function EmptyQueue({ userName, onSearchClick }: Props) {
         </div>
         <div className="w-50 h-25 lg:w-60 lg:h-25 -z-10 flex items-center justify-center ">
           <Lottie
-            animationData={pandaBamboo}
+            animationData={sleepingPenguin}
             loop
             autoplay
             style={{ width: "clamp(30rem,30vw,199rem)", height: 200 }}

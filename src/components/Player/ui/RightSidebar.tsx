@@ -70,6 +70,7 @@ interface Props {
   setChatInput?: (val: string) => void;
   handleSendChat?: () => void;
   nextTrack?: Track | null;
+  sendGif?: (gifUrl: string) => void;
 }
 
 export function RightSidebar({
@@ -103,6 +104,7 @@ export function RightSidebar({
   setChatInput,
   handleSendChat,
   nextTrack,
+  sendGif,
 }: Props) {
   const [showMembersPopup, setShowMembersPopup] = useState(false);
   const [isMembersVisible, setIsMembersVisible] = useState(false);
@@ -239,6 +241,7 @@ export function RightSidebar({
                       : null
                   }
                   nextTrack={nextTrack}
+                  sendGif={sendGif}
                 />
               ) : (
                 <QueueAndHistory
