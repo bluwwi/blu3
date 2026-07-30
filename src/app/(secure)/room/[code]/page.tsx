@@ -307,11 +307,9 @@ export default function RoomPage() {
         : "paused"
       : player.playerState === "loading" && playback?.videoId && !playback.isPlaying
         ? "paused"
-        : listenerMuted && playback?.isPlaying && player.playerState === "playing"
-          ? "paused"
-          : player.playerState === "idle" && !playback?.videoId
-            ? "idle"
-            : player.playerState;
+        : player.playerState === "idle" && !playback?.videoId
+          ? "idle"
+          : player.playerState;
 
   const isLiked = player.nowPlaying?.videoId
     ? likedTrackIds.has(player.nowPlaying.videoId)
@@ -350,7 +348,8 @@ export default function RoomPage() {
       if (player.nowPlaying?.videoId === state.videoId) {
         player.play?.();
       } else if (!canControlPlayback && listenerMuted) {
-        player.playTrack(track, adjustedSeek, false);
+        player.playTrack(track, adjustedSeek, true);
+        if (!player.isMuted) player.toggleMute();
       } else {
         player.playTrack(track, adjustedSeek, true);
       }
@@ -735,12 +734,11 @@ export default function RoomPage() {
     }
     if (player.isMuted) player.toggleMute();
     engineRef.current.seekTo(actualCurrentTime);
-    player.play?.();
     setListenerMuted(false);
   }, [playback, getSyncedTime, player]);
 
   const handleListenerPause = useCallback(() => {
-    player.pause?.();
+    if (!player.isMuted) player.toggleMute();
     setListenerMuted(true);
   }, [player]);
 
@@ -1213,6 +1211,7 @@ export default function RoomPage() {
                         onSkipForward={
                           canControlPlayback ? handleSkipForward : undefined
                         }
+                        forcePlayIcon={listenerMuted && !canControlPlayback}
                       />
                     </aside>
 

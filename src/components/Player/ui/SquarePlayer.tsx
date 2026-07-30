@@ -96,6 +96,7 @@ interface Props {
   isLiked?: boolean;
   onToggleLike?: () => void;
   hideWaves?: boolean;
+  forcePlayIcon?: boolean;
 }
 
 export function SquarePlayer({
@@ -116,6 +117,7 @@ export function SquarePlayer({
   isLiked = false,
   onToggleLike,
   hideWaves = false,
+  forcePlayIcon = false,
 }: Props) {
   const isPlaying = playerState === "playing";
   const isLoading = playerState === "loading";
@@ -329,11 +331,11 @@ export function SquarePlayer({
               onClick={onPlayPause}
               disabled={!onPlayPause}
               className="flex w-full h-full items-center justify-center rounded-full bg-white text-black fill-black  transition-all shadow-[0_0_24px_-4px_rgba(255,255,255,0.3)] hover:shadow-[0_0_32px_-4px_rgba(255,255,255,0.5)] shrink-0 cursor-pointer"
-              aria-label={isPlaying ? "Pause" : "Play"}
+              aria-label={isPlaying && !forcePlayIcon ? "Pause" : "Play"}
             >
               {isLoading ? (
                 <Icon name="pause" size={19} className="text-black" />
-              ) : isPlaying ? (
+              ) : isPlaying && !forcePlayIcon ? (
                 <Icon name="pause" size={19} className="text-black" />
               ) : (
                 <Icon name="play" size={19} className="text-black " />
