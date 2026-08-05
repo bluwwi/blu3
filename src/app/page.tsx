@@ -351,7 +351,7 @@ export default function Home() {
 
                         <div className="flex gap-2 items-center">
                           <a
-                            href="https://x.com/onebluwish"
+                            href="https://x.com/xbluwie"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"

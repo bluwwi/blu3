@@ -401,7 +401,7 @@ export function SquarePlayer({
       <div className="w-full pt-6 flex justify-end -ml-4 sm:-ml-1 -mt-4  ">
         <div className="flex gap-2 items-center">
           <a
-            href="https://x.com/onebluwish"
+            href="https://x.com/xbluwie"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:scale-110   transition-all duration-300 text-white/80 hover:text-white"
