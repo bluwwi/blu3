@@ -26,7 +26,7 @@
 
 Blu3 is a real-time collaborative music listening platform. Create rooms, queue songs, and listen together with synchronized playback. It's built as a **non-commercial, student-built educational project**.
 
-This repository contains the **open-source frontend client** — a Next.js application that powers the entire user interface. The backend server lives in the same monorepo at [`blu3-server`](../blu3-server) — both are open source together. See [`blu3-server/README.md`](../blu3-server/README.md) for the full REST + WebSocket protocol reference.
+This repository contains the **open-source frontend client** — a Next.js application that powers the entire user interface. The backend server lives in the same monorepo at [`blu3-server`](github.com/xrealblue/blu3-server) — both are open source together. See [`blu3-server/README.md`](github.com/xrealblue/blu3-server) for the full REST + WebSocket protocol reference.
 
 ```bash
 bun install          # install deps
@@ -64,7 +64,7 @@ npx tsc --noEmit     # typecheck only
 
 ## Install
 
-> **Prerequisites:** [Bun](https://bun.sh) (recommended) or Node.js >= 20, and a running instance of `blu3-server` (see [`../blu3-server/README.md`](../blu3-server/README.md)).
+> **Prerequisites:** [Bun](https://bun.sh) (recommended) or Node.js >= 20, and a running instance of `blu3-server` (see [`../blu3-server/README.md`](github.com/xrealblue/blu3-server)).
 
 ```sh
 git clone https://github.com/xrealblue/blu3.git
@@ -174,7 +174,7 @@ cd blu3-client && bun run build
 cd blu3-client && npx tsc --noEmit
 ```
 
-When adding a feature that talks to the server, check [`blu3-server/README.md`](../blu3-server/README.md) first — the REST endpoints, WS message unions, and auth flow are all documented there.
+When adding a feature that talks to the server, check [`blu3-server/README.md`](github.com/xrealblue/blu3-server) first — the REST endpoints, WS message unions, and auth flow are all documented there.
 
 ## License
 
