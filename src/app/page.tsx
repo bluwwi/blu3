@@ -339,6 +339,7 @@ export default function Home() {
                           >
                             Privacy
                           </Link>
+                                <span className="text-white/40">|</span>
                           <a
                             href="https://github.com/xrealblue/blu3"
                             target="_blank"
