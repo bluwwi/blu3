@@ -32,7 +32,7 @@ Room creation and playlist features require Google OAuth sign-in. You are respon
 The Service is provided "as is" without warranties. The developer (Heet Vavadiya) is not liable for any damages arising from use, including third-party API issues, streaming interruptions, or data loss.
 
 ## 8. Takedown Policy
-Rights holders may contact **heetvavadiya099@gmail.com** or **X @xbluwie** with takedown requests. Upon valid notice, blu3.in will be taken down immediately. The GitHub repo may remain as a local-only educational reference.
+Rights holders may contact **heetvavadiya099@gmail.com** or **X @bluwixyz** with takedown requests. Upon valid notice, blu3.in will be taken down immediately. The GitHub repo may remain as a local-only educational reference.
 
 ## 9. Prohibited Use
 You agree not to use the Service commercially, scrape or redistribute content, bypass security measures, or use it for unlawful purposes.
@@ -44,4 +44,4 @@ Terms may be updated without notice. Continued use constitutes acceptance.
 **Developer:** Heet Vavadiya
 **Email:** heetvavadiya099@gmail.com
 **GitHub:** [xrealblue](https://github.com/xrealblue)
-**X:** [@Bluwi](https://x.com/xbluwie)
+**X:** [@Bluwi](https://x.com/bluwixyz)

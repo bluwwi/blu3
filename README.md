@@ -4,7 +4,7 @@
 <h1 align="center">Blu3 — music rooms</h1>
 
 <p align="center">
-<a href="https://x.com/xbluwie" target="_blank"><img height=20 src="https://img.shields.io/badge/x-@xbluwie-000000" /></a>
+<a href="https://x.com/bluwixyz" target="_blank"><img height=20 src="https://img.shields.io/badge/x-@bluwixyz-000000" /></a>
 <img src="https://img.shields.io/github/stars/xrealblue/blu3" alt="stars">
 <a href="https://blu3.in"><img src="https://img.shields.io/static/v1?label=status&message=live-demo&color=success" alt="status" /></a>
 </p>
@@ -14,7 +14,7 @@
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://github.com/xrealblue/blu3">GitHub</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://x.com/xbluwie">Twitter</a>
+  <a href="https://x.com/bluwixyz">Twitter</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://github.com/xrealblue/blu3/issues/new">Issues</a>
   <br />

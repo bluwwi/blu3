@@ -123,7 +123,7 @@ export default function TermsPage() {
             <br />
             X:{" "}
             <a
-              href="https://x.com/xbluwie"
+              href="https://x.com/bluwixyz"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-4 text-white/80 hover:text-white transition-all duration-300"
