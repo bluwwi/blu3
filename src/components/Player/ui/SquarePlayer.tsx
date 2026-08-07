@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Track } from "@/utils/types";
 import { fmtSec } from "@/utils/formatters";
 import Image from "next/image";
@@ -7,6 +7,8 @@ import { Icon } from "@/hooks/useIcon";
 import { Slider } from "@/components/ui/slider";
 import { Profile } from "@/components/Profile";
 import { XLogoIcon } from "@phosphor-icons/react";
+import Lottie from "lottie-react";
+import heartBurstAnimation from "@/assets/lolite/hearts.json";
 
 function hashStr(s: string): number {
   let h = 0;
@@ -142,6 +144,8 @@ export function SquarePlayer({
   const morphTRef = useRef(1);
   const lastTsRef = useRef<number | null>(null);
   const scrollOffsetRef = useRef(0);
+
+  const [showLikeBurst, setShowLikeBurst] = useState(false);
 
   useEffect(() => {
     if (hideWaves) return;
@@ -379,22 +383,36 @@ export function SquarePlayer({
           </div>
 
           {onToggleLike && (
-            <button
-              onClick={onToggleLike}
-              className={`rounded-full ml-2 transition-all cursor-pointer shrink-0 ${
-                isLiked
-                  ? "text-rose-500 "
-                  : "text-white/50 hover:text-white hover:scale-105 "
-              }`}
-              aria-label={isLiked ? "Unlike track" : "Like track"}
-              title={isLiked ? "Unlike track" : "Like track"}
-            >
-              <Icon
-                name={isLiked ? "favorite" : "heart"}
-                size={25}
-                className={isLiked ? "text-rose-500" : "text-current"}
-              />
-            </button>
+            <div className="relative ml-2 shrink-0">
+              {
+                showLikeBurst &&
+                <Lottie
+                  animationData={heartBurstAnimation}
+                  loop={false}
+                  className="fixed inset-0 z-999 pointer-events-none"
+                />
+
+              }
+
+              <button
+                onClick={() => {
+                  setShowLikeBurst(!showLikeBurst)
+                  onToggleLike()
+                }}
+                className={`rounded-full transition-all cursor-pointer shrink-0 ${isLiked
+                    ? "text-rose-500 "
+                    : "text-white/50 hover:text-white hover:scale-105 "
+                  }`}
+                aria-label={isLiked ? "Unlike track" : "Like track"}
+                title={isLiked ? "Unlike track" : "Like track"}
+              >
+                <Icon
+                  name={isLiked ? "favorite" : "heart"}
+                  size={25}
+                  className={isLiked ? "text-rose-500" : "text-current"}
+                />
+              </button>
+            </div>
           )}
         </div>
       </div>
