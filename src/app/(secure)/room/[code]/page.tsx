@@ -113,7 +113,9 @@ export default function RoomPage() {
     recentTracks,
     queue,
     setQueue,
+    likeBurstSignal,
     sendChat,
+    sendLikeBurst,
     sendPlay,
     sendPause,
     sendSeek,
@@ -315,8 +317,10 @@ export default function RoomPage() {
     ? likedTrackIds.has(player.nowPlaying.videoId)
     : false;
   const handleToggleLike = useCallback(() => {
-    if (player.nowPlaying) toggleLike(player.nowPlaying);
-  }, [player.nowPlaying, toggleLike]);
+    if (!player.nowPlaying) return;
+    if (!isLiked) sendLikeBurst();
+    toggleLike(player.nowPlaying);
+  }, [player.nowPlaying, isLiked, toggleLike, sendLikeBurst]);
 
   const handlePlay = useCallback(
     (state: {
@@ -1197,6 +1201,7 @@ export default function RoomPage() {
                         playerState={footerPlayerState}
                         isLiked={isLiked}
                         onToggleLike={handleToggleLike}
+                        remoteBurstSignal={likeBurstSignal}
                         progress={engine.progress}
                         currentTime={engine.currentTime}
                         duration={engine.duration}

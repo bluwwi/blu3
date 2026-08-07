@@ -97,6 +97,7 @@ type RoomSocketMessage =
     }
   | { type: "room:member_left"; members?: Member[]; userId?: string }
   | { type: "chat:message"; message: ChatMessage }
+  | { type: "room:like_burst"; userId: string }
   | {
       type: "playback:sync";
       videoId: string | null;
@@ -152,6 +153,7 @@ export function useRoomSocket({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [recentTracks, setRecentTracks] = useState<RecentTrack[]>([]);
   const [queue, setQueue] = useState<Track[]>([]);
+  const [likeBurstSignal, setLikeBurstSignal] = useState(0);
   const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   const onPlayRef = useRef(onPlay);
@@ -283,6 +285,9 @@ export function useRoomSocket({
           setMessages((prev) => [...prev.slice(-199), msg.message]);
           if (!chatOpenRef.current) setUnreadChatCount((c) => c + 1);
           break;
+        case "room:like_burst":
+          setLikeBurstSignal((n) => n + 1);
+          break;
         case "play":
           setPlayback({
             videoId: msg.videoId ?? null,
@@ -376,6 +381,10 @@ export function useRoomSocket({
     },
     [safeSend],
   );
+
+  const sendLikeBurst = useCallback(() => {
+    safeSend(JSON.stringify({ type: "like:burst" }));
+  }, [safeSend]);
 
   const sendPlay = useCallback(
     (track: {
@@ -471,7 +480,9 @@ export function useRoomSocket({
     recentTracks,
     queue,
     setQueue,
+    likeBurstSignal,
     sendChat,
+    sendLikeBurst,
     sendPlay,
     sendPause,
     sendSeek,

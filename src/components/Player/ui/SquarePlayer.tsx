@@ -98,6 +98,7 @@ interface Props {
   onSkipForward?: () => void;
   isLiked?: boolean;
   onToggleLike?: () => void;
+  remoteBurstSignal?: number;
   hideWaves?: boolean;
   forcePlayIcon?: boolean;
 }
@@ -119,6 +120,7 @@ export function SquarePlayer({
   onSkipForward,
   isLiked = false,
   onToggleLike,
+  remoteBurstSignal = 0,
   hideWaves = false,
   forcePlayIcon = false,
 }: Props) {
@@ -146,6 +148,14 @@ export function SquarePlayer({
   const scrollOffsetRef = useRef(0);
 
   const [showLikeBurst, setShowLikeBurst] = useState(false);
+  const lastBurstSignalRef = useRef(remoteBurstSignal);
+
+  useEffect(() => {
+    if (remoteBurstSignal !== lastBurstSignalRef.current) {
+      lastBurstSignalRef.current = remoteBurstSignal;
+      setShowLikeBurst(true);
+    }
+  }, [remoteBurstSignal]);
 
   useEffect(() => {
     if (hideWaves) return;
@@ -389,15 +399,14 @@ export function SquarePlayer({
                 <Lottie
                   animationData={heartBurstAnimation}
                   loop={false}
+                  onComplete={() => setShowLikeBurst(false)}
                   className="fixed inset-0 z-999 pointer-events-none"
                 />
-
               }
-
               <button
                 onClick={() => {
-                  setShowLikeBurst(!showLikeBurst)
-                  onToggleLike()
+                  onToggleLike();
+                  if (!isLiked) setShowLikeBurst(true);
                 }}
                 className={`rounded-full transition-all cursor-pointer shrink-0 ${isLiked
                     ? "text-rose-500 "
