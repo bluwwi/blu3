@@ -6,7 +6,7 @@ import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Slider } from "@/components/ui/slider";
 import { Profile } from "@/components/Profile";
-import { GitBranchIcon, GithubLogoIcon, XLogoIcon } from "@phosphor-icons/react";
+import { DiscordLogoIcon, GitBranchIcon, XLogoIcon } from "@phosphor-icons/react";
 
 function hashStr(s: string): number {
   let h = 0;
@@ -407,6 +407,14 @@ export function SquarePlayer({
             className="hover:scale-110   transition-all duration-300 text-white/80 hover:text-white"
           >
             <GitBranchIcon size={22} />
+          </a>
+          <a
+            href="https://discord.gg/QScAGNYWaF"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:scale-110   transition-all duration-300 text-white/80 hover:text-white"
+          >
+            <DiscordLogoIcon size={22} />
           </a>
           <a
             href="https://x.com/bluwixyz"
