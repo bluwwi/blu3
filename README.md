@@ -1,7 +1,7 @@
 <p align="center">
   <a href="https://blu3.in"><img src="public/logo/tvlogo.png" alt="Logo" height=140></a>
 </p>
-<h1 align="center">Blu3 - music rooms(150+ Users)</h1>
+<h1 align="center">Music Rooms (150+ Users)</h1>
 
 <p align="center">
 <a href="https://x.com/bluwixyz" target="_blank"><img height=20 src="https://img.shields.io/badge/x-@bluwixyz-000000" /></a>
