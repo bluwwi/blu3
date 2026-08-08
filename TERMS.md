@@ -43,5 +43,5 @@ Terms may be updated without notice. Continued use constitutes acceptance.
 ## 11. Contact
 **Developer:** Heet Vavadiya
 **Email:** heetvavadiya099@gmail.com
-**GitHub:** [xrealblue](https://github.com/xrealblue)
+**GitHub:** [bluwwi](https://github.com/bluwwi)
 **X:** [@Bluwi](https://x.com/bluwixyz)

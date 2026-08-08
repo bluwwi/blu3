@@ -6,20 +6,20 @@
 <p align="center">
 <a href="https://discord.gg/QScAGNYWaF" target="_blank"><img height=20 src="https://img.shields.io/badge/discord-Blu3-5865F2?logo=discord&logoColor=white" /></a>
 <a href="https://x.com/bluwixyz" target="_blank"><img height=20 src="https://img.shields.io/badge/x-@bluwixyz-000000" /></a>
-<img src="https://img.shields.io/github/stars/xrealblue/blu3" alt="stars">
+<img src="https://img.shields.io/github/stars/bluwwi/blu3" alt="stars">
 <a href="https://blu3.in"><img src="https://img.shields.io/static/v1?label=status&message=live-demo&color=success" alt="status" /></a>
 </p>
 
 <div align="center">
   <a href="https://blu3.in">Website</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/xrealblue/blu3">GitHub</a>
+  <a href="https://github.com/bluwwi/blu3">GitHub</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://x.com/bluwixyz">Twitter</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
   <a href="https://discord.gg/QScAGNYWaF">Discord</a>
   &nbsp;&nbsp;•&nbsp;&nbsp;
-  <a href="https://github.com/xrealblue/blu3/issues/new">Issues</a>
+  <a href="https://github.com/bluwwi/blu3/issues/new">Issues</a>
   <br />
 </div>
 
@@ -29,7 +29,7 @@
 
 Blu3 is a real-time collaborative music listening platform. Create rooms, queue songs, and listen together with synchronized playback. It's built as a **non-commercial, student-built educational project**.
 
-This repository contains the **open-source frontend client** — a Next.js application that powers the entire user interface. The backend server lives in a separate repo at [`blu3-server`](https://github.com/xrealblue/blu3-server) — both are open source together. See [`blu3-server/README.md`](https://github.com/xrealblue/blu3-server/blob/main/README.md) for the full REST + WebSocket protocol reference.
+This repository contains the **open-source frontend client** — a Next.js application that powers the entire user interface. The backend server lives in a separate repo at [`blu3-server`](https://github.com/bluwwi/blu3-server) — both are open source together. See [`blu3-server/README.md`](https://github.com/bluwwi/blu3-server/blob/main/README.md) for the full REST + WebSocket protocol reference.
 
 ```bash
 bun install          # install deps
@@ -67,10 +67,10 @@ npx tsc --noEmit     # typecheck only
 
 ## Install
 
-> **Prerequisites:** [Bun](https://bun.sh) (recommended) or Node.js >= 20, and a running instance of [`blu3-server`](https://github.com/xrealblue/blu3-server) (see its [`README.md`](https://github.com/xrealblue/blu3-server/blob/main/README.md)).
+> **Prerequisites:** [Bun](https://bun.sh) (recommended) or Node.js >= 20, and a running instance of [`blu3-server`](https://github.com/bluwwi/blu3-server) (see its [`README.md`](https://github.com/bluwwi/blu3-server/blob/main/README.md)).
 
 ```sh
-git clone https://github.com/xrealblue/blu3.git
+git clone https://github.com/bluwwi/blu3.git
 cd blu3/blu3-client
 bun install
 ```
@@ -109,7 +109,7 @@ bun run start
 The client never talks to YouTube/JioSaavn directly — every request goes through `blu3-server`:
 
 - **REST** — base URL is `NEXT_PUBLIC_API_URL` (defaulted everywhere it's used, e.g. `src/hooks/useRoom.ts`, `src/hooks/usePlaylists.tsx`, `src/app/(secure)/room/[code]/page.tsx`). All browser fetches use `credentials: "include"` for the better-auth session cookie.
-- **WebSocket** — `src/hooks/useRoomSocket.ts` connects to `ws://<API_URL>/ws?token=<sessionToken>&room=<CODE>`. See the [WS Protocol section](https://github.com/xrealblue/blu3-server/blob/main/README.md#websocket-protocol) of the server README for the full client→server / server→client message reference.
+- **WebSocket** — `src/hooks/useRoomSocket.ts` connects to `ws://<API_URL>/ws?token=<sessionToken>&room=<CODE>`. See the [WS Protocol section](https://github.com/bluwwi/blu3-server/blob/main/README.md#websocket-protocol) of the server README for the full client→server / server→client message reference.
 - **Auth** — `src/lib/auth-client.ts` is the better-auth client. Sign-in buttons live in `src/components/LoginPopup.tsx`; the desktop OAuth handoff uses `GET /api/auth/desktop-redirect` on the server (still referenced by `LoginPopup.tsx` and `src/app/login/page.tsx` for the `blu3://` protocol, though the Electron shell itself is no longer in this repo).
 - **Audio** — the `<audio>` element's `src` points at `GET /api/audio/:videoId?token=<sessionToken>` on the server, which proxies the underlying CDN stream with `Range` support.
 
@@ -177,7 +177,7 @@ cd blu3-client && bun run build
 cd blu3-client && npx tsc --noEmit
 ```
 
-When adding a feature that talks to the server, check [`blu3-server/README.md`](https://github.com/xrealblue/blu3-server/blob/main/README.md) first — the REST endpoints, WS message unions, and auth flow are all documented there.
+When adding a feature that talks to the server, check [`blu3-server/README.md`](https://github.com/bluwwi/blu3-server/blob/main/README.md) first — the REST endpoints, WS message unions, and auth flow are all documented there.
 
 ## License
 
