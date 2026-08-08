@@ -133,12 +133,12 @@ export default function TermsPage() {
             <br />
             GitHub:{" "}
             <a
-              href="https://github.com/xrealblue"
+              href="https://github.com/bluwwi"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-4 text-white/80 hover:text-white transition-all duration-300"
             >
-              xrealblue
+              bluwwi
             </a>
           </p>
 
