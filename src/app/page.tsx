@@ -9,6 +9,7 @@ import { RoomStars } from "@/components/Player/ui/RoomStars";
 import { MusicNotesIcon, StarIcon, XLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { VideoBackground } from "@/components/VideoBackground";
+import Icon from "@/hooks/useIcon";
 
 const DEMO_TRACKS: Track[] = [
   {
@@ -307,13 +308,14 @@ export default function Home() {
                           songs in perfect sync.🥂
                         </div>
                       </div>
-                      <div className="flex flex-col w-full gap-2.5">
-                        <Link
-                          href="/login"
-                          className="px-4 hover:bg-purple-600 hover:text-white  transition-all duration-300 py-1.5 flex items-center gap-2 text-black bg-white rounded-lg text-md md:text-lg  w-full sm:w-fit justify-center"
-                        >
-                          Get Started
-                          <MusicNotesIcon className="inline-block" size={22} />
+                      <div className="flex relative flex-col w-full gap-2.5">
+                        <Link href="/login" className="btn-get-started">
+                          <span className="music-note">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M9.09 2a.9.9 0 0 1 .99.827l7.19 4.727a.9.9 0 0 1-.125 1.6l-7.19 4.727a9 9 0 0 1-9-9L9.99 3.72a9 9 0 0 1-.01-.827zM22.29 6c0 1.27-.1 2.54-.29 3.71l.01.25L22 10l-1.71 5.33a1.8 1.8 0 0 1-1.72.88l-4.16-2.72a1.8 1.8 0 0 1-.88-1.72L12 14l-4.29-3.25c-.19-.14-.25-.31-.25-.49s.06-.35.18-.49l4.27-3.25L5.49 8.5c-.16-.32-.11-.66.08-.9l.01-.25z"/>
+                              <circle cx="9" cy="6" r="3"/>
+                            </svg>
+                          </span>
                         </Link>
                         <Link
                           href="/login"
@@ -332,25 +334,27 @@ export default function Home() {
                           >
                             Terms
                           </Link>
-                          <span className="text-white/40">|</span>
+                          <span className="text-white/80">|</span>
                           <Link
                             href={"/privacy"}
                             className=" hover:text-white transition-all duration-300"
                           >
                             Privacy
                           </Link>
-                                <span className="text-white/40">|</span>
+
+                        </div>
+
+                        <div className="flex gap-2 items-center">
                           <a
                             href="https://github.com/bluwwi/blu3"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className=" hover:text-white transition-all duration-300"
+                            className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
                           >
-                            Github
+                            <Icon name="github" size={21} className="text-current -mt-1" />
                           </a>
-                        </div>
+                          <span className="text-white/80">|</span>
 
-                        <div className="flex gap-2 items-center">
                           <a
                             href="https://x.com/bluwixyz"
                             target="_blank"

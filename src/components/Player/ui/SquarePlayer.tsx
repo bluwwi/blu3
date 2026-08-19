@@ -406,7 +406,7 @@ export function SquarePlayer({
             rel="noopener noreferrer"
             className="hover:scale-110   transition-all duration-300 text-white/80 hover:text-white"
           >
-            <GitBranchIcon size={22} />
+            <Icon name="github" size={21} className="text-current -mt-1" />
           </a>
           <a
             href="https://x.com/bluwixyz"
