@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
 import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
-import { MusicNotesIcon, StarIcon, XLogoIcon, DiscordLogoIcon } from "@phosphor-icons/react";
+import { MusicNotesIcon, StarIcon, XLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { VideoBackground } from "@/components/VideoBackground";
 
@@ -351,14 +351,6 @@ export default function Home() {
                         </div>
 
                         <div className="flex gap-2 items-center">
-                          <a
-                            href="https://discord.gg/QScAGNYWaF"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:scale-110 transition-all duration-300 text-white/80 hover:text-white"
-                          >
-                            <DiscordLogoIcon size={22} />
-                          </a>
                           <a
                             href="https://x.com/bluwixyz"
                             target="_blank"
