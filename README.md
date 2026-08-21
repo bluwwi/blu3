@@ -23,7 +23,11 @@
   <br />
 </div>
 
-### [Try it live →](https://blu3.in)
+<div align="center">
+  <video src="public/showcase.mp4" width="100%" controls muted>
+    Your browser does not support the video tag.
+  </video>
+</div>
 
 ## What is Blu3?
 
