@@ -24,7 +24,7 @@
 </div>
 
 <div align="center">
-  <video src="public/showcase.mp4" width="100%" controls muted>
+  <video src="https://raw.githubusercontent.com/bluwwi/blu3/main/blu3-client/public/showcase.mp4" width="100%" controls muted>
     Your browser does not support the video tag.
   </video>
 </div>
