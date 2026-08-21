@@ -24,7 +24,7 @@
 </div>
 
 <div align="center">
-  <video src="https://raw.githubusercontent.com/bluwwi/blu3/main/public/showcase.mp4" width="100%" controls muted></video>
+  <img src="public/showcasevideo.gif" alt="Blu3 Showcase" width="100%" />
 </div>
 
 ## What is Blu3?
