@@ -38,6 +38,7 @@ export function MembersPopup({ members, isVisible, onClose, userId }: MembersPop
                       src={m.avatar}
                       alt=""
                       className="h-10 w-10 aspect-square rounded-full object-cover"
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
                     />
                   ) : (
                     <div className="h-9 w-9 rounded-full bg-violet-400/25 flex items-center justify-center text-[9px] text-violet-300 font-semibold">

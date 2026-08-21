@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import Link from "next/link";
-import Image from "next/image";
 import { Trash2, Plus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/ScrollArea";
 import { Profile } from "@/components/Profile";
@@ -162,9 +161,7 @@ export default function BrowsePage() {
       <div className="flex justify-center items-center z-10 h-full w-full overflow-hidden">
         <div className="flex flex-col justify-center items-center h-full w-full">
           <div className="flex justify-between w-full absolute top-0 p-5 items-center overflow-hidden before:absolute before:inset-0 before:rounded-2xl before:pointer-events-none z-20  before:to-transparent">
-            <Image
-              width={400}
-              height={400}
+            <img
               src={"/logo/tvlogo.svg"}
               alt={"logo"}
               className="w-14"
@@ -190,17 +187,14 @@ export default function BrowsePage() {
                       >
                         <div className="relative aspect-square  overflow-hidden shadow-[0_8px_32px_-8px_rgba(0,0,0,0.5)] before:absolute before:inset-0  before:pointer-events-none  before:to-transparent">
                           {room.lastTrack?.image ? (
-                            <Image
-                              width={400}
-                              height={400}
+                            <img
                               src={room.lastTrack.image}
                               alt={room.name}
                               className="room-card-img rounded-md w-full h-full object-cover"
+                              onError={(e) => { e.currentTarget.src = "/queue/pfp.jpg"; }}
                             />
                           ) : (
-                            <Image
-                              width={400}
-                              height={400}
+                            <img
                               src={"/queue/pfp.jpg"}
                               alt={room.name}
                               className="room-card-img rounded-md w-full h-full object-cover"

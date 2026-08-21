@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { Icon } from "@/hooks/useIcon";
 import { Track } from "@/utils/types";
 
@@ -56,12 +55,11 @@ export function QueueTrackItem({
         }}
         className="relative group/img shrink-0 aspect-square rounded-lg"
       >
-        <Image
-          width={300}
-          height={300}
+        <img
           src={track.image}
           alt=""
           className="h-full w-full rounded-lg object-cover transition-all duration-200 group-hover/img:brightness-50"
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
 
         {isActive && (

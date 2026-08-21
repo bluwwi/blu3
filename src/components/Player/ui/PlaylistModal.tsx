@@ -309,6 +309,7 @@ export function PlaylistModal({
                           src={resolvedTrack.image}
                           alt={resolvedTrack.name}
                           className="h-full w-full object-cover"
+                          onError={(e) => { e.currentTarget.style.display = "none"; }}
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center">

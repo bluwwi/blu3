@@ -72,6 +72,7 @@ export function SearchInput({
               src={avatarUrl}
               alt={avatarLabel}
               className="h-full w-full object-cover"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
             />
           ) : (
             avatarLabel.slice(0, 1).toUpperCase()

@@ -96,6 +96,7 @@ export function RoomBackground({
             transformOrigin: "center center",
             opacity: fadeOut ? 0 : 1,
           }}
+          onError={(e) => { e.currentTarget.style.display = "none"; }}
         />
       )}
 

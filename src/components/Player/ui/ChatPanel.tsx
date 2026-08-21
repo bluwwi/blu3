@@ -82,6 +82,7 @@ export function ChatPanel({
                   src={msg.avatar}
                   alt=""
                   className="h-6 w-6 rounded-full object-cover shrink-0 mt-0.5"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : (
                 <div className="h-6 w-6 rounded-full bg-violet-400/20 flex items-center justify-center text-[10px] text-violet-300 shrink-0 mt-0.5 font-bold">

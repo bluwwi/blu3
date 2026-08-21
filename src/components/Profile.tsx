@@ -56,6 +56,7 @@ export function Profile({ size = "sm" }: ProfileProps) {
             src={user.avatar}
             alt=""
             className={`${containerClass} rounded-full border border-zinc-700 object-cover hover:border-zinc-500 transition-colors`}
+            onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
           <div
@@ -81,6 +82,7 @@ export function Profile({ size = "sm" }: ProfileProps) {
                   src={user.avatar}
                   alt=""
                   className="w-40 h-40 rounded-full border-2 border-white/20 object-cover mx-auto mb-3"
+                  onError={(e) => { e.currentTarget.style.display = "none"; }}
                 />
               ) : (
                 <div className="w-16 h-16 rounded-full bg-zinc-700 border-2 border-white/20 flex items-center justify-center text-xl font-bold text-white uppercase mx-auto mb-3">
