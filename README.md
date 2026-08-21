@@ -24,7 +24,7 @@
 </div>
 
 <div align="center">
-  <img src="public/showcasevideo.gif" alt="Blu3 Showcase" width="100%" />
+  <img src="public/0819.gif" alt="Blu3 Showcase" width="100%" />
 </div>
 
 ## What is Blu3?
