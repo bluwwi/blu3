@@ -23,10 +23,12 @@
   <br />
 </div>
 
+<br/>
+
 <div align="center">
   <img src="public/0819.gif" alt="Blu3 Showcase" width="100%" />
 </div>
-
+    
 ## What is Blu3?
 
 Blu3 is a real-time collaborative music listening platform. Create rooms, queue songs, and listen together with synchronized playback. It's built as a **non-commercial, student-built educational project**.
