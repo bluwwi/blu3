@@ -327,7 +327,7 @@ export function SquarePlayer({
           >
             <Icon name="skip-back" size={22} className="text-current" />
           </button>
-          <div className="h-15 w-15 items-center flex justify-center rounded-full p-0.5 border-[2.5] border-white">
+          <div className="h-14 w-14 items-center flex justify-center rounded-full p-0.5 border-[2.5] border-white">
             <button
               onClick={onPlayPause}
               disabled={!onPlayPause}
@@ -335,11 +335,11 @@ export function SquarePlayer({
               aria-label={isPlaying && !forcePlayIcon ? "Pause" : "Play"}
             >
               {isLoading ? (
-                <Icon name="pause" size={19} className="text-black" />
+                <Icon name="pause" size={20} className="text-black" />
               ) : isPlaying && !forcePlayIcon ? (
-                <Icon name="pause" size={19} className="text-black" />
+                <Icon name="pause" size={20} className="text-black" />
               ) : (
-                <Icon name="play" size={19} className="text-black " />
+                <Icon name="play" size={20} className="text-black " />
               )}
             </button>
           </div>
