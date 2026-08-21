@@ -24,9 +24,7 @@
 </div>
 
 <div align="center">
-  <video src="https://raw.githubusercontent.com/bluwwi/blu3/main/blu3-client/public/showcase.mp4" width="100%" controls muted>
-    Your browser does not support the video tag.
-  </video>
+  <video src="https://raw.githubusercontent.com/bluwwi/blu3/main/public/showcase.mp4" width="100%" controls muted></video>
 </div>
 
 ## What is Blu3?
