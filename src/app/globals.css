@@ -224,7 +224,7 @@ body {
     font-size: 17px;
     font-weight: 600;
     border-radius: 10px;
-    width: 150px;
+    width: 100%;
     height: auto;
     border: none;
     text-transform:capitalize;
@@ -285,4 +285,10 @@ body {
 
 .btn-get-started:active {
     scale: 0.95;
+}
+
+@media (min-width: 768px) {
+    .btn-get-started {
+        width: 150px;
+    }
 }
