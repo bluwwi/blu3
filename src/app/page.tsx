@@ -1,76 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import type { Track } from "@/utils/types";
-import { SearchOverlay } from "@/components/Player/ui/SearchOverlay";
 import { RoomStars } from "@/components/Player/ui/RoomStars";
-import { MusicNotesIcon, StarIcon, XLogoIcon } from "@phosphor-icons/react";
+import { StarIcon, XLogoIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { VideoBackground } from "@/components/VideoBackground";
 import Icon from "@/hooks/useIcon";
-
-const DEMO_TRACKS: Track[] = [
-  {
-    id: "demo-1",
-    source: "youtube",
-    videoId: "d1",
-    name: "Sunflower",
-    duration_ms: 210000,
-    explicit: false,
-    artists: [{ name: "Post Malone & Swae Lee" }],
-    album: { name: "Spider-Man: Into the Spider-Verse" },
-    image: "/queue/sunflower.jpg",
-  },
-  {
-    id: "demo-2",
-    source: "youtube",
-    videoId: "d2",
-    name: "Blu3 Dreams",
-    duration_ms: 240000,
-    explicit: false,
-    artists: [{ name: "Luna Ray" }],
-    album: { name: "Night Visions" },
-    image: "/queue/cat.jpg",
-  },
-  {
-    id: "demo-3",
-    source: "youtube",
-    videoId: "d3",
-    name: "Midnight City",
-    duration_ms: 260000,
-    explicit: false,
-    artists: [{ name: "M83" }],
-    album: { name: "Hurry Up, We're Dreaming" },
-    image: "/queue/camera.jpg",
-  },
-  {
-    id: "demo-4",
-    source: "youtube",
-    videoId: "d4",
-    name: "Vibes",
-    duration_ms: 200000,
-    explicit: false,
-    artists: [{ name: "Kyle Dixon" }],
-    album: { name: "Stranger Things" },
-    image: "/queue/vibe.jpg",
-  },
-  {
-    id: "demo-5",
-    source: "youtube",
-    videoId: "d5",
-    name: "Rose Gold",
-    duration_ms: 230000,
-    explicit: false,
-    artists: [{ name: "The Blaze" }],
-    album: { name: "Dancehall" },
-    image: "/queue/rose.jpg",
-  },
-];
-
-type PlayerState =
-  "idle" | "loading" | "playing" | "paused" | "ended" | "error";
 
 export default function Home() {
   const router = useRouter();
@@ -82,30 +19,11 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
-  const [queue, setQueue] = useState<Track[]>(DEMO_TRACKS);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [playerState, setPlayerState] = useState<PlayerState>("playing");
-  const [searchOpen, setSearchOpen] = useState(false);
   const [starsMounted, setStarsMounted] = useState(false);
 
   useEffect(() => {
     setStarsMounted(true);
   }, []);
-
-  const currentTrack = queue[currentIndex];
-
-  const handleAddToQueue = useCallback((track: Track) => {
-    setQueue((prev) => [...prev, track]);
-  }, []);
-
-  const popularGenres = [
-    "Pop hits",
-    "Hip hop",
-    "Lo-fi",
-    "Rock classics",
-    "Bollywood",
-    "EDM",
-  ];
 
   return (
     <div className="relative min-h-dvh safe-area-top safe-area-bottom">
@@ -244,33 +162,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <SearchOverlay
-            isOpen={searchOpen}
-            onClose={() => setSearchOpen(false)}
-            searchQuery=""
-            suggestions={[]}
-            showSuggestions={false}
-            results={[]}
-            isSearching={false}
-            searchError=""
-            recentTracks={queue}
-            activeTrackId={currentTrack?.id ?? null}
-            loadingTrackId={null}
-            isPlaying={playerState === "playing"}
-            onSearchInput={() => {}}
-            onSearch={() => {}}
-            onSuggestionSelect={() => {}}
-            onTrackSelect={(track) => {
-              const idx = queue.findIndex((t) => t.id === track.id);
-              if (idx >= 0) setCurrentIndex(idx);
-              setPlayerState("playing");
-            }}
-            onAddToQueue={handleAddToQueue}
-            avatarUrl={undefined}
-            avatarLabel="You"
-            popularGenres={popularGenres}
-          />
         </div>
       </div>
     </div>
