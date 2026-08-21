@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import type { Track } from "@/utils/types";
@@ -69,46 +69,6 @@ const DEMO_TRACKS: Track[] = [
   },
 ];
 
-const DEMO_MEMBERS = [
-  { userId: "1", name: "Alice", avatar: "/queue/cat.jpg" },
-  { userId: "2", name: "Bob" },
-  { userId: "3", name: "Charlie", avatar: "/queue/sunflower.jpg" },
-];
-
-const DEMO_MESSAGES = [
-  { id: "m1", name: "Alice", text: "Hey everyone!" },
-  { id: "m2", name: "Bob", text: "Love this track" },
-  { id: "m3", name: "Charlie", text: "What's next?" },
-  { id: "m4", name: "Alice", text: "How about some lo-fi?" },
-];
-
-function getDemoRecent() {
-  const now = Date.now();
-  return [
-    {
-      videoId: "r1",
-      trackName: "Heartbeat",
-      artistName: "TheXX",
-      image: "/queue/heart.jpg",
-      playedAt: now - 300000,
-    },
-    {
-      videoId: "r2",
-      trackName: "Redbone",
-      artistName: "Childish Gambino",
-      image: "/queue/red.jpg",
-      playedAt: now - 600000,
-    },
-    {
-      videoId: "r3",
-      trackName: "Hiatus",
-      artistName: "Tycho",
-      image: "/queue/hi.jpg",
-      playedAt: now - 900000,
-    },
-  ];
-}
-
 type PlayerState =
   "idle" | "loading" | "playing" | "paused" | "ended" | "error";
 
@@ -125,16 +85,8 @@ export default function Home() {
   const [queue, setQueue] = useState<Track[]>(DEMO_TRACKS);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [playerState, setPlayerState] = useState<PlayerState>("playing");
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(70);
-  const [isMuted, setIsMuted] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [shuffleEnabled, setShuffleEnabled] = useState(false);
-  const [repeatMode, setRepeatMode] = useState<"off" | "all" | "one">("off");
   const [starsMounted, setStarsMounted] = useState(false);
-  const [chatInput, setChatInput] = useState("");
 
   useEffect(() => {
     setStarsMounted(true);
@@ -142,109 +94,9 @@ export default function Home() {
 
   const currentTrack = queue[currentIndex];
 
-  useEffect(() => {
-    if (playerState !== "playing") return;
-    const interval = setInterval(() => {
-      setCurrentTime((prev) => {
-        const dur = currentTrack?.duration_ms
-          ? currentTrack.duration_ms / 1000
-          : 240;
-        if (prev >= dur - 1) return 0;
-        return prev + 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [playerState, currentTrack?.duration_ms]);
-
-  const duration = currentTrack?.duration_ms
-    ? currentTrack.duration_ms / 1000
-    : 240;
-  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-  const handlePlayPause = useCallback(() => {
-    setPlayerState((prev) => (prev === "playing" ? "paused" : "playing"));
-  }, []);
-
-  const handleSkipForward = useCallback(() => {
-    setCurrentIndex((prev) => {
-      if (shuffleEnabled) {
-        return Math.floor(Math.random() * DEMO_TRACKS.length);
-      }
-      return (prev + 1) % DEMO_TRACKS.length;
-    });
-    setCurrentTime(0);
-    setPlayerState("playing");
-  }, [shuffleEnabled]);
-
-  const handleSkipBack = useCallback(() => {
-    if (currentTime > 3) {
-      setCurrentTime(0);
-      return;
-    }
-    setCurrentIndex((prev) => {
-      if (prev === 0) return DEMO_TRACKS.length - 1;
-      return prev - 1;
-    });
-    setCurrentTime(0);
-    setPlayerState("playing");
-  }, [currentTime]);
-
-  const handleSeek = useCallback((time: number) => {
-    setCurrentTime(time);
-  }, []);
-
-  const handleVolume = useCallback(
-    (val: number) => {
-      setVolume(val);
-      if (isMuted) setIsMuted(false);
-    },
-    [isMuted],
-  );
-
-  const handleMute = useCallback(() => {
-    setIsMuted((prev) => !prev);
-  }, []);
-
-  const handleToggleLike = useCallback(() => {
-    setIsLiked((prev) => !prev);
-  }, []);
-
-  const handleToggleShuffle = useCallback(() => {
-    setShuffleEnabled((prev) => !prev);
-  }, []);
-
-  const handleCycleRepeat = useCallback(() => {
-    setRepeatMode((prev) =>
-      prev === "off" ? "all" : prev === "all" ? "one" : "off",
-    );
-  }, []);
-
-  const handleRemoveFromQueue = useCallback((id: string) => {
-    setQueue((prev) => prev.filter((t) => t.id !== id));
-  }, []);
-
   const handleAddToQueue = useCallback((track: Track) => {
     setQueue((prev) => [...prev, track]);
   }, []);
-
-  const handleClearQueue = useCallback(() => {
-    setQueue(DEMO_TRACKS);
-  }, []);
-
-  const handleAdminPlayTrack = useCallback(
-    (track: Track) => {
-      const idx = queue.findIndex((t) => t.id === track.id);
-      if (idx >= 0) setCurrentIndex(idx);
-      setCurrentTime(0);
-      setPlayerState("playing");
-    },
-    [queue],
-  );
-
-  const handleSendChat = useCallback(() => {
-    if (!chatInput.trim()) return;
-    setChatInput("");
-  }, [chatInput]);
 
   const popularGenres = [
     "Pop hits",
@@ -412,7 +264,6 @@ export default function Home() {
             onTrackSelect={(track) => {
               const idx = queue.findIndex((t) => t.id === track.id);
               if (idx >= 0) setCurrentIndex(idx);
-              setCurrentTime(0);
               setPlayerState("playing");
             }}
             onAddToQueue={handleAddToQueue}
